@@ -91,14 +91,6 @@ SOURCE=..\..\..\..\src\programs\make_quests\cmd_ln.c
 
 SOURCE=..\..\..\..\src\programs\make_quests\main.c
 # End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\src\programs\make_quests\make_tree.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\src\programs\make_quests\new_quest.c
-# End Source File
 # End Group
 # Begin Group "Header Files"
 

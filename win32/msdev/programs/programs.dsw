@@ -111,42 +111,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "count_3phone"=.\count_3phone\count_3phone.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcommon
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libclust
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libmllr
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libs2io
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libio
-    End Project Dependency
-}}}
-
-###############################################################################
-
 Project: "cp_parm"=.\cp_parm\cp_parm.dsp - Package Owner=<4>
 
 Package=<5>
@@ -395,6 +359,102 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name libio
     End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "libcep_feat"=..\libs\libcep_feat\libcep_feat.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libclust"=..\libs\libclust\libclust.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libcommon"=..\libs\libcommon\libcommon.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libio"=..\libs\libio\libio.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libmllr"=..\libs\libmllr\libmllr.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libmodinv"=..\libs\libmodinv\libmodinv.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "librpcc"=..\libs\librpcc\librpcc.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libs2io"=..\libs\libs2io\libs2io.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
 }}}
 
 ###############################################################################
@@ -1156,102 +1216,6 @@ Package=<4>
 ###############################################################################
 
 Project: "wave2feat"=.\wave2feat\wave2feat.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libcep_feat"=..\libs\libcep_feat\libcep_feat.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libclust"=..\libs\libclust\libclust.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libcommon"=..\libs\libcommon\libcommon.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libio"=..\libs\libio\libio.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libmllr"=..\libs\libmllr\libmllr.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libmodinv"=..\libs\libmodinv\libmodinv.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "librpcc"=..\libs\librpcc\librpcc.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libs2io"=..\libs\libs2io\libs2io.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

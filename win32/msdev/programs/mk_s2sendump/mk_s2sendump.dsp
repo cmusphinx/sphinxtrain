@@ -93,10 +93,6 @@ SOURCE=..\..\..\..\src\programs\mk_s2sendump\feat.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\mk_s2sendump\io.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\..\src\programs\mk_s2sendump\logs3.c
 # End Source File
 # Begin Source File

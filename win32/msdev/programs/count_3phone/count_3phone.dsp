@@ -89,10 +89,6 @@ SOURCE=..\..\..\..\src\programs\count_3phone\main.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\count_3phone\phone.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\..\src\programs\count_3phone\phone_word_io.c
 # End Source File
 # Begin Source File
