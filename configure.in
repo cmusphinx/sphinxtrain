@@ -35,4 +35,4 @@ EOF
 	exit 1
 fi
 
-AC_OUTPUT(config/config config/system.mak)
+AC_OUTPUT([config/config config/system.mak scripts_pl/sphinxDocGen.sh])
