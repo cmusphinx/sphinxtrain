@@ -1,0 +1,625 @@
+First Created at 20040529 by Arthur Chan
+
+Some Notes on Tracing the code. 
+Please also read Rita's notes on 
+
+Just One word before you go on reading. Source code is still your best
+friend in the world.  Everything else can still be wrong.
+-By Arthur
+
+Part I : CHMM Training
+
+Chapter I: printp.
+
+printp is the most basic tool one will use to visualize the models and
+related data files.  Understand it will give us much better
+understanding in the data structure used in SphinxTrain. 
+
+main.c
+main 
+-> initialize (in the same file)
+   -> parse_cmd_ln
+-> print
+   -> model_def_read
+   -> print_mixw 
+	-> s3mixw_read 
+	    :Read a three dimensional data structure (n_mixw x n_feat x n_density)
+	-> s3mixw_intv_read
+	    :Same as s3_mixw but in an integer value. 
+   -> print_tmat
+	-> s3tmat_read
+	    :Read a three dimenstional data structure (n_tmatx tmp x n_state)
+   -> print_gau
+	-> s3gau_read 
+	    :Read multi-streams means or variances (different from s3.4)
+   -> print_gau_cnt
+	-> s3gau_read (What is Gaussian count?)
+	    :Read multi-streams means or variances (different from s3.4)
+   -> print_regmat_cnt
+	-> s3regmatcnt_read  (Count?)
+	    :Read left hand and right hand side regression matrix. 
+   -> print_lambda 
+	-> s3lamb_read (What is lambda?)
+	    :Read lambda
+
+Chapter II : wave2feat
+wave2feat is a useful tool to convert a wave file to feature files. It
+is recommend that it should be used with tools such as sox if
+wave2feat doesn't support certain configuration.
+
+new_fe_wrapper.c 
+-> main
+   -> fe_parse_options (in the same file)
+	-> fe_init_params
+   -> fe_convert_files
+	-> fe_initi
+	-> fe_build_filenames
+	-> fe_open_files
+	-> fe_readblock_spch
+	-> fe_process_utt (See dictionary for details)
+	-> fe_writeblock_feat
+
+How different is wave2feat's frontend and Sphinx3.4's frontend?
+
+
+
+Dictionary of functions
+fe_create_hamming
+Computer a windows with shape:
+    in[i] = 0.54 - 0.46*cos(2*M_PI*i/(in_len-1.0);
+
+fe_build_melfilters
+Compute the mel filter banks. 
+
+fe_compute_melcosine
+Pre-compute the mel cosine. 
+
+fe_process_utt
+if (number of samples + overflow samples > frame_size){
+   -Go on for the processing. 
+   if( there is overflow sample from previous reading){
+	Allocate memory
+   }
+
+   -Compute the number of frames. 
+   This is the trick:
+      for (frame_start=0; frame_start+FE->FRAME_SIZE <= nsamps; frame_start += FE->FRAME_SHIFT)
+
+   -Pre-emphasis on the whole length of wavefiles. 
+    out[0] = in[0]- alpha * factor;
+    out[i] = in[i] - factor* in[i-1];
+
+   -Frame-based processing
+	-> fe_hamming_window
+	    Just multiplied front-end by the hamming windows. 
+	-> fe_frame_to_fea (only support MEL_scale)
+	    -> fe_spec_magnitude
+		depends on whether the data length is longer or shorter than the fft, do aliasing or zero padding. 	
+		->fe_fft (our implementation of front-end)
+	    -> fe_mel_spec
+		compute the bins, notice that the size of vector would equal to the number of filter banks at this point
+		->sum of all filter_coeffs * spec
+	    -> fe_mel_cep
+		compute the mel cepstrum
+		1, take log	
+		2, DCT
+		Magic , beta =0.5 at j=1 , beta=1 at others (property of DCT?)
+}	    
+
+
+Important data structure
+
+param_t
+melfb_t
+de_t
+
+Chapter III : Baum-Welch training -> bw
+bw is the implementation of the core Baum Welch algorithm
+main.c 
+-> main
+   -> prefetch_init 
+	(For pipe input.)
+	: - Try to start a pipe
+	: - fork a new process
+	: - use fdopen to return a file descriptor -> a pretty common way of pipe programming. 
+   -> main_initialize (initialize the inventory.)
+	-> train_cmd_ln_parse (Standard stuff, From the command-line argument, we can actually computer the MLLR and Speaker transformation for SAT)
+	-> feat_set (Set the feature type)
+	-> model_inv_set_n_feat (Set numbe feature in the model_inventory)
+	-> model_def_read (inside model_def_io) (Very similar to s3.4 model_def_read)
+	-> semi_ts2cv/cont_ts2cb/s3ts2cb_read
+	-> mod_inv_read_mixw
+	-> mod_inv_read_tmat
+	-> mod_inv_read_gauden
+	-> gauden_eval_precomp (Do precomputation of Gaussian distribution)
+	-> s3cb2mllr_read 
+	-> mod_inv_alloc_mix_acc
+	-> mod_inv_alloc_tmat_acc
+	-> mod_inv_alloc_gauden_acc
+	-> lexicon_read (We may need to change it for multiple pronunciations. 
+	-> corpus_set_mfcc_dir (Another set of data structure)
+	-> corpus_set_mfcc_ext 
+	-> corpus_set_sildel_filename  (?)
+	-> mod_inv_restor_acc 
+	-> corpus_ckpt_set_interval
+	-> corpus_set_partition
+	-> corpus_set_interval
+	-> read_reg_mat (A routine to read-in speaker transformation in training)
+	-> invert (a matrix inversion routine.)
+   -> main_reestimate (see dictionary)
+	
+
+Important data structure:
+model_inventory_t
+
+Dictionary of functions
+main_reestimate: (Pseudo-code)
+Foreach utterance {
+  -get the beginning of the corpus
+  -set-up timeer
+  -Get MFCC , it could be the stand 13 dimenions feature vector or it could be arbitrary length. 
+  -set del and ins segments. (corpus_get_sildel)
+  - compute feature by  feat_compute
+  -get transcription (get the transcription)
+  if(! Viterbi update) i.e Baum Welch {
+     next_utt_states (create a sentence HMM by the transcription){
+	-Make word list	(mk_wordlist in libs/libcommon/mk_word_list.c)
+	-Make phone list and also build btw_word marks.  (mk_phone_list in libs/libcommon/mk_phone_list.c)
+        -Convert 2 triphone (cvs2triphone, see its entry in the dictionary, Pretty magical. FSM hacks.)
+     }	
+     corpus_get_sent (Potentially able to get new utterances from stdin?)
+     baum_welch_update  -> see dictionary
+  }else{
+  }
+}
+
+baum_welch_update: 
+There are three major steps for this routine:
+forward search (foward())
+backward search (backward()
+global accumulation (accum_global )
+
+The key thing if you want to play with this program is that bw only do
+accumulation of gamma but it didn't do the actualy parameter
+estimation.  This is actually done by the program norm. (See Chapter 4)
+
+Forward search's key algorithm (old code)
+-> First it does the computation for the first state (state 0). This will allow computation
+of the likelihood value and decide whether the initial state is too small at t =0. 
+-> Second, for each frame from t=1 to t=n-1
+   1, Compute the Gaussian distribution for all emitting states. 
+   2, Do scaling
+   3, All the emitting state is first updated from frame t-1 to frame t
+   4, Then update all non-emitting state at frame t
+
+
+(Pseudo-code) -Do forward search{
+   -gauden_computer_log(Compute the log likelihood of the Gaussian distribution){
+	Depends on n_top (specified in command prompt) and n_density
+	Either computer the full density (log_full_densities)
+	   -> log_diag_eval
+	or top n-density (log_topn_densities)
+   }
+   -gauden_scale_densities_fwd (Scale the density distribution with the max)
+   -gauden_mixture (compute the mixture density)
+   -(Compute the scaled alpha from time =1 to time n_obs-1)
+   from time = 1 to time = n_obs -1{
+      for all state st, which are active {
+	 Get all the active state j in the list of st{
+	 if(amap[j] is inactive){
+	    -Compute the gaussian distributions
+   	 }
+	}
+      }
+      -Important! gauden_scale_densities_fwd(scale the gaussian distribution)
+      for all state st which is emitting, which are active{
+	Compute the mixture distribution 
+      }
+      for all state st which is non-emitting, which are active{
+	Compute the mixture distribution 
+      }
+      Compute the scaled alpha
+   }
+}
+
+-Do Backward search (backward_update, Notice the sufficient statistics
+and computed at this function too.){
+   -gauden_alloc_l_acc (Allocate allocators for mean, variance, mllr)
+   -various initialization
+   -do initialization of the last frame. (remember, it is scaled by max alpha)
+   for time = n_obs-2 to time =1{
+	-compute the likelihood of all emitting state
+	-scale the likelihood
+	-computer the gaussian mixture 
+	(The following is the point which really do the updating
+	for every active state{
+	    (Basically computing Sum of gamma * O(j))
+	    for all of it prior state{
+		-compute p_reest_term
+		= alpha * transition_prob * bea * alpha (T)
+		-compute "gamma x O(j)"
+		post_j = p_reest_term * op; (NOTE!, post_j and p_reest_term are usually the two terms requires for many update rules)
+		-check if post_j is smaller than zero, stop if it is. 
+		-check if post_j is larger than 1, stop if it is. 
+		-if post_j is larger than sphthrhld ( basically the posterior count threshold){
+		   sum_reest_post_j  += post_j
+		   (This two are related to the multiple streams)
+		   compute the feature without a particular feature stream partial_op(?)
+		   compute the probability of each (topn) densitty  den_terms (?)
+		   compute the ci densities if necessary
+		   if(estimate mixture weight){
+			accumulate weight for weighting term
+		   }
+		   if(mean , variance, mllr update){
+		        accumulate weight for density update
+		   }
+		}
+		compute the next beta term. 
+   	    }
+	}
+	for every state {
+	    do alpha/beta consistency check.
+	}
+	for all non-emitting state{	
+	    accumation (mainly for transition probability)
+	}
+	if(estimating mean and variance)
+	    accumulate for gauden accum_gauden{
+		Basically implement the formula (Remember spkr_xfrm is applied at this point.)
+	    }
+	}
+	if(estimating mllr){
+	    accumulate stuff for the regression matrix. 
+	}
+   } 
+   Finally consistency checking. 
+}
+
+Global accumulation {
+	do global accumulation. 
+}
+
+-Dump the data to a files (Notice that bw only accumulate data, it doesn't do anything 
+to computer mean and stuffs like that.)
+
+Notes:
+1, bw only accumulate data, actual computation can only be found in the program norm. 
+   (So any numeric algorithm should be done at that point.)
+2, Computation of Gaussian distribution at state 0 and frame 0 allows
+checking of the beginning very easy.
+3, During the process of doing forward search, the scales of alpha
+across all time will be computed and these scaled value will be used
+to scale the betas. The reason why people do this can be found in standard
+text book of speech recognition. (Rabiner or XD) 
+
+
+
+cvs2triphone : (Pseudo-code)
+if(Number of multi in an acoustic model set is 0)
+do nothing
+
+For each word{
+   Foreach phone{
+	Get the word position
+	-> computer
+   }
+}
+
+
+Copied from the function description
+/*********************************************************************
+ *
+ * Function: cvt2triphone
+ * 
+ * Description: 
+ *    This routine takes a context indepent phone sequence and
+ *    converts it into a triphone sequence.  The between word
+ *    marker sequence, given as input, is used to determine the
+ *    word position of the triphone (i.e. begin, end, internal or single
+ *    phone).
+ *
+ *    For each context independent phone in the input sequence
+ *    there is a between word marker.  It is a boolean value
+ *    which is true when there is a word boundary after the
+ *    associated phone.  For instance, if the word BAT is
+ *    used in the original word string the corresponding
+ *    phone string and associated between word marker
+ *    sequence are:
+ *
+ *    phone:	...	B	AA	T	...
+ *    marker:	...	FALSE	FALSE	TRUE	...
+ * 
+ * Function Inputs: 
+ *    acmod_set_t *acmod_set -
+ *	This is the data structure which allows the acmod_set
+ *	module to return triphone id's
+ * 
+ *    acmod_id_t *phone -
+ *	This is the sequence of context independent acoustic
+ *	models corresponding to some word string.
+ *
+ *    char *btw_mark -
+ * 	The between word markers for this CI model sequence.
+ *
+ *    uint32 n_phone -
+ *	The number of CI models in the sequence.
+ * 
+ * Global Inputs: 
+ *    None
+ *
+ * Return Values: 
+ *    None (this probably needs to be changed)
+ *
+ * Global Outputs: 
+ *    None
+ * 
+ *********************************************************************/
+
+next_utt_state :
+This is the function which create the sentence HMM, lets see how it works. 
+
+next_utt_states
+  -> mk_wordlist (This changes number of words based on *str)
+	It will first call n_words to count the number of words. 
+	When it does creating the words, it only use space and \t as a delimiter
+  -> mk_phonelist
+	It look up the lexicon using lexicion_lookup and mark the word boundary. (Note, this will affect how cvr2tri works.)
+	(Also note that this is just for flat lexicon.)
+  -> cvt2triphone (see dtionary entries)
+  -> state_seq_make
+	What it does?
+	1, Computer total # of phones and put to n_s
+	2, Do reallocation and those craps
+	3, Do count_next_prior_states (Well, it just count the number
+	of states which are the children (next) of the the node and p
+	parent (prior) of the node. The tricky part is that, it used
+	relative addressing. So, the n-th children of r-th state is 
+	can be found in ((Sum of all r-1 previous state) + n). Same as
+	the parent states. 
+	4, Do allocation for the next state and the next probability. 
+	5, Do set_next_prior_states (Another simple function, it just put
+	everything like transition probability into the data structure.)
+	6, Define the model states of the sentence HMM
+	7, Check for consistency of transition probability. (It does show that previous programmar is cool.)
+	8, Get the mixw_inverse. 
+
+20040607: So if I want to add optional silence, what should I do?
+This is relatively easy.  Get the state sequence. 
+-In mk_phonelist, do some tricks on the word boundary marker such that cvt2triphone will be bypassed. 
+-When doing 3, count_next_prior_state, 4, set_next_prior_states, 5, define the model state sequence
+-Make sure there is a wire from the silence begin to silence end. 
+
+So if I want to add multiple pronounciations, what should I do?
+Hmm. This is more tricky. 
+We need to figure out the following problems:
+1, How can we have multiple entries lexicon?
+	idea1, 
+	a, store a map for lexicon to pron idx entries, 
+	b, everytime, when getting the n entry, also get the n+1 entry. cmomputer the difference, 
+	if it is 1, do standard stuff. 
+	if it is more than 1, do something funny. 
+2, How can we count the number of state and number of phones correctly?
+	-Use idea1 of 1. 
+3, How do we count_next_prior state correctly?
+	-You may need to change the conditions of count_next_prior_states
+4, How do we set_next_prior state correctly?
+	-You may need to change the conditions of set_next_prior_states
+5, How do we define the models correctly?
+	-You may need to change the conditions in the case when j=0 and j =ms-2.
+
+viterbi_update:
+The Viterbi training routine. 
+Usage of goto is classical.
+
+	
+
+Chapter IV: norm
+
+norm is the program that collect the statistics and previous models
+and the actual program which updates the parameters. For means and
+variances, basically the accumulation of the statistics will already
+give you a right answer.  Similar for mixw and transition matrix.  For
+regression matrix, in a nut shell, we need to solve a set of nxn
+(nx(n+1) if you have biased) simultanenous equations.  LU
+decomposition is now used to do this. (can be found in a medium-level
+text book in linear algebra or matrix theory.)
+
+Notice using option -dcountfn, one could get the occupancy count at every iteration. 
+
+Note: 
+main.c 
+-> main
+   ->initialize
+	(Remember Baum-Welch is an iterative algorithm so the the models of last iteration is an input of this program.)
+	-> parse_cmd_ln (standard stuffs)
+   ->normalize
+	-> rdacc_mixw
+	    -> Read in the mixw and accumulate the mixw accumulators.
+	-> rdacc_tmat
+	    -> Read in the transition matrix and accumulate the tmat accumulators. 
+	-> regmat_read
+	    -> Read in regression matrix count, s3regmatcnt_read
+	-> s3gau_read (x2)
+	    -> Read in the mean and variances
+	-> rdacc_den
+	-> s3mix_read  (read the mix count)
+	-> s3mixw_write (write the mix weight count)
+	-> s3gaucnt_write (write the gaussian density count)
+	-> s3tmat_write (write the transition matrix)
+	-> s3regmatcnt_write
+	-> gauden_norm_wt_mean (Actually computing the mean)
+	-> gauden_norm_wt_var (Actually computing the variance)
+	-> compute_mllr (Compute the MLLR matrix, look at the dictionary)
+	-> store_reg_mat (Store regression matrix)
+	-> s3tmat_write
+	-> s3gau_write
+	-> s3gaudnom_write
+	-> s3gau_write
+	
+Dictionary :
+computer_mllr (need more further detail)
+
+Chapter V: buildtree
+NOTE: buildtree is the algorithm which does the decision tree-based
+clustering. 
+2, Quite complicated and it use multi-dimensional arrays.  I may need to 
+re-visit the code again. 
+
+main.c 
+-> main
+    -> init (see dictionary)
+    -> mk_tree_comp (see dictionary, also look at dtree.c)
+    -> print_final_tree (a recursive printing functions
+	-> print_comp_quest (in libs/libcommon/quest.c)
+	-> print_finaL_tree_recur
+
+Dictionary:
+init (pseudo code)
+-read in the model definition file (mdef)
+-Scan for the first phone and the last phone
+-If read till the end of the list, then the last phone in the list
+is the last target phone. 
+-s3mixw_intv_read (read mixture weight as in integer)
+-check state counts
+-a 4-D array is build (model x state x feat x n_density)
+-re-index mixture weight b y model and topological state position
+-computer the entropy
+-read int the gaussian distribution and mixture weights
+-determine the number of phone question and word-boundary (depends on the
+format of question _L say it is for left-constest only, right is for
+right-context
+-generat all questions into the quesrt_t data structure.
+
+mk_tree_comp(pseudo code)
+-> Merge all data together and create a single Gaussian distribution
+   by mk_node
+-> mk_tree_comp (another
+    -> mk_node
+    -> mk_comp_quest
+	->mk_tree
+	   -> mk_node
+	   -> set_best_quest (The function wrapper of question evaluation)
+		-> eval_quest (Asking one question)
+	->print_tree
+	->tree2quest (?)
+	   -> mk_disj
+    -> split_node_comp (Ask composite question)
+	-> eval_comp_quest 
+	-> print_comp_quest
+	-> mk_node
+	-> mk_comp_quest
+	-> mk_node
+	-> mk_comp_quest
+
+Chapter VI: prunetree
+Note : there are magic in the data structure and recursive calls. Need to reread 
+it again. 
+main
+-> init
+-> prunetree
+   -> read_final_tree
+   -> prune_lowcnt
+   -> ins_twigs (insert twig of the tree to th heap)
+   -> heap32b_extr_top
+   -> prune_subtrees (recursive calls of sub-tree pruning)
+   -> heap32b_ins
+
+Chapter VII: tiestate
+Note : programs to tie state according the decision tree
+The major function is tie_state.  It use the base-phone tree to decide 
+which state the phone should be.
+
+Chapter VIII: makequest
+Optionally, one can use makequest to generate question based on the CI models. 
+(Need to read Rita's paper before moving on.)
+
+Chapter IX : make_mdef_gen
+
+Chapter X : inc_comp
+This program splitted N gaussians of distribution in a given GMM (N is controlled by -ninc)
+based on the occupancy count and the mix prior. 
+
+main
+-> main.c
+    -> s3mixw_read (read mixw)
+    -> s3gau_read  (read gau)
+    -> s3gau_read  (read gau)
+    -> s3gaudnom_read (read gau dnom)
+    -> inc_densities (the guts, the part which did splitting of mixture.)
+    -> s3mixw_write
+    -> s3gau_write
+
+Chapter XI: mk_flat
+Very simple, copy the proto transition matrix to all transition matrix. 
+
+Chapter XII: init_gau
+
+Chapter XIII: init_mixw
+
+Part 2 : s2 trainings
+
+Chapter XIV : agg_seg
+Chapter XV : kmeans_init
+
+Part 3 : Other Tools
+Chapter : cp_parm
+Note : Pretty trivial, just copy data from one thing to the others.  
+
+Chapter : param_cnt
+Note : This program reads in the model definition file, dictioary file and seg dir files
+to count the number of states, codebook 'cb' or phone. 
+
+main.c 
+-> main
+   -> initialize
+	-> read in parameters, pretty standard. 
+   -> param_cnt
+	-> enum_corpus (the function which do the counting)
+
+Chapter : mk_s3gau
+Note : Trivial,  this is a tool that reads in a S2 models and output it in s3 formats. 
+
+Chapter : mk_s3mixw
+
+Chapter : mk_s3tmat
+Note : Trivial, very similar to mk_s3gau
+
+Chapter : mk_s2cb
+Note : Trivial
+
+Chapter : mk_s2phone 
+Note : Make Sphinx 2 phone file
+
+Chapter : mk_s2sendump
+Note : make sendump file for s2 to s3 conversion
+
+Chapter : mk_s2phonemap
+
+Chapter : mk_s2seno
+
+Chapter : mixw_interp
+Note : read two mixture weight files and interpolate them using a log function
+
+Chapter : mk_mllr_class
+
+Chapter : dict2tri
+
+Chapter : count_3phone
+
+Completed Tools:
+printp
+wave2feat
+bw
+norm
+cp_parm
+param_cnt
+inc_comp
+bld_tree
+prunetree
+tiedstates
+mk_s3gau
+mk_s3tmat
+mk_s2cb
+mk_s2phone
+mk_s2phonemap
+mk_s2seno
