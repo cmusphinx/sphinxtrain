@@ -1,4 +1,4 @@
-# ====================================================================
+# ====================================================-*-mode:Makefile-*-
 # Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,6 @@
 
 PROJECT_NAME = Sphinx acoustic training scripts
 PROJECT_PREFIX = SphinxTrain
-PROJECT_VERSION = 0.6
+PROJECT_VERSION = 0.7
 PROJECT_DATE = Dec 2000
 PROJECT_STATE = current

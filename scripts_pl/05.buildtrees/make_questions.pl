@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton 
 ##
 
 
@@ -80,8 +80,9 @@ my $logfile = "$logdir/${CFG_EXPTNAME}.make_questions.log";
 #$MAKE_QUEST = "~rsingh/09..sphinx3code/trainer/bin.alpha/make_quests";
 my $MAKE_QUEST = "${CFG_BIN_DIR}/make_quests";
 
-&ST_Log ("MODULE: 05 Build Trees\n");
-&ST_Log ("\tMake Questions ");
+$| = 1; # Turn on autoflushing
+&ST_Log ("MODULE: 05a Build Trees\n");
+&ST_Log ("    Make Questions ");
 &ST_HTML_Print ("<A HREF=\"$logfile\">Log File</A>\n");
 
 $|=1;

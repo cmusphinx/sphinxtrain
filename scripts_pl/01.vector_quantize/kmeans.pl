@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton 
 ##
 
 my $index = 0;
@@ -73,6 +73,7 @@ require $cfg_file;
 
 my ($hmmdir,$outhmm,$segdmpdir,$dumpfile,$logfile);
 
+$| = 1; # Turn on autoflushing
 &ST_Log ("\tKMeans ");
 
 # Definitions

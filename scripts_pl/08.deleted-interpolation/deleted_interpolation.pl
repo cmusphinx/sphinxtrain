@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton
 ##
 
 my $index = 0;
@@ -73,7 +73,11 @@ my $cilambda = 0.9;
 # up to 99 buffers
 my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_"."$CFG_N_TIED_STATES";
 #my $buf_dirs = ($base_dir/bwaccumdir/${exptname}_buff_? $base_dir/bwaccumdir/${exptname}_buff_??)
-my @buf_dirs = (<$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_*>);
+#my @buf_dirs = (<$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_*>);
+$bwaccumdir 	     = "";
+for (<${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*>) {
+    $bwaccumdir .= " $_";
+}
 
 my $hmm_dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_"."$CFG_N_TIED_STATES"."_delinterp";
 mkdir ($hmm_dir,0777) unless -d $hmm_dir;
@@ -84,15 +88,24 @@ system("cp $cd_hmmdir/transition_matrices $hmm_dir/transition_matrices");
 my $mixwfn = "$hmm_dir/mixture_weights";
 
 my $moddeffn = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
+
 my $logdir = "$CFG_BASE_DIR/logdir/08.deleted_interpolation";
 mkdir ($logdir,0777) unless -d $logdir;
-my $log = "$logdir/$CFG_EXPTNAME.deletedintrep-${nsenones}.log";
+my $logfile = "$logdir/$CFG_EXPTNAME.deletedintrep-${nsenones}.log";
 
-#date >! $log
-#echo $INTERP >> $log
+$| = 1; # Turn on autoflushing
+&ST_Log ("MODULE: 08 deleted interpolation\n");
+&ST_Log ("    Cleaning up directories: logs...\n");
+system ("rm  -rf $logdir/*");
 
-print "$INTERP -accumdirs @buf_dirs -moddeffn $moddeffn -mixwfn $mixwfn -cilambda $cilambda -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH -maxiter 4000 2>&1 $logfile";
-system ("$INTERP -accumdirs @buf_dirs -moddeffn $moddeffn -mixwfn $mixwfn -cilambda $cilambda -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH -maxiter 4000 2>&1 $logfile");
+open LOG,"> $logfile";
 
+if (open PIPE,"$INTERP -accumdirs $bwaccumdir -moddeffn $moddeffn -mixwfn $mixwfn -cilambda $cilambda -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH -maxiter 4000 2>&1 2>&1 |") {
+    while ($line = <PIPE>) {
+       print LOG $line;
+    }
+    close PIPE;
+    close LOG;
+}
 
-#date >> $log
+exit 0;

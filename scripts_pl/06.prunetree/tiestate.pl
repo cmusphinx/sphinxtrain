@@ -48,6 +48,9 @@
 # This script reads off the leaves of the pruned trees and creates an mdef
 # file
 #**************************************************************************
+#
+# Author: Alan W Black (awb@cs.cmu.edu)
+#
 
 
 my $index = 0;

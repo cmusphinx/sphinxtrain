@@ -48,6 +48,9 @@
 # This script prunes the trees computed earlier to have the desired number
 # of leaves. Each leaf corresponds to one tied state
 #*************************************************************************
+#
+#   Author: Alan W Black (awb@cs.cmu.edu)
+#
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {

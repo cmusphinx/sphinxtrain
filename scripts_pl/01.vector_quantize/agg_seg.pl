@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton 
 ##
 
 
@@ -65,7 +65,8 @@ require $cfg_file;
 
 my ($AGG_SEG,$len,$stride,$segdmpdir,$dumpfile,$logfile);
 
-&ST_Log ("\tAggSeg ");
+$| = 1; # Turn on autoflushing
+&ST_Log ("    AggSeg ");
 
 $AGG_SEG  = "$CFG_BIN_DIR/agg_seg";
 

@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton 
 ##
 
 my $index = 0;
@@ -62,35 +62,35 @@ if (! -s "$cfg_file") {
 }
 require $cfg_file;
 
-#*******************************************************************
-#*******************************************************************
+#*****************************************************************************
+#  Baum-welch is done in several parts. This script gathers the results of
+#  all those parts and then computes the discrete probability distributions
+#  associated with all the states. It also computes the transition matrices.
+#****************************************************************************
 
 die "USAGE: $0 <iter>" if ($#ARGV != $index);
-
 $iter = $ARGV[$index];
 
-# cover up to 100 different buffer directories....
-#$buffer_dirs = ($base_dir/bwaccumdir/${exptname}_buff_? $base_dir/bwaccumdir/${exptname}_buff_??);
-@buffer_dirs = (<$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_*>); # Catches any number of them
+$modelname="${CFG_EXPTNAME}.ci_semi";
+$processpart="02.ci_schmm";
 
-$hmm_dir           = "$CFG_BASE_DIR/model_parameters/${CFG_EXPTNAME}.ci_semi";
-mkdir ($hmm_dir,0777) unless -d $hmm_dir;
+$bwaccumdir 	     = "";
+for (<${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*>) {
+    $bwaccumdir .= " $_";
+}
+$hmmdir 	     = "${CFG_BASE_DIR}/model_parameters/$modelname";
+mkdir ($hmmdir,0777) unless -d $hmmdir;
+$means               = "$hmmdir/means";
+$variances           = "$hmmdir/variances";
+$mixture_weights     = "$hmmdir/mixture_weights";
+$transition_matrices = "$hmmdir/transition_matrices";
 
-#new models to be produced after normalization
-$mixwfn         = "$hmm_dir/mixture_weights";
-$tmatfn         = "$hmm_dir/transition_matrices";
-$meanfn         = "$hmm_dir/means";
-$varfn          = "$hmm_dir/variances";
+$logdir              = "${CFG_LOG_DIR}/$processpart";
+mkdir ($logdir,0777) unless $logdir;
+$logfile 	     = "$logdir/${CFG_EXPTNAME}.${iter}.norm.log";
 
+$NORM  = "$CFG_BIN_DIR/norm";
 
-mkdir ($CFG_CI_LOG_DIR,0777) unless -d $CFG_CI_LOG_DIR;
-$log   = "$CFG_CI_LOG_DIR/${CFG_EXPTNAME}.$iter.norm.log";
+system ("$NORM -accumdir $bwaccumdir -mixwfn $mixture_weights  -tmatfn $transition_matrices -meanfn $means -varfn $variances -feat ${CFG_FEATURE} -ceplen 	${CFG_VECTOR_LENGTH} 2> $logfile");
 
-#set mach = `~rsingh/51..tools/machine_type.csh`
-#set NORM   = ~rsingh/09..sphinx3code/trainer/bin.$mach/norm
-$NORM   = "$CFG_BIN_DIR/norm";
-
-system ("$NORM -accumdir @buffer_dirs -mixwfn $mixwfn -tmatfn $tmatfn -meanfn $meanfn -varfn $varfn -feat $CFG_FEATURE -ceplen  $CFG_VECTOR_LENGTH  2> $log");
-`date >> $log`;
-
-exit 0
+exit 0;

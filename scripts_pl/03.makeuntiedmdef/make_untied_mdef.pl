@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Alan W Black (awb@cs.cmu.edu)
 ##
 ##
 
@@ -83,6 +83,7 @@ $logdir = "$CFG_LOG_DIR/03.makeuntiedmdef";
 mkdir ($logdir,0777) unless -d $logdir;
 $logfile = "$logdir/${CFG_EXPTNAME}.make_alltriphonelist.log";
 
+$| = 1; # Turn on autoflushing
 &ST_Log ("MODULE: 03 Make Untied mdef\n");
 
 $untiedmdef = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";

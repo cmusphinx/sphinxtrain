@@ -47,6 +47,9 @@
 #*************************************************************************
 # This script runs the prunetree and tiestate scripts 
 #*************************************************************************
+#
+#  Author: Alan W Black (awb@cs.cmu.edu)
+#
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
@@ -66,8 +69,20 @@ my $scriptdir = "scripts_pl/06.prunetree";
 
 my $logdir = "$CFG_LOG_DIR/06.prunetree";
 mkdir ($logdir,0777) unless -d $logdir;
-my $logfile = "$logdir/$CGF_EXPTNAME.prunetree.$n_tied_states.log";
+
+$| = 1; # Turn on autoflushing
+&ST_Log ("MODULE: 06 Prune Trees)\n");
+&ST_Log ("    Cleaning up old log files...\n");
 system ("/bin/rm -f $logdir/*");
+
+# Build all triphone model
+my $logfile = "$logdir/$CFG_EXPTNAME.build.alltriphones.mdef.log";
+$MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
+$modarchdir          = "$CFG_BASE_DIR/model_architecture";
+$ALLTRIPHONESMDDEF = "$modarchdir/$CFG_EXPTNAME.alltriphones.mdef";
+$phonefile           = "$modarchdir/$CFG_EXPTNAME.phonelist";
+
+system ("$MAKE_MDEF -phnlstfn $phonefile -oalltphnmdef $ALLTRIPHONESMDDEF -dictfn $CFG_DICTIONARY -fdictfn $CFG_FILLERDICT -n_state_pm $CFG_STATESPERHMM 2>$logfile");
 
 system("$scriptdir/prunetree.pl -cfg $cfg_file $CFG_N_TIED_STATES");
 system("$scriptdir/tiestate.pl -cfg $cfg_file $CFG_N_TIED_STATES");

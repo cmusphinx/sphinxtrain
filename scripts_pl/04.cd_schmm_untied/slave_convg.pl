@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton 
 ##
 
 
@@ -73,10 +73,15 @@ require $cfg_file;
 
 $TESTING = 0;
 my $iter = 1;
-if (($#ARGV == ($index))) {
+if (($#ARGV >= ($index))) {
    $iter= $ARGV[$index];
 }
+my $n_parts = ($CFG_NPART) ? $CFG_NPART : 1;
+if (($#ARGV >= ($index+1))) {
+   $n_part= $ARGV[$index+1];
+}
 
+$| = 1; # Turn on autoflushing
 my $scriptdir = "${CFG_SCRIPT_DIR}/04.cd_schmm_untied";
 my $logdir = "${CFG_LOG_DIR}/04.cd_schmm_untied";
 mkdir ("$logdir",0777) unless -d $logdir;
@@ -86,11 +91,11 @@ mkdir ("$logdir",0777) unless -d $logdir;
 if ($iter == 1) {
    # Clean up junk from earlier runs
    &ST_Log ("MODULE: 04 Training Context Dependent models\n");
-   &ST_Log ("\tCleaning up accumulator directories...");
+   &ST_Log ("    Cleaning up directories: accumulator...");
 
     system ("rm -f $CFG_BWACCUM_DIR/${CFG_EXPTNAME}_buff_?/* ${CFG_BWACCUM_DIR}/${CFG_EXPTNAME}_buff_??/*");
 
-    &ST_Log ("log directories...");
+    &ST_Log ("logs...");
     system ("rm -rf $logdir") unless $TESTING;
     mkdir ($logdir,0777) unless -d $logdir;
 
@@ -98,16 +103,12 @@ if ($iter == 1) {
     # For the first iteration Flat initialize models.
     # To start off queue trap job id
     &Initialize () unless $TESTING;
-} else {
-    &ST_Log ("\n");
 }
 
-
-my $n_parts = ($CFG_NPART) ? $CFG_NPART : 1;
-$part = 1;
-
-system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $part $n_parts");
-system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $iter");
+for ($i=1; $i<=$n_parts; $i++){
+   system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts");
+}
+system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $iter $n_parts");
 
 exit 0;
 
@@ -121,12 +122,9 @@ sub Initialize ()
     mkdir ($logdir,0777) unless -d $logdir;
     my $logfile = "$logdir/${CFG_EXPTNAME}.copycitocd.log";
 
-    &ST_Log ("\tInitalization <A HREF=\"$logfile\">Log File</A>\n");
+    &ST_Log ("    Initalization Copy CI to CD\n");
 
 
-    #set mach = `~/51..tools/machine_type.csh`
-    #set COPY_CI_TO_CD = /net/alf19/usr2/eht/s3/bin.$mach/init_mixw
-    #set COPY_CI_TO_CD = ~/09..sphinx3code/trainer/bin.$mach/init_mixw
     my $COPY_CI_TO_CD = "${CFG_BIN_DIR}/init_mixw";
 
     open LOG,"> $logfile";

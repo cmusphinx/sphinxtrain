@@ -153,11 +153,8 @@ int main (int argc, char **argv)
     if (cimdeffn) 
 	make_mdef_from_list(cimdeffn,CIlist,cilistsize,NULL,0,argv[0]);
 
-    if (untiedmdeffn || countfn) 
+    if (!tph_list_given) {
 	read_dict(dictfn, fillerdictfn, &dicthash);
-    else if (!alltphnmdeffn) return 0; /* Nothing to be done */
-
-    if (!tph_list_given){
 	if (CDhash) freehash(CDhash);
 	make_dict_triphone_list (dicthash, &CDhash);
     }

@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton
 ##
 
 my $index = 0;
@@ -71,12 +71,23 @@ require $cfg_file;
 #***************************************************************************
 
 my $iter = 1;
-if (($#ARGV == ($index))) {
+if (($#ARGV >= ($index))) {
    $iter= $ARGV[$index];
 }
 
+my $n_parts = ($CFG_NPART) ? $CFG_NPART : 1;
+# as the next stage )deleted interpolation) requires at least 2 parts 
+# we set the default number of parts to be 2
+if ($n_parts < 2) {
+    $n_parts = 2;
+}
+if (($#ARGV >= ($index+1))) {
+   $n_part= $ARGV[$index+1];
+}
+
+$| = 1; # Turn on autoflushing
 my $scriptdir = "$CFG_SCRIPT_DIR/07.cd-schmm";
-my $logdir = "$CFG_LOG_DIR/07.cd_schmm";
+my $logdir = "$CFG_LOG_DIR/07.cd-schmm";
 mkdir ($logdir,0777) unless -d $logdir;
 
 my $bwaccumdir = "$CFG_BASE_DIR/bwaccumdir";
@@ -89,23 +100,23 @@ mkdir ($modeldir,0777) unless -d $modeldir;
 if ($iter == 1) {
     
     &ST_Log ("MODULE: 07 Training Context dependent models\n");
-    &ST_Log ("\tCleaning up accumulator directories...");
+    &ST_Log ("    Cleaning up directories: accumulator...");
     system ("rm  -rf $bwaccumdir/${CFG_EXPTNAME}_buff_*");
+    &ST_Log ("logs...\n");
+    system ("rm  -rf $logdir/*");
     &copyci2cd2initialize();
 }
 
-
-my $n_parts = ($CFG_NPART) ? $CFG_NPART : 1;
-$part = 1;
-
-system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $part $n_parts");
-system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $iter");
+for ($i=1; $i<=$n_parts; $i++){
+   system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts");
+}
+system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $iter $n_parts");
 
 exit 0;
 
 sub copyci2cd2initialize ()
 {
-    &ST_Log ("\nCopy CI 2 CD 2 initialize\n");
+    &ST_Log ("    Copy CI to CD initialize\n");
     
     #**************************************************************************
     # this script copies the mixw/mean/var/tmat from a ci (continuous) HMM
@@ -132,7 +143,7 @@ sub copyci2cd2initialize ()
     my $dest_varfn = "$cd_hmmdir/variances";
     my $dest_tmatfn = "$cd_hmmdir/transition_matrices";
 
-    my $logdir = "$CFG_BASE_DIR/logdir/07.cd_schmm";
+    my $logdir = "$CFG_BASE_DIR/logdir/07.cd-schmm";
     mkdir ($logdir,0777) unless -d $logdir;
     my $logfile = "$logdir/$CFG_EXPTNAME.copy.ci.2.cd.log";
 

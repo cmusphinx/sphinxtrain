@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton 
 ##
 
 
@@ -73,6 +73,7 @@ require $cfg_file;
 #Clean up from previous runs
 system "rm -rf $CFG_VQ_LOG_DIR/*" if -d "$CFG_VQ_LOG_DIR";
 
+$| = 1; # Turn on autoflushing
 # No error checking
 &ST_Log ("MODULE: 01 Vector Quantization\n");
 

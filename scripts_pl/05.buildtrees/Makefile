@@ -47,7 +47,7 @@
 # ====================================================================
 TOP=../..
 DIRNAME=scripts_pl/05.buildtrees
-BUILD_DIRS = hold
+BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
 FILES = Makefile make_questions.pl slave.treebuilder.pl
 

@@ -47,7 +47,7 @@
 # ====================================================================
 TOP=../..
 DIRNAME=scripts_pl/00.verify
-BUILD_DIRS = hold
+BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
 FILES = Makefile verify_all.pl
 

@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton 
 ##
 
 my $index = 0;
@@ -69,29 +69,28 @@ require $cfg_file;
 #****************************************************************************
 
 die "USAGE: $0 <iter>" if ($#ARGV != $index);
-$iter   		= $ARGV[$index];
+$iter = $ARGV[$index];
 
+$modelname="${CFG_EXPTNAME}.cd_semi_untied";
+$processpart="04.cd_schmm_untied";
 
-#$bwaccumdir 	     = ( $base_dir/bwaccumdir/${exptname}_buff_? $base_dir/bwaccumdir/${exptname}_buff_?? );
 $bwaccumdir 	     = "";
-for (<$base_dir/bwaccumdir/${CFG_EXPTNAME}_buff_*>) {
+for (<${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*>) {
     $bwaccumdir .= " $_";
 }
-$bwaccumdir          = "$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_1";
-$hmmdir 	     = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_semi_untied";
+$hmmdir 	     = "${CFG_BASE_DIR}/model_parameters/$modelname";
+mkdir ($hmmdir,0777) unless -d $hmmdir;
 $means               = "$hmmdir/means";
 $variances           = "$hmmdir/variances";
 $mixture_weights     = "$hmmdir/mixture_weights";
 $transition_matrices = "$hmmdir/transition_matrices";
 
-$logdir              = "${CFG_LOG_DIR}/04.cd_schmm_untied";
+$logdir              = "${CFG_LOG_DIR}/$processpart";
 mkdir ($logdir,0777) unless $logdir;
 $logfile 	     = "$logdir/${CFG_EXPTNAME}.${iter}.norm.log";
 
-#set mach = `~/51..tools/machine_type.csh`
-#set NORM  = ~/09..sphinx3code/trainer/bin.$mach/norm
 $NORM  = "$CFG_BIN_DIR/norm";
 
 system ("$NORM -accumdir $bwaccumdir -mixwfn $mixture_weights  -tmatfn $transition_matrices -meanfn $means -varfn $variances -feat ${CFG_FEATURE} -ceplen 	${CFG_VECTOR_LENGTH} 2> $logfile");
 
-exit 0
+exit 0;

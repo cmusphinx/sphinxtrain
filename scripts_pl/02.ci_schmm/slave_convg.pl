@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton
 ##
 
 
@@ -72,8 +72,12 @@ require $cfg_file;
 #***************************************************************************
 
 my $iter = 1;
-if (($#ARGV == ($index))) {
+if (($#ARGV >= ($index))) {
    $iter= $ARGV[$index];
+}
+my $n_parts = ($CFG_NPART) ? $CFG_NPART : 1;
+if (($#ARGV >= ($index+1))) {
+   $n_part= $ARGV[$index+1];
 }
 
 my $scriptdir = "$CFG_SCRIPT_DIR/02.ci_schmm";
@@ -83,18 +87,17 @@ mkdir ($bwaccumdir,0777) unless -d $bwaccumdir;
 my $modeldir  = "$CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777) unless -d $modeldir;
 
-
+$| = 1; # Turn on autoflushing
 $logdir = "$CFG_LOG_DIR/02.ci_schmm";
 
 # We have to clean up and run flat initialize if it is the first iteration
 if ($iter == 1) {
     &ST_Log ("MODULE: 02 Training Context Independent models\n");
-    &ST_Log ("\tCleaning up accumulator directories...");
+    &ST_Log ("    Cleaning up directories: accumulator...");
     system ("rm  -rf $bwaccumdir/${CFG_EXPTNAME}_buff_*");
-
-    &ST_Log ("log directories...");
+    &ST_Log ("logs...");
     system ("rm -f $logdir/*");
-    &ST_Log ("model directories..\n");
+    &ST_Log ("models...\n");
     system ("rm -f $modeldir/${CFG_EXPTNAME}.ci_semi/*");
     
     # For the first iteration Flat initialize models.
@@ -102,19 +105,18 @@ if ($iter == 1) {
 
 }
 
-my $n_parts = ($CFG_NPART) ? $CFG_NPART : 1;
-my $part = 1;
-
 # Call baum_welch with iter part and n_part, 
 # once done call norm_and_lauchbw.pl
-system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $part $n_parts");
-system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $iter");
+for ($i=1; $i<=$n_parts; $i++){
+   system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts");
+}
+system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $iter $n_parts");
 
 exit 0;
 
 sub FlatInitialize ()
 {
-    &ST_Log ("\tFlat initialize\n");
+    &ST_Log ("    Flat initialize\n");
     
     #**************************************************************************
     # this script given an mdef file and a  codebook (means/vars in S3 format)

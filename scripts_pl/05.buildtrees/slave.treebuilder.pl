@@ -45,7 +45,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton
 ##
 
 
@@ -67,22 +67,22 @@ require $cfg_file;
 # This script runs the build_tree script for each state of each basephone
 #*************************************************************************
 
-&ST_Log ("\tBuilding Trees\n");
-
 my ($phone,$state);
 my $scriptdir = "{$CFG_SCRIPT_DIR}/05.buildtrees";
 my $logdir = "${CFG_LOG_DIR}/05.buildtrees";
 mkdir ($logdir,0777) unless -d $logdir;
 
-# Clean up 
-print "\tCleaning up old log files...\n";
-system ("rm -f $logdir/*");
+$| = 1; # Turn on autoflushing
+&ST_Log ("MODULE: 05b Build Trees\n");
+&ST_Log ("    Cleaning up old log files...\n");
+system ("rm -f $logdir/${CFG_EXPTNAME}.buildtree.*");
+&ST_Log ("    Tree building\n");
 
 my $mdef_file       = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
 my $mixture_wt_file = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_semi_untied/mixture_weights";
 my $tree_base_dir   = "${CFG_BASE_DIR}/trees";
 my $unprunedtreedir = "$tree_base_dir/${CFG_EXPTNAME}.unpruned";
-mkdir ($tree_base_dir,0777) unless -d "tree_base_dir";
+mkdir ($tree_base_dir,0777) unless -d $tree_base_dir;
 mkdir ($unprunedtreedir,0777) unless -d $unprunedtreedir;
 
 # For every phone submit each possible state
@@ -91,7 +91,7 @@ open INPUT,"${CFG_RAWPHONEFILE}";
 foreach $phone (<INPUT>) {
     chomp $phone;
     if (($phone =~ m/^(\+).*(\+)$/) || ($phone =~ m/^SIL$/)) {
-	&ST_Log ("\t\tSkipping $phone\n");
+	&ST_Log ("        Skipping $phone\n");
 	next;
     }
 

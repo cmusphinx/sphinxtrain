@@ -49,7 +49,7 @@ TOP=../..
 DIRNAME=scripts_pl/04.cd_schmm_untied
 BUILD_DIRS = 
 ALL_DIRS=
-FILES = Makefile baum_welch.pl initialize_with_ci.pl make_tied_untied_mdef.pl \
+FILES = Makefile baum_welch.pl \
         makeuntiedmixw.pl norm.pl norm_and_launchbw.pl slave_convg.pl
 
 ALL = 

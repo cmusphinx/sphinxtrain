@@ -46,7 +46,7 @@
 ## ====================================================================
 ##
 ## Modified: Rita Singh, 27 Nov 2000
-## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: Ricky Houghton 
 ##
 
 my $index = 0;
@@ -66,18 +66,21 @@ require $cfg_file;
 #*******************************************************************
 #*******************************************************************
 
-die "USAGE: $0 <iter>" if ($#ARGV != $index);
+die "USAGE: $0 <iter> <n_parts>" if ($#ARGV != $index+1);
 
 $iter = $ARGV[$index];
+$n_parts = $ARGV[$index+1];
 
-$logdir ="$CFG_LOG_DIR/04.cd_schmm_untied";
+$processname="04.cd_schmm_untied";
+
+$logdir ="$CFG_LOG_DIR/$processname";
 mkdir ($logdir,0777) unless -d $logdir;
 $log = "$logdir/${CFG_EXPTNAME}.$iter.norm.log";
-$scriptdir = "$CFG_SCRIPT_DIR/04.cd_schmm_untied";
+$scriptdir = "$CFG_SCRIPT_DIR/$processname";
 
 # Check the number and list of parts done. Compute avg likelihood per frame
 $num_done = 0; $tot_lkhd = 0; $tot_frms = 0;
-for ($i=1;$i<=$CFG_NPART;$i++){
+for ($i=1;$i<=$n_parts;$i++){
     $done[$i] = 0;
     $input_log = "${logdir}/${CFG_EXPTNAME}.${iter}-${i}.bw.log";
     next if (! -s $input_log);
@@ -96,11 +99,11 @@ for ($i=1;$i<=$CFG_NPART;$i++){
     close LOG;
 }
 
-if ($num_done != $CFG_NPART) {
+if ($num_done != $n_parts) {
     open OUTPUT,">$log";
-    print "Only $num_done parts of $CFG_NPART of Baum Welch were successfully completed\n";
+    print "Only $num_done parts of $n_parts of Baum Welch were successfully completed\n";
     print "Parts ";
-    for ($i=1;$i<=$CFG_NPART;$i++) {
+    for ($i=1;$i<=$n_parts;$i++) {
         print "$i " if ($done[$i] == 0);
     }
     print "failed to run!\n";
@@ -154,8 +157,7 @@ else {
     $absprev = -$absprev if ($prevlkhd < 0);
     $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
-print "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
-system ("$scriptdir/norm.pl $iter");
+system ("$scriptdir/norm.pl $iter ");
 
 system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
 system("echo \"Convergence ratio = $convg_ratio\" >> $log");
@@ -163,13 +165,6 @@ system("echo \"Convergence ratio = $convg_ratio\" >> $log");
 if ($convg_ratio < 0) {
     system("echo \"*WARNING*: NEGATIVE CONVERGENCE RATIO! CHECK YOUR DATA AND TRASNCRIPTS\" >> $log");
     print "*WARNING*: NEGATIVE CONVERGENCE RATIO AT ITER ${iter}! CHECK BW AND NORM LOGFILES\n";
-}
-
-if ($convg_ratio < $CFG_CONVERGENCE_RATIO && $iter < $CFG_MIN_ITERATIONS) {
-    system("echo \"Minimum desired iterations $CFG_MIN_ITERATIONS not yet performed. Continuing BW\" >> $log");
-    print "Minimum desired iterations $CFG_MIN_ITERATIONS not yet performed. Continuing BW after convergence\n";
-    &Launch_BW();
-    exit (0);
 }
 
 if ($convg_ratio > $CFG_CONVERGENCE_RATIO && $iter >= $CFG_MAX_ITERATIONS) {
@@ -180,8 +175,21 @@ if ($convg_ratio > $CFG_CONVERGENCE_RATIO && $iter >= $CFG_MAX_ITERATIONS) {
     exit (0);
 }
 
+if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
+    &Launch_BW();
+    exit (0);
+}
+else {
+    print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+    system("echo \"Likelihoods have converged! Baum Welch training completed\!\" >> $log");
+    system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
+    system("date >> $log");
+    exit (0);
+}
+
 sub Launch_BW () {
     $newiter = $iter + 1;
-    system ("$scriptdir/slave_convg.pl $newiter");
+    print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+    system ("$scriptdir/slave_convg.pl $newiter $n_parts");
 }
 

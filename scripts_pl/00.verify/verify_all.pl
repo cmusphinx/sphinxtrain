@@ -65,6 +65,7 @@ require $cfg_file;
 
 $ret_value = 0;
 
+$| = 1;				# Turn on autoflushing
 &ST_Log ("MODULE: 00 $0\n");
 
 # PHASE 1: Check to see if the phones in the dictionary are listed in the phonelist file
@@ -75,7 +76,7 @@ $ret_value = 0;
     %dict_phone_hash = ();
     %dict_hash = ();
 
-    &ST_Log ("\tPhase 1: DICT - Checking to see if the dict and filler dict agrees with the phonelist file\n");
+    &ST_Log ("    Phase 1: DICT - Checking to see if the dict and filler dict agrees with the phonelist file\n");
     # This is rather ugly, but it's late and I'm just trying to get the pieces together
     # Clean it up later
 
@@ -124,7 +125,7 @@ $ret_value = 0;
     close PHONE;
     
     @keys = keys %dict_phone_hash;
-    &ST_Log ("\t\tFound $counter words using $#keys phones\n");
+    &ST_Log ("        Found $counter words using $#keys phones\n");
     
     $status = 'passed';
     for $key (sort (keys %dict_phone_hash)){
@@ -141,7 +142,7 @@ $ret_value = 0;
     &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> $status </font>\n") if ($status eq 'FAILED');
 #    &ST_Log("\t\t$status\n");
 
-    &ST_Log("\tPhase 2: DICT - Checking to make sure there are not duplicate entries in the dictionary\n");
+    &ST_Log("    Phase 2: DICT - Checking to make sure there are not duplicate entries in the dictionary\n");
     $duplicate_status = 'passed';
     for $key (keys %dict_hash) {
 	if ($dict_hash{$key} > 1) {
@@ -171,7 +172,7 @@ $ret_value = 0;
     # 3.) Check that each utterance specified in the .ctl file has a positive length
     #     Verify that the files listed are available and are not of size 0
 
-    &ST_Log("\tPhase 3: CTL - Check general format; utterance length (must be positive); files exist\n");
+    &ST_Log("    Phase 3: CTL - Check general format; utterance length (must be positive); files exist\n");
     $status = 'passed';
     $estimated_training_data = 0;
     for $ctl_line (@ctl_lines) {
@@ -221,7 +222,7 @@ $ret_value = 0;
 
     
     # 4) Check number of lines in the transcript and in ctl - they should be the same\n";
-    &ST_Log ("\tPhase 4: CTL - Checking number of lines in the transcript should match lines in control file\n");
+    &ST_Log ("    Phase 4: CTL - Checking number of lines in the transcript should match lines in control file\n");
     open TRN,"$CFG_TRANSCRIPTFILE" or die "Can not open Transcript file ($CFG_TRANSCRIPTFILE)";
     $number_transcript_lines = 0;
     while (<TRN>) {
@@ -236,7 +237,7 @@ $ret_value = 0;
 
     # 4a) Should already have estimates on the total training time, 
 
-    &ST_Log ("\tPhase 4a: CTL - Determine amount of training data, see if n_tied_states seems reasonable.\n");
+    &ST_Log ("    Phase 4a: CTL - Determine amount of training data, see if n_tied_states seems reasonable.\n");
     $status = 'passed';
     $total_training_data = 0;
     for $ctl_line (@ctl_lines) {
@@ -283,11 +284,11 @@ $ret_value = 0;
 
 
 {
-    &ST_Log("\tPhase 5: TRANSCRIPT - Checking that all the words in the transcript are in the dictionary\n");
+    &ST_Log("    Phase 5: TRANSCRIPT - Checking that all the words in the transcript are in the dictionary\n");
     open DICT,"$CFG_DICTIONARY" or die "Can not open the dictionary ($CFG_DICTIONARY)";
     @dict = <DICT>;
     close DICT;
-    &ST_Log("\t\tWords in dictionary: $#dict\n");
+    &ST_Log("        Words in dictionary: $#dict\n");
     
     for (@dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
@@ -297,7 +298,7 @@ $ret_value = 0;
     open DICT,"$CFG_FILLERDICT" or die "Can not open filler dict ($CFG_FILLERDICT)\n";
     @fill_dict = <DICT>;
     close DICT;
-    &ST_Log ("\t\tWords in filler dictionary: $#fill_dict\n");
+    &ST_Log ("        Words in filler dictionary: $#fill_dict\n");
     
     for (@fill_dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
