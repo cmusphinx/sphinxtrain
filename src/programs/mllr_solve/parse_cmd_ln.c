@@ -35,6 +35,9 @@
 int
 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
 #include "cmd_ln_defn.h"
 
     cmd_ln_define(defn);
@@ -46,7 +49,24 @@ parse_cmd_ln(int argc, char *argv[])
 
     cmd_ln_parse(argc, argv);
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
 
     return 0;
 }
@@ -56,9 +76,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/07/27  12:09:26  arthchan2003
- * Missing the whole directory of mllr_solve
+ * Revision 1.2  2004/08/07  20:25:46  arthchan2003
+ * Add help and example string for mllr_solve. Fix help and example logic for mllr_solve and mllr_transfrom
  * 
+ * Revision 1.1  2004/07/27 12:09:26  arthchan2003
+ * Missing the whole directory of mllr_solve
+ *
  * Revision 1.8  97/07/16  11:22:39  eht
  * Allow an inmixfn for those mixing weights that were unseen in the accumulators
  * 

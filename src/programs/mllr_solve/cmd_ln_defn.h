@@ -19,7 +19,44 @@
  *********************************************************************/
 
 #ifndef CMD_LN_DEFN_H
+    const char helpstr[] =  
+"Description: \n\
+\n\
+Given a set of mean accumulator, mllr_solve can compute the transform \n\
+matrix based on the maximum likelihood criteria. \n\
+\n\
+The mean vand variance are required to be input in arguements -meanfn and -varfn \n\
+For linear regression equation y=Ax+b, \n\
+If you specific only -mllrmult, then only A will be estimated. \n\
+If you specific only -mllradd, then only b will be estimated. ";
+
+    const char examplestr[] = 
+"Example: \n\
+  The simplest case: \n\
+  mllr_solve -outmllrfn output.matrix -accumdir accumdir -meanfn mean -varfn var \n\
+  \n\
+  Adapt based on only CD-senones \n\
+  mllr_solve -outmllrfn output.matrix -accumdir accumdir -meanfn mean -varfn var -cdonly yes -moddeffn mdef. \n\
+  \n\
+  Only adapt on A :\n\
+  mllr_solve -outmllrfn output.matrix -accumdir accumdir -meanfn mean -varfn var -mllr_mult yes -mllradd no \n\
+  \n\
+  help and example:\n\
+  mllr_solve -help yes -example yes ";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-outmllrfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -91,8 +128,11 @@
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/07/27  12:09:26  arthchan2003
- * Missing the whole directory of mllr_solve
+ * Revision 1.2  2004/08/07  20:25:46  arthchan2003
+ * Add help and example string for mllr_solve. Fix help and example logic for mllr_solve and mllr_transfrom
  * 
+ * Revision 1.1  2004/07/27 12:09:26  arthchan2003
+ * Missing the whole directory of mllr_solve
+ *
  *
  */

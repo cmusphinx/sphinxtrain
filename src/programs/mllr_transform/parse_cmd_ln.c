@@ -60,6 +60,9 @@ parse_cmd_ln(int argc, char *argv[])
       printf("%s\n\n",examplestr);
     }
 
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
     
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
@@ -74,9 +77,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2004/08/03  07:23:12  arthchan2003
- * Check in the code for usage and example of mllr_transform
+ * Revision 1.3  2004/08/07  20:25:47  arthchan2003
+ * Add help and example string for mllr_solve. Fix help and example logic for mllr_solve and mllr_transfrom
  * 
+ * Revision 1.2  2004/08/03 07:23:12  arthchan2003
+ * Check in the code for usage and example of mllr_transform
+ *
  * Revision 1.1  2004/07/26 05:04:20  arthchan2003
  * mllr_transform committed, it is an adaptation of Sam Joo's mllr_adapt
  *
