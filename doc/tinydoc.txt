@@ -4,7 +4,8 @@ is a reminder about what to do when training
 
 See 
     http://www.cs.cmu.edu/~rsingh/sphinxman/scriptman1.html
-for more details
+    http://www.cs.cmu.edu/~rsingh/sphinxman/s3manual.html
+for much more details
 
 Got to a new directory where you have the space
    mkdir time
