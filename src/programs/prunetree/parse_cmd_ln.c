@@ -58,7 +58,41 @@
 int
 parse_cmd_ln(int argc, char *argv[])
 {
-    static arg_def_t defn[] = {
+  uint32      isHelp;
+  uint32      isExample;
+
+  const char helpstr[] =  
+"Description: \n\
+ Using prunetree, the bifurcations in the decision trees which \n\
+ resulted in the minimum increase in likelihood are progressively \n\
+ removed and replaced by the parent node. The selection of the \n\
+ branches to be pruned out is done across the entire collection of \n\
+ decision trees globally.";
+
+  const char examplestr[] =  
+"Example: \n\
+\n\
+prunetree \n\
+  -itreedir input_tree_dir \n\
+  -nseno 5000 \n\
+  -otreedir output_tree_dir \n\
+  -moddefn mdef \n\
+  -psetfn questions \n\
+  -minocc 100 ";
+
+  static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-moddeffn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -110,7 +144,24 @@ parse_cmd_ln(int argc, char *argv[])
 	E_FATAL("Unable to validate command line arguments\n");
     }
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
 
     return 0;
 }
@@ -119,9 +170,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/06/17  19:39:50  arthchan2003
- * add back all command line information into the code
+ * Revision 1.2  2004/08/09  06:01:41  arthchan2003
+ * prunetree help and example
  * 
+ * Revision 1.1  2004/06/17 19:39:50  arthchan2003
+ * add back all command line information into the code
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
