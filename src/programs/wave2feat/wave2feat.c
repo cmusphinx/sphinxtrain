@@ -305,9 +305,11 @@ param_t *fe_parse_options(int32 argc, char **argv)
         else if (!strcmp("-eo",argv[i])){
 	    P->cepext = argv[++i];
 	}
+	/*
 	else if (!strcmp("-wav",argv[i])){
 	    P->input_format = WAV;
 	}
+	*/
 	else if (!strcmp("-nist",argv[i])){
 	    P->input_format = NIST;
 	}
@@ -362,6 +364,16 @@ param_t *fe_parse_options(int32 argc, char **argv)
 		P->machine_endian = BIG;
 	    else if (!strcmp("little",argv[i]))
 		P->machine_endian = LITTLE;
+	    else{
+		fprintf(stderr,"Machine must be big or little Endian\n");
+		exit(0);
+	    }	
+	}
+	else if (!strcmp("-input_endian",argv[i])){
+	    if (!strcmp("big",argv[++i]))
+		P->input_endian = BIG;
+	    else if (!strcmp("little",argv[i]))
+		P->input_endian = LITTLE;
 	    else{
 		fprintf(stderr,"Machine must be big or little Endian\n");
 		exit(0);
@@ -566,7 +578,9 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
 	fclose(fp2);
     }
     else if (P->input_format == RAW){
+      /*
 	P->input_endian = P->machine_endian;
+      */
     }
     
     if ((fp = open(infile, O_RDONLY, 0644))<0){
@@ -722,7 +736,8 @@ int32 fe_usage(char **argv)
 	    "\n"
 	    " INPUT FORMAT\n"
 	    "\t -nist (NIST sphere format)\n"
-	    "\t -raw (raw binary data - only machine-native endian supported)\n"
+	    "\t -raw (raw binary data)\n"
+	    "\t -input_endian <big | little [def=little]> (ignored if NIST)\n"
 	    "\n"
 	    " OUTPUT FORMAT\n"
 	    "\t -feat <sphinx> (SPHINX format - big endian)\n"

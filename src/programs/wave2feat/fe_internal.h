@@ -43,7 +43,7 @@
 
 #ifndef	M_PI
 #define M_PI	(3.14159265358979323846)
-#endif	M_PI
+#endif	/* M_PI */
 
 #define FORWARD_FFT 1
 #define INVERSE_FFT -1
