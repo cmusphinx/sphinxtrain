@@ -1035,6 +1035,78 @@ Package=<4>
 
 ###############################################################################
 
+Project: "mllr_solve"=.\win32\msdev\programs\mllr_solve\mllr_solve.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mllr_transform"=.\win32\msdev\programs\mllr_transform\mllr_transform.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "norm"=.\win32\msdev\programs\norm\norm.dsp - Package Owner=<4>
 
 Package=<5>

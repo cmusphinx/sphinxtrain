@@ -85,7 +85,7 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\mk_s3tmat\cmd_ln.c
+SOURCE=..\..\..\..\src\programs\mk_s3tmat\parse_cmd_ln.c
 # End Source File
 # Begin Source File
 
@@ -97,7 +97,7 @@ SOURCE=..\..\..\..\src\programs\mk_s3tmat\mk_s3tmat.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\mk_s3tmat\cmd_ln.h
+SOURCE=..\..\..\..\src\programs\mk_s3tmat\parse_cmd_ln.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

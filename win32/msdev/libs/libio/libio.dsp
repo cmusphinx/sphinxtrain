@@ -113,6 +113,10 @@ SOURCE=..\..\..\..\src\libs\libio\s3_open.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\src\libs\libio\s3acc_io.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\src\libs\libio\s3cb2mllr_io.c
 # End Source File
 # Begin Source File
