@@ -38,6 +38,7 @@
 ##
 
 use File::Path;
+use File::Copy;
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
@@ -93,10 +94,10 @@ mkdir ($modeldir,0777) unless -d $modeldir;
 # convergence problems..
 # *************************************************************************
 
-my $src_hmmdir = "$CFG_BASE_DIR/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}";
+my $src_hmmdir = "$CFG_BASE_DIR/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}";
 mkdir ($src_hmmdir,0777) unless -d $src_hmmdir;
 
-my $src_moddeffn = "$CFG_BASE_DIR/model_architecture/${CFG_EXPTNAME}.ci.mdef";
+my $src_moddeffn = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
 my $src_mixwfn = "$src_hmmdir/mixture_weights";
 my $src_meanfn = "$src_hmmdir/means";
 my $src_varfn = "$src_hmmdir/variances";
@@ -111,7 +112,7 @@ my $dest_meanfn = "$dest_hmmdir/means";
 my $dest_varfn = "$dest_hmmdir/variances";
 my $dest_tmatfn = "$dest_hmmdir/transition_matrices";
 
-my $backup_hmmdir =  "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_${n_split}";
+my $backup_hmmdir =  "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}_${n_split}";
 mkdir ($backup_hmmdir,0777) unless -d $backup_hmmdir;
 
 my $backup_mixwfn = "$backup_hmmdir/mixture_weights";
@@ -148,7 +149,7 @@ my $split_cmd = "$SPLIT " .
   "-feat      $CFG_FEATURE " .
   "-ceplen    $CFG_VECTOR_LENGTH ";
 
-if (open PIPE,"$splt_cmd 2>&1 |") {
+if (open PIPE,"$split_cmd 2>&1 |") {
   while ($line = <PIPE>) {
     print LOG $line;
   }

@@ -66,14 +66,14 @@ $processname="07.cd-schmm";
 
 $logdir ="$CFG_LOG_DIR/$processname";
 mkdir ($logdir,0777) unless -d $logdir;
-$log = "$logdir/${CFG_EXPTNAME}.$iter.norm.log";
+$log = "$logdir/${CFG_EXPTNAME}.$n_gau.$iter.norm.log";
 $scriptdir = "$CFG_SCRIPT_DIR/$processname";
 
 # Check the number and list of parts done. Compute avg likelihood per frame
 $num_done = 0; $tot_lkhd = 0; $tot_frms = 0;
 for ($i=1;$i<=$n_parts;$i++){
     $done[$i] = 0;
-    $input_log = "${logdir}/${CFG_EXPTNAME}.${iter}-${i}.bw.log";
+    $input_log = "${logdir}/${CFG_EXPTNAME}.${n_gau}.${iter}-${i}.bw.log";
     next if (! -s $input_log);
     open LOG,$input_log;
     while (<LOG>) {
@@ -112,10 +112,10 @@ if ($tot_frms == 0) {
 $lkhd_per_frame = $tot_lkhd/$tot_frms;
 
 $previter = $iter - 1;
-$prev_norm = "${logdir}/${CFG_EXPTNAME}.${previter}.norm.log";
+$prev_norm = "${logdir}/${CFG_EXPTNAME}.${n_gau}.${previter}.norm.log";
 if (! -s $prev_norm) {
     # Either iter == 1 or we are starting from an intermediate iter value
-    system ("$scriptdir/norm.pl $iter");
+    system ("$scriptdir/norm.pl $n_gau $iter");
     system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
     &Launch_BW();
     exit (0);
@@ -132,7 +132,7 @@ close LOG;
 
 if ($prevlkhd == -99999999) {
     # Some error with previous norm.log. Continue Baum Welch
-    system ("$scriptdir/norm.pl $iter");
+    system ("$scriptdir/norm.pl $n_gau $iter");
     system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
     &Launch_BW();
     exit (0);
@@ -148,7 +148,7 @@ else {
     $absprev = -$absprev if ($prevlkhd < 0);
     $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
-system ("$scriptdir/norm.pl $iter ");
+system ("$scriptdir/norm.pl $n_gau $iter ");
 
 system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
 system("echo \"Convergence ratio = $convg_ratio\" >> $log");
@@ -159,12 +159,12 @@ if ($convg_ratio < 0) {
 }
 
 if ($convg_ratio > $CFG_CONVERGENCE_RATIO && $iter >= $CFG_MAX_ITERATIONS) {
+    print "Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating training iteration\n";
     &Launch_SplitGaussian();
-    system("echo \"Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating CI training\" >> $log");
+    system("echo \"Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating training iteration\" >> $log");
     system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
     $date = localtime;
     system("echo $date >> $log");
-    print "Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating CI training\n";
     exit (0);
 }
 
@@ -174,7 +174,6 @@ if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
 }
 else {
     &Launch_SplitGaussian();
-    print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
     system("echo \"Likelihoods have converged! Baum Welch training completed\!\" >> $log");
     system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
     $date = localtime;
@@ -184,11 +183,11 @@ else {
 
 sub Launch_BW () {
     $newiter = $iter + 1;
-    print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
     system ("$scriptdir/slave_convg.pl $n_gau $newiter $n_parts");
 }
 
 sub Launch_SplitGaussian() {
+    print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
     if ($n_gau < $CFG_NUM_DENSITIES && $CFG_HMM_TYPE ne ".semi.") {
 # Do stuff
         if ($CFG_NUM_DENSITIES >= 2 * $n_gau) {
@@ -200,8 +199,9 @@ sub Launch_SplitGaussian() {
 
 # Launch_BW exits
 	$iter = 0;
+	$n_gau = $n_gau + $n_split;
         &Launch_BW();
-    } else {
-        return;
-    }
+      } elsif ($n_gau == $CFG_NUM_DENSITIES) {
+	system("$scriptdir/split_gaussians.pl $CFG_NUM_DENSITIES");
+      }
 }

@@ -65,7 +65,7 @@ require $cfg_file;
 # components to 1. That's how we start with continuous models, and
 # it is irrelevant for semi continuous
 my $n_gau = 1;
-if ($#ARGV >= (index)) {
+if ($#ARGV >= ($index)) {
    $n_gau = $ARGV[$index];
 }
 
@@ -97,7 +97,7 @@ my $modeldir  = "$CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777) unless -d $modeldir;
 
 # We have to clean up and run flat initialize if it is the first iteration
-if ($iter == 1) {
+if (($iter == 1) && ($n_gau == 1) || ($CFG_HMM_TYPE eq ".semi.")) {
     
     &ST_Log ("MODULE: 07 Training Context dependent models\n");
     &ST_Log ("    Cleaning up directories: accumulator...");
@@ -114,7 +114,7 @@ if ($MC && $n_parts > 1)
     # multi-processor version -- assumes ssh machine works
     for ($i=1; $i<=$n_parts; $i++)
     {
-        $job_command = "$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts";
+        $job_command = "$scriptdir/baum_welch.pl -cfg $cfg_file $n_gau $iter $i $n_parts";
 	open rrr,"scripts_pl/mc/mc_run.pl $job_command |";
 #	print $job_command."\n";
 	while ($line = <rrr>)
@@ -166,7 +166,7 @@ else
     # once done call norm_and_lauchbw.pl
     for ($i=1; $i<=$n_parts; $i++)
     {
-	system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts");
+	system ("$scriptdir/baum_welch.pl -cfg $cfg_file $n_gau $iter $i $n_parts");
     }
 }
 system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $n_gau $iter $n_parts");

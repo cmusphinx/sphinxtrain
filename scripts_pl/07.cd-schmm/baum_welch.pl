@@ -62,11 +62,12 @@ require $cfg_file;
 #************************************************************************
 $| = 1; # Turn on autoflushing
 
-die "USAGE: $0 <iter> <part> <npart>" if ($#ARGV != ($index + 2));
+die "USAGE: $0 <iter> <part> <npart>" if ($#ARGV != ($index + 3));
 
-$iter   = $ARGV[$index];
-$part   = $ARGV[$index+1];
-$npart  = $ARGV[$index+2];
+$n_gau  = $ARGV[$index];
+$iter   = $ARGV[$index+1];
+$part   = $ARGV[$index+2];
+$npart  = $ARGV[$index+3];
 
 $modelinitialname="${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_initial";
 $modelname="${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}";
@@ -108,7 +109,7 @@ if ( $CFG_FORCEDALIGN eq "no" ) {
 
 $topn     = 4;
 $logdir   = "$CFG_LOG_DIR/$processname";
-$logfile  = "$logdir/${CFG_EXPTNAME}.$iter-$part.bw.log";
+$logfile  = "$logdir/${CFG_EXPTNAME}.${n_gau}.$iter-$part.bw.log";
 mkdir ($logdir,0777) unless -d $logdir;
 
 $ctl_counter = 0;
@@ -120,9 +121,9 @@ close INPUT;
 $ctl_counter = int ($ctl_counter / $npart) if $npart;
 $ctl_counter = 1 unless ($ctl_counter);
 
-copy "$CFG_GIF_DIR/green-ball.gif", "$CFG_BASE_DIR/.02.bw.$iter.$part.state.gif";
-&ST_HTML_Print ("\t<img src=$CFG_BASE_DIR/.02.bw.$iter.$part.state.gif> ");        
-&ST_Log ("    Baum welch starting for iteration: $iter ($part of $npart) ");
+copy "$CFG_GIF_DIR/green-ball.gif", "$CFG_BASE_DIR/.02.bw.$n_gau.$iter.$part.state.gif";
+&ST_HTML_Print ("\t<img src=$CFG_BASE_DIR/.02.bw.$n_gau.$iter.$part.state.gif> ");        
+&ST_Log ("    Baum welch starting for $n_gau Gaussian(s), iteration: $iter ($part of $npart) ");
 &ST_HTML_Print ("<A HREF=\"$logfile\">Log File</A>\n");
 
 open LOG,">$logfile";
@@ -161,7 +162,7 @@ if (open PIPE, "$BW -moddeffn $moddeffn -ts2cbfn $statepdeffn -mixwfn	$mixwfn -m
     exit (0);
 }
 
-copy "$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.02.bw.$iter.$part.state.gif";
+copy "$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.02.bw.$n_gau.$iter.$part.state.gif";
 &ST_LogError ("\tFailed to start $BW \n");    
 exit (-1);
 

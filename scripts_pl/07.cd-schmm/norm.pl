@@ -58,8 +58,9 @@ require $cfg_file;
 #****************************************************************************
 $| = 1; # Turn on autoflushing
 
-die "USAGE: $0 <iter>" if ($#ARGV != $index);
-$iter = $ARGV[$index];
+die "USAGE: $0 <iter>" if ($#ARGV != ($index + 1));
+$n_gau = $ARGV[$index];
+$iter = $ARGV[$index+1];
 
 $modelname="${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_$CFG_N_TIED_STATES";
 $processpart="07.cd-schmm";
@@ -77,7 +78,7 @@ $transition_matrices = "$hmmdir/transition_matrices";
 
 $logdir              = "${CFG_LOG_DIR}/$processpart";
 mkdir ($logdir,0777) unless $logdir;
-$logfile 	     = "$logdir/${CFG_EXPTNAME}.${iter}.norm.log";
+$logfile 	     = "$logdir/${CFG_EXPTNAME}.${n_gau}.${iter}.norm.log";
 
 $NORM  = "$CFG_BIN_DIR/norm";
 
