@@ -49,9 +49,13 @@ TOP=../..
 DIRNAME=scripts_pl/05.buildtrees
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-FILES = Makefile make_questions.pl slave.treebuilder.pl buildtree.pl
+PERLSCRIPTS = make_questions.pl slave.treebuilder.pl buildtree.pl
+SCRIPTS = $(PERLSCRIPTS:%=$(SCRIPTDIR)/$(DIRNAME)/%)
+FILES = Makefile $(PERLSCRIPTS)
 
-ALL = 
+ALL = $(SCRIPTS)
+
+LOCAL_CLEAN = $(SCRIPTS)
 
 include $(TOP)/config/common_make_rules
 

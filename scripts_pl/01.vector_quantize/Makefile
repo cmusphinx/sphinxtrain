@@ -49,9 +49,13 @@ TOP=../..
 DIRNAME=scripts_pl/01.vector_quantize
 BUILD_DIRS = 
 ALL_DIRS=
-FILES = Makefile agg_seg.pl kmeans.pl slave.VQ.pl
+PERLSCRIPTS = agg_seg.pl kmeans.pl slave.VQ.pl
+SCRIPTS = $(PERLSCRIPTS:%=$(SCRIPTDIR)/$(DIRNAME)/%)
+FILES = Makefile $(PERLSCRIPTS)
 
-ALL = 
+ALL = $(SCRIPTS)
+
+LOCAL_CLEAN = $(SCRIPTS)
 
 include $(TOP)/config/common_make_rules
 

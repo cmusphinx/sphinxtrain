@@ -101,7 +101,7 @@ foreach $phone (<INPUT>) {
 	$job_name = "no_job";
 	while ($job_name eq "no_job")
         {
-	    open rrr,"scripts_pl/mc/mc_run $job_command |";
+	    open rrr,"scripts_pl/mc/mc_run.pl $job_command |";
 	    while ($line = <rrr>)
 	    {
 		chomp($line);

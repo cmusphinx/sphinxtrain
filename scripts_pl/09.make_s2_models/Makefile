@@ -49,9 +49,13 @@ TOP=../..
 DIRNAME=scripts_pl/09.make_s2_models
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-FILES = Makefile make_s2_models.pl
+PERLSCRIPTS = make_s2_models.pl
+SCRIPTS = $(PERLSCRIPTS:%=$(SCRIPTDIR)/$(DIRNAME)/%)
+FILES = Makefile $(PERLSCRIPTS)
 
-ALL = 
+ALL = $(SCRIPTS)
+
+LOCAL_CLEAN = $(SCRIPTS)
 
 include $(TOP)/config/common_make_rules
 

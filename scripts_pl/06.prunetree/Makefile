@@ -49,9 +49,13 @@ TOP=../..
 DIRNAME=scripts_pl/06.prunetree
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-FILES = Makefile prunetree.pl slave.state-tie-er.pl tiestate.pl
+PERLSCRIPTS = prunetree.pl slave.state-tie-er.pl tiestate.pl
+SCRIPTS = $(PERLSCRIPTS:%=$(SCRIPTDIR)/$(DIRNAME)/%)
+FILES = Makefile $(PERLSCRIPTS)
 
-ALL = 
+ALL = $(SCRIPTS)
+
+LOCAL_CLEAN = $(SCRIPTS)
 
 include $(TOP)/config/common_make_rules
 

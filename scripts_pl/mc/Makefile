@@ -49,10 +49,13 @@ TOP=../..
 DIRNAME=scripts_pl/mc
 BUILD_DIRS = 
 ALL_DIRS=
-SCRIPTS=mc_status mc_run mc_kill mc_check
-FILES = Makefile $(SCRIPTS)
+PERLSCRIPTS=mc_status.pl mc_run.pl mc_kill.pl mc_check.pl
+SCRIPTS = $(PERLSCRIPTS:%=$(SCRIPTDIR)/$(DIRNAME)/%)
+FILES = Makefile $(PERLSCRIPTS)
 
-ALL = 
+ALL = $(SCRIPTS)
+
+LOCAL_CLEAN = $(SCRIPTS)
 
 include $(TOP)/config/common_make_rules
 

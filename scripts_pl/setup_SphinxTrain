@@ -103,9 +103,8 @@ PLATFORM=`grep PLATFORM $SPHINXTRAINDIR/config/system.mak | sed 's/.*=//'`
 
 ln -s $SPHINXTRAINDIR/bin.$PLATFORM/* bin
 mkdir scripts_pl
-cp -pr $SPHINXTRAINDIR/scripts_pl/0* scripts_pl
-cp -pr $SPHINXTRAINDIR/scripts_pl/mc scripts_pl
-cp -p $SPHINXTRAINDIR/scripts_pl/RunAll.pl scripts_pl
+cp -pr $SPHINXTRAINDIR/bin.$PLATFORM/scripts_pl/0* scripts_pl
+cp -pr $SPHINXTRAINDIR/bin.$PLATFORM/scripts_pl/mc scripts_pl
 cp -p $SPHINXTRAINDIR/scripts_pl/maketopology bin
 cp -p $SPHINXTRAINDIR/scripts_pl/make_feats bin
 cp -p $SPHINXTRAINDIR/scripts_pl/make_dict bin

@@ -42,7 +42,7 @@
 #
 # ====================================================================
 #
-#  Programs: mk_s2seno
+#  Programs: mk_s2sendump
 #
 #  Sucked in stuff from s3 so SphinxTrain can be standalone but 
 #  this make sthis function very bad as it has random stuff from 

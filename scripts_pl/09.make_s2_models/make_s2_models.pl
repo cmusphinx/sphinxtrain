@@ -76,11 +76,11 @@ system ("/bin/rm -f $logdir/*");
 
 my $logfile_cb = "$logdir/${CFG_EXPTNAME}.mk_s2cb.log";
 my $logfile_chmm = "$logdir/${CFG_EXPTNAME}.mk_s2chmm.log";
-my $logfile_senone = "$logdir/${CFG_EXPTNAME}.mk_s2seno.log";
+my $logfile_senone = "$logdir/${CFG_EXPTNAME}.mk_s2sendump.log";
 my $logfile_s2phone = "$logdir/${CFG_EXPTNAME}.mk_s2phone.log";
 
 $s3mdef = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
-$s2dir = "$CFG_BASE_DIR/model_parameters/s2models";
+$s2dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.s2models";
 mkdir ($s2dir,0777) unless -d $s2dir;
 
 $s3hmmdir="$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_$CFG_N_TIED_STATES"."_delinterp";
@@ -91,11 +91,14 @@ $s3tmat = "$s3hmmdir/transition_matrices";
 
 &ST_Log ("    Make codebooks\n");
 system("$CFG_BIN_DIR/mk_s2cb -meanfn $s3mean -varfn $s3var -cbdir $s2dir -varfloor 0.00001 >$logfile_cb 2>&1 ");
+
 &ST_Log ("    Make chmm files\n");
 system("$CFG_BIN_DIR/mk_s2hmm -moddeffn $s3mdef -mixwfn $s3mixw -tmatfn $s3tmat -hmmdir $s2dir >$logfile_chmm 2>&1");
+
 &ST_Log ("    Make senome file\n");
 system( "$CFG_BIN_DIR/mk_s2sendump -moddeffn $s3mdef -mixwfn $s3mixw -tpfloor 0.0000001 -feattype s2_4x -sendumpfn $s2dir/sendump >$logfile_senone 2>&1");
 #system( "rm $s2dir/*.ccode $s2dir/*.d2code $s2dir/*.p3code $s2dir/*.xcode");
+
 &ST_Log ("    Make phone and map files\n");
 $tmpf="tmp.phones";
 system ( "grep -v \"^#\" $s3mdef | awk 'NF==12 {print \$1,\$2,\$3,\$4}' >$tmpf\n");

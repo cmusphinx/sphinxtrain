@@ -49,9 +49,13 @@ TOP=../..
 DIRNAME=scripts_pl/03.makeuntiedmdef
 BUILD_DIRS = 
 ALL_DIRS=
-FILES = Makefile make_untied_mdef.pl
+PERLSCRIPTS = make_untied_mdef.pl
+SCRIPTS = $(PERLSCRIPTS:%=$(SCRIPTDIR)/$(DIRNAME)/%)
+FILES = Makefile $(PERLSCRIPTS)
 
-ALL = 
+ALL = $(SCRIPTS)
+
+LOCAL_CLEAN = $(SCRIPTS)
 
 include $(TOP)/config/common_make_rules
 

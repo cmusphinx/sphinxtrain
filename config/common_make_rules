@@ -124,9 +124,13 @@ $(SCRIPTDIR)/%: %.csh
 	@ chmod +x $@
 
 # Perl Script build rules
-$(SCRIPTDIR)/%: %.pl
-	@ echo "#!"$PERL > $@
-	@ cat $< >>$@
+$(SCRIPTDIR)/$(DIRNAME)/%.pl: %.pl
+	@ if [ ! -d $(SCRIPTDIR)/$(DIRNAME) ] ;\
+	  then  \
+	     mkdir -p $(SCRIPTDIR)/$(DIRNAME); \
+	  fi
+	@ echo "#!"$(PERL) > $@
+	@ sed '1d' $< >>$@
 	@ chmod +x $@
 
 clean:

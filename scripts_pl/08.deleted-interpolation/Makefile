@@ -49,9 +49,13 @@ TOP=../..
 DIRNAME=scripts_pl/08.deleted-interpolation
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-FILES = Makefile deleted_interpolation.pl
+PERLSCRIPTS = deleted_interpolation.pl
+SCRIPTS = $(PERLSCRIPTS:%=$(SCRIPTDIR)/$(DIRNAME)/%)
+FILES = Makefile $(PERLSCRIPTS)
 
-ALL = 
+ALL = $(SCRIPTS)
+
+LOCAL_CLEAN = $(SCRIPTS)
 
 include $(TOP)/config/common_make_rules
 

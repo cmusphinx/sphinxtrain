@@ -49,10 +49,14 @@ TOP=../..
 DIRNAME=scripts_pl/02.ci_schmm
 BUILD_DIRS = 
 ALL_DIRS=
-FILES = Makefile baum_welch.pl norm.pl \
+PERLSCRIPTS = baum_welch.pl norm.pl \
         norm_and_launchbw.pl slave_convg.pl
+SCRIPTS = $(PERLSCRIPTS:%=$(SCRIPTDIR)/$(DIRNAME)/%)
+FILES = Makefile $(PERLSCRIPTS)
 
-ALL = 
+ALL = $(SCRIPTS)
+
+LOCAL_CLEAN = $(SCRIPTS)
 
 include $(TOP)/config/common_make_rules
 
