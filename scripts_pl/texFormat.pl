@@ -14,6 +14,8 @@ close(RAW);
 open(TEX,"> $texcmdline") || die "Cannot open file $texcmdline for writing\n";
 
 $toolname =~ s/_/\\_/g;
+$toolname =~ s/>/\\>/g;
+$toolname =~ s/</\\</g;
 print TEX "\{\\it Usage: $toolname [options]\}\n";
 print TEX "\\begin\{itemize\}\n";
 

@@ -117,9 +117,13 @@ need to specify a model definition using -moddeffn.";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/08/07  19:51:52  arthchan2003
- * Make compiler happy about the help messages
+ * Revision 1.5  2004/08/07  20:41:00  arthchan2003
+ * texFormat.pl file to handle < and >
  * 
+=======
+ * Revision 1.4  2004/08/07 19:51:52  arthchan2003
+ * Make compiler happy about the help messages
+ *
  * Revision 1.3  2004/08/03 07:31:17  arthchan2003
  * make the changes more latex friendly\n
  *

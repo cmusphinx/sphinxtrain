@@ -223,7 +223,7 @@ int32 fe_convert_files(param_t *P)
 	    /*execute this loop only if there are more than 1 block to
 	      be processed */
 	    while(curr_block < nblocks){
-		splen = P->blocksize;
+		splen = P->blocksize
 		if ((spdata = (int16 *)calloc(splen,sizeof(int16)))==NULL){
 		    fprintf(stderr,"Unable to allocate memory block of %d shorts for input speech\n",splen);
 		    exit(0);
