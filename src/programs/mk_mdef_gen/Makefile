@@ -42,21 +42,29 @@
 #
 # ====================================================================
 #
-#  C programs
+#  Programs: mk_mdef_gen
 #
 # ====================================================================
-TOP=../..
-DIRNAME=src/programs
-BUILD_DIRS = agg_seg bldtree bw count_3phone cp_parm delint dict2tri inc_comp \
-             init_gau init_mixw kmeans_init make_quests mixw_interp \
-             mk_flat mk_mllr_class mk_model_def \
-             mk_s2cb mk_s2hmm mk_s2seno mk_s2phone \
-             mk_s3gau mk_s3mixw mk_s3tmat mk_ts2cb norm param_cnt printp \
-             prunetree tiestate wave2feat mk_mdef_gen
+TOP=../../..
+DIRNAME=src/programs/mk_mdef_gen
+BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
-FILES = Makefile README
+SRCS = \
+  mk_mdef_gen.c \
+  parse_cmd_ln.c \
+  heap.c \
+  hash.c \
+  main.c
+H = \
+  hash.h \
+  heap.h \
+  mk_untied.h \
+  parse_cmd_ln.h
 
-ALL = 
+FILES = Makefile $(SRCS) $(H)
+TARGET = mk_mdef_gen
+
+ALL = $(BINDIR)/$(TARGET)
 
 include $(TOP)/config/common_make_rules
 
