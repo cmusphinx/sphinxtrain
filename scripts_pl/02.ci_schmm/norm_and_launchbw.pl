@@ -144,26 +144,46 @@ if ($prevlkhd == -99999999) {
 }
 
 if ($prevlkhd == 0) {
-    $convg_ratio = 1;
+    $convg_ratio = 0;
+    $convg_ratio = 1 if ($lkhd_per_frame > 0);
+    $convg_ratio = -1 if ($lkhd_per_frame < 0);
 }
 else {
     $absprev = $prevlkhd;
     $absprev = -$absprev if ($prevlkhd < 0);
     $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
-
 print "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+
 system ("$CFG_CI_PERL_DIR/norm.pl $iter");
+system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+system("echo \"Convergence ratio = $convg_ratio\" >> $log");
+
+if ($convg_ratio < 0) {
+    system("echo \"*WARNING*: NEGATIVE CONVERGENCE RATIO! CHECK YOUR DATA AND TRASNCRIPTS\" >> $log");
+    print "*WARNING*: NEGATIVE CONVERGENCE RATIO AT ITER ${iter}! CHECK BW AND NORM LOGFILES\n";
+}
+
+if ($convg_ratio < $CFG_CONVERGENCE_RATIO && $iter < $CFG_MIN_ITERATIONS) {
+    system("echo \"Minimum desired iterations $CFG_MIN_ITERATIONS not yet performed. Continuing BW\" >> $log");
+    print "Minimum desired iterations $CFG_MIN_ITERATIONS not yet performed. Continuing BW after convergence\n";
+    &Launch_BW();
+    exit (0);
+}
+
+if ($convg_ratio > $CFG_CONVERGENCE_RATIO && $iter >= $CFG_MAX_ITERATIONS) {
+    system("echo \"Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating CI training\" >> $log");
+    system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
+    system("date >> $log");
+    print "Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating CI training\n";
+    exit (0);
+}
 
 if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
-    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
-    system("echo \"Convergence ratio = $convg_ratio\" >> $log");
     &Launch_BW();
     exit (0);
 }
 else {
-    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
-    system("echo \"Convergence ratio = $convg_ratio\" >> $log");
     system("echo \"Likelihoods have converged! Baum Welch training completed\!\" >> $log");
     system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
     system("date >> $log");
@@ -175,5 +195,4 @@ sub Launch_BW () {
     $newiter = $iter + 1;
     system ("$CFG_CI_PERL_DIR/slave_convg.pl $newiter");
 }
-
 
