@@ -42,20 +42,28 @@
 #
 # ====================================================================
 #
-#  C programs
+#  Programs: wave2feats
 #
 # ====================================================================
-TOP=../..
-DIRNAME=src/programs
-BUILD_DIRS = agg_seg bldtree bw cp_parm delint dict2tri inc_comp \
-             init_gau init_mixw kmeans_init make_quests mixw_interp \
-             mk_flat mk_mllr_class mk_model_def mk_s3gau \
-             mk_s3mixw mk_s3tmat mk_ts2cb norm param_cnt printp \
-             prunetree tiestate wave2feat
+TOP=../../..
+DIRNAME=src/programs/wave2feats
+BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
-FILES = Makefile README
+SRCS = \
+  new_fe_sp.c \
+  new_fe.c \
+  new_fe_wrapper.c
+H = \
+  new_fe.h \
+  new_fe_sp.h \
+  new_fe_wrapper.h
 
-ALL = 
+FILES = Makefile $(SRCS) $(H)
+TARGET = wave2feat
+
+ALL = $(BINDIR)/$(TARGET)
 
 include $(TOP)/config/common_make_rules
+
+
 
