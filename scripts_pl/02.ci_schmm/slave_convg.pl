@@ -16,15 +16,9 @@
 ##    the documentation and/or other materials provided with the
 ##    distribution.
 ##
-## 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
-##    endorse or promote products derived from this software without
-##    prior written permission. To obtain permission, contact 
-##    sphinx@cs.cmu.edu.
-##
-## 4. Redistributions of any form whatsoever must retain the following
-##    acknowledgment:
-##    "This product includes software developed by Carnegie
-##    Mellon University (http://www.speech.cs.cmu.edu/)."
+## This work was supported in part by funding from the Defense Advanced 
+## Research Projects Agency and the National Science Foundation of the 
+## United States of America, and the CMU Sphinx Speech Consortium.
 ##
 ## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
 ## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -43,6 +37,7 @@
 ## Author: Ricky Houghton
 ##
 
+use File::Path;
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
@@ -76,8 +71,6 @@ if (($#ARGV >= ($index+1))) {
 }
 
 my $scriptdir = "$CFG_SCRIPT_DIR/02.ci_schmm";
-my $bwaccumdir = "$CFG_BASE_DIR/bwaccumdir";
-mkdir ($bwaccumdir,0777) unless -d $bwaccumdir;
 
 my $modeldir  = "$CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777) unless -d $modeldir;
@@ -89,11 +82,12 @@ $logdir = "$CFG_LOG_DIR/02.ci_schmm";
 if ($iter == 1) {
     &ST_Log ("MODULE: 02 Training Context Independent models\n");
     &ST_Log ("    Cleaning up directories: accumulator...");
-    system ("rm -rf $bwaccumdir/${CFG_EXPTNAME}_buff_*");
+    rmtree ($CFG_BWACCUM_DIR) unless ! -d $CFG_BWACCUM_DIR;
+    mkdir ($CFG_BWACCUM_DIR,0777);
     &ST_Log ("logs...");
-    system ("rm -f $logdir/*");
+    rmtree ($logdir) unless ! -d $logdir;
     &ST_Log ("models...\n");
-    system ("rm -f $modeldir/${CFG_EXPTNAME}.ci_semi/*");
+    rmtree ("$modeldir/${CFG_EXPTNAME}.ci_semi") unless ! -d $modeldir;
     
     # For the first iteration Flat initialize models.
     &FlatInitialize();
@@ -194,7 +188,15 @@ sub FlatInitialize ()
     $phonefile           = "$modarchdir/$CFG_EXPTNAME.phonelist";
     $ci_mdeffile         = "$modarchdir/$CFG_EXPTNAME.ci.mdef";
     
-    system "sed 's+\$+ - - - +g' $CFG_RAWPHONEFILE > $phonefile";
+    open PHONELIST, "<".$CFG_RAWPHONEFILE;
+    open PHONEFILE, ">".$phonefile;
+    while ( $line = <PHONELIST> ) {
+      chomp($line);
+      $line =~ s/$/ - - - /;
+      print PHONEFILE $line . "\n";
+    }
+
+#    system "sed 's+\$+ - - - +g' $CFG_RAWPHONEFILE > $phonefile";
 
 
     my $logfile = "$logdir/${CFG_EXPTNAME}.make_ci_mdef_fromphonelist.log";
@@ -210,7 +212,7 @@ sub FlatInitialize ()
     
     #$base_dir/training/bin/maketopology.csh $statesperhmm $skipstate >! $topologyfile
     # Note, here we don't want STDERR going to topologyfile, just the STDOUT
-    system ("bin/maketopology $CFG_STATESPERHMM $CFG_SKIPSTATE >$topologyfile");
+    system ("$CFG_BIN_DIR/maketopology.pl $CFG_STATESPERHMM $CFG_SKIPSTATE >$topologyfile");
 
     $MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
     system ("$MAKE_MDEF -phnlstfn $phonefile -ocimdef $ci_mdeffile -n_state_pm $CFG_STATESPERHMM 2>$logfile");

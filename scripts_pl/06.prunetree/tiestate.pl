@@ -16,15 +16,9 @@
 ##    the documentation and/or other materials provided with the
 ##    distribution.
 ##
-## 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
-##    endorse or promote products derived from this software without
-##    prior written permission. To obtain permission, contact 
-##    sphinx@cs.cmu.edu.
-##
-## 4. Redistributions of any form whatsoever must retain the following
-##    acknowledgment:
-##    "This product includes software developed by Carnegie
-##    Mellon University (http://www.speech.cs.cmu.edu/)."
+## This work was supported in part by funding from the Defense Advanced 
+## Research Projects Agency and the National Science Foundation of the 
+## United States of America, and the CMU Sphinx Speech Consortium.
 ##
 ## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
 ## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -77,8 +71,7 @@ my $logfile = "$logdir/$CFG_EXPTNAME.tiestate.$n_tied_states.log";
 my $TIESTATE = "$CFG_BIN_DIR/tiestate";
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("    Tie states ");
-system("echo");
+&ST_Log ("    Tie states\n");
 &ST_HTML_Print ("\t\t<A HREF=\"$logfile\">Log File</A> ");
 
 system("$TIESTATE -imoddeffn $untied_mdef_file -omoddeffn $tied_mdef_file -treedir $prunedtreedir -psetfn $CFG_QUESTION_SET 2>$logfile");

@@ -16,15 +16,9 @@
 ##    the documentation and/or other materials provided with the
 ##    distribution.
 ##
-## 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
-##    endorse or promote products derived from this software without
-##    prior written permission. To obtain permission, contact 
-##    sphinx@cs.cmu.edu.
-##
-## 4. Redistributions of any form whatsoever must retain the following
-##    acknowledgment:
-##    "This product includes software developed by Carnegie
-##    Mellon University (http://www.speech.cs.cmu.edu/)."
+## This work was supported in part by funding from the Defense Advanced 
+## Research Projects Agency and the National Science Foundation of the 
+## United States of America, and the CMU Sphinx Speech Consortium.
 ##
 ## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
 ## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -43,6 +37,7 @@
 ## Author: Ricky Houghton 
 ##
 
+use File::Path;
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
@@ -88,10 +83,11 @@ if ($iter == 1) {
    &ST_Log ("MODULE: 04 Training Context Dependent models\n");
    &ST_Log ("    Cleaning up directories: accumulator...");
 
-    system ("rm -rf $CFG_BWACCUM_DIR/${CFG_EXPTNAME}_buff_*");
+    rmtree ($CFG_BWACCUM_DIR) unless ! -d $CFG_BWACCUM_DIR;
+    mkdir ($CFG_BWACCUM_DIR,0777);
 
     &ST_Log ("logs...");
-    system ("rm -rf $logdir") unless $TESTING;
+    rmtree ($logdir) unless $TESTING;
     mkdir ($logdir,0777) unless -d $logdir;
 
     &ST_Log ("\n");

@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 # ====================================================================
 # Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
 #
@@ -30,21 +31,53 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # ====================================================================
-#
-#  Perl scripts
-#
-# ====================================================================
-TOP=../..
-DIRNAME=scripts_pl/03.makeuntiedmdef
-BUILD_DIRS = 
-ALL_DIRS=
-PERLSCRIPTS = make_untied_mdef.pl
-SCRIPTS = $(PERLSCRIPTS:%=$(SCRIPTDIR)/$(DIRNAME)/%)
-FILES = Makefile $(PERLSCRIPTS)
 
-ALL = $(SCRIPTS)
+if (($#ARGV < 0) || ($#ARGV > 1)) {
+  print "Usage: $0 <no of states per hmm> (allow skips yes/no)\n";
+  print "\tDefault: allow skips yes\n";
+  exit -1;
+}
 
-LOCAL_CLEAN = $(SCRIPTS)
+$nstates = $ARGV[0];
+if ( $#ARGV == 0) {
+  $allowskips = "yes";
+} else {
+  $allowskips = $ARGV[1];
+}
+print "#\n";
+print "# ${nstates}-state Bakis topology HMM with non-emitting last state\n";
+print "# These values are normalized so that rows sum to one.\n";
+print "#\n";
+print "# NO COMMENTS BETWEEN # OF STATES AND TRANSITION MATRIX\n";
+print "#\n";
+print "#\n";
+print "#Version number\n";
+print "0.1\n";
+print "# Number of states per model followed by transition matrix\n";
 
-include $(TOP)/config/common_make_rules
+$no = $nstates + 1;;
+print "$no\n";
 
+$n = 1;
+while ($n <= $nstates) {
+    $j = 1;
+    if ( $allowskips eq "no" ) {
+     $nnn = $n + 1;
+    } else {
+     $nnn = $n + 2;
+    }
+
+    while ($j <= $no) {
+        if ($j < $n || $j > $nnn) {
+            print "0.0	";
+	    $j = $j + 1;
+        } else {
+            print "1.0	";
+	    $j = $j + 1
+	}
+    }
+    print "\n";
+    $n = $n + 1;
+}
+print "# Last state has no outgoing arcs unless\n";
+print "# embedded in a sentence hmm structure\n";

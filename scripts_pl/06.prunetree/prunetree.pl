@@ -16,15 +16,9 @@
 ##    the documentation and/or other materials provided with the
 ##    distribution.
 ##
-## 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
-##    endorse or promote products derived from this software without
-##    prior written permission. To obtain permission, contact 
-##    sphinx@cs.cmu.edu.
-##
-## 4. Redistributions of any form whatsoever must retain the following
-##    acknowledgment:
-##    "This product includes software developed by Carnegie
-##    Mellon University (http://www.speech.cs.cmu.edu/)."
+## This work was supported in part by funding from the Defense Advanced 
+## Research Projects Agency and the National Science Foundation of the 
+## United States of America, and the CMU Sphinx Speech Consortium.
 ##
 ## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
 ## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -79,8 +73,7 @@ mkdir ($logdir,0777) unless -d $logdir;
 my $logfile = "$logdir/$CFG_EXPTNAME.prunetree.$n_tied_states.log";
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("    Prune trees ");
-system("echo");
+&ST_Log ("    Prune trees\n");
 &ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A> ");
 
 system ("$PRUNETREE -itreedir $unprunedtreedir -nseno $n_tied_states -otreedir $prunedtreedir -moddeffn $mdef_file -psetfn $CFG_QUESTION_SET -minocc $occurance_threshold 2>$logfile");

@@ -16,15 +16,9 @@
 ##    the documentation and/or other materials provided with the
 ##    distribution.
 ##
-## 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
-##    endorse or promote products derived from this software without
-##    prior written permission. To obtain permission, contact 
-##    sphinx@cs.cmu.edu.
-##
-## 4. Redistributions of any form whatsoever must retain the following
-##    acknowledgment:
-##    "This product includes software developed by Carnegie
-##    Mellon University (http://www.speech.cs.cmu.edu/)."
+## This work was supported in part by funding from the Defense Advanced 
+## Research Projects Agency and the National Science Foundation of the 
+## United States of America, and the CMU Sphinx Speech Consortium.
 ##
 ## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
 ## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -42,6 +36,8 @@
 ##
 ## Author: Ricky Houghton 
 ##
+
+use File::Copy;
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
@@ -124,7 +120,7 @@ close INPUT;
 $ctl_counter = int ($ctl_counter / $npart) if $npart;
 $ctl_counter = 1 unless ($ctl_counter);
 
-system ("cp $CFG_GIF_DIR/green-ball.gif $CFG_BASE_DIR/.02.bw.$iter.$part.state.gif");
+copy "$CFG_GIF_DIR/green-ball.gif", "$CFG_BASE_DIR/.02.bw.$iter.$part.state.gif";
 &ST_HTML_Print ("\t<img src=$CFG_BASE_DIR/.02.bw.$iter.$part.state.gif> ");        
 &ST_Log ("    Baum welch starting for iteration: $iter ($part of $npart) ");
 &ST_HTML_Print ("<A HREF=\"$logfile\">Log File</A>\n");
@@ -156,17 +152,16 @@ if (open PIPE, "$BW -moddeffn $moddeffn -ts2cbfn $statepdeffn -mixwfn	$mixwfn -m
 	    $printed = 0;
 	}
     }
-    close LOG;
     close PIPE;
     $| = 0;
-    $date = &ST_DateStr ();
+    $date = localtime;
     print LOG "$date\n";
     close LOG;
     &ST_Log ("Finished\n");
     exit (0);
 }
 
-system ("cp $CFG_GIF_DIR/red-ball.gif $CFG_BASE_DIR/.02.bw.$iter.$part.state.gif");
+copy "$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.02.bw.$iter.$part.state.gif";
 &ST_LogError ("\tFailed to start $BW \n");    
 exit (-1);
 

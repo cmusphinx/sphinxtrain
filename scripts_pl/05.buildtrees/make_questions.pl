@@ -16,15 +16,9 @@
 ##    the documentation and/or other materials provided with the
 ##    distribution.
 ##
-## 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
-##    endorse or promote products derived from this software without
-##    prior written permission. To obtain permission, contact 
-##    sphinx@cs.cmu.edu.
-##
-## 4. Redistributions of any form whatsoever must retain the following
-##    acknowledgment:
-##    "This product includes software developed by Carnegie
-##    Mellon University (http://www.speech.cs.cmu.edu/)."
+## This work was supported in part by funding from the Defense Advanced 
+## Research Projects Agency and the National Science Foundation of the 
+## United States of America, and the CMU Sphinx Speech Consortium.
 ##
 ## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
 ## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -76,9 +70,7 @@ my $logfile = "$logdir/${CFG_EXPTNAME}.make_questions.log";
 my $MAKE_QUEST = "${CFG_BIN_DIR}/make_quests";
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("MODULE: 05a Build Trees\n");
-&ST_Log ("    Make Questions ");
-system("echo");
+&ST_Log ("    Make Questions\n");
 &ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A> ");
 
 $|=1;

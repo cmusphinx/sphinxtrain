@@ -16,15 +16,9 @@
 ##    the documentation and/or other materials provided with the
 ##    distribution.
 ##
-## 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
-##    endorse or promote products derived from this software without
-##    prior written permission. To obtain permission, contact 
-##    sphinx@cs.cmu.edu.
-##
-## 4. Redistributions of any form whatsoever must retain the following
-##    acknowledgment:
-##    "This product includes software developed by Carnegie
-##    Mellon University (http://www.speech.cs.cmu.edu/)."
+## This work was supported in part by funding from the Defense Advanced 
+## Research Projects Agency and the National Science Foundation of the 
+## United States of America, and the CMU Sphinx Speech Consortium.
 ##
 ## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
 ## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -46,6 +40,8 @@
 #  Author: Alan W Black (awb@cs.cmu.edu)
 #
 
+use File::Path;
+
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
     $cfg_file = $ARGV[1];
@@ -60,15 +56,15 @@ if (! -s "$cfg_file") {
 }
 require $cfg_file;
 
-my $scriptdir = "scripts_pl/06.prunetree";
+my $scriptdir = "$CFG_SCRIPT_DIR/06.prunetree";
 
 my $logdir = "$CFG_LOG_DIR/06.prunetree";
-mkdir ($logdir,0777) unless -d $logdir;
 
 $| = 1; # Turn on autoflushing
 &ST_Log ("MODULE: 06 Prune Trees\n");
 &ST_Log ("    Cleaning up old log files...\n");
-system ("/bin/rm -f $logdir/*");
+rmtree ($logdir) unless ! -d $logdir;
+mkdir ($logdir,0777);
 
 # Build all triphone model
 my $logfile = "$logdir/$CFG_EXPTNAME.build.alltriphones.mdef.log";

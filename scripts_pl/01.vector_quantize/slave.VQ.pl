@@ -43,6 +43,7 @@
 ## Author: Ricky Houghton 
 ##
 
+use File::Path;
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
@@ -67,12 +68,13 @@ require $cfg_file;
 
 #Clean up from previous runs
 $logdir = "$CFG_LOG_DIR/01.vector_quantize";
-mkdir ($logdir,0777) unless -d $logdir;
+
+rmtree($logdir) unless ! -d $logdir;
+mkdir ($logdir,0777);
 
 $| = 1; # Turn on autoflushing
 # No error checking
 &ST_Log ("MODULE: 01 Vector Quantization\n");
-system ("rm -f $logdir/*");
 $scriptdir="$CFG_BASE_DIR/scripts_pl/01.vector_quantize";
 
 system ("$scriptdir/agg_seg.pl -cfg $cfg_file");

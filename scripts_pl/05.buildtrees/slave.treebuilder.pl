@@ -16,15 +16,9 @@
 ##    the documentation and/or other materials provided with the
 ##    distribution.
 ##
-## 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
-##    endorse or promote products derived from this software without
-##    prior written permission. To obtain permission, contact 
-##    sphinx@cs.cmu.edu.
-##
-## 4. Redistributions of any form whatsoever must retain the following
-##    acknowledgment:
-##    "This product includes software developed by Carnegie
-##    Mellon University (http://www.speech.cs.cmu.edu/)."
+## This work was supported in part by funding from the Defense Advanced 
+## Research Projects Agency and the National Science Foundation of the 
+## United States of America, and the CMU Sphinx Speech Consortium.
 ##
 ## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
 ## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -43,6 +37,7 @@
 ## Author: Ricky Houghton
 ##
 
+use File::Path;
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
@@ -65,13 +60,13 @@ require $cfg_file;
 my ($phone,$state);
 my $scriptdir = "$CFG_SCRIPT_DIR/05.buildtrees";
 my $logdir = "${CFG_LOG_DIR}/05.buildtrees";
+&ST_Log ("Module: 05 Build Trees\n");
+&ST_Log ("    Cleaning up old log files...\n");
+rmtree ("$logdir");
 mkdir ($logdir,0777) unless -d $logdir;
 
 $| = 1; # Turn on autoflushing
 system("$scriptdir/make_questions.pl");
-&ST_Log ("MODULE: 05b Build Trees\n");
-&ST_Log ("    Cleaning up old log files...\n");
-system ("rm -f $logdir/${CFG_EXPTNAME}.buildtree.*");
 &ST_Log ("    Tree building\n");
 
 my $mdef_file       = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
