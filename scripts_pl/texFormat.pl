@@ -1,59 +1,123 @@
 #!/usr/bin/perl 
+use strict;
 
-if(@ARGV<3){
-    printf "$0 <rawcmdline> <texcmdline> <toolname> \n";
+
+if(@ARGV<5){
+    printf "$0 <rawcmdline> <texcmdline> <toolname> <helpstr> <examplestr>\n";
     exit(-1);
 }
 
-($rawcmdline,$texcmdline, $toolname)=@ARGV;
+my ($rawcmdline,$texcmdline, $toolname, $helpstr, $examplestr)=@ARGV;
+
 
 open(RAW,"$rawcmdline") ||die "Cannot open file $rawcmdline for reading\n";
-@rawlines=<RAW>;
+my @rawlines=<RAW>;
 close(RAW);
+
+
+open(HELP,"$helpstr") || die "Cannot open file $helpstr for reading\n";
+my @helplines=<HELP>;
+close(HELP);
+
+open(EXAMPLE,"$examplestr") || die "Cannot open file $examplestr for reading\n";
+my @examplelines=<EXAMPLE>;
+close(EXAMPLE);
 
 open(TEX,"> $texcmdline") || die "Cannot open file $texcmdline for writing\n";
 
-$toolname =~ s/_/\\_/g;
+my $toolname =~ s/_/\\_/g;
+
+#Tool description page
+print TEX "\\subsubsection\{Tool Description\}\n";
+
+my $line;
+foreach $line (@helplines){
+    $line =~ s/_/\\_/g;
+    $line =~ s/>/\$>\$/g;
+    $line =~ s/</\$<\$/g;
+    $line =~ s/\#/\\\#/g;
+
+    if($line !~ "Compiled on"){
+	printf TEX "$line\n";   
+    }  
+
+}
+#Tool example page
+print TEX "\\subsubsection\{Example\}\n";
+
+foreach $line (@examplelines){
+    $line =~ s/_/\\_/g;
+    $line =~ s/>/\$>\$/g;
+    $line =~ s/</\$<\$/g;
+    $line =~ s/\#/\\\#/g;
+
+    if($line !~ "Compiled on"){
+      printf TEX "$line\n";   
+    }
+}
+
+print TEX "\\newpage\n";
+
+
+
+
+
+
+
+
+
+# Commandl line argument page 
+print TEX "\\subsubsection\{Command-line Argument Description\}\n";
 print TEX "\{\\it Usage: $toolname [options]\}\n";
 print TEX "\\begin\{itemize\}\n";
 
 
 
 
-$titleline=shift(@rawlines);
-
+my $titleline=shift(@rawlines);
+my @chars;
 @chars=split(//,$titleline);
 
-$pos=0;
-$wanted_pos;
+my $pos=0;
+my $char;
+
+my $description;
+my @desc_words;
+my $i;
+my $opt_def;
+my $wanted_pos;
+
 foreach $char (@chars){
     if($char eq "s"){
 	$wanted_pos=$pos;
     }
     $pos++;
-#    print "$char";
 }
 
-
+# print ("$pos $wanted_pos\n");
 foreach $line (@rawlines){
 
+#    print $line;
     chomp($line);
 
-    $line =~ s/_/\\_>/g;
+
+    $line =~ s/_/\\_/g;
     $line =~ s/>/\$>\$/g;
     $line =~ s/</\$<\$/g;
+    $line =~ s/\#/\\#/g;
 
     @chars=split(//,$line);
 
     $opt_def="";
     for($i=0;$i<$wanted_pos-3;$i++){
 	$opt_def=sprintf("%s%s",$opt_def,$chars[$i]) ;
+
     }
     $opt_def=sprintf("%s%s",$opt_def,"\n");
     
-    ($option, $default)=split(/\s+/,$opt_def);
+    my ($option, $default)=split(/\s+/,$opt_def);
 
-#    print "$option, $default, ";
+#    print "$opt_def, $option, $default, ";
 
     $description="";
     for($i=$wanted_pos-3;$i<length($line);$i++){
@@ -70,6 +134,7 @@ foreach $line (@rawlines){
     print TEX "\\item\{\\bf $option\} (Default Value : $default) \\newline\n Description: $description \n \\newline\n";
 }
 print TEX "\\end\{itemize\}\n";
+print TEX "\\newpage\n";
 
 close(TEX);
 
