@@ -42,8 +42,10 @@
 #include <s3/prim_type.h>
 #include <s3/s3.h>
 
+#if defined(__alpha)
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
 
 int
 get_cpu_time(uint32 *sec, float32 *frac_sec)
