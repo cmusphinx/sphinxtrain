@@ -39,7 +39,7 @@ If you specific only -mllradd, then only b will be estimated. ";
   mllr_solve -outmllrfn output.matrix -accumdir accumdir -meanfn mean -varfn var -cdonly yes -moddeffn mdef. \n\
   \n\
   Only adapt on A :\n\
-  mllr_solve -outmllrfn output.matrix -accumdir accumdir -meanfn mean -varfn var -mllr_mult yes -mllradd no \n\
+  mllr_solve -outmllrfn output.matrix -accumdir accumdir -meanfn mean -varfn var -mllrmult yes -mllradd no \n\
   \n\
   help and example:\n\
   mllr_solve -help yes -example yes ";
@@ -128,8 +128,8 @@ If you specific only -mllradd, then only b will be estimated. ";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2004/08/07  20:25:46  arthchan2003
- * Add help and example string for mllr_solve. Fix help and example logic for mllr_solve and mllr_transfrom
+ * Revision 1.3  2004/08/07  20:31:49  arthchan2003
+ * fix small problem in command line info mllr_mult -> mllrmult
  * 
  * Revision 1.1  2004/07/27 12:09:26  arthchan2003
  * Missing the whole directory of mllr_solve
