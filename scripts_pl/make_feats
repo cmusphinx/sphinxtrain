@@ -74,4 +74,4 @@ fi
 #          -ncep   13
 
 
-$SPHINXTRAINDIR/bin.Linux.ix86/wave2feat -verbose -c $1 -nist -di wav -ei wav -do feat -eo feat 
+bin/wave2feat -verbose -c $1 -nist -di wav -ei wav -do feat -eo feat 
