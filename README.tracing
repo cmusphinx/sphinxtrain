@@ -1,7 +1,7 @@
 First Created at 20040529 by Arthur Chan
 
 Some Notes on Tracing the code. 
-Please also read Rita's notes on 
+Please also check http://www.speech.cs.cmu.edu/sphinxman/
 
 Just One word before you go on reading. Source code is still your best
 friend in the world.  Everything else can still be wrong.
@@ -47,20 +47,24 @@ wave2feat is a useful tool to convert a wave file to feature files. It
 is recommend that it should be used with tools such as sox if
 wave2feat doesn't support certain configuration.
 
-new_fe_wrapper.c 
+wave2feat.c (formerly known as new_fe_wrapper.c )
 -> main
    -> fe_parse_options (in the same file)
 	-> fe_init_params
    -> fe_convert_files
-	-> fe_initi
+	-> fe_init
 	-> fe_build_filenames
 	-> fe_open_files
 	-> fe_readblock_spch
 	-> fe_process_utt (See dictionary for details)
 	-> fe_writeblock_feat
 
-How different is wave2feat's frontend and Sphinx3.4's frontend?
+How different is wave2feat's frontend and Sphinx3.4's frontend?  
 
+[EBG] The front end is (or should be) exactly the same on SphinxTrain,
+sphinx3, and sphinx2. The only tangible difference is that the front
+end includes sphinx3.h, sphinx2.h, or prim_types.h depending on the
+location. But this has to be fixed.
 
 
 Dictionary of functions
@@ -72,7 +76,7 @@ fe_build_melfilters
 Compute the mel filter banks. 
 
 fe_compute_melcosine
-Pre-compute the mel cosine. 
+Pre-compute the parameters used in the mel cosine transform. 
 
 fe_process_utt
 if (number of samples + overflow samples > frame_size){
@@ -95,6 +99,7 @@ if (number of samples + overflow samples > frame_size){
 	-> fe_frame_to_fea (only support MEL_scale)
 	    -> fe_spec_magnitude
 		depends on whether the data length is longer or shorter than the fft, do aliasing or zero padding. 	
+		[EBG] if the data length is longer than the fft size, the code should break, or at least print a big warning saying "ALIAS!!!"
 		->fe_fft (our implementation of front-end)
 	    -> fe_mel_spec
 		compute the bins, notice that the size of vector would equal to the number of filter banks at this point
