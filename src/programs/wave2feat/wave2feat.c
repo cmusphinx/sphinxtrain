@@ -267,10 +267,8 @@ int32 fe_convert_files(param_t *P)
 	        last_frame_cep = (float32 **)fe_create_2d(1,FE->MEL_FB->num_filters,sizeof(float32));
 	    last_frame = fe_end_utt(FE, last_frame_cep[0]);
 	    if (last_frame>0){
-	      if (fe_writeblock_feat(P,FE,fp_out,last_frame,last_frame_cep) != FE_SUCCESS){
-		exit(0);
-	      }
-		frames_proc++;
+	      fe_writeblock_feat(P,FE,fp_out,last_frame,last_frame_cep);
+	      frames_proc++;
 	    }
 	    total_frames += frames_proc;
 	    	    
@@ -887,7 +885,7 @@ int32 fe_writeblock_feat(param_t *P, fe_t *FE, int32 fp, int32 nframes, float32 
     if  (write(fp, feat[0], nwritebytes) != nwritebytes) {
         fprintf(stderr,"Error writing block of features\n");
         close(fp);
-        return(FE_OUTPUT_FILE_WRITE_ERROR);
+	exit (1);
     }
 
     if (P->output_endian != P->machine_endian){
