@@ -191,17 +191,17 @@
 	   (cond
 	    ((lex.lookup_all name)
 	     (if (not (member_string name known_words))
-		 (set! known_words (append known_words (list name)))))
+		 (set! known_words (cons name known_words))))
 	    ((member_string name known_words)
 	     t)
 	    (t
-	     (set! unknown_words (append unknown_words (list name))))))
+	     (set! unknown_words (cons name unknown_words)))))
 	  ((or (member_string name unknown_words)
 	       (member_string name known_words)
 	       (member_string name noise_words))
 	   t)
 	  (t
-	   (set! unknown_words (append unknown_words (list name)))))))
+	   (set! unknown_words (cons name unknown_words))))))
      (reverse (cdr (reverse tokens))))
   utt))
 
