@@ -69,6 +69,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
+#
 
 static int print(void);
 
@@ -453,7 +454,10 @@ print()
 			    *(float32 *)cmd_ln_access("-lambdamax")) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
-
+    
+    if(fn==NULL){
+      E_FATAL("Please specify input by either -tmatfn, -mixwfn, -gaufn, -gaucntfn, -regmatcntfn or -lambdafn\n");
+    }
     return ret_val;
 }
 
@@ -475,9 +479,12 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/08/07  21:24:24  arthchan2003
+ * add help and example to printp
  * 
+ * Revision 1.4  2004/07/21 19:17:26  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
