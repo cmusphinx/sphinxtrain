@@ -75,9 +75,9 @@ parse_cmd_ln(int argc, char *argv[])
 
     const char examplestr[] =
 "Example: \n\
-make_quest -moddeffn $mdeffn -meanfn $meanfn -varfn $varfn -mixwfn \n\
-mixwfn -npermute 8 -niter 1 -qstperstt 20 -tempfn $tempfn -questfn \n\
-$questfn";
+make_quest -moddeffn mdef -meanfn mean -varfn var -mixwfn \n\
+mixwfn -npermute 8 -niter 1 -qstperstt 20 -tempfn temp -questfn \n\
+questions";
 
 
     static arg_def_t defn[] = {
@@ -200,9 +200,12 @@ $questfn";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2004/08/10  21:58:51  arthchan2003
- * Incorporate help and example for the four final tools
+ * Revision 1.3  2004/08/10  22:32:43  arthchan2003
+ * Fix the dollar problem of make_quests
  * 
+ * Revision 1.2  2004/08/10 21:58:51  arthchan2003
+ * Incorporate help and example for the four final tools
+ *
  * Revision 1.1  2004/06/17 19:39:49  arthchan2003
  * add back all command line information into the code
  *
