@@ -323,13 +323,17 @@ forward(float64 **active_alpha,
 	/* for all active states */
 	for (s = 0; s < n_active; s++) {
 	    i = active[s];
-
+#if FORWARD_DEBUG
+	    E_INFO("At time %d, In Gaussian computation, active state %d\n",t, i);
+#endif
 	    /* get list of states adjacent to active state i */
 	    next = state_seq[i].next_state;	
 
 	    for (u = 0; u < state_seq[i].n_next; u++) {
 		j = next[u];
-		
+#if FORWARD_DEBUG
+		E_INFO("In Gaussian computation, active state %d, next state %d\n", i,j);
+#endif
 		if (state_seq[j].mixw != TYING_NON_EMITTING) {
 		    if (amap[j] == INACTIVE) {
 			l_cb = state_seq[j].l_cb;
@@ -381,6 +385,9 @@ forward(float64 **active_alpha,
 	for (s = 0; s < n_active; s++) {
 	    i = active[s];
 	    
+#if FORWARD_DEBUG
+	    E_INFO("At time %d, In real state alpha update, active state %d\n",t, i);
+#endif
 	    /* get list of states adjacent to active state i */
 	    next = state_seq[i].next_state;	
 	    /* get the associated transition probs */
@@ -393,7 +400,9 @@ forward(float64 **active_alpha,
 	     * alpha values.  */
 	    for (u = 0; u < state_seq[i].n_next; u++) {
 		j = next[u];
-
+#if FORWARD_DEBUG
+		E_INFO("In real state update, active state %d, next state %d\n", i,j);
+#endif
 		l_cb = state_seq[j].l_cb;
 
 		if (state_seq[j].mixw != TYING_NON_EMITTING) {
@@ -415,19 +424,30 @@ forward(float64 **active_alpha,
 	}
 
 	/* deal with the non-emitting states following the next active states */
+	/* ARCHAN: Notice that this loop with automatically deal with null node after null node
+	   Not sure whether this is the original programmar will though. 
+	 */
 	for (s = 0; s < n_next_active; s++) {
 	    i = next_active[s];
 
+#if FORWARD_DEBUG
+	    E_INFO("At time %d, In non-emitting state update, active state %d\n",t, i);
+#endif
 	    /* find the prior states */
 	    next = state_seq[i].next_state;
 	    tprob = state_seq[i].next_tprob;
 
 	    for (u = 0; u < state_seq[i].n_next; u++) {
 		j = next[u];
-
+#if FORWARD_DEBUG
+		E_INFO("In non-emitting state update, active state %d, next state %d\n",i,j);
+#endif
 		if (state_seq[j].mixw == TYING_NON_EMITTING) {
 		    x = active_alpha[t][s] * tprob[u];
-			
+
+#if FORWARD_DEBUG
+		    E_INFO("In non-emitting state update, active_alpha[t][s]: %f,tprob[u]:  %f\n",active_alpha[t][s],tprob[u]);
+#endif
 		    if (amap[j] == INACTIVE) {
 			amap[j] = n_next_active;
 			active_alpha[t][n_next_active] = 0;
@@ -531,9 +551,12 @@ cleanup:
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.4  2004/06/17  19:17:14  arthchan2003
+ * Code Update for silence deletion and standardize the name for command -line arguments
  * 
+ * Revision 1.3  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:13  awb
  * *** empty log message ***
  *

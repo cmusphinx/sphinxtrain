@@ -21,6 +21,7 @@ libmodinv   : model inventory library
 libs2io     : Sphinx-II I/O library
 
 librpcc     : CPU time profiling low-level support for DEC Alpha machines.
+	      (Now is empty)
 
 libclust    : Routines for clustering (for VQ etc.)
 	      Routines for merging PDFs (for decision trees)

@@ -552,7 +552,6 @@ backward_update(float64 **active_alpha,
     /* Last state is non-emitting */
     non_emit[0] = n_state-1;
     n_non_emit = 1;
-
     t = n_obs-1;
 
     if (scale[t] == 0) {
@@ -563,15 +562,26 @@ backward_update(float64 **active_alpha,
 	goto free;
     }
 
+#if BACKWARD_DEBUG
+    E_INFO("Before updating non-emitting states\n");
+#endif
     /* Process non-emitting initial states first */
     for (s = 0; s < n_non_emit; s++) {
 	j = non_emit[s];
-	    
+
+#if BACKWARD_DEBUG
+	E_INFO("In time %d, processing non-emitting state %d\n",t,j);
+#endif
+
 	prior = state_seq[j].prior_state;
 	tprob = state_seq[j].prior_tprob;
 
 	for (u = 0; u < state_seq[j].n_prior; u++) {
 	    i = prior[u];
+
+#if BACKWARD_DEBUG
+	    E_INFO("Processing non-emitting state %d, prior %d\n",j, i);
+#endif
 	    for (q = 0; q < n_active_astate[t] && active_astate[t][q] != i; q++);
 	    if (q == n_active_astate[t]) {
 		/* state i not active in forward pass; skip it */
@@ -583,7 +593,6 @@ backward_update(float64 **active_alpha,
 
 	    if (tmat_reest) {
 		assert(tacc != NULL);
-
 		a_tacc = &tacc[i][j-i];
 	    }
 	    else {
@@ -598,10 +607,15 @@ backward_update(float64 **active_alpha,
 
 	    prior_beta[i] += tprob[u] * prior_beta[j];
 
-	    if (asf[i] != TRUE) {
-		asf[i] = TRUE;
-		active[n_active++] = i;
-	    }
+	    if (state_seq[i].mixw == TYING_NON_EMITTING){
+	      non_emit[n_non_emit] = i;
+	      n_non_emit++;
+	      }else{
+		if (asf[i] != TRUE) {
+		  asf[i] = TRUE;
+		  active[n_active++] = i;
+		}
+	      }
 	}
     }
 
@@ -616,12 +630,18 @@ backward_update(float64 **active_alpha,
 
     n_cb = gauden_n_mgau(g);
 
+#if BACKWARD_DEBUG
+    E_INFO("Before beta update\n");
+#endif
+
     for (t = n_obs-2; t >= 0; t--) {
+
+#if BACKWARD_DEBUG
+      E_INFO("At time %d\n",t);
+#endif
 	if (scale[t] == 0) {
 	    E_ERROR("Scale factor at time == %u is zero\n", t);
-
 	    retval = S3_ERROR;
-
 	    goto free;
 	}
 
@@ -640,10 +660,15 @@ backward_update(float64 **active_alpha,
 	n_active_tot += n_active;
 
 	/* for all active emitting j states at time t+1,
-	* compute the log density values */
+	   compute the log density values */
 
 	for (s = 0; s < n_active; s++) {
 	    j = active[s];
+
+#if BACKWARD_DEBUG
+	    E_INFO("In GMM Computation, state %d is active\n",j);
+	    E_INFO("state_seq[j].cb %d\n",state_seq[j].cb);
+#endif
 	    l_cb = state_seq[j].l_cb;
 	    l_ci_cb = state_seq[j].l_ci_cb;
 	    
@@ -681,12 +706,19 @@ backward_update(float64 **active_alpha,
 	    }
 	}
 
+#if BACKWARD_DEBUG	
+	E_INFO("Before scaling\n");
+#endif
 	/* Scale densities by dividing all by max */
 	gauden_scale_densities_bwd(now_den, now_den_idx,
 				   &dscale[t+1],
 				   active_cb, n_active_cb, g);
 	
 	for (s = 0; s < n_active; s++) {
+
+#if BACKWARD_DEBUG	
+	  E_INFO("In beta update, state %d is active for active state # %d\n",j,s);
+#endif
 	    j = active[s];
 	    l_cb = state_seq[j].l_cb;
 	    l_ci_cb = state_seq[j].l_ci_cb;
@@ -696,6 +728,9 @@ backward_update(float64 **active_alpha,
 				mixw[state_seq[j].mixw],
 				g);
 
+#if BACKWARD_DEBUG
+	    E_INFO("In beta update, state %d is active\n",j);
+#endif
 	    if (gau_timer)
 		timing_stop(gau_timer);
 
@@ -710,7 +745,9 @@ backward_update(float64 **active_alpha,
 	    /* for all states, i, prior to state j */
 	    for (u = 0; u < state_seq[j].n_prior; u++) {
 		i = prior[u];
-
+#if BACKWARD_DEBUG	
+		E_INFO("For active state %d , state %d is its prior\n",j,i);
+#endif
 		for (q = 0; q < n_active_astate[t] &&
 			 active_astate[t][q] != i; q++);
 		if (q == n_active_astate[t]) {
@@ -720,7 +757,6 @@ backward_update(float64 **active_alpha,
 
 		/* since survived pruning, this will be true
 		   for reasonable pruning thresholds */
-
 		assert(prior_beta[j] > 0);
 		
 		if (rsts_timer)
@@ -734,6 +770,9 @@ backward_update(float64 **active_alpha,
 
 		post_j = p_reest_term * op;
 
+#if BACKWARD_DEBUG	
+		E_INFO("State %u, post_j %e p_reest_term %e op %e\n",j,post_j,p_reest_term,op);
+#endif
 		if (post_j < 0) {
 		    E_WARN("posterior of state %u @ time %u (== %.8e) < 0\n", j, post_j, t+1);
 		    retval = S3_ERROR;
@@ -742,6 +781,12 @@ backward_update(float64 **active_alpha,
 			timing_stop(rsts_timer);
 		    goto free;
 		}
+
+#if BACKWARD_DEBUG	
+		E_INFO("post_j =%e, alpha == %e * tprob == %e * op == %e * beta == %e * 1 / falpha == %e q=%d state_of_q=%d at time %d\n", post_j, active_alpha[t][q], tprob[u], op, prior_beta[j], recip_final_alpha, q, i,t);
+#endif
+
+
 		if (post_j > 1.0 + 1e-2) {
 		    E_ERROR("posterior of state %u (== %.8e) @ time %u > 1 + 1e-2\n", j, post_j, t+1);
 		    E_ERROR("alpha == %e * tprob == %e * op == %e * beta == %e * 1 / falpha == %e\n", active_alpha[t][q], tprob[u], op, prior_beta[j], recip_final_alpha);
@@ -867,9 +912,14 @@ backward_update(float64 **active_alpha,
 			n_next_active++;
 		    }
 		}
+
 	    }
+
 	}
 
+#if BACKWARD_DEBUG
+	E_INFO("Before alpha beta consistency check\n");
+#endif
 	/* Do an alpha / beta consistency check */
 	for (s = 0, n_active = 0, pprob = 0; s < n_next_active; s++) {
 	    i = next_active[s];
@@ -936,10 +986,13 @@ backward_update(float64 **active_alpha,
 
 	/* Update beta for all predecessors of the non-emitting
 	 * states encountered above */
+#if BACKWARD_DEBUG
+	E_INFO("Before updating beta for all predecessors state\n");
+#endif
 	for (s = 0; s < n_tmp_non_emit; s++) {
 	    j = tmp_non_emit[s];
 	    
-	    assert(asf_next[j] == TRUE);
+	    /*assert(asf_next[j] == TRUE);*/
 	    asf_next[j] = FALSE;
 
 	    prior = state_seq[j].prior_state;
@@ -971,12 +1024,21 @@ backward_update(float64 **active_alpha,
 
 		beta[i] += tprob[u] * beta[j];
 
-		assert(state_seq[i].mixw != TYING_NON_EMITTING);
+		/*assert(state_seq[i].mixw != TYING_NON_EMITTING);*/
 
 		if (asf_next[i] != TRUE) {
+		    /* not already on the active list for time t-1 */
 		    asf_next[i] = TRUE;
-		    active[n_active++] = i;
+
+		    if (state_seq[i].mixw == TYING_NON_EMITTING){
+		      tmp_non_emit[n_tmp_non_emit] = i;
+		      n_tmp_non_emit++;
+		    }else{
+		      active[n_active] = i;
+		      n_active++;
+		    }
 		}
+
 	    }
 	}
 
@@ -1207,9 +1269,12 @@ free:
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.5  2004/06/17  19:17:14  arthchan2003
+ * Code Update for silence deletion and standardize the name for command -line arguments
  * 
+ * Revision 1.4  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.3  2001/02/20 00:28:35  awb
  * *** empty log message ***
  *

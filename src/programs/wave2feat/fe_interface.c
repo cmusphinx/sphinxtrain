@@ -174,8 +174,6 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)
 	/* RAH */
 	memcpy (tmp_spch,FE->OVERFLOW_SAMPS,FE->NUM_OVERFLOW_SAMPS*(sizeof(int16))); /* RAH */
 	memcpy(tmp_spch+FE->NUM_OVERFLOW_SAMPS, spch, nsamps*(sizeof(int16))); /* RAH */
-	/*	memcpy(FE->OVERFLOW_SAMPS + FE->NUM_OVERFLOW_SAMPS, spch, nsamps*(sizeof(int16)));
-		spch = FE->OVERFLOW_SAMPS;*/
 	nsamps += FE->NUM_OVERFLOW_SAMPS;
 	FE->NUM_OVERFLOW_SAMPS = 0; /*reset overflow samps count */
       }
@@ -184,8 +182,14 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)
       for (frame_start=0; frame_start+FE->FRAME_SIZE <= nsamps; frame_start += FE->FRAME_SHIFT)
 	frame_count++;
 
-      if (cep!=NULL) fe_free_2d((void **)cep);
-      cep = (float32 **)fe_create_2d(frame_count,FE->NUM_CEPSTRA,sizeof(float32)); /*MLS*/
+
+      /*      if (cep!=NULL) fe_free_2d((void**)cep); */ /* It should never not be NULL */
+      /* 01.14.01 RAH, added +1 Adding one gives us space to stick the last flushed buffer*/
+      if ((cep = (float32 **)fe_create_2d(frame_count+1,FE->NUM_CEPSTRA,sizeof(float32))) == NULL) {
+	fprintf(stderr,"memory alloc for cep failed in fe_process_utt()\n\tfe_create_2d(%ld,%d,%d)\n...exiting\n",(long int) (frame_count+1),FE->NUM_CEPSTRA,sizeof(float32));  /* typecast to make the compiler happy - EBG */
+	exit(0);
+      }
+
 
       spbuf_len = (frame_count-1)*FE->FRAME_SHIFT + FE->FRAME_SIZE;    
       /* assert(spbuf_len <= nsamps);*/

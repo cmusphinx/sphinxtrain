@@ -423,6 +423,19 @@ train_cmd_ln_parse(int argc, char *argv[])
 	  "none",
 	  "Do silence compression based on {current|prior} utterance"},
 
+	/* By ARCHAN at 200, fix the long-time legacy problem of not able to delete silence*/
+	{ "-sildel",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Allow optional silence deletion in the Baum-Welch algorithm or the Viterbi algorithm."},
+	
+	{ "-siltag",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  "SIL",
+	  "Specify the tag of silence, by default it is <sil>."},
+
 	{ "-abeam",
 	  CMD_LN_FLOAT64,
 	  CMD_LN_NO_VALIDATION,
@@ -563,9 +576,12 @@ train_cmd_ln_parse(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.5  2004/06/17  19:17:14  arthchan2003
+ * Code Update for silence deletion and standardize the name for command -line arguments
  * 
+ * Revision 1.4  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.3  2001/03/01 00:47:44  awb
  * *** empty log message ***
  *

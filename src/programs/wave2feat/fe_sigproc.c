@@ -85,19 +85,6 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
     melmax = fe_mel(MEL_FB->upper_filt_freq);
     melmin = fe_mel(MEL_FB->lower_filt_freq);
     dmelbw = (melmax-melmin)/(MEL_FB->num_filters+1);
-
-    if (MEL_FB->doublewide==ON){
-	melmin = melmin-dmelbw;
-	melmax = melmax+dmelbw;
-	if ((fe_melinv(melmin)<0) ||
-	    (fe_melinv(melmax)>MEL_FB->sampling_rate/2)){
-	    fprintf(stderr,"Out of Range: low  filter edge = %f (%f)\n",fe_melinv(melmin),0.0);
-	    fprintf(stderr,"              high filter edge = %f (%f)\n",fe_melinv(melmax),MEL_FB->sampling_rate/2);
-	    fprintf(stderr,"exiting...\n");
-	    exit(0);
-	}
-    }    
-    
     
     if (MEL_FB->doublewide==ON){
         for (i=0;i<=MEL_FB->num_filters+3; ++i){
@@ -110,9 +97,7 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
 	}
     }
     
-    for (whichfilt=0;whichfilt<MEL_FB->num_filters; ++whichfilt)
-    {
-
+    for (whichfilt=0;whichfilt<MEL_FB->num_filters; ++whichfilt)    {
 	/*line triangle edges up with nearest dft points... */
 	
 	if (MEL_FB->doublewide==ON){
@@ -152,7 +137,7 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
 	
 	MEL_FB->width[whichfilt] = i;
     }
-  
+    
     free(filt_edge);
     return(0);
 }

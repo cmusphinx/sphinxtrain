@@ -45,7 +45,7 @@ DIRNAME=src/programs/mixw_interp
 BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
-  cmd_ln.c \
+  parse_cmd_ln.c \
   main.c
 H = \
   cmd_ln_defn.h \

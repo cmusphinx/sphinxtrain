@@ -50,7 +50,7 @@
  *     Eric H. Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
-#include "cmd_ln.h"
+#include "parse_cmd_ln.h"
 #include <s3/s3mixw_io.h>
 #include <s3/s3gau_io.h>
 #include <s3/s3tmat_io.h>
@@ -326,9 +326,12 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.4  2004/06/17  19:17:17  arthchan2003
+ * Code Update for silence deletion and standardize the name for command -line arguments
  * 
+ * Revision 1.3  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:13  awb
  * *** empty log message ***
  *

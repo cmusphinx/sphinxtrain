@@ -122,8 +122,7 @@ state_seq_print(state_t *state,
     defn = mdef->defn;
     n_defn = mdef->n_defn;
     
-    printf("**state_seq**\n");
-    
+    E_INFO("**state_seq**\n");
     /* figure out the column widths by finding the max
      * length of a datum in each column. */
     for (i = 0; i < n_state; i++) {
@@ -149,7 +148,6 @@ state_seq_print(state_t *state,
     sprintf(non_e_format, "%%%us", m_mixw+m_cb+10);
     
     for (i = 0; i < n_state; i++) {
-
 	printf("%3u ", i);
 
 	if (state[i].mixw != TYING_NON_EMITTING) {
@@ -178,6 +176,7 @@ state_seq_print(state_t *state,
 
 	printf("\n\t");
 
+
 	if (state[i].n_prior == 0) {
 	    printf("<no prior>");
 	}
@@ -190,6 +189,7 @@ state_seq_print(state_t *state,
 	}
 
 	printf("\n\t");
+
 
 	if (state[i].n_next == 0) {
 	    printf("<no next>");
@@ -263,7 +263,9 @@ count_next_prior_states(uint32 *n_next,
 			uint32 n_phone,
 			model_def_entry_t *defn,
 
-			float32 ***all_tmat)
+			float32 ***all_tmat,	       
+			int32 sil_del,
+			acmod_id_t sil_id)
 {
     uint32 tmat_id;
     float32 **model_tmat;
@@ -275,6 +277,7 @@ count_next_prior_states(uint32 *n_next,
     tn = 0;
 
     for (i = 0, l = 0; i < n_phone; i++, l += n_ms) {
+
 	/* first state of each model has either zero or
 	   one prior states from the prior model */
 	if (i > 0) {
@@ -302,15 +305,31 @@ count_next_prior_states(uint32 *n_next,
 		    ++n_prior[l + j];
 		}
 	    }
+	    /* for last state and it is not the first phone, decide whether there is a silence*/
+	    if(sil_del && phone[i]==sil_id && j ==n_ms-1 && i >0 ) {
+	      ++tp;
+	      ++n_prior[l+j];
+	    }
 	}
 
 	/* last state of each model has either zero or
-	   one next state in the next model */
+	   one next state in the next model. */
+
 
 	if (i < n_phone-1) {
 	    ++tn;
 	    ++n_next[l + n_ms-1];
+
+	    /* ARCHAN: Also insert a skip arc if the next state is a
+	       silence This code is limited because the first phone in the
+	       sentence cannot be skipped.  */
+	    
+	    if(sil_del && phone[i+1]==sil_id){
+	      ++tn;
+	      ++n_next[l+ n_ms-1];
+	    }
 	}
+
     }
 
     *total_prior = tp;
@@ -332,7 +351,10 @@ set_next_prior_state(uint32 *next_state,
 		     uint32 n_phone,
 		     model_def_entry_t *defn,
 
-		     float32 ***all_tmat)
+		     float32 ***all_tmat,
+		     int32 sil_del,
+		     acmod_id_t sil_id)
+
 {
     uint32 i;
     uint32 j;
@@ -350,8 +372,14 @@ set_next_prior_state(uint32 *next_state,
 
 	/* 2nd through last phone have prior states to first phone state */
 	if (i > 0) {
+
+	  /* ARCHAN: wiring for silence deletion */
+	  if(sil_del && phone[i]==sil_id){
+	    prior_tprob[p] = 0.5;
+	  }else{
 	    prior_tprob[p] = 1.0;
-	    prior_state[p++] = l-1;	/* i.e. prior state of first state
+	  }
+	  prior_state[p++] = l-1;	/* i.e. prior state of first state
 					   is last state of prior model */
 	}
 
@@ -380,18 +408,37 @@ set_next_prior_state(uint32 *next_state,
 		}
 	    }
 
+	    if( sil_del && phone[i]==sil_id && i > 0 && j == n_ms-1) {
+	      prior_tprob[p] = 0.5;
+	      prior_state[p++] = l -1 ;
+	    }
+
+#if STATE_SEQ_BUILD
+	    E_INFO("n_prior[l+j] %d, p-p0 %d\n",n_prior[l+j],p-p0);
 	    assert(n_prior[l+j] == (p - p0));
+#endif
 	}
 
 	/* 1st through penultimate phone have next states */
 	if (i < n_phone-1) {
+	  if(sil_del && phone[i+1]==sil_id){
+	    next_tprob[n] = 0.5;
+	    next_state[n++] = l + n_ms; /* i.e. next state of last state is 
+					   first state of next model */
+	    next_tprob[n] = 0.5;
+	    next_state[n++] = l + 2* n_ms +  -1; /* i.e another next state of last state is 
+									 the last state of the next model. */
+	      
+	  }else{
 	    next_tprob[n] = 1.0;
 	    next_state[n++] = l + n_ms;	/* i.e. next state of last state is 
 					   first state of next model */
+	  }
 	}
     }
     assert( n == total_next );
     assert( p == total_prior );
+
 }
 
 int
@@ -435,7 +482,9 @@ state_seq_make(uint32 *n_state,
 	       acmod_id_t *phone,
 	       uint32 n_phone,
 	       model_inventory_t *inv,
-	       model_def_t *mdef)
+	       model_def_t *mdef,
+	       int32 sil_del,
+	       acmod_id_t sil_id)
 {
     static state_t *state;	/* The states of the sentence HMM graph */
     static uint32 *n_prior;	/* The in-degree of node i in the sent. HMM */
@@ -475,6 +524,7 @@ state_seq_make(uint32 *n_state,
 	n_s += defn[phone[i]].n_state;
     }
 	
+
     /* Create empty local->global mappings */
     mixw_map = remap_init(4 * n_s);
     cb_map = remap_init(4 * n_s);
@@ -507,7 +557,10 @@ state_seq_make(uint32 *n_state,
 			    n_prior, &total_prior,
 			    phone, n_phone,
 			    defn,
-			    all_tmat);
+			    all_tmat,
+			    sil_del,
+			    sil_id);
+
     
     if (total_next > max_total_next) {
 	/* Largest # of next states so far; (Re)allocate memory */
@@ -548,7 +601,7 @@ state_seq_make(uint32 *n_state,
     set_next_prior_state(next_state, next_tprob, n_next, total_next,
 			 prior_state, prior_tprob, n_prior, total_prior,
 			 phone, n_phone, defn,
-			 all_tmat);
+			 all_tmat,sil_del,sil_id);
 
     /* Define the model states of the sentence HMM */
     for (i = 0, k = 0, n = 0, p = 0; i < n_phone; i++) {
@@ -628,7 +681,7 @@ state_seq_make(uint32 *n_state,
 	    
 	    if ((tmat == state[j].tmat) && (m_i <= m_j)) {
 		/* Does next state transition prob agree w/ original parameters */
-		assert(state[i].next_tprob[u] == all_tmat[tmat][m_i][m_j]);
+	      /*		assert(state[i].next_tprob[u] == all_tmat[tmat][m_i][m_j]);*/
 	    }
 	}
     }
@@ -653,6 +706,7 @@ state_seq_make(uint32 *n_state,
 
     /* return # of states and the state list to caller */
     *n_state = n_s;
+
     return state;
 }
 
@@ -660,9 +714,12 @@ state_seq_make(uint32 *n_state,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:30  awb
- * *** empty log message ***
+ * Revision 1.4  2004/06/17  19:17:12  arthchan2003
+ * Code Update for silence deletion and standardize the name for command -line arguments
  * 
+ * Revision 1.3  2001/04/05 20:02:30  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:13  awb
  * *** empty log message ***
  *

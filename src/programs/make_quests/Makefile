@@ -46,10 +46,10 @@ BUILD_DIRS =
 ALL_DIRS= $(BUILD_DIRS)
 OTHER_SRCS = make_tree.c new_quest.c
 SRCS = \
-  cmd_ln.c \
+  parse_cmd_ln.c \
   main.c
 H = \
-  cmd_ln.h
+  parse_cmd_ln.h
 
 
 FILES = Makefile $(SRCS) $(H) $(OTHER_SRCS)

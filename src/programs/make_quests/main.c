@@ -48,7 +48,7 @@
  *********************************************************************/
 
 #include <math.h>
-#include "cmd_ln.h"
+#include "parse_cmd_ln.h"
 
 #include <s3/model_def_io.h>
 #include <s3/s3mixw_io.h>

@@ -69,6 +69,8 @@ endif
 
 INCLUDES = -I$(TOP)/include
 CPPFLAGS += $(LOCAL_INCLUDES) $(INCLUDES)
+EXTRA_CC_FLAGS += 
+#-DNEXT_UTT_STATES_VERBOSE
 CFLAGS += $(EXTRA_CC_FLAGS) $(OPT) $(DBG)
 LDFLAGS += -L$(LIBDIR) $(EXTRA_LD_FLAGS)
 STLIBS = -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc

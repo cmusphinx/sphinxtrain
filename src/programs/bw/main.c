@@ -160,10 +160,12 @@ main_initialize(int argc,
     int tmat_reest;
     int mean_reest;
     int var_reest;
+    int sil_del;
     int mllr_mult;
     int mllr_add;
     int did_restore = FALSE;
     const char *fn;
+    char* silence_str;
     float32 ****sxfrm_a = NULL;
     float32 ****sxfrm_ainv = NULL;
     float32 ***sxfrm_b = NULL;
@@ -280,17 +282,20 @@ main_initialize(int argc,
     tmat_reest = *(int32 *)cmd_ln_access("-tmatreest");
     mllr_mult  = *(int32 *)cmd_ln_access("-mllrmult");
     mllr_add   = *(int32 *)cmd_ln_access("-mllradd");
+    sil_del    = *(int32 *)cmd_ln_access("-sildel");
 
-    E_INFO("Will %sreestimate mixing weights\n",
+    E_INFO("Will %sreestimate mixing weights.\n",
 	   (mixw_reest ? "" : "NOT "));
-    E_INFO("Will %sreestimate means\n",
+    E_INFO("Will %sreestimate means.\n",
 	   (mean_reest ? "" : "NOT "));
-    E_INFO("Will %sreestimate variances\n",
+    E_INFO("Will %sreestimate variances.\n",
 	   (var_reest ? "" : "NOT "));
-    E_INFO("Will %sreestimate MLLR multiplicative term\n",
+    E_INFO("Will %sreestimate MLLR multiplicative term.\n",
 	   (mllr_mult ? "" : "NOT "));
-    E_INFO("Will %sreestimate MLLR additive term\n",
+    E_INFO("Will %sreestimate MLLR additive term.\n",
 	   (mllr_add ? "" : "NOT "));
+    E_INFO("WIll %soptionally delete silence in Baum Welch or Viterbi. \n",
+	   (sil_del ? "" : "NOT "));
 
     if (*(int32 *)cmd_ln_access("-mixwreest")) {
 	if (mod_inv_alloc_mixw_acc(inv) != S3_SUCCESS)
@@ -332,6 +337,7 @@ main_initialize(int argc,
 
     *out_lex = lex;
 
+
     /*
      * Configure corpus module (controls sequencing/access of per utterance data)
      */
@@ -339,6 +345,11 @@ main_initialize(int argc,
     /* set the data directory and extension for cepstrum files */
     corpus_set_mfcc_dir(cmd_ln_access("-cepdir"));
     corpus_set_mfcc_ext(cmd_ln_access("-cepext"));
+
+
+    /* The parameter required for re-estimation routines*/
+    silence_str = cmd_ln_access("-siltag");
+    E_INFO("Silence Tag %s\n",silence_str);
 
     if (*(int32 *)cmd_ln_access("-viterbi")) {
 	if (cmd_ln_access("-segdir") == NULL) {
@@ -462,6 +473,7 @@ main_initialize(int argc,
     }
 
     *out_sxfrm_ainv = sxfrm_ainv;
+
     *out_sxfrm_b = sxfrm_b;
 
     return S3_SUCCESS;
@@ -497,7 +509,9 @@ main_reestimate(model_inventory_t *inv,
     uint32 var_reest;	/* if TRUE, reestimate variances */
     uint32 mllr_mult;  /* if TRUE estimate multiplicative term of MLLR */
     uint32 mllr_add;   /* if TRUE estimate additive term of MLLR */
+    uint32 sil_del;    /* if TRUE optionally delete silence at the end */
     char *trans;
+    char* silence_str;
     uint32 in_veclen;
     timing_t *utt_timer = NULL;
     timing_t *upd_timer = NULL;
@@ -558,6 +572,9 @@ main_reestimate(model_inventory_t *inv,
     pass2var = *(int32 *)cmd_ln_access("-2passvar");
     mllr_mult = *(int32 *)cmd_ln_access("-mllrmult");
     mllr_add = *(int32 *)cmd_ln_access("-mllradd");
+    sil_del    = *(int32 *)cmd_ln_access("-sildel");
+    silence_str = cmd_ln_access("-siltag");
+
     if (cmd_ln_access("-ckptintv")) {
 	ckpt_intv = *(int32 *)cmd_ln_access("-ckptintv");
     }
@@ -707,11 +724,11 @@ main_reestimate(model_inventory_t *inv,
 	    timing_start(upd_timer);
 	if (!viterbi) {
 	    /* create a sentence HMM */
-	    state_seq = next_utt_states(&n_state, lex, inv, mdef, trans);
-
+	    state_seq = next_utt_states(&n_state, lex, inv, mdef, trans, sil_del, silence_str);
 	    printf(" %5u", n_state);
 
 	    /* accumulate reestimation sums for the utterance */
+
 	    if (baum_welch_update(&log_lik,
 				  f, n_frame,
 				  spkr_xfrm_ainv,
@@ -727,7 +744,8 @@ main_reestimate(model_inventory_t *inv,
 				  var_reest,
 				  pass2var,
 				  mllr_mult,
-				  mllr_add) == S3_SUCCESS) {
+				  mllr_add
+				  ) == S3_SUCCESS) {
 		total_frames += n_frame;
 		total_log_lik += log_lik;
 		
@@ -735,6 +753,7 @@ main_reestimate(model_inventory_t *inv,
 		       (n_frame > 0 ? log_lik / n_frame : 0.0),
 		       log_lik);
 	    }
+
 	}
 	else {
 	    char **word;
@@ -952,9 +971,12 @@ int main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.4  2004/06/17  19:17:14  arthchan2003
+ * Code Update for silence deletion and standardize the name for command -line arguments
  * 
+ * Revision 1.3  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:13  awb
  * *** empty log message ***
  *

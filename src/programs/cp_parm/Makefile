@@ -45,10 +45,10 @@ DIRNAME=src/programs/cp_parm
 BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
-  cmd_ln.c \
+  parse_cmd_ln.c \
   main.c
 H = \
-  cmd_ln.h \
+  parse_cmd_ln.h \
   cmd_ln_defn.h
 
 

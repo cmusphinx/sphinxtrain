@@ -45,10 +45,10 @@ DIRNAME=src/programs/mk_s3tmat
 BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
-  cmd_ln.c \
+  parse_cmd_ln.c \
   mk_s3tmat.c
 H = \
-  cmd_ln.h
+  parse_cmd_ln.h
 
 
 FILES = Makefile $(SRCS) $(H)

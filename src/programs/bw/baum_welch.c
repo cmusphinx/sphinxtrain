@@ -185,9 +185,26 @@ baum_welch_update(float64 *log_forw_prob,
      * for all states and time subject to the pruning constraints */
     if (fwd_timer)
 	timing_start(fwd_timer);
+
+
+    E_INFO("Before Forward search\n");
     ret = forward(active_alpha, active_astate, n_active_astate, scale, dscale,
 		  feature, n_obs, state, n_state,
 		  inv, a_beam);
+
+#if BW_DEBUG
+    for (i=0 ; i < n_obs;i++){
+      E_INFO("Number of active states %d at time %d\n",n_active_astate[i],i);
+      E_INFO("Scale of time %d is %e \n",i,scale[i]);
+      for(j=0 ; j < n_active_astate[i];j++){
+	E_INFO("Active state: %d Active alpha: %e\n",active_astate[i][j], active_alpha[i][j]);
+      }
+    }
+    i=0;
+    j=0;
+#endif
+
+
     if (fwd_timer)
 	timing_stop(fwd_timer);
 
@@ -203,6 +220,11 @@ baum_welch_update(float64 *log_forw_prob,
      * sums */
     if (bwd_timer)
 	timing_start(bwd_timer);
+
+#if BW_DEBUG
+    E_INFO("Before Backward search\n");
+#endif
+
     ret = backward_update(active_alpha, active_astate, n_active_astate, scale, dscale,
 			  feature, n_obs, spkr_xfrm_ainv, spkr_xfrm_b,
 			  state, n_state,
@@ -220,6 +242,9 @@ baum_welch_update(float64 *log_forw_prob,
 	goto error;
     }
 
+#if BW_DEBUG
+    E_INFO("Before Global Accumulation\n");
+#endif
 
     /* If no error was found in the forward or backward procedures,
      * add the resulting utterance reestimation accumulators to the
@@ -285,9 +310,12 @@ error:
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.4  2004/06/17  19:17:14  arthchan2003
+ * Code Update for silence deletion and standardize the name for command -line arguments
  * 
+ * Revision 1.3  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:13  awb
  * *** empty log message ***
  *

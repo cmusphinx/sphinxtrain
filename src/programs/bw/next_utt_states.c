@@ -66,7 +66,10 @@ state_t *next_utt_states(uint32 *n_state,
 			 lexicon_t *lex,
 			 model_inventory_t *inv,
 			 model_def_t *mdef,
-			 char *trans)
+			 char *trans,
+			 int32 sil_del,
+			 char* silence_str
+			 )
 {
     char **word;
     uint32 n_word;
@@ -74,13 +77,15 @@ state_t *next_utt_states(uint32 *n_state,
     char *btw_mark;
     acmod_set_t *acmod_set;
     acmod_id_t *phone;
+    acmod_id_t optSil;
+
     state_t *state_seq;
 
     word  = mk_wordlist(trans, &n_word);
 
     phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
     if (phone == NULL) {
-	E_WARN("Unable to produce CI phones for utt\n");
+	E_WARN("Unable to produce CI pones for utt\n");
 
 	ckd_free(word);
 
@@ -98,11 +103,13 @@ state_t *next_utt_states(uint32 *n_state,
 #ifdef NEXT_UTT_STATES_VERBOSE
     print_phone_list(phone, n_phone, btw_mark, acmod_set);
 #endif
-
-    state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef);
+    
+    optSil= acmod_set_name2id(acmod_set, silence_str);
+    E_INFO("Silence id %d\n",optSil);
+    state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef,sil_del,(acmod_id_t)optSil);
 
 #ifdef NEXT_UTT_STATES_VERBOSE
-    state_seq_print(state_seq, *n_state, mdef, acmod_set);
+    state_seq_print(state_seq, *n_state, mdef);
 #endif
 
     ckd_free(phone);
@@ -117,9 +124,12 @@ state_t *next_utt_states(uint32 *n_state,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.4  2004/06/17  19:17:14  arthchan2003
+ * Code Update for silence deletion and standardize the name for command -line arguments
  * 
+ * Revision 1.3  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:13  awb
  * *** empty log message ***
  *
