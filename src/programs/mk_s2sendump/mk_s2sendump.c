@@ -65,6 +65,7 @@
 #include <s3/s2_param.h>
 #include <s3/s2_read_map.h>
 #include <s3/s2_write_seno.h>
+#include <s2/byteorder.h>
 
 #include <s3/cmd_ln.h>
 
@@ -105,7 +106,7 @@ static char *fmtdesc[] = {
     NULL,
 };
 
-
+#if 0
 #if defined(_HPUX_SOURCE)
 #define SWAPW(x)	x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )
 #define SWAPL(x)	x = ( (((x)<<24)&0xff000000) | (((x)<<8)&0x00ff0000) | \
@@ -113,6 +114,7 @@ static char *fmtdesc[] = {
 #else
 #define SWAPW(x)
 #define SWAPL(x)
+#endif
 #endif
 
 float64 vector_sum_norm (float32 *vec, int32 len)
@@ -137,7 +139,7 @@ static void fwrite_int32 (fp, val)
     FILE *fp;
     int val;
 {
-    SWAPL(val);
+    SWAP_L(val);
     fwrite (&val, sizeof(int), 1, fp);
 }
 
