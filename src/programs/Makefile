@@ -70,6 +70,7 @@ BUILD_DIRS = agg_seg \
 	mk_ts2cb \
 	mllr_transform \
 	norm \
+	mllr_solve \
 	param_cnt \
 	printp \
 	prunetree \

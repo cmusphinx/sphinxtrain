@@ -129,6 +129,14 @@ regmat_read (const char    *accumdir,
     return S3_SUCCESS;
 }
 
+/* 
+20040726 : ARCHAN : What is this routine doing?  This routine can do
+the conventional Legetter's method of maximum likelihood linear
+regression.  For every regression class, every stream (nfeat is the
+number of stream).  Some body outside this 
+
+*/
+
 int32
 compute_mllr (
              float32 *****regl,

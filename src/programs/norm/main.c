@@ -58,6 +58,7 @@
 #include <s3/s3regmat_io.h>
 #include <s3/s3mixw_io.h>
 #include <s3/s3tmat_io.h>
+#include <s3/s3acc_io.h>
 #include <s3/regmat_io.h>
 #include <s3/matrix.h>
 
@@ -89,289 +90,7 @@ initialize(int argc,
     return S3_SUCCESS;
 }
 
-static int
-ck_readable(const char *fn)
-{
-    FILE *fp;
 
-    fp = fopen(fn, "rb");
-    if (fp != NULL) {
-	fclose(fp);
-	return TRUE;
-    }
-    else {
-	return FALSE;
-    }
-}
-
-static int
-rdacc_tmat(const char *dir,
-
-	   float32 ****inout_tmat_acc,
-	   uint32 *inout_n_tmat,
-	   uint32 *inout_n_state_pm)
-{
-    char fn[MAXPATHLEN+1];
-    float32 ***in_tmat_acc;
-    float32 ***tmat_acc;
-    uint32 n_tmat;
-    uint32 n_state_pm;
-
-    sprintf(fn, "%s/tmat_counts", dir);
-
-    if (ck_readable(fn)) {
-	if (s3tmat_read(fn,
-			&in_tmat_acc,
-			&n_tmat,
-			&n_state_pm) != S3_SUCCESS) {
-	    return S3_ERROR;
-	}
-	tmat_acc = *inout_tmat_acc;
-
-	if (tmat_acc == NULL) {
-	    *inout_tmat_acc = tmat_acc = in_tmat_acc;
-	    *inout_n_tmat = n_tmat;
-	    *inout_n_state_pm = n_state_pm;
-	}
-	else {
-	    int err = FALSE;
-
-	    if (*inout_n_tmat != n_tmat) {
-		E_ERROR("# tmat in, %u != prior # tmat, %u\n",
-			n_tmat, *inout_n_tmat);
-		err = TRUE;
-	    }
-	    if (*inout_n_state_pm != n_state_pm) {
-		E_ERROR("# tmat in, %u != prior # tmat, %u\n",
-			n_state_pm, *inout_n_state_pm);
-		err = TRUE;
-	    }
-
-	    if (err)
-		return S3_ERROR;
-
-	    accum_3d(tmat_acc, in_tmat_acc,
-		     n_tmat, n_state_pm-1, n_state_pm);
-
-	    ckd_free_3d((void ***)in_tmat_acc);
-	}
-    }
-    else {
-	E_ERROR("Unable to access %s\n", fn);
-
-	return S3_ERROR;
-    }
-
-    return S3_SUCCESS;
-}
-
-static int
-rdacc_mixw(const char *dir,
-	   
-	   float32 ****inout_mixw_acc,
-	   uint32 *inout_n_mixw,
-	   uint32 *inout_n_stream,
-	   uint32 *inout_n_density)
-{
-    char fn[MAXPATHLEN+1];
-    float32 ***in_mixw_acc;
-    float32 ***mixw_acc;
-    uint32 n_mixw;
-    uint32 n_stream;
-    uint32 n_density;
-
-    sprintf(fn, "%s/mixw_counts", dir);
-
-    if (ck_readable(fn)) {
-	if (s3mixw_read(fn,
-			&in_mixw_acc,
-			&n_mixw,
-			&n_stream,
-			&n_density) != S3_SUCCESS) {
-	    return S3_ERROR;
-	}
-
-	mixw_acc = *inout_mixw_acc;
-
-	if (mixw_acc == NULL) {
-	    *inout_mixw_acc = mixw_acc = in_mixw_acc;
-	    *inout_n_mixw = n_mixw;
-	    *inout_n_stream = n_stream;
-	    *inout_n_density = n_density;
-	}
-	else {
-	    int err = FALSE;
-	    
-	    if (*inout_n_mixw != n_mixw) {
-		E_ERROR("# mixw in file %s (== %u) != prior # mixw (== %u)\n",
-			fn, n_mixw, *inout_n_mixw);
-		err = TRUE;
-	    }
-
-	    if (*inout_n_stream != n_stream) {
-		E_ERROR("# stream in file %s (== %u) != prior # stream (== %u)\n",
-			fn, n_stream, *inout_n_stream);
-		err = TRUE;
-	    }
-
-	    if (*inout_n_density != n_density) {
-		E_ERROR("# density comp/mix in file %s (== %u) != prior # density (== %u)\n",
-			fn, n_density, *inout_n_density);
-		err = TRUE;
-	    }
-
-	    if (err)
-		return S3_ERROR;
-
-	    accum_3d(mixw_acc, in_mixw_acc,
-		     n_mixw, n_stream, n_density);
-
-	    ckd_free_3d((void ***)in_mixw_acc);
-	}
-    }
-    else {
-	E_ERROR("Unable to access %s\n", fn);
-
-	return S3_ERROR;
-    }
-
-    return S3_SUCCESS;
-}
-
-static int
-rdacc_den(const char *dir,
-
-	  vector_t ****inout_wt_mean,
-	  vector_t ****inout_wt_var,
-	  int32 *inout_pass2var,
-	  float32  ****inout_dnom,
-	  uint32 *inout_n_mgau,
-	  uint32 *inout_n_stream,
-	  uint32 *inout_n_density,
-	  const uint32 **inout_veclen)
-{
-    char fn[MAXPATHLEN+1];
-    vector_t ***in_wt_mean;
-    vector_t ***wt_mean;
-    vector_t ***in_wt_var;
-    vector_t ***wt_var;
-    float32 ***in_dnom;
-    float32 ***dnom;
-    uint32 n_mgau;
-    uint32 n_stream;
-    uint32 n_density;
-    const uint32 *veclen;
-    const uint32 *in_veclen;
-    int32 pass2var;
-    int i;
-
-    sprintf(fn, "%s/gauden_counts", dir);
-
-    if (ck_readable(fn)) {
-	if (s3gaucnt_read(fn,
-			  &in_wt_mean,
-			  &in_wt_var,
-			  &pass2var,
-			  &in_dnom,
-			  &n_mgau,
-			  &n_stream,
-			  &n_density,
-			  &in_veclen) != S3_SUCCESS) {
-	    fflush(stdout);
-	    perror(fn);
-	    
-	    return S3_ERROR;
-	}
-
-	wt_mean = *inout_wt_mean;
-	wt_var = *inout_wt_var;
-	dnom = *inout_dnom;
-	veclen = *inout_veclen;
-
-	if (wt_mean == NULL) {
-
-	    /* if a gauden_counts file exists, it will have reestimated means */
-
-	    *inout_wt_mean = wt_mean = in_wt_mean;
-	    *inout_dnom = dnom = in_dnom;
-	    *inout_n_mgau = n_mgau;
-	    *inout_n_stream = n_stream;
-	    *inout_n_density = n_density;
-	    *inout_veclen = in_veclen;
-	    *inout_pass2var = pass2var;
-
-	    if (wt_var == NULL && in_wt_var != NULL) {
-		*inout_wt_var = wt_var = in_wt_var;
-	    }
-	}
-	else {
-	    int err = FALSE;
-	    
-	    /* check if matrices are able to be added */
-	    if (*inout_n_mgau != n_mgau) {
-		E_ERROR("# mix. Gau. for file %s (== %u) != prior # mix. Gau. (== %u)\n",
-			fn, n_mgau, *inout_n_mgau);
-		err = TRUE;
-	    }
-
-	    if (*inout_n_stream != n_stream) {
-		E_ERROR("# stream for file %s (== %u) != prior # stream (== %u)\n",
-			fn, n_stream, *inout_n_stream);
-		err = TRUE;
-	    }
-
-	    if (*inout_n_density != n_density) {
-		E_ERROR("# density comp/mix for file %s (== %u) != prior # density, %u\n",
-			fn, n_density, *inout_n_density);
-		err = TRUE;
-	    }
-
-	    if (*inout_pass2var != pass2var) {
-		E_ERROR("2 pass var %s in %s, but %s in others.\n",
-			fn, (pass2var ? "true" : "false"),
-			(*inout_pass2var ? "true" : "false"));
-		err = TRUE;
-	    }
-
-	    for (i = 0; i < n_stream; i++) {
-		if (veclen[i] != in_veclen[i]) {
-		    E_ERROR("vector length of stream %u (== %u) != prior length (== %u)\n",
-			    i, in_veclen[i], veclen[i]);
-		    err = TRUE;
-		}
-	    }
-
-	    ckd_free((void *)in_veclen);
-	    
-	    if (err)
-		return S3_ERROR;
-
-	    /* accumulate values */
-	    accum_3d(dnom, in_dnom,
-		     n_mgau, n_stream, n_density);
-
-	    gauden_accum_param(wt_mean, in_wt_mean,
-			       n_mgau, n_stream, n_density, veclen);
-	    gauden_free_param(in_wt_mean);
-
-	    if (wt_var) {
-		assert(in_wt_var);
-		
-		gauden_accum_param(wt_var, in_wt_var,
-				   n_mgau, n_stream, n_density, veclen);
-		gauden_free_param(in_wt_var);
-	    }
-	}
-    }
-    else {
-	E_ERROR("Unable to access %s\n", fn);
-
-	return S3_ERROR;
-    }
-
-    return S3_SUCCESS;
-}
-
 static int
 normalize()
 {
@@ -823,11 +542,14 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.7  2004/07/21  22:32:27  egouvea
+ * Revision 1.8  2004/07/27  12:07:31  arthchan2003
+ * Check-in mllr_solve, a program that can compute the adaptation matrix. There is still some precision problem at this point. But it is good enough to check-in
+ * 
+ * Revision 1.7  2004/07/21 22:32:27  egouvea
  * Fixed some compatibility issues between platforms: make sure we open
  * files with "wb" or "rb", move some #include not defined for all
  * platforms to the proper #if defined() etc.
- * 
+ *
  * Revision 1.6  2004/07/21 22:00:44  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

@@ -50,3 +50,20 @@ read_reg_mat (const char   *regmatfn,
 	      uint32  *n_stream,
 	      float32 *****A,
 	      float32 ****B);
+
+int32
+free_mllr_A(float32 ****A,
+	    uint32  n_class,
+	    uint32  n_stream);
+
+
+int32
+free_mllr_B(float32 ***B,
+	    uint32  n_class,
+	    uint32  n_stream);
+
+int32
+free_mllr_reg(float32 *****regl,
+              float32 ****regr,
+              uint32  n_class,
+              uint32  n_stream);

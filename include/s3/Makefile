@@ -59,7 +59,7 @@ H=  \
   quest.h r_agc_noise.h read_line.h read_seno_dtree.h regmat_io.h remap.h \
   s2_mixing_weights.h s2_param.h s2_read_cb.h s2_read_map.h s2_read_seno.h \
   s2_read_tmat.h s2_write_cb.h s2_write_hmm.h s2_write_seno.h s2io.h s3.h \
-  s3_open.h s3cb2mllr_io.h s3gau_io.h s3io.h s3lamb_io.h s3map_io.h \
+  s3_open.h s3cb2mllr_io.h s3acc_io.h s3gau_io.h s3io.h s3lamb_io.h s3map_io.h \
   s3mixw_io.h s3regmat_io.h s3tmat_io.h s3ts2cb_io.h segdmp.h silcomp.h \
   state.h state_param_def_io.h state_seq.h swap.h tmat_param_io.h topo_read.h \
   ts2cb.h two_class.h uttfile.h vector.h was_added.h \

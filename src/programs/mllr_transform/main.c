@@ -56,6 +56,8 @@ initialize(int argc,
     return S3_SUCCESS;
 }
 
+
+/* ARCHAN 20040726 : I kept all Sam Joo's steps mark in the comment. I think they are pretty neat.  */
 static int
 mllr_adapt_mean(const char *outmeanfn,
 		const char *inmeanfn,
@@ -205,9 +207,6 @@ mllr_adapt_mean(const char *outmeanfn,
             E_FATAL("Can not read model definition file %s\n", moddeffn);
         }
 	gau_begin = mdef->n_tied_ci_state;
-        for (i=0; i<gau_begin; i++) {
-            cb2mllr[i] = -1;                    /* skip CI senoes */
-        }
         E_INFO("Use CD senones only. (index >= %d)\n",mdef->n_tied_ci_state);
     }
 
@@ -218,7 +217,6 @@ mllr_adapt_mean(const char *outmeanfn,
 
     for (i = gau_begin; i < n_mgau; i++) {
 	mc = cb2mllr[i];
-	if (mc < 0) continue;	/* skip */
 
 	for (j = 0; j < n_feat; j++) {
 	    tmean = (float32 *)ckd_calloc(veclen[j],sizeof(float32));
@@ -234,20 +232,9 @@ mllr_adapt_mean(const char *outmeanfn,
 		}
 
 		/* Write back the transformed mean vector */
-		for (l = 0; l < veclen[j]; l++) {
-
-		    mean[i][j][k][l] = tmean[l];
-
-		    /* 20040725 ARCHAN: Temporarily delete SamJoo's code on smooth hacking. */
-		    /***********
-		    if (var) {
-		  
-		    }
-		    else {
-		        mean[i][j][k][l] = tmean[l];
-		    }
-		    ***********/
-		}
+		for (l = 0; l < veclen[j]; l++) 
+		  mean[i][j][k][l] = tmean[l];
+		
 	    }
 	    ckd_free(tmean);  tmean = NULL;
 	}

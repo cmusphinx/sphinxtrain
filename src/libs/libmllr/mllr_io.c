@@ -128,3 +128,58 @@ read_reg_mat (
     fclose(fp);
     return S3_SUCCESS;
 }
+
+int32
+free_mllr_A(float32 ****A,
+	    uint32  n_class,
+	    uint32  n_stream)
+{
+    uint32 i,j;
+
+    for (i=0; i < n_class; i++) {
+	for (j=0; j < n_stream; j++) {
+	    ckd_free_2d((void **)A[i][j]);
+	}
+    }
+    ckd_free_2d((void **)A);
+
+    return S3_SUCCESS;
+}
+
+
+int32
+free_mllr_B(float32 ***B,
+	    uint32  n_class,
+	    uint32  n_stream)
+{
+    uint32 i,j;
+
+    for (i=0; i < n_class; i++) {
+	for (j=0; j < n_stream; j++) {
+	   ckd_free((void *)B[i][j]);
+	}
+    }
+    ckd_free_2d((void **)B);
+
+    return S3_SUCCESS;
+}
+
+int32
+free_mllr_reg(float32 *****regl,
+              float32 ****regr,
+              uint32  n_class,
+              uint32  n_stream)
+{
+    uint32 i,j;
+
+    for (i=0; i < n_class; i++) {
+        for (j=0; j < n_stream; j++) {
+            ckd_free_3d((void ***)regl[i][j]);
+            ckd_free_2d((void **)regr[i][j]);
+        }
+    }
+    ckd_free_2d((void **)regl);
+    ckd_free_2d((void **)regr);
+
+    return S3_SUCCESS;
+}
