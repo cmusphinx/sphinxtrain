@@ -14,8 +14,6 @@ close(RAW);
 open(TEX,"> $texcmdline") || die "Cannot open file $texcmdline for writing\n";
 
 $toolname =~ s/_/\\_/g;
-$toolname =~ s/>/\\>/g;
-$toolname =~ s/</\\</g;
 print TEX "\{\\it Usage: $toolname [options]\}\n";
 print TEX "\\begin\{itemize\}\n";
 
@@ -40,6 +38,11 @@ foreach $char (@chars){
 foreach $line (@rawlines){
 
     chomp($line);
+
+    $line =~ s/_/\\_>/g;
+    $line =~ s/>/\$>\$/g;
+    $line =~ s/</\$<\$/g;
+
     @chars=split(//,$line);
 
     $opt_def="";
