@@ -229,9 +229,10 @@ void fe_hamming_window(float64 *in, float64 *window, int32 in_len)
 }
 
 
-void fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
+int32 fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
 {
     float64 *spec, *mfspec;
+    int32 returnValue = FE_SUCCESS;
     
     if (FE->FB_TYPE == MEL_SCALE){
 	spec = (float64 *)calloc(FE->FFT_SIZE, sizeof(float64));
@@ -244,8 +245,8 @@ void fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
 	
  	fe_spec_magnitude(in, FE->FRAME_SIZE, spec, FE->FFT_SIZE);
 	fe_mel_spec(FE, spec, mfspec);
-	fe_mel_cep(FE, mfspec, fea);
-	
+	returnValue = fe_mel_cep(FE, mfspec, fea);
+
 	free(spec);
 	free(mfspec);	
     }
@@ -253,7 +254,7 @@ void fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
 	fprintf(stderr,"MEL SCALE IS CURRENTLY THE ONLY IMPLEMENTATION!\n");
 	exit(0);
     }
-    
+    return returnValue;    
 }
 
 
@@ -329,11 +330,12 @@ void fe_mel_spec(fe_t *FE, float64 const *spec, float64 *mfspec)
 
 
 
-void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
+int32 fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
 {
     int32 i,j;
     int32 period;
     float32 beta;
+    int32 returnValue = FE_SUCCESS;
 
     period = FE->MEL_FB->num_filters;
 
@@ -341,9 +343,10 @@ void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
     {
 	if (mfspec[i]>0)
 	    mfspec[i] = log(mfspec[i]);
-	else
+	else {
 	    mfspec[i] = -1.0e+5;
-
+	    returnValue = FE_ZERO_ENERGY_ERROR;
+	}
     }
     if (FE->LOG_SPEC == OFF) {
       for (i=0; i< FE->NUM_CEPSTRA; ++i){
@@ -362,28 +365,30 @@ void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
 	mfcep[i] = mfspec[i];
       }
     }
-
-    return;
+    return returnValue;
 }
 
 int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert)
 {
-  static int32
-    s, k,			/* as above				*/
-    lgN;			/* log2(N)				*/
   complex
-    *f1, *f2,			/* pointers into from array		*/
-    *t1, *t2,			/* pointers into to array		*/
-    *ww;			/* pointer into w array			*/
-  static complex
     *w, *from, *to,		/* as above				*/
     wwf2,			/* temporary for ww*f2			*/
     *buffer,			/* from and to flipflop btw out and buffer */
     *exch,			/* temporary for exchanging from and to	*/
     *wEnd;			/* to keep ww from going off end	*/
-  static float64
+
+  float64
     div,			/* amount to divide result by: N or 1	*/
     x;				/* misc.				*/
+
+  int32
+    s, k,			/* as above				*/
+    lgN;			/* log2(N)				*/
+
+  complex
+    *f1, *f2,			/* pointers into from array		*/
+    *t1, *t2,			/* pointers into to array		*/
+    *ww;			/* pointer into w array			*/
 
   
   /* check N, compute lgN						*/

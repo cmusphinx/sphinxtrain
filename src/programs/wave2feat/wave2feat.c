@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,7 @@
 #include "fe_internal.h"
 #include "wave2feat.h"
 #include "parse_cmd_ln.h"
-#include <s3/err.h>
+#include <s3/common.h>
 
 /*       
 	 7-Feb-00 M. Seltzer - wrapper created for new front end -
@@ -104,10 +104,12 @@ int32 fe_convert_files(param_t *P)
     char *infile,*outfile, fileroot[MAXCHARS];
     FILE *ctlfile;
     int16 *spdata=NULL;
-    int32 splen,total_samps,frames_proc,nframes,nblocks,last_frame;
+    int32 splen = 0,total_samps,frames_proc,nframes,nblocks,last_frame;
     int32 fp_in,fp_out, last_blocksize=0,curr_block,total_frames;
     float32 **cep = NULL, **last_frame_cep;
     int32 return_value;
+    int32 warn_zero_energy = OFF;
+    int32 process_utt_return_value;
     
     if ((FE = fe_init(P))==NULL){
 	E_ERROR("memory alloc failed...exiting\n");
@@ -129,6 +131,8 @@ int32 fe_convert_files(param_t *P)
 	      return(return_value);
 	    }
 
+	    warn_zero_energy = OFF;
+
 	    if (nblocks*P->blocksize>=total_samps) 
 		last_blocksize = total_samps - (nblocks-1)*P->blocksize;
 	    
@@ -147,10 +151,16 @@ int32 fe_convert_files(param_t *P)
 			E_ERROR("error reading speech data\n");
 			return(FE_INPUT_FILE_READ_ERROR);
 		    }
-		    frames_proc = fe_process_utt(FE,spdata,splen,&cep);
+		    process_utt_return_value = 
+		      fe_process_utt(FE,spdata,splen,&cep, &frames_proc);
+		    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+		      warn_zero_energy = ON;
+		    } else {
+		      assert(process_utt_return_value == FE_SUCCESS);
+		    }
 		    if (frames_proc>0)
 			fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
-		    fe_free_2d((void **)cep);
+		    ckd_free_2d((void **)cep);
 		    curr_block++;
 		    total_frames += frames_proc;
 		    if (spdata!=NULL) { 
@@ -159,7 +169,9 @@ int32 fe_convert_files(param_t *P)
 		    }
 		}
 		/* process last (or only) block */
-		if (spdata!=NULL) free(spdata);
+		if (spdata!=NULL) {
+		  free(spdata);
+		}
 		splen=last_blocksize;
 		
 		if ((spdata = (int16 *)calloc(splen,sizeof(int16)))==NULL){
@@ -172,16 +184,28 @@ int32 fe_convert_files(param_t *P)
 		    return(FE_INPUT_FILE_READ_ERROR);
 		}
 		
-		frames_proc = fe_process_utt(FE,spdata,splen,&cep);
+		process_utt_return_value = 
+		  fe_process_utt(FE,spdata,splen,&cep, &frames_proc);
+		if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+		  warn_zero_energy = ON;
+		} else {
+		  assert(process_utt_return_value == FE_SUCCESS);
+		}
 		if (frames_proc>0)
 		    fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
-		fe_free_2d((void **)cep);
+		ckd_free_2d((void **)cep);
 		curr_block++;
 		if (P->logspec != ON)
-		    last_frame_cep = (float32 **)fe_create_2d(1,FE->NUM_CEPSTRA,sizeof(float32));
+		    last_frame_cep = (float32 **)ckd_calloc_2d(1,FE->NUM_CEPSTRA,sizeof(float32));
 		else
-		    last_frame_cep = (float32 **)fe_create_2d(1,FE->MEL_FB->num_filters,sizeof(float32));
-		last_frame = fe_end_utt(FE, last_frame_cep[0]);
+		    last_frame_cep = (float32 **)ckd_calloc_2d(1,FE->MEL_FB->num_filters,sizeof(float32));
+		process_utt_return_value = 
+		  fe_end_utt(FE, last_frame_cep[0], &last_frame);
+		if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+		  warn_zero_energy = ON;
+		} else {
+		  assert(process_utt_return_value == FE_SUCCESS);
+		}
 		if (last_frame>0){
 		    fe_writeblock_feat(P,FE,fp_out,last_frame,last_frame_cep);
 		    frames_proc++;
@@ -190,7 +214,7 @@ int32 fe_convert_files(param_t *P)
 		
 		fe_closefiles(fp_in,fp_out);		
 		free(spdata); spdata = 0;
-		fe_free_2d((void **)last_frame_cep);
+		ckd_free_2d((void **)last_frame_cep);
 		
 	    }
 	    else{
@@ -199,6 +223,9 @@ int32 fe_convert_files(param_t *P)
 	    }
 	}
 	fe_close(FE);
+	if (ON == warn_zero_energy) {
+	  E_WARN("File %s has some frames with zero energy. Consider using dither\n", infile);
+	}
     }
     
     else if (P->is_single){
@@ -209,6 +236,8 @@ int32 fe_convert_files(param_t *P)
 	if (return_value != FE_SUCCESS){
 	  return(return_value);
 	}
+
+	warn_zero_energy = OFF;
 	
 	if (nblocks*P->blocksize>=total_samps) 
 	    last_blocksize = total_samps - (nblocks-1)*P->blocksize;
@@ -228,10 +257,16 @@ int32 fe_convert_files(param_t *P)
 		    E_ERROR("Error reading speech data\n");
 		    return(FE_INPUT_FILE_READ_ERROR);
 		}
-		frames_proc = fe_process_utt(FE,spdata,splen,&cep);
+		process_utt_return_value = 
+		  fe_process_utt(FE,spdata,splen,&cep, &frames_proc);
+		if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+		  warn_zero_energy = ON;
+		} else {
+		  assert(process_utt_return_value == FE_SUCCESS);
+		}
 		if (frames_proc>0)
 		    fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
-		fe_free_2d((void **)cep);
+		ckd_free_2d((void **)cep);
 		curr_block++;
 		total_frames += frames_proc;
 		if (spdata!=NULL) { 
@@ -240,7 +275,7 @@ int32 fe_convert_files(param_t *P)
 		}		
 	    }
 	    /* process last (or only) block */
-	    if (spdata!=NULL) free(spdata);
+	    if (spdata!=NULL) {free(spdata);}
 	    splen =last_blocksize;
 	    if ((spdata = (int16 *)calloc(splen,sizeof(int16)))==NULL){
 		E_ERROR("Unable to allocate memory block of %d shorts for input speech\n",splen);
@@ -250,17 +285,29 @@ int32 fe_convert_files(param_t *P)
 		E_ERROR("Error reading speech data\n");
 		return(FE_INPUT_FILE_READ_ERROR);
 	    }
-	    frames_proc = fe_process_utt(FE,spdata,splen,&cep);
+	    process_utt_return_value = 
+	      fe_process_utt(FE,spdata,splen,&cep, &frames_proc);
+	    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+	      warn_zero_energy = ON;
+	    } else {
+	      assert(process_utt_return_value == FE_SUCCESS);
+	    }
 	    if (frames_proc>0)
 		fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
-	    fe_free_2d((void **)cep);
+	    ckd_free_2d((void **)cep);
 
 	    curr_block++;
 	    if (P->logspec != ON)
-	        last_frame_cep = (float32 **)fe_create_2d(1,FE->NUM_CEPSTRA,sizeof(float32));
+	        last_frame_cep = (float32 **)ckd_calloc_2d(1,FE->NUM_CEPSTRA,sizeof(float32));
 	    else
-	        last_frame_cep = (float32 **)fe_create_2d(1,FE->MEL_FB->num_filters,sizeof(float32));
-	    last_frame = fe_end_utt(FE, last_frame_cep[0]);
+	        last_frame_cep = (float32 **)ckd_calloc_2d(1,FE->MEL_FB->num_filters,sizeof(float32));
+	    process_utt_return_value = 
+	      fe_end_utt(FE, last_frame_cep[0], &last_frame);
+	    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+	      warn_zero_energy = ON;
+	    } else {
+	      assert(process_utt_return_value == FE_SUCCESS);
+	    }
 	    if (last_frame>0){
 	      fe_writeblock_feat(P,FE,fp_out,last_frame,last_frame_cep);
 	      frames_proc++;
@@ -270,7 +317,7 @@ int32 fe_convert_files(param_t *P)
 	    fe_closefiles(fp_in,fp_out);
 	    
 	    free(spdata);
-	    fe_free_2d((void **)last_frame_cep);
+	    ckd_free_2d((void **)last_frame_cep);
 	}
 	else{
 	    E_ERROR("fe_start_utt() failed\n");
@@ -278,6 +325,9 @@ int32 fe_convert_files(param_t *P)
 	}
 	
 	fe_close(FE);
+	if (ON == warn_zero_energy) {
+	  E_WARN("File %s has some frames with zero energy. Consider using dither\n", infile);
+	}
     }
     else{
 	E_ERROR("Unknown mode - single or batch?\n");
@@ -459,7 +509,9 @@ int32 fe_build_filenames(param_t *P, char *fileroot, char **infilename, char **o
         strcat(cbuf,fileroot);
         strcat(cbuf,".");
         strcat(cbuf,P->wavext);
-        *infilename = fe_copystr(*infilename,cbuf);
+	if (infilename != NULL) {
+	  *infilename = fe_copystr(*infilename,cbuf);
+	}
         
         sprintf(cbuf,"%s","");
         strcat(cbuf,P->cepdir);
@@ -469,16 +521,22 @@ int32 fe_build_filenames(param_t *P, char *fileroot, char **infilename, char **o
             strcat(cbuf, chanlabel);
         strcat(cbuf,".");
         strcat(cbuf,P->cepext);
-        *outfilename = fe_copystr(*outfilename,cbuf);	
+	if (outfilename != NULL) {
+	  *outfilename = fe_copystr(*outfilename,cbuf);	
+	}
     }
     else if (P->is_single){
         sprintf(cbuf,"%s","");
         strcat(cbuf,P->wavfile);
-        *infilename = fe_copystr(*infilename,cbuf);
+	if (infilename != NULL) {
+	  *infilename = fe_copystr(*infilename,cbuf);
+	}
         
         sprintf(cbuf,"%s","");
         strcat(cbuf,P->cepfile);
-        *outfilename = fe_copystr(*outfilename,cbuf);
+	if (outfilename != NULL) {
+	  *outfilename = fe_copystr(*outfilename,cbuf);
+	}
     }
     else{
         E_FATAL("Unspecified Batch or Single Mode\n");
@@ -486,6 +544,7 @@ int32 fe_build_filenames(param_t *P, char *fileroot, char **infilename, char **o
     
     return 0;
 }
+
 
 char *fe_copystr(char *dest_str, char *src_str)
 {
