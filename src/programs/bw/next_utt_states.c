@@ -99,7 +99,10 @@ state_t *next_utt_states(uint32 *n_state,
 #endif
     
     optSil= acmod_set_name2id(acmod_set, silence_str);
-    E_INFO("Silence id %d\n",optSil);
+/*
+ * Debug?
+ *   E_INFO("Silence id %d\n",optSil);
+ */
     state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef,sil_del,(acmod_id_t)optSil);
 
 #ifdef NEXT_UTT_STATES_VERBOSE
@@ -118,9 +121,12 @@ state_t *next_utt_states(uint32 *n_state,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.8  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.9  2005/03/30  16:43:47  egouvea
+ * Commented E_INFO calls that seemed to be there for debug/trace purpose only, not for a user
  * 
+ * Revision 1.8  2004/07/21 18:30:33  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.7  2004/07/17 08:00:23  arthchan2003
  * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  *
