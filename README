@@ -6,7 +6,7 @@ This distribution is free software, see COPYING for licence.
 
 This distribution now uses GNU autoconf to find out basic information
 about your system, and should compile on most Unix and Unix-like
-systems.  To build, simply run (:
+systems.  To build, simply run
 
     ./configure
     make
@@ -20,6 +20,12 @@ This work was build over a large number of years at CMU by most of the
 people in the Sphinx Group, some code goes back to 1986.  The
 most recent work in tidying this up for release includes the following
 (at least these are the people who are most likely able to help you).
+
+These scripts and programs have only been tesed for building Sphinx2
+models within this Sphinx3 training model.  DO read the documentation.
+    http://www.cs.cmu.edu/~rsingh/sphinxman/scriptman1.html
+Looking at doc/tinydoc.txt will only make you *think* you know what's going
+on.
 
 Rita Singh (rsingh+@cs.cmu.edu)
 Ricky Houghton (ricky.houghton@cs.cmu.edu)

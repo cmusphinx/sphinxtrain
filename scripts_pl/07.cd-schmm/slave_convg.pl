@@ -108,6 +108,7 @@ if ($MC && $n_parts > 1)
     for ($i=1; $i<=$n_parts; $i++)
     {
         $job_command = "$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts";
+	open rrr,"scripts_pl/mc/mc_run.pl $job_command |";
 #	print $job_command."\n";
 	while ($line = <rrr>)
 	{

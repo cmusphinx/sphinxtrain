@@ -117,8 +117,8 @@ foreach $phone (<INPUT>) {
 		sleep 30;
 	    }
 	}
-	print "running job $i on $job_name \n";
-	$phones{$phones} = $job_name;
+	print "running job $phone on $job_name \n";
+	$phones{$phone} = $job_name;
     }
     else
     {
@@ -135,9 +135,9 @@ if ($MC)       # wait for all the sub tasks to finish
 	$jobs_still_todo = 0;
 	for my $k (keys %phones)
         {
-	    if ( -f $phones[$k] )
+	    if ( -f $phones{$k} )
 	    {
-		print "waiting for $k on ".$phones[$k]."\n";
+		print "waiting for $k on ".$phones{$k}."\n";
 		$jobs_still_todo = 1;
 	    }
 	}
