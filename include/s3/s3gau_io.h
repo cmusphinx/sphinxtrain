@@ -58,7 +58,7 @@ s3gau_read(const char *fn,
 	   uint32 *out_n_mgau,
 	   uint32 *out_n_feat,
 	   uint32 *out_n_density,
-	   const uint32 **out_veclen);
+	   uint32 **out_veclen);
 
 int
 s3gau_write(const char *fn,
@@ -111,9 +111,12 @@ s3gaudnom_write(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  17:46:10  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/07/22  00:12:31  egouvea
+ * Fixed compilation warning.
  * 
+ * Revision 1.4  2004/07/21 17:46:10  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *
