@@ -129,7 +129,7 @@ int32 fe_convert_files(param_t *P)
 		total_frames += frames_proc;
 		
 		fe_closefiles(fp_in,fp_out);		
-		free(spdata);
+		free(spdata); spdata = 0;
 		fe_free_2d((void **)last_frame_cep);
 		
 	    }

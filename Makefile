@@ -70,6 +70,11 @@ backup: time-stamp
 	@ $(RM) -f $(TOP)/.file-list-all
 	@ ls -l $(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz
 
+tags:
+	@ $(RM) -f $(TOP)/FileList
+	@ $(MAKE) file-list
+	etags `cat FileList | grep "\.[ch]$$"`
+
 time-stamp :
 	@ echo $(PROJECT_NAME) >.time-stamp
 	@ echo $(PROJECT_PREFIX) >>.time-stamp

@@ -46,7 +46,7 @@
 #
 # ====================================================================
 TOP=../../..
-DIRNAME=src/programs/wave2feats
+DIRNAME=src/programs/wave2feat
 BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
