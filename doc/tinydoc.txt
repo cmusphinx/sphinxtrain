@@ -3,8 +3,8 @@ This is so small it isn't documentation, but
 is a reminder about what to do when training
 
 See 
-    http://www.cs.cmu.edu/~rsingh/sphinxman/scriptman1.html
-    http://www.cs.cmu.edu/~rsingh/sphinxman/s3manual.html
+    http://www.speech.cs.cmu.edu/sphinxman/scriptman1.html
+    http://www.speech.cs.cmu.edu/sphinxman/s3manual.html
 for much more details
 
 This is a quick note for how the scripts to train S3 models
