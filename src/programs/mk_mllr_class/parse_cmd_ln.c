@@ -58,7 +58,30 @@
 int
 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
+  const char helpstr[]=
+"Description: \n\
+Create the senone to mllr class mapping.";
+
+  const char examplestr[]=
+"Example: \n\
+mk_mllr_class -nmap mapfile -nclass 4 -cb2mllrfn out.cb2mllr";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-nmap",
 	  CMD_LN_INT32,
 	  CMD_LN_NO_VALIDATION,
@@ -93,7 +116,25 @@ parse_cmd_ln(int argc, char *argv[])
 	E_FATAL("Unable to validate command line arguments\n");
     }
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
+
 
     return 0;
 }
@@ -102,9 +143,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/06/17  19:39:49  arthchan2003
- * add back all command line information into the code
+ * Revision 1.2  2004/08/08  04:40:47  arthchan2003
+ * mk_mllr_class help and example
  * 
+ * Revision 1.1  2004/06/17 19:39:49  arthchan2003
+ * add back all command line information into the code
+ *
  * Revision 1.4  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
