@@ -60,7 +60,35 @@
 int
 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
+    const char helpstr[] =  
+"Description: \n\
+   Initialization of mixture weight ";
+
+    const char examplestr[] =  
+"Example: \n\
+\n\
+init_mixw -src_moddeffn src_moddeffn -src_ts2cbfn .semi. -src_mixwfn \n\
+src_mixwfn -src_meanfn src_meanfn -src_varfn src_varfn -src_tmatfn \n\
+src_tmatfn -dest_moddeffn dest_moddeffn -dest_ts2cbfn \n\
+.semi. -dest_mixwfn dest_mixwfn -dest_me anfn dest_meanfn -dest_varfn \n\
+dest_varfn -dest_tmatfn dest_tmatfn -feat \n\
+c/1..L-1/,d/1..L-1/,c/0/d/0/dd/0/,dd/1..L-1/ -ceplen 13";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
 	{ "-src_moddeffn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -151,7 +179,23 @@ parse_cmd_ln(int argc, char *argv[])
 	exit(1);
     }
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
 
     return 0;
 }
@@ -160,9 +204,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/08/10  22:15:08  arthchan2003
+ * help and example for init_mixw, I think this is the last one before quick_count and wave2feat, we need to think of what we should for those two little babies......
  * 
+ * Revision 1.4  2004/07/21 18:30:34  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
