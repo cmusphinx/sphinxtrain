@@ -52,7 +52,7 @@ BUILD_DIRS = agg_seg bldtree bw count_3phone cp_parm delint dict2tri inc_comp \
              mk_flat mk_mllr_class mk_model_def \
              mk_s2cb mk_s2hmm mk_s2sendump mk_s2phone \
              mk_s3gau mk_s3mixw mk_s3tmat mk_ts2cb norm param_cnt printp \
-             prunetree tiestate wave2feat mk_mdef_gen mc_exec mk_s2phonemap
+             prunetree tiestate wave2feat mk_mdef_gen mk_s2phonemap
 ALL_DIRS= $(BUILD_DIRS) 
 FILES = Makefile README
 
