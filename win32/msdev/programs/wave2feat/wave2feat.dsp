@@ -85,15 +85,15 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\wave2feat\new_fe.c
+SOURCE=..\..\..\..\src\programs\wave2feat\fe_interface.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\wave2feat\new_fe_sp.c
+SOURCE=..\..\..\..\src\programs\wave2feat\fe_sigproc.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\wave2feat\new_fe_wrapper.c
+SOURCE=..\..\..\..\src\programs\wave2feat\wave2feat.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -101,15 +101,15 @@ SOURCE=..\..\..\..\src\programs\wave2feat\new_fe_wrapper.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\wave2feat\new_fe.h
+SOURCE=..\..\..\..\src\programs\wave2feat\fe.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\wave2feat\new_fe_sp.h
+SOURCE=..\..\..\..\src\programs\wave2feat\fe_internal.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\wave2feat\new_fe_wrapper.h
+SOURCE=..\..\..\..\src\programs\wave2feat\wave2feat.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
