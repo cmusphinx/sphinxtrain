@@ -48,6 +48,7 @@
 #include <s3/cmd_ln.h>
 #include <s3/err.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 
 int
@@ -340,9 +341,12 @@ ctl -cepdir cepdir -cepext .mfc -ceplen 13 -stride 10 ";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/08/08  01:20:37  arthchan2003
- * agg_seg help and example strings
+ * Revision 1.6  2004/11/29  00:49:19  egouvea
+ * Added missing include files to prevent warnings about printf not being defined
  * 
+ * Revision 1.5  2004/08/08 01:20:37  arthchan2003
+ * agg_seg help and example strings
+ *
  * Revision 1.4  2004/07/21 18:30:32  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

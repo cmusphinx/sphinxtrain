@@ -49,6 +49,7 @@
  * 
  *********************************************************************/
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "parse_cmd_ln.h"
 
@@ -143,9 +144,12 @@ mk_mllr_class -nmap mapfile -nclass 4 -cb2mllrfn out.cb2mllr";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2004/08/08  04:40:47  arthchan2003
- * mk_mllr_class help and example
+ * Revision 1.3  2004/11/29  00:49:23  egouvea
+ * Added missing include files to prevent warnings about printf not being defined
  * 
+ * Revision 1.2  2004/08/08 04:40:47  arthchan2003
+ * mk_mllr_class help and example
+ *
  * Revision 1.1  2004/06/17 19:39:49  arthchan2003
  * add back all command line information into the code
  *

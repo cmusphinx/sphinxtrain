@@ -53,6 +53,7 @@
 
 #include "parse_cmd_ln.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 int
@@ -164,9 +165,12 @@ mk_flat -moddeffn CFS3.ci.mdef -topo CFS3.topology -mixwfn mixture_weights  \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/08/08  04:30:56  arthchan2003
- * mk_flat help and example
+ * Revision 1.6  2004/11/29  00:49:23  egouvea
+ * Added missing include files to prevent warnings about printf not being defined
  * 
+ * Revision 1.5  2004/08/08 04:30:56  arthchan2003
+ * mk_flat help and example
+ *
  * Revision 1.4  2004/07/21 18:30:35  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

@@ -54,6 +54,7 @@
 #include <s3/cmd_ln.h>
 #include <s3/err.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 
 int
@@ -200,9 +201,12 @@ questions";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2004/08/10  22:32:43  arthchan2003
- * Fix the dollar problem of make_quests
+ * Revision 1.4  2004/11/29  00:49:22  egouvea
+ * Added missing include files to prevent warnings about printf not being defined
  * 
+ * Revision 1.3  2004/08/10 22:32:43  arthchan2003
+ * Fix the dollar problem of make_quests
+ *
  * Revision 1.2  2004/08/10 21:58:51  arthchan2003
  * Incorporate help and example for the four final tools
  *

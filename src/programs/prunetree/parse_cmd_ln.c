@@ -53,6 +53,7 @@
 #include <s3/cmd_ln.h>
 #include <s3/err.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 
 int
@@ -170,9 +171,12 @@ prunetree \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2004/08/09  06:01:41  arthchan2003
- * prunetree help and example
+ * Revision 1.3  2004/11/29  00:49:23  egouvea
+ * Added missing include files to prevent warnings about printf not being defined
  * 
+ * Revision 1.2  2004/08/09 06:01:41  arthchan2003
+ * prunetree help and example
+ *
  * Revision 1.1  2004/06/17 19:39:50  arthchan2003
  * add back all command line information into the code
  *

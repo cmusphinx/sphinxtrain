@@ -46,6 +46,8 @@
  *********************************************************************/
 
 #include "parse_cmd_ln.h"
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <s3/cmd_ln.h>
 #include <s3/err.h>
@@ -196,9 +198,12 @@ inc_comp \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/08/26  05:45:33  arthchan2003
- * update of help and example strings of inc_comp
+ * Revision 1.7  2004/11/29  00:49:20  egouvea
+ * Added missing include files to prevent warnings about printf not being defined
  * 
+ * Revision 1.6  2004/08/26 05:45:33  arthchan2003
+ * update of help and example strings of inc_comp
+ *
  * Revision 1.5  2004/08/08 04:07:24  arthchan2003
  * help and example strings of inc_comp
  *
