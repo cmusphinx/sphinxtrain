@@ -86,7 +86,6 @@ state_t *next_utt_states(uint32 *n_state,
     word  = mk_wordlist(trans, &n_word);
     phone = mk_phone_list(&btw_mark, &multiw_mark, &n_phone, word, n_word, lex,multi_prons);
 
-    E_INFO("hihi\n");
     if (phone == NULL) {
 	E_WARN("Unable to produce CI pones for utt\n");
 
@@ -110,7 +109,10 @@ state_t *next_utt_states(uint32 *n_state,
 #endif
     
     optSil= acmod_set_name2id(acmod_set, silence_str);
+
+#ifdef NEXT_UTT_STATES_VERBOSE
     E_INFO("Silence id %d\n",optSil);
+#endif
     state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef,
 			       sil_del,(acmod_id_t)optSil,
 			       multi_prons,btw_mark, multiw_mark);
@@ -131,9 +133,12 @@ state_t *next_utt_states(uint32 *n_state,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/13  06:31:20  arthchan2003
- * code checked in for multiple pronounciations
+ * Revision 1.6  2004/07/17  06:38:46  arthchan2003
+ * commit on the multiple pronounciations code again
  * 
+ * Revision 1.5  2004/07/13 06:31:20  arthchan2003
+ * code checked in for multiple pronounciations
+ *
  * Revision 1.4  2004/06/17 19:17:14  arthchan2003
  * Code Update for silence deletion and standardize the name for command -line arguments
  *

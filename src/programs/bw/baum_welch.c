@@ -186,8 +186,9 @@ baum_welch_update(float64 *log_forw_prob,
     if (fwd_timer)
 	timing_start(fwd_timer);
 
-
+#if BW_DEBUG
     E_INFO("Before Forward search\n");
+#endif
     ret = forward(active_alpha, active_astate, n_active_astate, scale, dscale,
 		  feature, n_obs, state, n_state,
 		  inv, a_beam);
@@ -310,9 +311,12 @@ error:
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/06/17  19:17:14  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
+ * Revision 1.5  2004/07/17  06:38:46  arthchan2003
+ * commit on the multiple pronounciations code again
  * 
+ * Revision 1.4  2004/06/17 19:17:14  arthchan2003
+ * Code Update for silence deletion and standardize the name for command -line arguments
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
