@@ -118,14 +118,13 @@ float32    likelhddec(float32 *meana, float32 *vara,
     else {
         int32 j;
         float32 P,Q;
-        float32 lkdec1, lkdec2;
         for (i=0,lkdec = 0; i < nfeat; i++) {
             for (j=0,P=0,Q=0; j < ndensity; j++) {
                 P += cnta[i][j]; Q += cntb[i][j];
                 lkdec += ((cnta[i][j]==0) ? 0 : cnta[i][j]*log(cnta[i][j]))
 		       + ((cntb[i][j]==0) ? 0 : cntb[i][j]*log(cntb[i][j]))
 		       - (((cnta[i][j]+cntb[i][j])==0) ? 0 : 
-			  cnta[i][j]+cntb[i][j]*log(cnta[i][j]+cntb[i][j]));
+			  (cnta[i][j]+cntb[i][j])*log(cnta[i][j]+cntb[i][j]));
             }
             lkdec -= 
 		((P==0) ? 0 : (P*log(P))) +
