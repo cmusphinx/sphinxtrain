@@ -1796,7 +1796,9 @@ corpus_read_next_lsn_line(char **trans)
 		/* look for the first non-whitespace character before
 		   the open paren */
 		for (--s; (s >= lsn_line) && isspace(*s); s--);
-
+		if (s < lsn_line) {
+		  E_FATAL("Utterance transcription is empty: %s\n", lsn_line);
+		}
 		++s;
 		*s = '\0';	/* terminate the string at the first whitespace character
 				   following the first non-whitespace character found above */
@@ -1966,9 +1968,12 @@ read_sildel(uint32 **out_sf,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.5  2002/11/13  21:42:52  egouvea
+ * Code breaks if transcription is empty.
  * 
+ * Revision 1.4  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.3  2001/03/01 00:47:44  awb
  * *** empty log message ***
  *
