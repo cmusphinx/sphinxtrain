@@ -105,13 +105,13 @@ if ($tot_frms == 0) {
 }
 
 $lkhd_per_frame = $tot_lkhd/$tot_frms;
-system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
 
 $previter = $iter - 1;
 $prev_norm = "${CFG_CI_LOG_DIR}/${CFG_EXPTNAME}.${previter}.norm.log";
 if (! -s $prev_norm) {
     # we seem to be starting from an intermediate iter value
     system ("$CFG_CI_PERL_DIR/norm.pl $iter");
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
     &Launch_BW();
     exit (0);
 }
@@ -128,6 +128,7 @@ close LOG;
 if ($prevlkhd == -99999999) {
     # Some error with previous norm.log. Continue Baum Welch
     system ("$CFG_CI_PERL_DIR/norm.pl $iter");
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
     &Launch_BW();
     exit (0);
 }
@@ -136,20 +137,21 @@ if ($prevlkhd == 0) {
     $convg_ratio = 1;
 }
 else {
-
     $absprev = $prevlkhd;
     $absprev = -$absprev if ($prevlkhd < 0);
     $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
 
-system("echo \"Convergence ratio = $convg_ratio\" >> $log");
-
 if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
     system ("$CFG_CI_PERL_DIR/norm.pl $iter");
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+    system("echo \"Convergence ratio = $convg_ratio\" >> $log");
     &Launch_BW();
     exit (0);
 }
 else {
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+    system("echo \"Convergence ratio = $convg_ratio\" >> $log");
     system("echo \"Likelihoods have converged! Baum Welch training completed\!\" >> $log");
     system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
     system("date >> $log");
