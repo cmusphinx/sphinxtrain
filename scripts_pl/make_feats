@@ -43,15 +43,15 @@
 #
 # ====================================================================
 
-if [ ! "$SPHINXTRAINDIR" ]
-then
-   echo "environment variable SPHINXTRAINDIR is unset"
-   echo "set it to your local SphinxTrain directory e.g."
-   echo '   bash$ export SPHINXTRAINDIR=/home/awb/projects/SphinxTrain/'
-   echo or
-   echo '   csh% setenv SPHINXTRAINDIR /home/awb/projects/SphinxTrain/'
-   exit 1
-fi
+#if [ ! "$SPHINXTRAINDIR" ]
+#then
+#   echo "environment variable SPHINXTRAINDIR is unset"
+#   echo "set it to your local SphinxTrain directory e.g."
+#   echo '   bash$ export SPHINXTRAINDIR=/home/awb/projects/SphinxTrain/'
+#   echo or
+#   echo '   csh% setenv SPHINXTRAINDIR /home/awb/projects/SphinxTrain/'
+#   exit 1
+#fi
 
 if [ $# != 1 ]
 then

@@ -123,13 +123,13 @@ if ($MC && $n_parts > 1)
         close rrr;
 	if ($job_name eq "no_job")
 	{
-	    print "waiting for machine for job $i\n";
+	    print "waiting for machine for part $i (of $n_parts) of iteration $iter\n";
 	    sleep 30;
 	    $i = $i-1;
 	}
 	else
 	{
-	    print "running job $i on $job_name \n";
+	    print "running part $i (of $n_parts) of iteration $iter on $job_name \n";
 	    $parts[$i] = $job_name;
 	}
     }
@@ -142,7 +142,7 @@ if ($MC && $n_parts > 1)
 	{
 	    if ( -f $parts[$i] )
 	    {
-		print "waiting for $iter part $i on ".$parts[$i]."\n";
+		print "waiting for part $i (of $n_parts) of iteration $iter on ".$parts[$i]."\n";
 		$jobs_still_todo = 1;
 	    }
 	}
