@@ -85,6 +85,9 @@ time-stamp :
 	@ hostname >>.time-stamp
 	@ date >>.time-stamp
 
+configure:
+	cat config/config-dist >config/config
+
 test:
 	@ $(MAKE) --no-print-directory -C testsuite test
 

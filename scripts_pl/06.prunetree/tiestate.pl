@@ -78,7 +78,7 @@ my $logdir = "$CFG_LOG_DIR/06.prunetree";
 mkdir ($logdir,0777) unless -d $logdir;
 my $logfile = "$logdir/$CFG_EXPTNAME.tiestate.$n_tied_states.log";
 
-my $TIESTATE = "bin/tiestate";
+my $TIESTATE = "$CFG_BIN_DIR/tiestate";
 
 system("$TIESTATE -imoddeffn $untied_mdef_file -omoddeffn $tied_mdef_file -treedir $prunedtreedir -psetfn $CFG_QUESTION_SET 2>$logfile");
 

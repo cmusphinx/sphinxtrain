@@ -205,7 +205,7 @@ prune_tree(model_def_t *mdef,
 
 		fp = fopen(fn, "r");
 		if (fp == NULL) {
-		    E_FATAL_SYSTEM("Unable to open %s for reading");
+		    E_FATAL_SYSTEM("Unable to open %s for reading",fn);
 		}
 
 		tree[p][s] = tr = read_final_tree(fp, pset, n_pset);
@@ -387,9 +387,12 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:14  awb
+ * Revision 1.3  2000/11/25  22:03:03  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:14  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:32  awb
  * *** empty log message ***
  *

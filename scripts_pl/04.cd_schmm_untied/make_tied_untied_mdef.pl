@@ -81,11 +81,11 @@ set X = `tail -1 $cimdef | awk '{print $9}'`
 awk '{printf("%-4s %-4s %-4s %s    %s %s %s %s %s    %s\n",$1,$2,$4,$3,$5,$6,$7,$8,$9,$10)}' $tmdef | sort | awk '{printf("%-4s %-4s %-4s %s    %s %s %s %s %s    %s\n",$1,$2,$4,$3,$5,$6,$7,$8,$9,$10)}' >! $xx 
 
 #2:ties states based on left context and 4th field
-gawk -v a="DUMMY" -v c="DUMMY" -v b=$X '1==1 {if($2!=a || $4!=c) {b++};$7=b; printf("%-4s %-4s %-4s %s    %s %s %s %s %s    %s\n",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10); a=$2; c=$4;}' $xx >! $yy 
+awk -v a="DUMMY" -v c="DUMMY" -v b=$X '1==1 {if($2!=a || $4!=c) {b++};$7=b; printf("%-4s %-4s %-4s %s    %s %s %s %s %s    %s\n",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10); a=$2; c=$4;}' $xx >! $yy 
 
 set X = `tail -1 $yy | awk '{print $7}'`
 
-gawk -v a="DUMMY" -v c="DUMMY" -v b=$X '1==1 {b++;$8=b; printf("%-4s %-4s %-4s %s    %s %s %s %s %s    %s\n",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10);}' $yy >! $zz
+awk -v a="DUMMY" -v c="DUMMY" -v b=$X '1==1 {b++;$8=b; printf("%-4s %-4s %-4s %s    %s %s %s %s %s    %s\n",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10);}' $yy >! $zz
 
 
 set X = `tail -1 $zz | awk '{print $8}'`
@@ -94,7 +94,7 @@ set X = `tail -1 $zz | awk '{print $8}'`
 awk '{printf("%-4s %-4s %-4s %s    %s %s %s %s %s    %s\n",$1,$3,$4,$2,$5,$6,$7,$8,$9,$10)}' $zz | sort | awk '{printf("%-4s %-4s %-4s %s    %s %s %s %s %s    %s\n",$1,$4,$2,$3,$5,$6,$7,$8,$9,$10)}' >! $ww
 
 #then ties states based on right context and 4th field
-gawk -v a="DUMMY" -v c="DUMMY" -v b=$X '1==1 {if($3!=a || $4!=c) {b++};$9=b; printf("%-4s %-4s %-4s %s    %s %s %s %s %s    %s\n",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10); a=$3; c=$4;}' $ww | sort | awk '{printf("%4s %4s %4s %s    %s  %s  %s  %s  %s    %s\n",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10)}' >! $tmdef2
+awk -v a="DUMMY" -v c="DUMMY" -v b=$X '1==1 {if($3!=a || $4!=c) {b++};$9=b; printf("%-4s %-4s %-4s %s    %s %s %s %s %s    %s\n",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10); a=$3; c=$4;}' $ww | sort | awk '{printf("%4s %4s %4s %s    %s  %s  %s  %s  %s    %s\n",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10)}' >! $tmdef2
 
 set ntphst = `awk '{print $9}' $tmdef2 | sort -r -n | head -1`
 

@@ -50,7 +50,7 @@ Make the melcep feature files
 Now we can start on the basic perl scripts, ther
 results will be put in perl_time.html, which you can view as things
 progress.  Note the scripts aren't guaranteed, and problems do occur, 
-though often the erro message is actually indicative of the error.
+though often the error message is actually indicative of the error.
 
 There a number of larger choices in building models, one is to
 build continous models or semi-continuous.  Only semi-continous
@@ -69,7 +69,7 @@ Initial BW training
    ./scripts_pl/05.buildtrees/slave.treebuilder.pl -cfg etc/sphinx_train.cfg
    ./scripts_pl/06.prunetree/slave.state-tie-er.pl -cfg etc/sphinx_train.cfg
    ./scripts_pl/07.cd-schmm/slave_convg.pl -cfg etc/sphinx_train.cfg 1
-            
+   ./scripts_pl/08.deleted-interpolation/deleted_interpolation.pl -cfg etc/sphinx_train.cfg 
      
 ===========================================================================
 Chart of training process 

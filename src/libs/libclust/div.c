@@ -164,7 +164,8 @@ ddiv_d(float32 *p, float32 *q, uint32 n)
     for (k = 0, y = 0; k < n; k++) {
 	assert(q[k] != 0);
 
-	y += p[k] * log(p[k] / q[k]);
+	if (p[k] > 0)
+	    y += p[k] * log(p[k] / q[k]);
     }
 
     return y * ln2lg2;
@@ -310,9 +311,12 @@ ent_cont(float32 *mean, float32 *var, uint32 n)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:13  awb
+ * Revision 1.3  2000/11/25  22:03:03  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:13  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *

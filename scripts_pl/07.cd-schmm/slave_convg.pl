@@ -109,7 +109,6 @@ $converged = 0;
 while ((! $converged)) {
     # baum_welch is configured to work on  multiple parts, we are ignoring this by using 1 1
     for ($part=1;$part<=$n_parts;$part++) {
-	print ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $part $n_parts\n");
 	system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $part $n_parts");
     }
 

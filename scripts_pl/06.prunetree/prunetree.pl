@@ -78,7 +78,7 @@ my $unprunedtreedir = "$CFG_BASE_DIR/trees/$CFG_EXPTNAME.unpruned";
 my $prunedtreedir  = "$CFG_BASE_DIR/trees/$CFG_EXPTNAME.$n_tied_states";
 mkdir ($prunedtreedir,0777) unless -d $prunedtreedir;
 
-my $PRUNETREE = "bin/prunetree";
+my $PRUNETREE = "$CFG_BIN_DIR/prunetree";
 
 my $logdir = "$CFG_LOG_DIR/06.prunetree";
 mkdir ($logdir,0777) unless -d $logdir;

@@ -212,15 +212,15 @@ if (open PIPE,"$COUNTPROGRAM -moddeffn $alltriphones_mdef -ts2cbfn ${CFG_HMM_TYP
 
 $maxdesired = 10000;
 $threshold = 1;
-$numtriph = `gawk -v thr=$threshold \'\$5 >= thr && \$2 != \"-\" {print \$1}\' $allphones_count_file | wc -l | awk \'{print \$1}\'`;
+$numtriph = `awk -v thr=$threshold \'\$5 >= thr && \$2 != \"-\" {print \$1}\' $allphones_count_file | wc -l | awk \'{print \$1}\'`;
 
 while ($numtriph > $maxdesired) {
     print "\t\t$numtriph\n";
     $threshold++;
-    $numtriph = `gawk -v thr=$threshold \'\$5 >= thr && \$2 != \"-\" {print \$1}\' $allphones_count_file | wc -l | awk \'{print \$1}\'`;
+    $numtriph = `awk -v thr=$threshold \'\$5 >= thr && \$2 != \"-\" {print \$1}\' $allphones_count_file | wc -l | awk \'{print \$1}\'`;
 }
 
-system "gawk -v thr=$threshold \'\$5 >= thr && \$2 != \"-\" {print \$1,\$2,\$3,\$4;}\' $allphones_count_file > $tmpdir/$$.triphonelist";
+system "awk -v thr=$threshold \'\$5 >= thr && \$2 != \"-\" {print \$1,\$2,\$3,\$4;}\' $allphones_count_file > $tmpdir/$$.triphonelist";
 
 
 system ("sed -e \'s+\$+ - - -+g\' ${CFG_RAWPHONEFILE} > $tmpdir/$$.newbasephonelist");
