@@ -115,7 +115,13 @@ if (0 && $MC && $n_parts > 1)
 	    chomp($line);
 #	    print "mc_run: ".$line."\n";
 	    @fff=split(/\s+/,$line);
-	    $job_name = $fff[0];
+            if ($fff[0] eq "MC")
+            {
+  	       $job_name = $fff[1];
+	       last;
+	    }
+#            print "waiting for mc_run to say something\n";
+	    sleep 3;
 	}
         close rrr;
 	if ($job_name eq "no_job")

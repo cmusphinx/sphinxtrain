@@ -7,6 +7,9 @@ See
     http://www.cs.cmu.edu/~rsingh/sphinxman/s3manual.html
 for much more details
 
+This is a quick note for how the scripts to train S3 models
+and convert them for use with S2.
+
 Got to a new directory where you have the space
    mkdir time
    cd time
@@ -67,7 +70,6 @@ Can take several minutes
    ./scripts_pl/01.vector_quantize/slave.VQ.pl
 Initial BW training
    ./scripts_pl/02.ci_schmm/slave_convg.pl
-
    ./scripts_pl/03.makeuntiedmdef/make_untied_mdef.pl
    ./scripts_pl/04.cd_schmm_untied/slave_convg.pl
    ./scripts_pl/05.buildtrees/make_questions.pl

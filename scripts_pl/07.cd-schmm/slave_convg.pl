@@ -109,13 +109,18 @@ if ($MC && $n_parts > 1)
     {
         $job_command = "$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts";
 #	print $job_command."\n";
-	open rrr,"scripts_pl/mc/mc_run.pl $job_command |";
 	while ($line = <rrr>)
 	{
 	    chomp($line);
 #	    print "mc_run: ".$line."\n";
 	    @fff=split(/\s+/,$line);
-	    $job_name = $fff[0];
+            if ($fff[0] eq "MC")
+            {
+  	       $job_name = $fff[1];
+	       last;
+	    }
+#            print "waiting for mc_run to say something\n";
+	    sleep 3;
 	}
         close rrr;
 	if ($job_name eq "no_job")

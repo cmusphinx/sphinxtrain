@@ -106,7 +106,7 @@ int32 make_ci_list_cd_hash_frm_phnlist(char  *phnlist,
 				    int32 *NCDphones)
 {
     char  bphn[1024],lctx[1024], rctx[1024], wdpos[1024]; 
-    char  line[MAXLINESIZE], **cilist;
+    char  line[MAXLINESIZE], **cilist, *silence="SIL";
     heapelement_t **heap=NULL, *addciphone;
     hashelement_t **tphnhash, *tphnptr;
     phnhashelement_t  **phnhash, *phnptr;
@@ -123,6 +123,8 @@ int32 make_ci_list_cd_hash_frm_phnlist(char  *phnlist,
     tphnhash = (hashelement_t**) ckd_calloc(HASHSIZE, sizeof(hashelement_t*));
     maxphnsize = 0;
     swdtphs = bwdtphs = ewdtphs = iwdtphs = 0;
+    /* Always install SIL in phonelist */
+    phninstall(silence,phnhash);
     while (fgets(line,MAXLINESIZE,fp) != NULL){
         nwds = sscanf(line,"%s %s %s %s",bphn,lctx,rctx,wdpos);
         if (nwds != 1 && nwds != 3 &&  nwds != 4)
@@ -567,26 +569,28 @@ int32 find_threshold(hashelement_t  **triphonehash)
 {
     hashelement_t *triphone_el;
     int32 tottph, ltottph, mincnt, maxtph, *countofcounts, *lcountofcounts;
-    int32 i, cnt, unique, threshold;
+    int32 i, cnt, unique, threshold, ceiling;
 
     mincnt = *(int32 *)cmd_ln_access("-minocc");
     maxtph = *(int32 *)cmd_ln_access("-maxtriphones");
 
+    ceiling = mincnt < CEILING ? CEILING : mincnt+1;
+
     tottph = ltottph = unique = 0;
-    countofcounts = (int32 *) ckd_calloc(CEILING+1,sizeof(int32));
-    lcountofcounts = (int32 *) ckd_calloc(CEILING+1,sizeof(int32));
+    countofcounts = (int32 *) ckd_calloc(ceiling+1,sizeof(int32));
+    lcountofcounts = (int32 *) ckd_calloc(ceiling+1,sizeof(int32));
     for (i = 0; i < HASHSIZE; i++){
 	triphone_el = triphonehash[i];
 	while (triphone_el != NULL){
 	    cnt = triphone_el->count;
 	    if (cnt > 0) {
 	        tottph += cnt;
-	        countofcounts[cnt]++; unique++;
 	        if (cnt >= mincnt) {
 	            ltottph ++;
-		    if (cnt > CEILING) cnt = CEILING;
+		    if (cnt > ceiling) cnt = ceiling;
 		    lcountofcounts[cnt]++;
 	        }
+	        countofcounts[cnt]++; unique++;
 	    }
 	    triphone_el = triphone_el->next;
 	}

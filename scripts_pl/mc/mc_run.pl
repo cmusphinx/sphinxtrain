@@ -56,7 +56,7 @@ $mc_info_dir="mc";
 $mc_job_info_dir="$mc_info_dir/job_info";
 $mc_config="etc/mc_config";
 
-die "config file $mc_config no found\nno_job\n" unless -f $mc_config;
+die "config file $mc_config no found\nMC no_job\n" unless -f $mc_config;
 
 # run job on next unloaded machine
 
@@ -109,7 +109,7 @@ while ( <CFGFD> ) {
 
 if ($best_machine eq "")
 {
-    print "no_job\n";
+    print "MC no_job\n";
     exit 0;
 }
 
@@ -125,10 +125,10 @@ $mc_job_file="$mc_job_info_dir/$mc_job_id";
 # Due to NFS latency, we'll just mark that machine is used now,
 system("/bin/touch $mc_job_file");
 # Do the remote execution 
-system("ssh -n $best_machine \"(cd $best_dir && /bin/touch $mc_job_file && $mc_command >$mc_job_file.log && /bin/rm $mc_job_file &)\" 2>/dev/null");
+system("ssh -f -n $best_machine \"(cd $best_dir && /bin/touch $mc_job_file && $mc_command >$mc_job_file.log && /bin/rm $mc_job_file &)\" 2>/dev/null & sleep 3");
 #}
 
-print $mc_job_file."\n";
+print "MC ".$mc_job_file."\n";
 
 exit 0;
 

@@ -23,7 +23,7 @@ EOF
 	exit 1
 fi
 
-AC_PATH_PROG(FESTIVAL, festival,
+AC_PATH_PROG(FESTIVAL, festival, /usr/bin/festival,
   $PATH:/bin:/usr/bin:/usr/local/bin:/usr/local/festival/bin:/opt/festival/bin:/usr0/festival/bin)
 if test "x$FESTIVAL" = x; then
 	cat <<\EOF
