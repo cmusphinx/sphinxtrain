@@ -534,11 +534,15 @@ cmd_ln_parse(int argc, char *argv[])
 
 		n_arg_parsed = parse_arg(j, argc, argv, i+1);
 		if (n_arg_parsed < 0) {
+		  /* There was a problem parsing, so let's just move
+		   * on and signal a problem
+		   */
 		    err = 1;
+		    i++;
+		} else {
+		  /* i incremented for each switch as well, if successful */
+		  i += n_arg_parsed;
 		}
-
-		i += n_arg_parsed;	/* i incremented for each switch as well */
-
 		break;
 	    }
 	}
@@ -609,9 +613,14 @@ const void *cmd_ln_access(char *switch_name)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/08/31  22:52:01  egouvea
- * Fixing verification of correct format in cmd line arguments
+ * Revision 1.7  2004/11/23  04:14:05  egouvea
+ * Fixed bug in cmd_ln.c in which a wrong boolean argument led into an
+ * infinite loop, and fixed the help and example strings, getting rid of
+ * spaces, so that the appearance is better.
  * 
+ * Revision 1.6  2004/08/31 22:52:01  egouvea
+ * Fixing verification of correct format in cmd line arguments
+ *
  * Revision 1.5  2004/07/21 18:05:39  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

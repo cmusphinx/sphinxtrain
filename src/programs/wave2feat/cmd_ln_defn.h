@@ -53,30 +53,30 @@
 
 const char helpstr[] =
   "Description: \n\
-Create cepstra from audio file.\n		\
-									\
-The main parameters that affect the final output, with typical values, are:\n \
-									\
-samprate, typically 8000, 11025, or 16000\n				\
-lowerf, 130, 200, 130, for the respective sampling rates above\n	\
-upperf, 3700, 5200, 6800, for the respective sampling rates above\n	\
-nfilt, 31, 37, 40, for the respective sampling rates above\n		\
-nfft, 256 or 512\n							\
-format, raw or nist or mswav\n						\
+Create cepstra from audio file.\n\
+\n\
+The main parameters that affect the final output, with typical values, are:\n\
+\n\
+samprate, typically 8000, 11025, or 16000\n\
+lowerf, 130, 200, 130, for the respective sampling rates above\n\
+upperf, 3700, 5200, 6800, for the respective sampling rates above\n\
+nfilt, 31, 37, 40, for the respective sampling rates above\n\
+nfft, 256 or 512\n\
+format, raw or nist or mswav\n\
 \"";
 
 const char examplestr[] =
   "Example: \n\
-This example creates a cepstral file named \"output.mfc\" from an input audio file named \"input.raw\", which is a raw audio file (no header information), which was originally sampled at 16kHz. \n \
-\n									\
-wave2feat -i  input.raw \n						\
-        -o   output.mfc \n						\
-        -raw no \n							\
-        -input_endian little \n						\
-        -samprate  16000 \n						\
-        -lowerf    130 \n						\
-        -upperf    6800 \n						\
-        -nfilt     40 \n						\
+This example creates a cepstral file named \"output.mfc\" from an input audio file named \"input.raw\", which is a raw audio file (no header information), which was originally sampled at 16kHz. \n\
+\n\
+wave2feat -i  input.raw \n\
+        -o   output.mfc \n\
+        -raw no \n\
+        -input_endian little \n\
+        -samprate  16000 \n\
+        -lowerf    130 \n\
+        -upperf    6800 \n\
+        -nfilt     40 \n\
         -nfft      512";
 
 static arg_def_t defn[] = {
@@ -282,9 +282,14 @@ static arg_def_t defn[] = {
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/09/09  17:59:30  egouvea
- * Adding missing files to wave2feat
+ * Revision 1.2  2004/11/23  04:14:06  egouvea
+ * Fixed bug in cmd_ln.c in which a wrong boolean argument led into an
+ * infinite loop, and fixed the help and example strings, getting rid of
+ * spaces, so that the appearance is better.
  * 
+ * Revision 1.1  2004/09/09 17:59:30  egouvea
+ * Adding missing files to wave2feat
+ *
  *
  *
  */
