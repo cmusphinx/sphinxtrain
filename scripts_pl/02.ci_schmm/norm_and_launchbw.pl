@@ -88,7 +88,7 @@ for ($i=1;$i<=$npart;$i++){
 if ($num_done != $npart) {
     open OUTPUT,">$log";
     print "Only $num_done parts of $npart of Baum Welch were successfully completed\n";
-    print "Parts "
+    print "Parts ";
     for ($i=1;$i<=$npart;$i++) {
         print "$i " if ($done[$i] == 0);
     }
