@@ -342,7 +342,7 @@ main_initialize(int argc,
 
 
     /* The parameter required for re-estimation routines*/
-    silence_str = cmd_ln_access("-siltag");
+    silence_str = (char *)cmd_ln_access("-siltag");
     E_INFO("Silence Tag %s\n",silence_str);
 
     if (*(int32 *)cmd_ln_access("-viterbi")) {
@@ -567,7 +567,7 @@ main_reestimate(model_inventory_t *inv,
     mllr_mult = *(int32 *)cmd_ln_access("-mllrmult");
     mllr_add = *(int32 *)cmd_ln_access("-mllradd");
     sil_del    = *(int32 *)cmd_ln_access("-sildel");
-    silence_str = cmd_ln_access("-siltag");
+    silence_str = (char *)cmd_ln_access("-siltag");
 
     if (cmd_ln_access("-ckptintv")) {
 	ckpt_intv = *(int32 *)cmd_ln_access("-ckptintv");
@@ -965,9 +965,12 @@ int main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.7  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.8  2004/07/22  00:08:39  egouvea
+ * Fixed some compilation warnings.
  * 
+ * Revision 1.7  2004/07/21 18:30:33  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.6  2004/07/17 08:00:23  arthchan2003
  * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  *

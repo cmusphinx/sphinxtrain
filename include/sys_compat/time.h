@@ -33,7 +33,13 @@
  * ====================================================================
  *
  */
+#ifndef TIME_H
+#define TIME_H
+
+#include <time.h>
 #ifndef WIN32
 #include <sys/time.h>
 #include <unistd.h>
 #endif
+
+#endif /* TIME_H */
