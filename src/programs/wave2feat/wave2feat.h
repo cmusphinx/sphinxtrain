@@ -76,24 +76,6 @@
 #define SWAPF(x)        SWAPL((int *) x)
 
 
-/* Some defines for MS Wav Files */
-/* The MS Wav file is a RIFF file, and has the following 44 byte header */
-typedef struct RIFFHeader{
-    char rifftag[4];      /* "RIFF" string */
-    int32 TotalLength;      /* Total length */
-    char wavefmttag[8];   /* "WAVEfmt " string (note space after 't') */
-    int32 RemainingLength;  /* Remaining length */
-    int16 data_format;    /* data format tag, 1 = PCM */
-    int16 numchannels;    /* Number of channels in file */
-    int32 SamplingFreq;     /* Sampling frequency */
-    int32 BytesPerSec;      /* Average bytes/sec */
-    int16 BlockAlign;     /* Block align */
-    int16 BitsPerSample;  /* 8 or 16 bit */
-    char datatag[4];      /* "data" string */
-    int32 datalength;       /* Raw data length */
-} MSWAV_hdr;
-
-
 param_t *fe_parse_options(int argc, char **argv);
 void fe_init_params(param_t *P);
 int32 fe_convert_files(param_t *P);
