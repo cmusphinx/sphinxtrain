@@ -70,6 +70,8 @@
 
 #include <s3/live_norm.h>
 #include <s3/prim_type.h>
+#include <s3/s3.h>
+#include <s3/err.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,20 +80,31 @@ static int   veclen;		/* the feature vector length */
 static float *cur_mean = NULL;	/* the mean subtracted from input frames */
 static float *sum = NULL;	/* the sum over input frames */
 static int   nframe;		/* the total number of input frames */
+static int initialize = TRUE;   /* whether initialization is required */
 
-void mean_norm_init(uint32 vlen)
+void mean_norm_init()
 {
-    veclen   = vlen;
     cur_mean = (float *) calloc(veclen, sizeof(float));
     sum      = (float *) calloc(veclen, sizeof(float));
     nframe   = 0;
     printf("mean_norm_init: zero mean\n");
 }
 
+void
+mean_norm_set_veclen(uint32 vlen)
+{
+    veclen = vlen;
+}
+
+
 void mean_norm_acc_sub(float32 *vec)
 {
     int32 i;
 
+    if (initialize) {
+      mean_norm_init();
+      initialize = FALSE;
+    }
     for (i = 1; i < veclen; i++) {
 	sum[i] += vec[i];
 	vec[i] -= cur_mean[i];
@@ -102,6 +115,11 @@ void mean_norm_acc_sub(float32 *vec)
 void mean_norm_update()
 {
     int32 i;
+
+    if (nframe == 0) {
+      E_WARN("Attempted to update mean without new frames\n");
+      return;
+    }
 
     printf("mean_norm_update: from < ");
     for (i = 1; i < veclen; i++)
@@ -126,9 +144,12 @@ void mean_norm_update()
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:30  awb
- * *** empty log message ***
+ * Revision 1.4  2004/06/09  00:56:17  egouvea
+ * Make sure variables are initialized in cmn live (option 'prior' of cmn).
  * 
+ * Revision 1.3  2001/04/05 20:02:30  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:12  awb
  * *** empty log message ***
  *
