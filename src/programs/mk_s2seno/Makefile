@@ -57,7 +57,7 @@ H = \
 
 FILES = Makefile $(SRCS) $(H)
 
-TARGET = mk_s2hmm
+TARGET = mk_s2seno
 
 ALL = $(BINDIR)/$(TARGET)
 

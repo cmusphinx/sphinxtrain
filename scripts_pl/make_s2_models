@@ -49,10 +49,10 @@
 
 set echo
 
-set s3mdef = ./sphinx_3_format/feb99.4000.mdef
-set s2dir = ./sphinx_2_format
+set s3mdef = ./model_architecture/time.6000.mdef
+set s2dir = ./sphinx_2_models
 
-set contdir = ./sphinx_3_format
+set contdir = ./model_parameters/time.cd_semi_6000_delinterp
 
 set s3mixw = $contdir/mixture_weights
 set s3mean = $contdir/means
@@ -97,7 +97,6 @@ bin/mk_s2hmm \
     -tmatfn   $s3tmat \
     -hmmdir   $s2dir
 
-
 ###########################################################
 # make s2 mixing weights sendump file
 
@@ -110,7 +109,6 @@ set echo
 bin/mk_s2seno s2_4x $s3mdef .semi. $s3mixw 0.0000001 $s2dir/sendump
 rm $s2dir/*.ccode $s2dir/*.d2code $s2dir/*.p3code $s2dir/*.xcode
 
-
 ###########################################################
 # make s2 phone and map files
 
@@ -121,8 +119,11 @@ echo "**** ASSUMING $s3mdef IS BUILT FOR THE RECOGNITION DICTIONARY ****"
 echo ""
 set echo
 
-set exe =  ~rsingh/09..sphinx3code/trainer/bin.alpha/mdef2phonemap
-grep -v "^#" $s3mdef | $exe $s2dir/phone $s2dir/map
+set tmpf = tmp.$$
+grep -v "^#" $s3mdef | awk 'NF==12 {print $1,$2,$3,$4}' > $tmpf
+bin/mk_s2phone -s2phonefn $s2dir/phone -phonelstfn $tmpf
+
+rm $tmpf
 
 unset echo
 echo "----------------- DONE -----------------"
