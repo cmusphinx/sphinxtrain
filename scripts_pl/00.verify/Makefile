@@ -49,9 +49,13 @@ TOP=../..
 DIRNAME=scripts_pl/00.verify
 BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
-FILES = Makefile verify_all.pl
+PERLSCRIPTS = verify_all.pl
+SCRIPTS = $(PERLSCRIPTS:.pl=)
+FILES = Makefile $(PERLSCRIPTS)
 
-ALL = 
+ALL = $(SCRIPTS)
+
+LOCAL_CLEAN = $(SCRIPTS)
 
 include $(TOP)/config/common_make_rules
 
