@@ -62,8 +62,8 @@
 #define FE_OUTPUT_FILE_WRITE_ERROR 7
 #define FE_OUTPUT_FILE_OPEN_ERROR 8
 
-#define COUNT_PARTIAL 0
-#define COUNT_WHOLE 1
+#define COUNT_PARTIAL 1
+#define COUNT_WHOLE 0
 #define HEADER_BYTES 1024
 /*
   #if defined(ALPHA) || defined(ALPHA_OSF1) || defined(alpha_osf1) || defined(__alpha) || defined(mips) 
