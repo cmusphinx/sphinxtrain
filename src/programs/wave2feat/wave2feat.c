@@ -145,7 +145,10 @@ int32 fe_convert_files(param_t *P)
 			fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
 		    curr_block++;
 		    total_frames += frames_proc;
-		    
+		    if (spdata!=NULL) { 
+		      free(spdata); 
+		      spdata = NULL; 
+		    }
 		}
 		/* process last (or only) block */
 		if (spdata!=NULL) free(spdata);
@@ -219,7 +222,10 @@ int32 fe_convert_files(param_t *P)
 		    fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
 		curr_block++;
 		total_frames += frames_proc;
-		
+		if (spdata!=NULL) { 
+		  free(spdata); 
+		  spdata = NULL; 
+		}		
 	    }
 	    /* process last (or only) block */
 	    if (spdata!=NULL) free(spdata);
