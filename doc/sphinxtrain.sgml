@@ -1,0 +1,23 @@
+!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN" [
+
+]>
+<book>
+<bookinfo>
+  <title>Acoustic Training for CMU Sphinx recognition systems</title>
+  <authorgroup>
+  <author><firstname>Alan W</firstname><surname>Black</surname></author>
+  <author><firstname>Ricky</firstname><surname>Houghton</surname></author>
+  <author><firstname>Rita</firstname><surname>Singh</surname></author>
+  </authorgroup>
+</bookinfo>
+
+<chapter id="st-walkthrough-ch">>
+<title>Training walkthrough</title>
+
+<para>
+Stuff ...
+</para>
+
+</chapter>
+
+</book>

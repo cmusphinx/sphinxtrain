@@ -1,0 +1,166 @@
+########################################################-*-mode:Makefile-*-
+# Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer. 
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+#
+# 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
+#    endorse or promote products derived from this software without
+#    prior written permission. To obtain permission, contact 
+#    sphinx@cs.cmu.edu.
+#
+# 4. Products derived from this software may not be called "Sphinx"
+#    nor may "Sphinx" appear in their names without prior written
+#    permission of Carnegie Mellon University. To obtain permission,
+#    contact sphinx@cs.cmu.edu.
+#
+# 5. Redistributions of any form whatsoever must retain the following
+#    acknowledgment:
+#    "This product includes software developed by Carnegie
+#    Mellon University (http://www.speech.cs.cmu.edu/)."
+#
+# THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+# ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+# NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# ====================================================================
+#                                                                       
+#    Common make rules included in all Makefiles                        
+#                                                                       
+########################################################################
+
+#  Include project specific rules
+-include $(TOP)/config/project.mak
+
+## User defined configuration options
+include $(TOP)/config/config
+
+CFLAGS += -Wall $(LOCAL_INCLUDES)
+LDFLAGS += 
+
+RM = '/bin/rm'
+
+all: .make_build_dirs $(ALL) nothing
+
+nothing:
+	@ echo > /dev/null
+
+.build_lib: $(OBJS)
+	$(AR) cruv $(TOP)/lib/lib$(LIBNAME).a $(OBJS)
+	$(RANLIB) $(TOP)/lib/lib$(LIBNAME).a
+	touch .build_lib
+
+.make_build_dirs:
+	@ echo making in $(DIRNAME) ...
+	@ for i in $(BUILD_DIRS) ; \
+	do \
+	   $(MAKE) -C $$i --no-print-directory; \
+	done ; \
+
+clean:
+	@ echo make clean in $(DIRNAME) ...
+	@rm -f *.o *.a *~ $(LOCAL_CLEAN)
+	@ for i in $(ALL_DIRS) ; \
+	do \
+	   $(MAKE) -C $$i --no-print-directory clean; \
+	done ; \
+
+#######################################################################
+###   Making dependencies
+#######################################################################
+
+## This is a piece of rjc magic taken from "Milton"
+
+DEPEND=make.depend
+MAKE_DEPEND=$(CC) -MM $(CFLAGS)
+ALL_DEPEND = $(SRCS) $(H)
+
+depend:
+	@ $(RM) -f $(DEPEND)
+	@ # a little hack to get it to remake make.depend
+	@ $(MAKE) nothing
+ifdef ALL_DIRS
+	@ for i in $(ALL_DIRS) ; \
+	do \
+	   $(MAKE) --no-print-directory -C $$i depend ; \
+	done
+endif
+
+$(DEPEND): $(ALL_DEPEND) 
+	@if [ ! -f $(DEPEND) ] ;\
+		then \
+		{ \
+		echo ' ######################################################################' ;\
+		echo ' # ' ;\
+		echo ' # 	Dependencies created for inclusion in $(SELF).' ;\
+		echo " #		`date`" ;\
+		echo ' # ' ;\
+		echo ' ######################################################################' ;\
+		echo '' ;\
+		} > $(DEPEND) ;\
+	fi
+	@chmod +w $(DEPEND)
+	@for i in  $? ;\
+		do \
+		case $$i in \
+		*.c )   base=`basename $$i .c`; \
+			{ \
+			awk 'BEGIN {s=0} \
+			     s==0 && $$1=="#" && $$2=="'$${base}'" {s=1;next} \
+			     s==0 {print; next} \
+			     s==1 && NF==0 {s=2; next} \
+			     s==2 && NF==0 {s=3; next} \
+			     s==3 {print}' \
+				$(DEPEND) ;\
+			echo "# $${base} `date`" ;\
+			echo ;\
+			$(MAKE_DEPEND) $(DEPEND_FLAGS) $$i ; \
+			echo ;\
+			} > "#xxxx" ;\
+			mv "#xxxx" $(DEPEND) ;;\
+		esac ;\
+	done
+	@chmod -w $(DEPEND)
+
+file-list:
+	@ echo making file-list in $(DIRNAME) ...
+	@ for f in $(FILES) ; \
+	do \
+	   echo $(DIRNAME)/$$f >>$(TOP)/FileList ; \
+	done 
+	@ for i in $(ALL_DIRS) ; \
+	do \
+	   $(MAKE) -C $$i --no-print-directory file-list; \
+	done
+
+info:
+	@echo Project Name = $(PROJECT_NAME)
+	@echo Project Prefix = $(PROJECT_PREFIX)
+	@echo Project Version = $(PROJECT_VERSION)
+	@echo Project Date = $(PROJECT_DATE)
+	@echo Project State = $(PROJECT_STATE)
+	@echo
+	@echo Configuration Variables
+	@echo none at present
+
+# If there are sources in this directory, load in the dependencies
+ifdef SRCS
+include $(DEPEND)
+endif
