@@ -306,7 +306,7 @@ $| = 1;				# Turn on autoflushing
 	    @words = split / /,$text;
 	    for $word (@words) {
 		if (! $d{lc($word)} && ($word =~ m/\S+/)) {
-		    &ST_LogWarning ("This word: $_ was in the transcript file, but is not in the dictionary ($text)\n");
+		    &ST_LogWarning ("This word: $word was in the transcript file, but is not in the dictionary ($text)\n");
 		    $status = 'FAILED';
 		    $ret_value = -5;
 		}
