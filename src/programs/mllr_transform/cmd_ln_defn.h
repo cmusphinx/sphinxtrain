@@ -22,33 +22,27 @@
 #include <s3/err.h>
 
 #ifndef CMD_LN_DEFN_H
-    
-    const char helpstr[] = 
-"Description: 
-
-Given a set of MLLR transform, mllr_transform can transform 
-the mean according to formulat y=Ax+b.
-The output and input files are specified by -outmeanfn and
- -inmeanfn respectively. You may also transform the context-
-dependent model using the option -cdonly.  In that case you
- need to specify a model definition using -moddeffn.";
+    const char helpstr[] =  
+"Description: \n\
+\n\
+Given a set of MLLR transform, mllr_transform can transform \n\
+the mean according to formulat y=Ax+b.\n \
+\n \
+The output and input files are specified by -outmeanfn and \n\
+ -inmeanfn respectively. You may also transform the context-\n\
+dependent model using the option -cdonly.  In that case you \n\
+need to specify a model definition using -moddeffn.";
 
     const char examplestr[] = 
-"Example: 
-
-The simplest case:
-
-mllr_transform -inmeanfn inMeans -outmeanfn outMeans  -mllrmat matrix 
-
-Adapt only on CD phones:
-
-mllr_transform  -inmeanfn inMeans -outmeanfn outMeans  -mllrmat matrix 
--cdonly yes -moddeffn mdef 
-
-Help and example:
-
-mllr_transform -help yes -example yes
-";
+"Example: \n\
+  The simplest case: \n\
+  mllr_transform -inmeanfn inMeans -outmeanfn outMeans  -mllrmat matrix \n\
+  \n\
+  Adapt only on CD phones: \n\
+  mllr_transform  -inmeanfn inMeans -outmeanfn outMeans  -mllrmat matrix -cdonly yes -moddeffn mdef \n\
+  \n\
+  Help and example: \n\
+  nmllr_transform -help yes -example yes ";
 
     static arg_def_t defn[] = {
 	{ "-help",
@@ -123,9 +117,12 @@ mllr_transform -help yes -example yes
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2004/08/03  07:31:17  arthchan2003
- * make the changes more latex friendly\n
+ * Revision 1.4  2004/08/07  19:51:52  arthchan2003
+ * Make compiler happy about the help messages
  * 
+ * Revision 1.3  2004/08/03 07:31:17  arthchan2003
+ * make the changes more latex friendly\n
+ *
  * Revision 1.2  2004/08/03 07:23:12  arthchan2003
  * Check in the code for usage and example of mllr_transform
  *
