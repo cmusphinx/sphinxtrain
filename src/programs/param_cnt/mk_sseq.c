@@ -14,15 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. To obtain permission, contact 
- *    sphinx@cs.cmu.edu.
- *
- * 4. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by Carnegie
- *    Mellon University (http://www.speech.cs.cmu.edu/)."
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -106,9 +100,12 @@ mk_sseq(uint16 *seg,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.4  2004/07/21  19:17:26  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
  * 
+ * Revision 1.3  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:14  awb
  * *** empty log message ***
  *
