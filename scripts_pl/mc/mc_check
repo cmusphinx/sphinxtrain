@@ -64,6 +64,8 @@ $mc_info_dir="mc";
 $mc_job_info_dir="$mc_info_dir/job_info";
 $mc_config="etc/mc_config";
 
+die "config file $mc_config no found" unless -f $mc_config;
+
 mkdir ($mc_info_dir,0777) unless -d $mc_info_dir;
 mkdir ($mc_job_info_dir,0777) unless -d $mc_job_info_dir;
 

@@ -105,8 +105,58 @@ if ($iter == 1) {
     &Initialize () unless $TESTING;
 }
 
-for ($i=1; $i<=$n_parts; $i++){
-   system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts");
+if ($MC && $n_parts > 1)
+{
+    # multi-processor version -- assumes ssh machine works
+    for ($i=1; $i<=$n_parts; $i++)
+    {
+        $job_command = "$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts";
+#	print $job_command."\n";
+	open rrr,"scripts_pl/mc/mc_run $job_command |";
+	while ($line = <rrr>)
+	{
+	    chomp($line);
+#	    print "mc_run: ".$line."\n";
+	    @fff=split(/\s+/,$line);
+	    $job_name = $fff[0];
+	}
+        close rrr;
+	if ($job_name eq "no_job")
+	{
+	    print "waiting for machine for job $i\n";
+	    sleep 30;
+	    $i = $i-1;
+	}
+	else
+	{
+	    print "running job $i on $job_name \n";
+	    $parts[$i] = $job_name;
+	}
+    }
+    # Wait for them all to finish
+    $jobs_still_todo = 1;
+    while ($jobs_still_todo)
+    {
+	$jobs_still_todo = 0;
+	for ($i=1; $i<=$n_parts; $i++)
+	{
+	    if ( -f $parts[$i] )
+	    {
+		print "waiting for $iter part $i on ".$parts[$i]."\n";
+		$jobs_still_todo = 1;
+	    }
+	}
+	sleep 30;
+    }
+}
+else
+{
+    # Call baum_welch with iter part and n_part, 
+    # once done call norm_and_lauchbw.pl
+    for ($i=1; $i<=$n_parts; $i++)
+    {
+	system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts");
+    }
 }
 system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $iter $n_parts");
 

@@ -53,18 +53,20 @@
 ## if the typical job time is less than a few minutes
 ##
 ## Get's information from etc/mc_config
-## Stores jobs infor in .mc/job_info/
-## Related scripts: mc_status, mc_run, mc_kill
+## Stores jobs infor in mc/job_info/
+## Related scripts: mc_status, mc_run, mc_kill, mc_check
 ##
 
 $mc_info_dir="mc";
 $mc_job_info_dir="$mc_info_dir/job_info";
 $mc_config="etc/mc_config";
 
+die "config file $mc_config no found" unless -f $mc_config;
+
 # With no args, displays cluster machines and there load average
 
-mkdir ($mc_info_dir) unless -d $mc_info_dir;
-mkdir ($mc_job_info_dir) unless -d $mc_job_info_dir;
+mkdir ($mc_info_dir,0777) unless -d $mc_info_dir;
+mkdir ($mc_job_info_dir,0777) unless -d $mc_job_info_dir;
 
 open(CFGFD,"<".$mc_config);
 while (<>) {
