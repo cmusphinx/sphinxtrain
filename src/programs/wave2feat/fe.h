@@ -167,6 +167,6 @@ int32 fe_close(fe_t *FE);
 
 int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block);
 
-int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps,float32 ***cep_block);
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,float32 ***cep_block);
 
 #endif
