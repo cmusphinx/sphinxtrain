@@ -71,8 +71,8 @@ die "USAGE: $0 <iter>" if ($#ARGV != $index);
 $iter = $ARGV[$index];
 
 mkdir ($CFG_CI_LOG_DIR,0777) unless -d $CFG_CI_LOG_DIR;
-
 $log = "$CFG_CI_LOG_DIR/${CFG_EXPTNAME}.$iter.norm.log";
+$scriptdir = "$CFG_SCRIPT_DIR/02.ci_schmm";
 
 # Check the number and list of parts done. Compute avg likelihood per frame
 $num_done = 0; $tot_lkhd = 0; $tot_frms = 0;
@@ -120,7 +120,7 @@ $previter = $iter - 1;
 $prev_norm = "${CFG_CI_LOG_DIR}/${CFG_EXPTNAME}.${previter}.norm.log";
 if (! -s $prev_norm) {
     # Either iter == 1 or we are starting from an intermediate iter value
-    system ("$CFG_CI_PERL_DIR/norm.pl $iter");
+    system ("$scriptdir/norm.pl $iter");
     system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
     &Launch_BW();
     exit (0);
@@ -137,7 +137,7 @@ close LOG;
 
 if ($prevlkhd == -99999999) {
     # Some error with previous norm.log. Continue Baum Welch
-    system ("$CFG_CI_PERL_DIR/norm.pl $iter");
+    system ("$scriptdir/norm.pl $iter");
     system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
     &Launch_BW();
     exit (0);
@@ -154,8 +154,8 @@ else {
     $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
 print "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+system ("$scriptdir/norm.pl $iter");
 
-system ("$CFG_CI_PERL_DIR/norm.pl $iter");
 system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
 system("echo \"Convergence ratio = $convg_ratio\" >> $log");
 
@@ -179,20 +179,8 @@ if ($convg_ratio > $CFG_CONVERGENCE_RATIO && $iter >= $CFG_MAX_ITERATIONS) {
     exit (0);
 }
 
-if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
-    &Launch_BW();
-    exit (0);
-}
-else {
-    system("echo \"Likelihoods have converged! Baum Welch training completed\!\" >> $log");
-    system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
-    system("date >> $log");
-    exit (0);
-}
-
-
 sub Launch_BW () {
     $newiter = $iter + 1;
-    system ("$CFG_CI_PERL_DIR/slave_convg.pl $newiter");
+    system ("$scriptdir/slave_convg.pl $newiter");
 }
 

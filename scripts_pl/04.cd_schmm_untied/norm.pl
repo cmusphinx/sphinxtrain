@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 ## ====================================================================
 ##
 ## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
@@ -77,6 +77,7 @@ $bwaccumdir 	     = "";
 for (<$base_dir/bwaccumdir/${CFG_EXPTNAME}_buff_*>) {
     $bwaccumdir .= " $_";
 }
+$bwaccumdir          = "$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_1";
 $hmmdir 	     = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_semi_untied";
 $means               = "$hmmdir/means";
 $variances           = "$hmmdir/variances";
@@ -85,12 +86,12 @@ $transition_matrices = "$hmmdir/transition_matrices";
 
 $logdir              = "${CFG_LOG_DIR}/04.cd_schmm_untied";
 mkdir ($logdir,0777) unless $logdir;
-$logfile 	     = "${CFG_LOG_DIR}/${CFG_EXPTNAME}.${iter}.norm.log";
+$logfile 	     = "$logdir/${CFG_EXPTNAME}.${iter}.norm.log";
 
 #set mach = `~/51..tools/machine_type.csh`
 #set NORM  = ~/09..sphinx3code/trainer/bin.$mach/norm
 $NORM  = "$CFG_BIN_DIR/norm";
 
-system ("$NORM -accumdir $bwaccumdir -mixwfn $mixture_weights  -tmatfn $transition_matrices -meanfn $means -varfn $variances -feat ${CFG_FEATURE} -ceplen 	${CFG_VECTOR_LENGTH}    >&! $logfile");
+system ("$NORM -accumdir $bwaccumdir -mixwfn $mixture_weights  -tmatfn $transition_matrices -meanfn $means -varfn $variances -feat ${CFG_FEATURE} -ceplen 	${CFG_VECTOR_LENGTH} 2> $logfile");
 
 exit 0

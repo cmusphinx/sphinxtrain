@@ -48,24 +48,19 @@
 ## Author: Ricky Houghton (converted from scripts by Rita Singh)
 ##
 
-
-my $index;
-
-# RAH Force passage of config file, or look for it one directory up.
+my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
     $cfg_file = $ARGV[1];
     $index = 2;
-    if (! -s $cfg_file) {
-	print "-cfg specified, but unable to find file $ARGV[1]\n";
-	exit -3;
-    }
-require $cfg_file;
 } else {
-    $cfg_file = "./sphinx_train.cfg";
-    require $cfg_file;
-    &ST_LogWarning("-cfg not specified, using the default ./sphinx_train.cfg");
-    $index = 0 ;
+    $cfg_file = "etc/sphinx_train.cfg";
 }
+
+if (! -s "$cfg_file") {
+    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
+    exit -3;
+}
+require $cfg_file;
 
 
 #************************************************************************
@@ -120,7 +115,7 @@ if ( $CFG_FORCEDALIGN eq "no" ) {
 }
 
 $topn     = $CFG_CI_TOPN;
-$logdir   = "$CFG_LOG_DIR/07.cd-schmm";
+$logdir   = "$CFG_LOG_DIR/07.cd_schmm";
 $logfile  = "$logdir/${CFG_EXPTNAME}.$iter-$part.bw.log";
 mkdir ($logdir,0777) unless -d $logdir;
 

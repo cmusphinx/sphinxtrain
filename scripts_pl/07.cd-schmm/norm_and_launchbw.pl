@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 ## ====================================================================
 ##
 ## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
@@ -45,89 +45,141 @@
 ##
 ## ====================================================================
 ##
+## Modified: Rita Singh, 27 Nov 2000
 ## Author: Ricky Houghton (converted from scripts by Rita Singh)
 ##
 
+my $index = 0;
+if (lc($ARGV[0]) eq '-cfg') {
+    $cfg_file = $ARGV[1];
+    $index = 2;
+} else {
+    $cfg_file = "etc/sphinx_train.cfg";
+}
 
-require "../sphinx_train.cfg";
-
+if (! -s "$cfg_file") {
+    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
+    exit -3;
+}
+require $cfg_file;
 
 #*******************************************************************
 #*******************************************************************
 
-die "USAGE: $0 <iter>" if ($#ARGV != 0);
+die "USAGE: $0 <iter>" if ($#ARGV != $index);
 
-$iter = $ARGV[0];
+$iter = $ARGV[$index];
 
-my $scriptdir = "$CFG_BASE_DIR/scripts_pl/07.cd-schmm";
-
-$logdir   = "$CFG_LOG_DIR/07.cd-schmm";
+$logdir = "$CFG_LOG_DIR/07.cd_schmm";
 mkdir ($logdir,0777) unless -d $logdir;
-$logfile  = "$logdir/${CFG_EXPTNAME}.$iter.norm.log";
+$scriptdir = "$CFG_SCRIPT_DIR/07.cd-schmm";
 
-# Attempt to replace above:
-$num_done = 0;
-for $input_log (<${CFG_CI_LOG_DIR}/${CFG_EXPTNAME}.${iter}-*.bw.log>) {
- open LOG,$input_log;
- while (<LOG>) {
-     $num_done++ if /.*(MLLR regmat).*/;
- }
- close LOG;
+$log = "$logdir/${CFG_EXPTNAME}.$iter.norm.log";
+
+# Check the number and list of parts done. Compute avg likelihood per frame
+$num_done = 0; $tot_lkhd = 0; $tot_frms = 0;
+for ($i=1;$i<=$CFG_NPART;$i++){
+    $done[$i] = 0;
+    $input_log = "${logdir}/${CFG_EXPTNAME}.${iter}-${i}.bw.log";
+    next if (! -s $input_log);
+    open LOG,$input_log;
+    while (<LOG>) {
+        if (/.*(Counts saved to).*/) {
+            $num_done++;
+            $done[$i] = 1;
+        }
+        if (/.*(overall>).*/){
+            ($jnk,$jnk,$nfrms,$jnk,$jnk,$lkhd) = split(/ /);
+            $tot_lkhd = $tot_lkhd + $lkhd;
+            $tot_frms = $tot_frms + $nfrms;
+        }
+    }
+    close LOG;
 }
 
-print "$num_done parts of $npart of Baum Welch were successfully completed\n";
-
-if ($num_done != $npart) {
-  open OUTPUT,">$logfile";
-  print OUTPUT "Some of the baum-welch jobs seem to have bombed out. Expected $npart, got $num_done.\nAborting\!\!\!\\n";
-  close OUTPUT;
-  exit 0;
+if ($num_done != $CFG_NPART) {
+    open OUTPUT,">$log";
+    print "Only $num_done parts of $CFG_NPART of Baum Welch were successfully completed\n";
+    print "Parts ";
+    for ($i=1;$i<=$CFG_NPART;$i++) {
+        print "$i " if ($done[$i] == 0);
+    }
+    print "failed to run!\n";
+    close OUTPUT;
+    exit (0);
 }
 
-system ("$CFG_CI_PERL_DIR/norm.pl $iter");
+if ($tot_frms == 0) {
+    open OUTPUT,">$log";
+    print "Baum welch ran successfully for only 0 frames! Aborting..\n";
+    close OUTPUT;
+    exit (0);
+}
 
-# RAH, this needs to be cleaned up
-$like = `grep "overall>" $logdir/${$CFG_EXPTNAME}.${iter}-*.bw.log | awk '{X += $3;Y += $6} END {print Y/X}'`;
-system ("echo \"Current Overall Likelihood Per Frame = $like\" >> $logfile");
+$lkhd_per_frame = $tot_lkhd/$tot_frms;
 
-if ($iter == 1) { # Always perform a second iteration
+$previter = $iter - 1;
+$prev_norm = "${logdir}/${CFG_EXPTNAME}.${previter}.norm.log";
+if (! -s $prev_norm) {
+    # Either iter == 1 or we are starting from an intermediate iter value
+    system ("$scriptdir/norm.pl $iter");
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
     &Launch_BW();
     exit (0);
 }
 
-$previter = $iter - 1;
-$prevlike = `grep "overall>" $logdir/${exptname}.${previter}-*.bw.log | awk '{ X += $3; Y += $6} END {print Y/X}'`;
+# Find the likelihood from the previous iteration
+open LOG,$prev_norm; $prevlkhd = -99999999;
+while (<LOG>) {
+   if (/.*(Current Overall Likelihood Per Frame).*/){
+      ($jnk,$jnk,$jnk,$jnk,$jnk,$jnk,$prevlkhd) = split(/ /);
+   }
+}
+close LOG;
 
-
-# we seem to be starting from an intermediate iter value
-if  ($prevlike eq "") {
-  &Launch_BW();
-  exit (0);
+if ($prevlkhd == -99999999) {
+    # Some error with previous norm.log. Continue Baum Welch
+    system ("$scriptdir/norm.pl $iter");
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+    &Launch_BW();
+    exit (0);
 }
 
-
-#hack to handle sign
-$absprev = `echo "$prevlike"|awk '$1 < 0 {print -$1} $1 > 0 {print $1}'`;
-system ("echo \"$prevlike $like $absprev\"|awk '{printf(\"Convergence Ratio = %f\n\",($2-$1)/$3)}' >> $logfile");
-$testval = `echo "$prevlike $like $absprev"|awk -v th=$CFG_CONVERGENCE_RATIO '($2-$1)/$3 > th {print 1} ($2-$1)/$3 < th {print 0}'`;
-
-
-if ($testval == 1) {
-  &Launch_BW();
-  exit (0);
+if ($prevlkhd == 0) {
+    $convg_ratio = 1;
+}
+else {
+    $absprev = $prevlkhd;
+    $absprev = -$absprev if ($prevlkhd < 0);
+    $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
 
-# if testval != 1, the likelihoods have converged. No further jobs needed
-system ("echo \"The likelihoods have converged. Baum Welch training completed\!\" >> $logfile");
-system ("echo \"*********************************TRAINING COMPLETE***************************\" >> $logfile");
-`date >> $logfile`;
+print "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+system ("$scriptdir/norm.pl $iter");
 
-exit (0);
+if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+    system("echo \"Convergence ratio = $convg_ratio\" >> $log");
+    &Launch_BW();
+    exit (0);
+}
+else {
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+    system("echo \"Convergence ratio = $convg_ratio\" >> $log");
+    system("echo \"Likelihoods have converged! Baum Welch training completed\!\" >> $log");
+    system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
+    system("date >> $log");
+    exit (0);
+}
 
 
 sub Launch_BW () {
     $newiter = $iter + 1;
     system ("$scriptdir/slave_convg.pl $newiter");
 }
+
+
+
+
 
 

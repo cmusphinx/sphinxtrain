@@ -45,9 +45,9 @@
 ##
 ## ====================================================================
 ##
+## Modified: Rita Singh, 27 Nov 2000
 ## Author: Ricky Houghton (converted from scripts by Rita Singh)
 ##
-
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
@@ -67,69 +67,116 @@ require $cfg_file;
 #*******************************************************************
 
 die "USAGE: $0 <iter>" if ($#ARGV != $index);
-$iter   		= $ARGV[$index];
 
-$logdir              = "${CFG_LOG_DIR}/04.cd_schmm_untied";
-mkdir ($logdir,0777) unless $logdir;
-$log 	     = "$logdir/${CFG_EXPTNAME}.${iter}.norm.log";
+$iter = $ARGV[$index];
 
-$num_done = `grep "MLLR regmat" $logdir/${CFG_EXPTNAME}.${iter}-*.bw.log | wc -l | awk '{print $1}'`;
+$logdir = "$CFG_LOG_DIR/04.cd_schmm_untied";
+mkdir ($logdir,0777) unless -d $logdir;
+$scriptdir = "$CFG_SCRIPT_DIR/04.cd_schmm_untied";
 
-print "$num_done parts of $npart_untied of Baum Welch successfully completed" >> $log;
+$log = "$logdir/${CFG_EXPTNAME}.$iter.norm.log";
 
-if ($num_done != $npart_untied) {
-    open LOG,">>$log";
-    print LOG "Some of the baum-welch jobs seem to have bombed out.";
-    print LOG "Here is a list of jobs that died..";
-
-    $p_id = 1;
-    system  ("grep \"Counts saved\" $logdir/${CFG_EXPTNAME}.$iter-*.bw.log | awk -F\"_\" '{print $NF}' |sort -n > /tmp/xx.$p_id");
-#    system ("~rsingh/51..tools/interval 1 $npart_untied >! /tmp/xy.$$
-    system ("$CFG_BIN_DIR/interval 1 $npart_untied > /tmp/xy.$p_id");
-    system ("diff /tmp/xx.$p_id /tmp/xy.$p_id|grep \">\" >> $log");
-    print LOG "Aborting\!\!\!";
+# Check the number and list of parts done. Compute avg likelihood per frame
+$num_done = 0; $tot_lkhd = 0; $tot_frms = 0;
+for ($i=1;$i<=$CFG_NPART;$i++){
+    $done[$i] = 0;
+    $input_log = "${logdir}/${CFG_EXPTNAME}.${iter}-${i}.bw.log";
+    next if (! -s $input_log);
+    open LOG,$input_log;
+    while (<LOG>) {
+        if (/.*(Counts saved to).*/) {
+            $num_done++;
+            $done[$i] = 1;
+        }
+        if (/.*(overall>).*/){
+            ($jnk,$jnk,$nfrms,$jnk,$jnk,$lkhd) = split(/ /);
+            $tot_lkhd = $tot_lkhd + $lkhd;
+            $tot_frms = $tot_frms + $nfrms;
+        }
+    }
     close LOG;
-    system ("rm -f /tmp/xx.$$ /tmp/xy.$$");
-    exit 0;
 }
 
-$script_dir = "$CFG_SCRIPT_DIR/04.cd_schmm_untied";
-system ("$script_dir/norm.pl $iter");
+if ($num_done != $CFG_NPART) {
+    open OUTPUT,">$log";
+    print "Only $num_done parts of $CFG_NPART of Baum Welch were successfully completed\n";
+    print "Parts ";
+    for ($i=1;$i<=$CFG_NPART;$i++) {
+        print "$i " if ($done[$i] == 0);
+    }
+    print "failed to run!\n";
+    close OUTPUT;
+    exit (0);
+}
 
-$like = `grep "overall>" $logdir/${CFG_EXPTNAME}.${iter}-*.bw.log | awk '{X += $3;Y += $6} END {print Y/X}'`;
-open LOG,">>$log";
-print LOG "Current Overall Likelihood Per Frame = $like";
+if ($tot_frms == 0) {
+    open OUTPUT,">$log";
+    print "Baum welch ran successfully for only 0 frames! Aborting..\n";
+    close OUTPUT;
+    exit (0);
+}
 
-&launch_bw if ($iter == 1); # Always perform a second iteration
+$lkhd_per_frame = $tot_lkhd/$tot_frms;
 
 $previter = $iter - 1;
-
-$prevlike = `grep "Current Overall Li" $logdir/${exptname}.${previter}.norm.log | awk '{print $NF}'`;
-
-&launch_bw if ($prevlike eq ""); # we seem to be starting from an intermediate iter value
-
-#hack to handle sign
-$absprev = `echo "$prevlike"|awk '$1 < 0 {print -$1} $1 > 0 {print $1}'`;
-#print LOG "$prevlike $like $absprev"|awk '{printf("Convergence Ratio = %f\n",($2-$1)/$3)}';
-$testval = `echo "$prevlike $like $absprev"|awk -v th=$convergence_ratio '($2-$1)/$3 > th {print 1} ($2-$1)/$3 < th {print 0}'`;
-
-&launch_bw if ($testval == 1);
-
-
-# if testval != 1, the likelihoods have converged. No further jobs needed
-print LOG "The likelihoods have converged. Baum Welch training completed\!";
-print LOG "*********************************TRAINING COMPLETE***************************";
-print LOG 'date';
-system ("$script_dir/makeuntiedmixw.pl");
-close LOG;
-exit 0;
-
-sub launch_bw ()
-{
-    $newiter = $iter + 1;
-    system ("$script_dir/slave_convg.pl $newiter");
-    close LOG;
-    exit 0;
+$prev_norm = "${logdir}/${CFG_EXPTNAME}.${previter}.norm.log";
+if (! -s $prev_norm) {
+    # Either iter == 1 or we are starting from an intermediate iter value
+    system ("$scriptdir/norm.pl $iter");
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+    &Launch_BW();
+    exit (0);
 }
+
+# Find the likelihood from the previous iteration
+open LOG,$prev_norm; $prevlkhd = -99999999;
+while (<LOG>) {
+   if (/.*(Current Overall Likelihood Per Frame).*/){
+      ($jnk,$jnk,$jnk,$jnk,$jnk,$jnk,$prevlkhd) = split(/ /);
+   }
+}
+close LOG;
+
+if ($prevlkhd == -99999999) {
+    # Some error with previous norm.log. Continue Baum Welch
+    system ("$scriptdir/norm.pl $iter");
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+    &Launch_BW();
+    exit (0);
+}
+
+if ($prevlkhd == 0) {
+    $convg_ratio = 1;
+}
+else {
+    $absprev = $prevlkhd;
+    $absprev = -$absprev if ($prevlkhd < 0);
+    $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
+}
+
+print "Cur rent Overall Likelihood Per Frame = $lkhd_per_frame\n";
+system ("$scriptdir/norm.pl $iter");
+
+if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+    system("echo \"Convergence ratio = $convg_ratio\" >> $log");
+    &Launch_BW();
+    exit (0);
+}
+else {
+    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+    system("echo \"Convergence ratio = $convg_ratio\" >> $log");
+    system("echo \"Likelihoods have converged! Baum Welch training completed\!\" >> $log");
+    system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
+    system("date >> $log");
+    exit (0);
+}
+
+
+sub Launch_BW () {
+    $newiter = $iter + 1;
+    system ("$scriptdir/slave_convg.pl $newiter");
+}
+
 
 

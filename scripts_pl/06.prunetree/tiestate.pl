@@ -50,21 +50,19 @@
 #**************************************************************************
 
 
-# RAH Force passage of config file, or look for it one directory up.
+my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
     $cfg_file = $ARGV[1];
-    if (! -s $cfg_file) {
-	print "-cfg specified, but unable to find file $ARGV[1]\n";
-	exit -3;
-    }
     $index = 2;
-    require $cfg_file;
 } else {
-    $cfg_file = "../sphinx_train.cfg";
-    require $cfg_file;
-    &ST_LogWarning("-cfg not specified, using the default ../sphinx_train.cfg");
+    $cfg_file = "etc/sphinx_train.cfg";
 }
 
+if (! -s "$cfg_file") {
+    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
+    exit -3;
+}
+require $cfg_file;
 
 die "USAGE: $0 <iteration number>" if (($#ARGV != ($index)));
 

@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 ## ====================================================================
 ##
 ## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
@@ -49,21 +49,41 @@
 ##
 
 
-require "/sphx_train/testing/scripts_pl/sphinx_train.cfg";
 
+if (lc($ARGV[0]) eq '-cfg') {
+    shift @ARGV;
+    $cfg_file = shift @ARGV;
+} else {
+    $cfg_file = "etc/sphinx_train.cfg";
+}
+
+if (! -s "$cfg_file") {
+    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
+    exit -3;
+}
+require $cfg_file;
 
 #*******************************************************************
 #*******************************************************************
 
 die "USAGE: $0 <iter>" if ($#ARGV != 0);
-
-$iter = $ARGV[0];
+#$iter = $ARGV[0];
+$iter = shift @ARGV;
 
 # cover up to 100 different buffer directories....
 #$buffer_dirs = ($base_dir/bwaccumdir/${exptname}_buff_? $base_dir/bwaccumdir/${exptname}_buff_??);
-@buffer_dirs = (<$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_*>); # Catches any number of them
+#@buffer_dirs = (<$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_*>); # Catches any number of them
 
-$hmm_dir           = "$CFG_BASE_DIR/model_parameters/${CFG_EXPTNAME}.ci_semi_$CFG_N_TIED_STATES";
+my $bwaccumdir = "$CFG_BASE_DIR/bwaccumdir";
+open BWACCUMDIR, $bwaccumdir or die "$bwaccumdir: $!";
+my @buffer_dirs = sort { my ($a1) = ($a =~ /\d+$/);  # get trailing digits
+                   my ($b1) = ($b =~ /\d+$/);
+                   $a1 <=> $b1 }               # compare them in the sort
+            grep /${exptname}_buff/, readdir BWACCUMDIR;
+close BWACCUMDIR;
+
+
+$hmm_dir           = "$CFG_BASE_DIR/model_parameters/${CFG_EXPTNAME}.cd_semi_$CFG_N_TIED_STATES";
 mkdir ($hmm_dir,0777) unless -d $hmm_dir;
 
 #new models to be produced after normalization
@@ -73,15 +93,15 @@ $meanfn         = "$hmm_dir/means";
 $varfn          = "$hmm_dir/variances";
 
 
-$logdir   = "$CFG_LOG_DIR/07.cd-schmm";
+$logdir   = "$CFG_LOG_DIR/07.cd_schmm";
 mkdir ($logdir,0777) unless -d $logdir;
 $logfile  = "$logdir/${CFG_EXPTNAME}.$iter.norm.log";
 
 $NORM   = "$CFG_BIN_DIR/norm";
 
-print "$NORM -accumdir @buffer_dirs -mixwfn $mixwfn -tmatfn $tmatfn -meanfn $meanfn -varfn $varfn -feat $CFG_FEATURE -ceplen  $CFG_VECTOR_LENGTH  2> $logfile";
+#print "$NORM -accumdir @buffer_dirs -mixwfn $mixwfn -tmatfn $tmatfn -meanfn $meanfn -varfn $varfn -feat $CFG_FEATURE -ceplen  $CFG_VECTOR_LENGTH  2> $logfile";
 
-system ("$NORM -accumdir @buffer_dirs -mixwfn $mixwfn -tmatfn $tmatfn -meanfn $meanfn -varfn $varfn -feat $CFG_FEATURE -ceplen  $CFG_VECTOR_LENGTH  2>&1 > $logfile");
+system ("$NORM -accumdir @buffer_dirs -mixwfn $mixwfn -tmatfn $tmatfn -meanfn $meanfn -varfn $varfn -feat $CFG_FEATURE -ceplen  $CFG_VECTOR_LENGTH 2> $logfile");
 `date >> $logfile`;
 
 exit 0
