@@ -145,7 +145,7 @@ print "Copying scripts from $scriptdir\n";
 closedir(DIR);
 
 # Copy the directory tree. We do so by creating each directory, and
-# the copying it to the correct location here
+# the copying it to the correct location here. We also set the permissions.
 foreach $directory (@dirlist) {
   mkdir "scripts_pl/$directory" unless -d "scripts_pl/$directory";
   opendir(SUBDIR, "$scriptdir/$directory") or 
@@ -154,6 +154,7 @@ foreach $directory (@dirlist) {
   foreach $executable (@subdirlist) {
     copy("$scriptdir/$directory/$executable", 
 	 "scripts_pl/$directory/$executable");
+    chmod 0755, scripts_pl/$directory/$executable;
   }
 }
 
