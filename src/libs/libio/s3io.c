@@ -308,7 +308,7 @@ error_loc:
 }
 
 size_t
-s3read(void *pointer,
+s3read(char *pointer,
        size_t size,
        size_t num_items,
        FILE *stream,
@@ -618,7 +618,7 @@ s3read_1d(void **arr,
 }
 
 size_t
-s3write(const void *pointer,
+s3write(const char *pointer,
 	size_t size,
 	size_t num_items,
 	FILE *stream,
@@ -808,9 +808,12 @@ s3write_1d(void *arr,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.5  2003/11/30  05:57:05  egouvea
+ * Replaced 'void *' with 'char *', so the pointer points to something with known size
  * 
+ * Revision 1.4  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.3  2001/02/20 00:28:35  awb
  * *** empty log message ***
  *
