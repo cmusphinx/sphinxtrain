@@ -101,6 +101,18 @@ parse_cmd_ln(int argc, char *argv[])
           "6",
           "The minimum variance"},
 
+        { "-niter",
+          CMD_LN_INT32,
+          CMD_LN_NO_VALIDATION,
+          "0",
+          "Number of iterations"},
+
+        { "-qstperstt",
+          CMD_LN_INT32,
+          CMD_LN_NO_VALIDATION,
+          "8",
+          "something per state"},
+
 	{ "-tempfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -112,6 +124,12 @@ parse_cmd_ln(int argc, char *argv[])
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
 	  "File to write questions to" },
+
+	{ "-type",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "HMM type" },
 
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
@@ -138,9 +156,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:14  awb
+ * Revision 1.3  2000/11/17  16:10:41  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:14  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *
