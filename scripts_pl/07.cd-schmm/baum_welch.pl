@@ -124,7 +124,7 @@ $ctl_counter = 1 unless ($ctl_counter);
 copy "$CFG_GIF_DIR/green-ball.gif", "$CFG_BASE_DIR/.02.bw.$n_gau.$iter.$part.state.gif";
 &ST_HTML_Print ("\t<img src=$CFG_BASE_DIR/.02.bw.$n_gau.$iter.$part.state.gif> ");        
 &ST_Log ("    Baum welch starting for $n_gau Gaussian(s), iteration: $iter ($part of $npart) ");
-&ST_HTML_Print ("<A HREF=\"$logfile\">Log File</A>\n");
+&ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . "\n");
 
 open LOG,">$logfile";
 

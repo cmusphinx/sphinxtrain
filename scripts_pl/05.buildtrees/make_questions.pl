@@ -71,7 +71,7 @@ my $MAKE_QUEST = "${CFG_BIN_DIR}/make_quests";
 
 $| = 1; # Turn on autoflushing
 &ST_Log ("    Make Questions\n");
-&ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A> ");
+&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
 $|=1;
 if (open PIPE, "$MAKE_QUEST -moddeffn $mdeffn -meanfn $meanfn -varfn $varfn -mixwfn $mixwfn -npermute 8 -niter 1 -qstperstt 20 -tempfn $tempfn -questfn $questfn -type ${CFG_HMM_TYPE} 2>&1 |") {

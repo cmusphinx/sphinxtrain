@@ -202,7 +202,7 @@ sub FlatInitialize ()
 
 
     my $logfile = "$logdir/${CFG_EXPTNAME}.make_ci_mdef_fromphonelist.log";
-    &ST_HTML_Print ("\t\tmk_mdef_gen <A HREF=\"$logfile\">Log File</A>\n");    
+    &ST_HTML_Print ("\t\tmk_mdef_gen " . &ST_FormatURL("$logfile", "Log File") . "\n");    
     #-------------------------------------------------------------------------
     # Decide on what topology to use for the hmms: 3 state, 5 state, blah state
     # or what, give it to the variable "statesperhmm" and use it to create
@@ -228,7 +228,7 @@ sub FlatInitialize ()
     $FLAT = "$CFG_BIN_DIR/mk_flat";
 
     $logfile = "$logdir/${CFG_EXPTNAME}.makeflat_cihmm.log";
-    &ST_HTML_Print ("\t\tmk_flat <A HREF=\"$logfile\">Log File</A>\n");    
+    &ST_HTML_Print ("\t\tmk_flat " . &ST_FormatURL("$logfile", "Log File") . "\n");    
 
     open LOG,">$logfile";
 
@@ -253,7 +253,7 @@ sub FlatInitialize ()
     $ACCUM = "$CFG_BIN_DIR/init_gau";
 
     $logfile = "$logdir/${CFG_EXPTNAME}.initmean_cihmm.log";
-    &ST_HTML_Print ("\t\taccum_mean <A HREF=\"$logfile\">Log File</A>\n");    
+    &ST_HTML_Print ("\t\taccum_mean " . &ST_FormatURL("$logfile", "Log File") . "\n");
 
     open LOG,">$logfile";
 
@@ -277,7 +277,7 @@ sub FlatInitialize ()
     $NORM = "$CFG_BIN_DIR/norm";
 
     $logfile = "$logdir/${CFG_EXPTNAME}.normmean_cihmm.log";
-    &ST_HTML_Print ("\t\tnorm_mean <A HREF=\"$logfile\">Log File</A>\n");    
+    &ST_HTML_Print ("\t\tnorm_mean " . &ST_FormatURL("$logfile", "Log File") . "\n");
 
     open LOG,">$logfile";
 
@@ -296,7 +296,7 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
     
     $logfile = "$logdir/${CFG_EXPTNAME}.initvar_cihmm.log";
-    &ST_HTML_Print ("\t\taccum_var <A HREF=\"$logfile\">Log File</A>\n");    
+    &ST_HTML_Print ("\t\taccum_var " . &ST_FormatURL("$logfile", "Log File") . "\n");
 
     open LOG,">$logfile";
 
@@ -315,7 +315,7 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
     
     $logfile = "$logdir/${CFG_EXPTNAME}.normvar_cihmm.log";
-    &ST_HTML_Print ("\t\tnorm_var <A HREF=\"$logfile\">Log File</A>\n");    
+    &ST_HTML_Print ("\t\tnorm_var " . &ST_FormatURL("$logfile", "Log File") . "\n");
 
     open LOG,">$logfile";
 
@@ -350,7 +350,7 @@ sub FlatInitialize ()
     $CPPARM = "$CFG_BIN_DIR/cp_parm";
 
     $logfile = "$logdir/${CFG_EXPTNAME}.cpmean_cihmm.log";
-    &ST_HTML_Print ("\t\tcp_mean <A HREF=\"$logfile\">Log File</A>\n");    
+    &ST_HTML_Print ("\t\tcp_mean " . &ST_FormatURL("$logfile", "Log File") . "\n");
 
     open LOG,">$logfile";
 
@@ -369,7 +369,7 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
     
     $logfile = "$logdir/${CFG_EXPTNAME}.cpvar_cihmm.log";
-    &ST_HTML_Print ("\t\tcp_var <A HREF=\"$logfile\">Log File</A>\n");    
+    &ST_HTML_Print ("\t\tcp_var " . &ST_FormatURL("$logfile", "Log File") . "\n");
 
     open LOG,">$logfile";
 

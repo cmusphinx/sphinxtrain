@@ -96,7 +96,7 @@ rmtree ($logdir) unless ! -d $logdir;
 mkdir ($logdir,0777);
 
 &ST_Log ("    Doing interpolation...\n");
-&ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A> ");
+&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
 open LOG,"> $logfile";
 

@@ -94,7 +94,7 @@ sub BuildTree ()
     my $logfile = "$logdir/${CFG_EXPTNAME}.buildtree.${phn}.${stt}.log";
 
     &ST_Log ("\t\t${phn} ${stt} ");
-    &ST_HTML_Print ("<A HREF=\"$logfile\">Log File</A>\n");
+    &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . "\n");
 
     #$mach = `~/51..tools/machine_type.csh`;
     #$BUILDTREE = "/net/alf19/usr2/eht/s3/bin.$mach/bldtree";

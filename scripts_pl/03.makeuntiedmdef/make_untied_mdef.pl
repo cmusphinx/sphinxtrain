@@ -87,6 +87,6 @@ $untiedmdef = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
 $MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
 system ("$MAKE_MDEF -phnlstfn $CFG_RAWPHONEFILE -dictfn $CFG_DICTIONARY -fdictfn $CFG_FILLERDICT -lsnfn $CFG_TRANSCRIPTFILE -ountiedmdef  $untiedmdef -n_state_pm  $CFG_STATESPERHMM -maxtriphones 10000 2>$logfile");
 
-&ST_HTML_Print ("\t\tmk_untied_mdef <A HREF=\"$logfile\">Log File</A>\n");
+&ST_HTML_Print ("\t\tmk_untied_mdef " . &ST_FormatURL("$logfile", "Log File") . "\n");
 
 exit 0;

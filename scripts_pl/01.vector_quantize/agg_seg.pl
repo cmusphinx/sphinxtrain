@@ -90,7 +90,7 @@ mkdir ($segdmpdir,0777) unless -d $segdmpdir;
 
 $dumpfile = "$segdmpdir/${CFG_EXPTNAME}.dmp";
 $logfile = "$logdir/${CFG_EXPTNAME}.vq.agg_seg.log";
-&ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A> ");
+&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
 # run it here 
 #system ("$AGG_SEG -segdmpdirs $segdmpdir -segdmpfn $dumpfile  -segtype all -ctlfn $CFG_LISTOFFILES -cepdir $CFG_FEATFILES_DIR -cepext $CFG_FEATFILE_EXTENSION -ceplen $CFG_VECTOR_LENGTH -agc $CFG_AGC -cmn $CFG_CMN -feat $CFG_FEATURE -stride $stride");

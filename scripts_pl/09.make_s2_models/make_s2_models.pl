@@ -90,22 +90,22 @@ $s3var = "$s3hmmdir/variances";
 $s3tmat = "$s3hmmdir/transition_matrices";
 
 &ST_Log ("    Make codebooks\n");
-&ST_HTML_Print ("\t<A HREF=\"$logfile_cb\">Log File</A> ");
+&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile_cb", "Log File") . " ");
 system("$CFG_BIN_DIR/mk_s2cb -meanfn $s3mean -varfn $s3var -cbdir $s2dir -varfloor 0.00001 >$logfile_cb 2>&1 ");
 &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
 
 &ST_Log ("    Make chmm files\n");
-&ST_HTML_Print ("\t<A HREF=\"$logfile_chmm\">Log File</A> ");
+&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile_chmm", "Log File") . " ");
 system("$CFG_BIN_DIR/mk_s2hmm -moddeffn $s3mdef -mixwfn $s3mixw -tmatfn $s3tmat -hmmdir $s2dir >$logfile_chmm 2>&1");
 &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
 
 &ST_Log ("    Make senone file\n");
-&ST_HTML_Print ("\t<A HREF=\"$logfile_senone\">Log File</A> ");
+&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile_senone", "Log File") . " ");
 system( "$CFG_BIN_DIR/mk_s2sendump -moddeffn $s3mdef -mixwfn $s3mixw -tpfloor 0.0000001 -feattype s2_4x -sendumpfn $s2dir/sendump >$logfile_senone 2>&1");
 &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
 
 &ST_Log ("    Make phone and map files\n");
-&ST_HTML_Print ("\t<A HREF=\"$logfile_s2phonemap\">Log File</A> ");
+&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile_s2phonemap", "Log File") . " ");
 system("$CFG_BIN_DIR/mk_s2phonemap -moddeffn $s3mdef -phonefn $s2dir/phone -mapfn $s2dir/map >$logfile_s2phonemap 2>&1");
 &ST_HTML_Print ("\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
 

@@ -87,7 +87,7 @@ $logdir = "$CFG_LOG_DIR/01.vector_quantize";
 mkdir ($logdir,0777) unless -d $logdir;
 $logfile = "$logdir/${CFG_EXPTNAME}.kmeans.log";
 
-&ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A>");
+&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File"));
 
 #set VQ = ~rsingh/09..sphinx3code/trainer/bin.alpha/kmeans_init
 #$VQ = "$CFG_BIN_DIR/kmeans_init";

@@ -72,7 +72,7 @@ my $TIESTATE = "$CFG_BIN_DIR/tiestate";
 
 $| = 1; # Turn on autoflushing
 &ST_Log ("    Tie states\n");
-&ST_HTML_Print ("\t\t<A HREF=\"$logfile\">Log File</A> ");
+&ST_HTML_Print ("\t\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
 system("$TIESTATE -imoddeffn $untied_mdef_file -omoddeffn $tied_mdef_file -treedir $prunedtreedir -psetfn $CFG_QUESTION_SET 2>$logfile");
 
