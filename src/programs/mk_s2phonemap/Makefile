@@ -1,4 +1,4 @@
-# ====================================================-*-mode:Makefile-*-
+# ====================================================================
 # Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,13 +41,27 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # ====================================================================
-#                    
-# Project description
-#                    
+#
+#  Programs: mk_s2phonemap
+#
+#  Convert a SphinxIII mdef file to a phone and map file for SphinxII
+#
 # ====================================================================
+TOP=../../..
+DIRNAME=src/programs/mk_s2phonemap
+BUILD_DIRS = 
+ALL_DIRS= $(BUILD_DIRS)
+SRCS = \
+  mk_s2phonemap.c \
+  parse_cmd_ln.c
+H = \
+  parse_cmd_ln.h \
 
-PROJECT_NAME = Sphinx acoustic training scripts
-PROJECT_PREFIX = SphinxTrain
-PROJECT_VERSION = 0.7
-PROJECT_DATE = Januaru 2001
-PROJECT_STATE = current
+FILES = Makefile $(SRCS) $(H)
+
+TARGET = mk_s2phonemap
+
+ALL = $(BINDIR)/$(TARGET)
+
+include $(TOP)/config/common_make_rules
+
