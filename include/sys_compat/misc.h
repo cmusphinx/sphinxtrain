@@ -55,26 +55,22 @@
 
 /* Nothing so far for Unix type machines */
 
-#ifdef WIN32
+#if (defined(WIN32) && !defined(__CYGWIN__))
 
-#ifndef __CYGWIN32__
 #include <windows.h>
 
 #define sleep(x) Sleep((x)*1000)
 
-double
-drand48(void);
-
-#endif
+#define drand48() ((double)rand()/RAND_MAX)
 
 #else
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/param.h>
 
 #ifndef MAXHOSTNAMELEN
-#include <netdb.h>	/* Solaris man page say's MAX... defined in <sys/param.h>
-			   but it is NOT THERE! */
+#include <netdb.h>
 #endif
 
 #endif /* WIN32 */
@@ -85,9 +81,13 @@ drand48(void);
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2001/11/30  22:55:59  egouvea
- * Added changes so it compiles with cygwin.
+ * Revision 1.5  2004/02/11  22:03:20  egouvea
+ * Fixed some definitions, mostly constants included in some .h files in
+ * a OS but not in another (e.g. O_BINARY).
  * 
+ * Revision 1.4  2001/11/30 22:55:59  egouvea
+ * Added changes so it compiles with cygwin.
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *

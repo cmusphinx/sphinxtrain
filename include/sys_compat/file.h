@@ -53,9 +53,7 @@
 #define FILE_H
 
 
-#if defined(WIN32)
-
-#if !defined(CYGNUS)
+#if (defined(WIN32) && !defined(__CYGWIN__))
 
 #include <io.h>
 #include <fcntl.h>
@@ -63,15 +61,7 @@
 #include <sys/stat.h>
 
 #define MAXPATHLEN FILENAME_MAX
-
-#else
-
-/* CYGNUS && WIN32 */
-#include <sys/file.h>
-#include <sys/param.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#endif
+#define F_OK 0
 
 #else
 
@@ -85,8 +75,8 @@
 
 #endif
 
-#if !defined(WIN32)
-#define O_BINARY 0	/* WIN32 i/o does text conversion by default */
+#if !defined(O_BINARY)
+#define O_BINARY 0
 #endif
 
 #endif /* FILE_H */
@@ -95,9 +85,13 @@
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2003/11/18  21:07:24  egouvea
- * Got rid of warning casting the argument to "isspace".
+ * Revision 1.5  2004/02/11  22:03:20  egouvea
+ * Fixed some definitions, mostly constants included in some .h files in
+ * a OS but not in another (e.g. O_BINARY).
  * 
+ * Revision 1.4  2003/11/18 21:07:24  egouvea
+ * Got rid of warning casting the argument to "isspace".
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *
