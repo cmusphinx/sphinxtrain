@@ -42,27 +42,19 @@
 #
 # ====================================================================
 #
-#  Perl scripts
+#  General scripts (various types)
 #
 # ====================================================================
 TOP=..
-DIRNAME=scripts_pl
-BUILD_DIRS = 00.verify 01.vector_quantize 02.ci_schmm 03.makeuntiedmdef \
-             04.cd_schmm_untied 05.buildtrees 
-ALL_DIRS= $(BUILD_DIRS)
-FESTIVAL_SCRIPTS = make_dict.festival
-TMPSCRIPTS=setup_SphinxTrain maketopology make_feats
-FILES = Makefile RunAll.pl $(TMPSCRIPTS) \
-        $(FESTIVAL_SCRIPTS)
+DIRNAME=etc
+BUILD_DIRS = 
+ALL_DIRS= images
+BINARIES = 
+FILES = Makefile sphinx_train.cfg
 
-ALL = make_dict
+ALL = 
+
+LOCAL_CLEAN = $(ALL)
 
 include $(TOP)/config/common_make_rules
 
-LOCAL_CLEAN = make_dict
-
-make_dict: make_dict.festival
-	@ echo "#!/bin/sh" > $@
-	@ echo "\"true\"; exec "$(FESTIVAL)' --script $$0 $$*' >>$@
-	@ cat $< >>$@
-	@ chmod +x $@

@@ -48,6 +48,6 @@
 
 PROJECT_NAME = Sphinx acoustic training scripts
 PROJECT_PREFIX = SphinxTrain
-PROJECT_VERSION = 0.2
-PROJECT_DATE = Sep 2000
+PROJECT_VERSION = 0.3
+PROJECT_DATE = Nov 2000
 PROJECT_STATE = current

@@ -1,3 +1,4 @@
+#!/bin/sh
 # ====================================================================
 # Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
 #
@@ -42,27 +43,82 @@
 #
 # ====================================================================
 #
-#  Perl scripts
+#  Set up script
+#  (with apologies to lenzo re the language)
 #
 # ====================================================================
-TOP=..
-DIRNAME=scripts_pl
-BUILD_DIRS = 00.verify 01.vector_quantize 02.ci_schmm 03.makeuntiedmdef \
-             04.cd_schmm_untied 05.buildtrees 
-ALL_DIRS= $(BUILD_DIRS)
-FESTIVAL_SCRIPTS = make_dict.festival
-TMPSCRIPTS=setup_SphinxTrain maketopology make_feats
-FILES = Makefile RunAll.pl $(TMPSCRIPTS) \
-        $(FESTIVAL_SCRIPTS)
 
-ALL = make_dict
+if [ ! "$SPHINXTRAINDIR" ]
+then
+   echo "environment variable SPHINXTRAINDIR is unset"
+   echo "set it to your local SphinxTrain directory e.g."
+   echo '   bash$ export SPHINXTRAINDIR=/home/awb/projects/SphinxTrain/'
+   echo or
+   echo '   csh% setenv SPHINXTRAINDIR /home/awb/projects/SphinxTrain/'
+   exit 1
+fi
 
-include $(TOP)/config/common_make_rules
+if [ $# != 1 ]
+then
+    echo "Build dirs, and setup scripts for traing Sphinx acoustic models "
+    echo "Usage: setup_SphinxTrain DBNAME"
+    echo "DBNAME short name for this training set"
+    exit 1
+fi
 
-LOCAL_CLEAN = make_dict
+DBNAME=$1
 
-make_dict: make_dict.festival
-	@ echo "#!/bin/sh" > $@
-	@ echo "\"true\"; exec "$(FESTIVAL)' --script $$0 $$*' >>$@
-	@ cat $< >>$@
-	@ chmod +x $@
+if [ "0" != `ls | wc -l` ]
+then
+   echo "I'm going to make a whole bunch of new directories in"
+   echo "    "`pwd`
+   echo "This directory is currently non-empty, are you sure this is "
+   echo "the directory you want these new directories built in?"
+   echo -n "Answer y/n? "
+   read answer
+   if [ "$answer" != "y" ]
+   then
+       echo "setup aborted"
+       exit -1
+   fi
+fi
+
+echo Making basic directory structure
+mkdir bin
+mkdir etc
+mkdir feat
+mkdir wav
+
+mkdir logdir
+mkdir bwaccumdir
+mkdir model_parameters
+mkdir model_architecture
+
+# have to find these somewhere
+mkdir gifs
+cp -p $SPHINXTRAINDIR/etc/images/green-ball.gif gifs
+cp -p $SPHINXTRAINDIR/etc/images/red-ball.gif gifs
+
+PLATFORM=`grep PLATFORM $SPHINXTRAINDIR/config/system.mak | sed 's/.*=//'`
+
+ln -s $SPHINXTRAINDIR/bin.$PLATFORM/* bin
+mkdir scripts_pl
+cp -pr $SPHINXTRAINDIR/scripts_pl/0* scripts_pl
+cp -p $SPHINXTRAINDIR/scripts_pl/RunAll.pl scripts_pl
+cp -p $SPHINXTRAINDIR/scripts_pl/maketopology bin
+cp -p $SPHINXTRAINDIR/scripts_pl/make_feats bin
+cp -p $SPHINXTRAINDIR/scripts_pl/make_dict bin
+
+echo Generating SphinxTrain specific scripts and config file
+cat $SPHINXTRAINDIR/etc/sphinx_train.cfg |
+  sed 's%___DB_NAME___%'$DBNAME'%g' |
+  sed 's%___BASE_DIR___%'`pwd`'%g' |
+  sed 's%___SPHINXTRAIN_DIR___%'$SPHINXTRAINDIR'%g' >etc/sphinx_train.cfg
+
+echo "Set up for acoustic training for "$DBNAME" complete"
+
+
+
+
+
+

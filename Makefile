@@ -47,8 +47,8 @@
 # ====================================================================
 TOP=.
 DIRNAME=.
-BUILD_DIRS = bin scripts_pl scripts include src 
-ALL_DIRS=config lib doc $(BUILD_DIRS)
+BUILD_DIRS = bin scripts_pl include src 
+ALL_DIRS=config etc lib doc $(BUILD_DIRS)
 FILES = Makefile README COPYING
 
 ALL = 
@@ -81,6 +81,8 @@ time-stamp :
 	@ echo $(PROJECT_VERSION) >>.time-stamp
 	@ echo $(PROJECT_DATE) >>.time-stamp
 	@ echo $(PROJECT_STATE) >>.time-stamp
+	@ echo $(LOGNAME) >>.time-stamp
+	@ hostname >>.time-stamp
 	@ date >>.time-stamp
 
 test:

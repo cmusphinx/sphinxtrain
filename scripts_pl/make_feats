@@ -1,3 +1,4 @@
+#!/bin/sh
 # ====================================================================
 # Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
 #
@@ -41,28 +42,36 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # ====================================================================
-#
-#  Perl scripts
-#
-# ====================================================================
-TOP=..
-DIRNAME=scripts_pl
-BUILD_DIRS = 00.verify 01.vector_quantize 02.ci_schmm 03.makeuntiedmdef \
-             04.cd_schmm_untied 05.buildtrees 
-ALL_DIRS= $(BUILD_DIRS)
-FESTIVAL_SCRIPTS = make_dict.festival
-TMPSCRIPTS=setup_SphinxTrain maketopology make_feats
-FILES = Makefile RunAll.pl $(TMPSCRIPTS) \
-        $(FESTIVAL_SCRIPTS)
 
-ALL = make_dict
+if [ ! "$SPHINXTRAINDIR" ]
+then
+   echo "environment variable SPHINXTRAINDIR is unset"
+   echo "set it to your local SphinxTrain directory e.g."
+   echo '   bash$ export SPHINXTRAINDIR=/home/awb/projects/SphinxTrain/'
+   echo or
+   echo '   csh% setenv SPHINXTRAINDIR /home/awb/projects/SphinxTrain/'
+   exit 1
+fi
 
-include $(TOP)/config/common_make_rules
+if [ $# != 1 ]
+then
+    echo "Make (MFC) Feature files "
+    echo "Usage: bin/make_feats etc/DBNAME.fileids"
+    echo "DBNAME short name for this training set"
+    exit 1
+fi
 
-LOCAL_CLEAN = make_dict
 
-make_dict: make_dict.festival
-	@ echo "#!/bin/sh" > $@
-	@ echo "\"true\"; exec "$(FESTIVAL)' --script $$0 $$*' >>$@
-	@ cat $< >>$@
-	@ chmod +x $@
+# Must be compatible to existing acoustic models
+#WIDEBAND= -alpha  0.97
+#          -srate  16000 (8000)
+#          -frate  100
+#          -wlen   0.0256
+#          -nfft   512
+#          -nfilt  40 (31)
+#          -lowerf 130
+#          -upperf 6800
+#          -ncep   13
+
+
+$SPHINXTRAINDIR/bin.Linux.ix86/wave2feat -verbose -c $1 -nist -di wav -ei wav -do feat -eo feat 
