@@ -49,17 +49,29 @@ TOP=.
 DIRNAME=.
 BUILD_DIRS = bin scripts_pl include src 
 ALL_DIRS=config etc lib doc $(BUILD_DIRS)
-FILES = Makefile README COPYING
+CONFIG=config.guess config.sub configure configure.in \
+       install-sh missing mkinstalldirs
+FILES = Makefile README COPYING $(CONFIG)
+DISTCLEAN_FILES = config/config config/system.mak \
+	config.cache config.status config.log
 
 ALL = 
 
 # Try and see if config hasn't been created
-config_dummy := $(shell test -f config/config || ( echo '*** '; echo '*** Making default config file ***'; echo '*** '; cat config/config-dist >config/config )  >&2)
-
-# force a check on the system file
-system_dummy := $(shell test -f config/system.mak || config/system.sh >config/system.mak)
+config_dummy := $(shell test -f config/config || ( echo '*** '; echo '*** Running configure to make default config file ***'; echo '*** '; ./configure )  >&2)
 
 include $(TOP)/config/common_make_rules
+
+config/config: config/config.in config.status
+	./config.status
+
+configure: configure.in
+	autoconf
+
+distclean: clean
+	@ echo make distclean in top-level directory
+	@ $(RM) $(DISTCLEAN_FILES)
+	@ $(RM) -rf $(BINDIR) $(LIBDIR)
 
 backup: time-stamp
 	@ $(RM) -f $(TOP)/FileList
@@ -85,9 +97,5 @@ time-stamp :
 	@ hostname >>.time-stamp
 	@ date >>.time-stamp
 
-configure:
-	cat config/config-dist >config/config
-
 test:
 	@ $(MAKE) --no-print-directory -C testsuite test
-

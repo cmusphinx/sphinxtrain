@@ -50,7 +50,7 @@
  */
 
 /* defines needed for little endian machines */
-#if defined(mips) || defined(__alpha) || defined(i386) || defined(WIN32)
+#ifndef WORDS_BIGENDIAN /* Determined by the configure script */
 #define NEEDS_SWAP
 
 #define SWAPBYTES

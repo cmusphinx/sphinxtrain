@@ -415,7 +415,11 @@ void fe_init_params(param_t *P)
     P->verbose = OFF;
     P->input_format=NIST;
     P->input_endian = LITTLE;
+#ifdef WORDS_BIGENDIAN
+    P->machine_endian = BIG;
+#else
     P->machine_endian = LITTLE;
+#endif
     P->output_endian = BIG;
     P->dither = OFF;
     P->wavfile = NULL;

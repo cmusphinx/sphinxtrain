@@ -73,22 +73,19 @@ OBJS=$(shell echo $(SRCS:.c=.o) | awk '{for (i=1; i<=NF; i++) printf("'$(OBJDIR)
 endif
 
 INCLUDES = -I$(TOP)/include
-CFLAGS += $(EXTRA_CC_FLAGS) $(OPT) $(DBG) $(LOCAL_INCLUDES) $(INCLUDES)
+CPPFLAGS += $(LOCAL_INCLUDES) $(INCLUDES)
+CFLAGS += $(EXTRA_CC_FLAGS) $(OPT) $(DBG)
 LDFLAGS += -L$(LIBDIR) $(EXTRA_LD_FLAGS)
 STLIBS = -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc
 LIBS = $(STLIBS) -lm
 
 $(OBJDIR)/%.o : %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(DEFS) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 all: .make_build_dirs $(ALL) nothing
 
 nothing:
 	@ echo > /dev/null
-
-system.mak : config
-	@echo Check system type >&2
-	@/bin/sh  $(TOP)/config/system.sh > system.mak
 
 .make_build_dirs:
 	@ echo making in $(DIRNAME) ...
@@ -135,7 +132,8 @@ $(SCRIPTDIR)/$(DIRNAME)/%.pl: %.pl
 
 clean:
 	@ echo make clean in $(DIRNAME) ...
-	@rm -f *.o *.a *~ $(OBJDIR)/*.o $(LOCAL_CLEAN)
+	@$(RM) *.o *.a *~ $(LOCAL_CLEAN)
+	@$(RM) -r $(OBJDIR)
 ifneq (,$(ALL_DIRS))
 	@ for i in $(ALL_DIRS) ; \
 	do \
@@ -144,7 +142,7 @@ ifneq (,$(ALL_DIRS))
 endif
 
 DEPEND=make.depend
-MAKE_DEPEND=$(CC) -MM $(CFLAGS)
+MAKE_DEPEND=$(CC) -MM $(CFLAGS) $(CPPFLAGS)
 
 depend:
 	@ echo make depend in $(DIRNAME) ...

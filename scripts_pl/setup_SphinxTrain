@@ -99,7 +99,7 @@ mkdir gifs
 cp -p $SPHINXTRAINDIR/etc/images/green-ball.gif gifs
 cp -p $SPHINXTRAINDIR/etc/images/red-ball.gif gifs
 
-PLATFORM=`grep PLATFORM $SPHINXTRAINDIR/config/system.mak | sed 's/.*=//'`
+PLATFORM=`grep PLATFORM $SPHINXTRAINDIR/config/system.mak | awk '{print $3}'`
 
 ln -s $SPHINXTRAINDIR/bin.$PLATFORM/* bin
 mkdir scripts_pl

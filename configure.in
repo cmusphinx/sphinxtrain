@@ -1,0 +1,39 @@
+AC_INIT(include/s3/s3.h)
+
+AC_CANONICAL_SYSTEM
+AC_PROG_CC
+if test "x$GCC" = "xyes"; then
+	CFLAGS="$CFLAGS -Wall"
+fi
+AC_PROG_RANLIB
+AC_CHECK_TOOL(AR, ar)
+
+AC_C_BIGENDIAN
+
+AC_PATH_PROGS(PERL, [perl5 perl])
+if test "x$PERL" = x; then
+	cat <<\EOF
+*** Could not find 'perl' or 'perl5' on your system.
+*** If you know the location of your Perl 5 binary, please set the
+*** PERL environment variable to it and re-run ./configure.
+*** For example:
+
+$ env PERL=/path/to/your/perl5 ./configure
+EOF
+	exit 1
+fi
+
+AC_PATH_PROG(FESTIVAL, festival,
+  $PATH:/bin:/usr/bin:/usr/local/bin:/usr/local/festival/bin:/opt/festival/bin:/usr0/festival/bin)
+if test "x$FESTIVAL" = x; then
+	cat <<\EOF
+*** Could not find the Festival binary on your system.
+*** Please set the FESTIVAL environment variable and re-run
+*** ./configure.  For example:
+$ env FESTIVAL=/path/to/festival ./configure
+EOF
+	exit 1
+fi
+
+
+AC_OUTPUT(config/config config/system.mak)

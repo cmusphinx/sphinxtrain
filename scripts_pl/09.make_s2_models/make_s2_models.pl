@@ -77,7 +77,7 @@ system ("/bin/rm -f $logdir/*");
 my $logfile_cb = "$logdir/${CFG_EXPTNAME}.mk_s2cb.log";
 my $logfile_chmm = "$logdir/${CFG_EXPTNAME}.mk_s2chmm.log";
 my $logfile_senone = "$logdir/${CFG_EXPTNAME}.mk_s2sendump.log";
-my $logfile_s2phone = "$logdir/${CFG_EXPTNAME}.mk_s2phone.log";
+my $logfile_s2phonemap = "$logdir/${CFG_EXPTNAME}.mk_s2phonemap.log";
 
 $s3mdef = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
 $s2dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.s2models";
@@ -97,13 +97,8 @@ system("$CFG_BIN_DIR/mk_s2hmm -moddeffn $s3mdef -mixwfn $s3mixw -tmatfn $s3tmat 
 
 &ST_Log ("    Make senome file\n");
 system( "$CFG_BIN_DIR/mk_s2sendump -moddeffn $s3mdef -mixwfn $s3mixw -tpfloor 0.0000001 -feattype s2_4x -sendumpfn $s2dir/sendump >$logfile_senone 2>&1");
-#system( "rm $s2dir/*.ccode $s2dir/*.d2code $s2dir/*.p3code $s2dir/*.xcode");
 
 &ST_Log ("    Make phone and map files\n");
-$tmpf="tmp.phones";
-system ( "grep -v \"^#\" $s3mdef | awk 'NF==12 {print \$1,\$2,\$3,\$4}' >$tmpf\n");
-system("$CFG_BIN_DIR/mk_s2phone -s2phonefn $s2dir/phone -phonelstfn $tmpf >$logfile 2>&1");
-
-system("rm -f $tmpf");
+system("$CFG_BIN_DIR/mk_s2phonemap -moddeffn $s3mdef -phonefn $s2dir/phone -mapfn $s2dir/map >$logfile_s2phonemap 2>&1");
 
 exit 0;
