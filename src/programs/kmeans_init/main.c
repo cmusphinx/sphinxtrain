@@ -512,7 +512,6 @@ main_initialize(int argc,
 
 #include <s3/kmeans.h>
 
-double drand48(void);
 
 static float32
 random_kmeans(uint32 n_trial,
@@ -1583,9 +1582,14 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/21  22:00:43  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.6  2004/07/21  22:32:26  egouvea
+ * Fixed some compatibility issues between platforms: make sure we open
+ * files with "wb" or "rb", move some #include not defined for all
+ * platforms to the proper #if defined() etc.
  * 
+ * Revision 1.5  2004/07/21 22:00:43  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.4  2004/06/17 19:17:22  arthchan2003
  * Code Update for silence deletion and standardize the name for command -line arguments
  *

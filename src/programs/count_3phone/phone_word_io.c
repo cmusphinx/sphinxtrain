@@ -62,7 +62,7 @@ struct sorted_phone
 };
 struct sorted_phone *Sorted_Phone;
 
-#ifdef __alpha
+#if (defined(__alpha) || defined(WIN32))
 void *malloc();
 #else
 char *malloc();

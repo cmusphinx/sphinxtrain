@@ -44,13 +44,18 @@
  * 6/86 Created
  */
 
+#if !defined(WIN32)
 #include <sys/types.h>
 #include <sys/times.h>
 #include <sys/timeb.h>	/* For real time */
+#else
+#include <time.h>
+#endif
 
 #define	HZ	60	/* 60 clock ticks per second */
 
 
+#if !defined(WIN32)
 float elapsed_user_time (update)
 int update;
 {
@@ -63,7 +68,6 @@ int update;
     times (&ubefore);
   return (ret);
 }
-
 
 float elapsed_wall_time (update)
 int update;
@@ -110,3 +114,19 @@ int   update;
 */
   return (ret);
 }
+
+#else
+
+long elapsed_user_time (int update)
+{
+  time_t ret;
+  static time_t ubefore, uafter;
+
+  time (&uafter);
+  ret = (uafter - ubefore);
+  if (update)
+    time (&ubefore);
+  return ((long)ret);
+}
+
+#endif

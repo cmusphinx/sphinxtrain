@@ -618,7 +618,7 @@ mk_bkp(int32 mixw_reest,
 	sprintf(fn, "%s/mixw_counts", out_dir);
 	sprintf(fn_bkp, "%s/mixw_counts.bkp", out_dir);
 
-	fp = fopen(fn, "r");
+	fp = fopen(fn, "rb");
 	if (fp != NULL) {
 	    fclose(fp);
 	    if (rename(fn, fn_bkp) < 0) {
@@ -631,7 +631,7 @@ mk_bkp(int32 mixw_reest,
 	sprintf(fn, "%s/tmat_counts", out_dir);
 	sprintf(fn_bkp, "%s/tmat_counts.bkp", out_dir);
 
-	fp = fopen(fn, "r");
+	fp = fopen(fn, "rb");
 	if (fp != NULL) {
 	    fclose(fp);
 	    if (rename(fn, fn_bkp) < 0) {
@@ -644,7 +644,7 @@ mk_bkp(int32 mixw_reest,
 	sprintf(fn, "%s/gauden_counts", out_dir);
 	sprintf(fn_bkp, "%s/gauden_counts.bkp", out_dir);
 
-	fp = fopen(fn, "r");
+	fp = fopen(fn, "rb");
 	if (fp != NULL) {
 	    fclose(fp);
 	    if (rename(fn, fn_bkp) < 0) {
@@ -657,7 +657,7 @@ mk_bkp(int32 mixw_reest,
 	sprintf(fn, "%s/regmat_counts", out_dir);
 	sprintf(fn_bkp, "%s/regmat_counts.bkp", out_dir);
 
-	fp = fopen(fn, "r");
+	fp = fopen(fn, "rb");
 	if (fp != NULL) {
 	    fclose(fp);
 	    if (rename(fn, fn_bkp) < 0) {
@@ -1189,9 +1189,14 @@ accum_global_regmat(float32 ****regr_acc,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  22:00:42  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/07/21  22:32:25  egouvea
+ * Fixed some compatibility issues between platforms: make sure we open
+ * files with "wb" or "rb", move some #include not defined for all
+ * platforms to the proper #if defined() etc.
  * 
+ * Revision 1.4  2004/07/21 22:00:42  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

@@ -51,7 +51,7 @@ int awriteshort (file, data, length)
   int             size;
   int             offset;
 
-  if ((fd = open (file, O_CREAT | O_WRONLY | O_TRUNC, 0644)) < 0)
+  if ((fd = open (file, O_CREAT | O_WRONLY | O_TRUNC | O_BINARY, 0644)) < 0)
   {
     fprintf (stderr, "awriteshort: %s: can't create\n", file);
     perror("");

@@ -58,8 +58,10 @@
 #endif
 #include <assert.h>
 
+#include "s3/prim_type.h"
 #include "io.h"
-#include "err.h"
+#include "s3/err.h"
+#include "sys_compat/file.h"
 
 
 FILE *fopen_comp (char *file, char *mode, int32 *ispipe)
@@ -90,7 +92,7 @@ FILE *fopen_comp (char *file, char *mode, int32 *ispipe)
 
     if (*ispipe) {
 #if (WIN32)
-	if (strcmp (mode, "r") == 0) {
+	if (strcmp (mode, "rb") == 0) {
 	    sprintf (command, "gzip.exe -d -c %s", file);
 	    if ((fp = _popen (command, mode)) == NULL) {
 		E_ERROR_SYSTEM("_popen (%s,%s) failed\n", command, mode);
@@ -101,7 +103,7 @@ FILE *fopen_comp (char *file, char *mode, int32 *ispipe)
 	    return NULL;
 	}
 #else
-	if (strcmp (mode, "r") == 0) {
+	if (strcmp (mode, "rb") == 0) {
 	    if (isgz)
 		sprintf (command, "gunzip -c %s", file);
 	    else
@@ -202,7 +204,7 @@ FILE *fopen_compchk (char *file, int32 *ispipe)
 	E_WARN("Using %s instead of %s\n", tmpfile, file);
     }
     
-    return (fopen_comp (tmpfile, "r", ispipe));
+    return (fopen_comp (tmpfile, "rb", ispipe));
 }
 
 

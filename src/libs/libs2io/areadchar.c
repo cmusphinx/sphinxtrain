@@ -54,7 +54,7 @@ areadchar (char *file,
   int             length;
   char           *data;
 
-  if ((fd = open (file, O_RDONLY, 0644)) < 0)
+  if ((fd = open (file, O_RDONLY | O_BINARY, 0644)) < 0)
   {
     fprintf (stderr, "areadchar: %s: can't open\n", file);
     return -1;

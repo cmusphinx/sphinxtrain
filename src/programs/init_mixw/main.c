@@ -65,7 +65,9 @@
 
 #include <stdio.h>
 #include <math.h>
+#if (!defined(WIN32) || defined(__CYGWIN__))
 #include <sys/param.h>
+#endif
 #include <assert.h>
 #include <string.h>
 
@@ -565,9 +567,14 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  22:00:43  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/07/21  22:32:26  egouvea
+ * Fixed some compatibility issues between platforms: make sure we open
+ * files with "wb" or "rb", move some #include not defined for all
+ * platforms to the proper #if defined() etc.
  * 
+ * Revision 1.4  2004/07/21 22:00:43  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

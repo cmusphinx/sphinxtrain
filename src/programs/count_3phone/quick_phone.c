@@ -70,7 +70,7 @@ int occurred[CXT_INDEP][CXT_INDEP][CXT_INDEP][4];
 void make_triphone (char *in_ctl_file)
 {
   FILE *fp, *sent_fp;
-  char file_head[512], *rindex(), *slash_ptr, sent_name[512], sent_file[512];
+  char file_head[512], *slash_ptr, sent_name[512], sent_file[512];
   int  g, h, this, new=0, len, i, j, wd[MAX_WORDS_PER_SENTENCE], prev, back, no, ii;
   int tt;
   short *this_phones;
@@ -101,7 +101,7 @@ void make_triphone (char *in_ctl_file)
 
   while (fscanf(fp, "%s", file_head) != EOF)
   { 
-    if (!(slash_ptr = rindex(file_head, '/')))
+    if (!(slash_ptr = strrchr(file_head, '/')))
       quit(1, "read_sent(): no slash in %s\n", file_head);
     if (wsj1) while (*(--slash_ptr) != '/');
     strcpy (sent_name, slash_ptr + 1);
@@ -241,7 +241,7 @@ void make_triphone (char *in_ctl_file)
 void find_example (char *in_ctl_file)
 {
   FILE *fp, *sent_fp;
-  char file_head[512], *rindex(), *slash_ptr, sent_name[512], sent_file[512];
+  char file_head[512], *slash_ptr, sent_name[512], sent_file[512];
   int  g, h, this, new=0, len, i, j, wd[MAX_WORDS_PER_SENTENCE], prev, back, no, ii;
   int tt;
   char new_phone[512];
@@ -334,7 +334,7 @@ void find_example (char *in_ctl_file)
 
   while (fscanf(fp, "%s", file_head) != EOF)
   { 
-    if (!(slash_ptr = rindex(file_head, '/')))
+    if (!(slash_ptr = strrchr(file_head, '/')))
       quit(1, "read_sent(): no slash in %s\n", file_head);
     strcpy (sent_name, slash_ptr + 1);
     len = strlen (sent_name);
@@ -847,7 +847,7 @@ void add_one_phone (int this,int prev,int next,int type)
 void s_make_triphone (char *in_ctl_file)
 {
     FILE *fp, *sent_fp=0;
-  char file_head[512], *rindex(), *slash_ptr, sent_name[512], sent_file[512];
+  char file_head[512], *slash_ptr, sent_name[512], sent_file[512];
   int  g, h, this, new, len, i, j, wd[MAX_WORDS_PER_SENTENCE], prev, back, no, ii;
   int tt;
   short *this_phones;
@@ -878,7 +878,7 @@ void s_make_triphone (char *in_ctl_file)
 
   while (fscanf(fp, "%s", file_head) != EOF)
   { 
-    if (!(slash_ptr = rindex(file_head, '/')))
+    if (!(slash_ptr = strrchr(file_head, '/')))
       quit(1, "read_sent(): no slash in %s\n", file_head);
     strcpy (sent_name, slash_ptr + 1);
     len = strlen (sent_name);

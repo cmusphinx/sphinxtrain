@@ -94,7 +94,7 @@ ck_readable(const char *fn)
 {
     FILE *fp;
 
-    fp = fopen(fn, "r");
+    fp = fopen(fn, "rb");
     if (fp != NULL) {
 	fclose(fp);
 	return TRUE;
@@ -823,9 +823,14 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/07/21  22:00:44  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.7  2004/07/21  22:32:27  egouvea
+ * Fixed some compatibility issues between platforms: make sure we open
+ * files with "wb" or "rb", move some #include not defined for all
+ * platforms to the proper #if defined() etc.
  * 
+ * Revision 1.6  2004/07/21 22:00:44  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.5  2002/05/16 21:07:14  egouvea
  * norm was requesting some parameters that it doesn't really need, like
  * feature string definition and size of input vector. Removed the request.

@@ -57,7 +57,7 @@ areadint (char *file,
   int             offset;
   char           *data;
 
-  if ((fd = open (file, O_RDONLY, 0644)) < 0)
+  if ((fd = open (file, O_RDONLY | O_BINARY, 0644)) < 0)
   {
     fprintf (stderr, "areadint: %s: can't open\n", file);
     return -1;

@@ -53,7 +53,7 @@ awriteint (char *file,
   int             size;
   int             offset;
 
-  if ((fd = open (file, O_CREAT | O_WRONLY | O_TRUNC, 0644)) < 0)
+  if ((fd = open (file, O_CREAT | O_WRONLY | O_TRUNC | O_BINARY, 0644)) < 0)
   {
     fprintf (stderr, "awriteint: %s: can't create\n", file);
     return -1;

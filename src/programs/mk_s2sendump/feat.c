@@ -78,12 +78,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if (_SUN4)
-#include <unistd.h>
-#endif
 #include <string.h>
 #include <assert.h>
 
@@ -91,6 +87,7 @@
 #include <sys/file.h>
 #include <sys/errno.h>
 #include <sys/param.h>
+#include <unistd.h>
 #else
 #include <fcntl.h>
 #endif
