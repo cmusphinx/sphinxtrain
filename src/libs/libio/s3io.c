@@ -14,15 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. To obtain permission, contact 
- *    sphinx@cs.cmu.edu.
- *
- * 4. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by Carnegie
- *    Mellon University (http://www.speech.cs.cmu.edu/)."
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -322,11 +316,12 @@ s3read(void *pointer,
     uint32 *i32;
     uint32 sum;
     int q,d,r;
+	char *char_pointer = (char *) pointer;
 
     /* big reads accross NFS may fail to allow increment reads */
     for (d=0,q=num_items; d < num_items; d+=r,q-=r)
     {
-	r = fread(pointer+(d*size), size, (q > 256) ? 256 : q, stream);
+	r = fread(char_pointer+(d*size), size, (q > 256) ? 256 : q, stream);
 	if (r <= 0) return r;
     }
     ret = d;
@@ -630,6 +625,7 @@ s3write(const void *pointer,
     uint32 *i32;
     size_t i;
     size_t q,r,d;
+	char *char_pointer = (char *)pointer;
 
     sum = *chksum;
 
@@ -663,7 +659,7 @@ s3write(const void *pointer,
     /* big writes may not work across NFS so allow for them incrementally */
     for (q=num_items,d=0; q > 0; d+=r,q-=r)
     {
-	r = fwrite(pointer+(d*size), size, 
+	r = fwrite(char_pointer+(d*size), size, 
 		   (q > 256) ? 256 : q, stream);
 	if (r <= 0)
 	    return r;
@@ -808,9 +804,12 @@ s3write_1d(void *arr,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2003/11/30  06:26:49  egouvea
- *  Undid last change
+ * Revision 1.7  2004/07/21  18:05:40  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
  * 
+ * Revision 1.6  2003/11/30 06:26:49  egouvea
+ *  Undid last change
+ *
  * Revision 1.4  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

@@ -14,15 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. To obtain permission, contact 
- *    sphinx@cs.cmu.edu.
- *
- * 4. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by Carnegie
- *    Mellon University (http://www.speech.cs.cmu.edu/)."
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -603,9 +597,12 @@ s3gaudnom_write(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/07/17  08:00:23  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
+ * Revision 1.7  2004/07/21  18:05:40  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
  * 
+ * Revision 1.6  2004/07/17 08:00:23  arthchan2003
+ * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
+ *
  * Revision 1.4  2003/07/16 00:25:35  egouvea
  * s3 now ignores checksum when reading a density, if checksum is not
  * part of the density file header.
