@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <s3/err.h>
 #include "fe.h"
 #include "fe_internal.h"
 
@@ -344,18 +345,24 @@ void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
 	    mfspec[i] = -1.0e+5;
 
     }
-    
-    for (i=0; i< FE->NUM_CEPSTRA; ++i){
+    if (FE->LOG_SPEC == OFF) {
+      for (i=0; i< FE->NUM_CEPSTRA; ++i){
 	mfcep[i] = 0;
 	for (j=0;j<FE->MEL_FB->num_filters; j++){
-	    if (j==0)
-		beta = 0.5;
-	    else
-		beta = 1.0;
-	    mfcep[i] += beta*mfspec[j]*FE->MEL_FB->mel_cosine[i][j];
+	  if (j==0)
+	    beta = 0.5;
+	  else
+	    beta = 1.0;
+	  mfcep[i] += beta*mfspec[j]*FE->MEL_FB->mel_cosine[i][j];
 	}
-		mfcep[i] /= (float32)period;
+	mfcep[i] /= (float32)period;
+      }
+    } else {
+      for (i = 0; i < FE->FEATURE_DIMENSION; i++) {
+	mfcep[i] = mfspec[i];
+      }
     }
+
     return;
 }
 
@@ -540,6 +547,23 @@ void fe_parse_general_params(param_t const *P, fe_t *FE)
       FE->FFT_SIZE = P->FFT_SIZE;
     else 
       FE->FFT_SIZE = atoi(DEFAULT_FFT_SIZE);
+
+    FE->LOG_SPEC = P->logspec;
+    if (FE->LOG_SPEC == OFF) 
+      FE->FEATURE_DIMENSION = FE->NUM_CEPSTRA;
+    else {
+      if (P->NUM_FILTERS != 0)	
+	FE->FEATURE_DIMENSION = P->NUM_FILTERS;
+      else {
+	if (FE->SAMPLING_RATE == BB_SAMPLING_RATE)
+	  FE->FEATURE_DIMENSION = DEFAULT_BB_NUM_FILTERS;
+	else if (FE->SAMPLING_RATE == NB_SAMPLING_RATE)
+	  FE->FEATURE_DIMENSION = DEFAULT_NB_NUM_FILTERS;
+	else {
+	  E_FATAL("Please define the number of MEL filters needed\n");
+	}
+      }
+    }
  
 }
 

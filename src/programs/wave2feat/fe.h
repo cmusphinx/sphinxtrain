@@ -106,7 +106,9 @@ typedef struct{
     int32 FRAME_SIZE;
     int32 FFT_SIZE;
     int32 FB_TYPE;
+    int32 LOG_SPEC;
     int32 NUM_CEPSTRA;
+    int32 FEATURE_DIMENSION;
     float32 PRE_EMPHASIS_ALPHA;
     int16 *OVERFLOW_SAMPS;
     int32 NUM_OVERFLOW_SAMPS;    

@@ -341,42 +341,42 @@ param_t *fe_parse_options(int32 argc, char **argv)
     
     fe_init_params(P);
     
-    P->wavfile = (char *)cmd_ln_access("-i");
+    P->wavfile = cmd_ln_str("-i");
     if (P->wavfile != CMD_LN_NO_DEFAULT) {
         P->is_single = ON;
     }
     
-    P->cepfile = (char *)cmd_ln_access("-o");
+    P->cepfile = cmd_ln_str("-o");
     
-    P->ctlfile = (char *)cmd_ln_access("-c");
+    P->ctlfile = cmd_ln_str("-c");
     if (P->ctlfile != CMD_LN_NO_DEFAULT) {
         P->is_batch = ON;
     }
     
-    P->wavdir = (char *)cmd_ln_access("-di");
-    P->cepdir = (char *)cmd_ln_access("-do");
-    P->wavext = (char *)cmd_ln_access("-ei");
-    P->cepext = (char *)cmd_ln_access("-eo");
-    format = *(int32 *)cmd_ln_access("-raw");
+    P->wavdir = cmd_ln_str("-di");
+    P->cepdir = cmd_ln_str("-do");
+    P->wavext = cmd_ln_str("-ei");
+    P->cepext = cmd_ln_str("-eo");
+    format = cmd_ln_int32("-raw");
     if (format) {
         P->input_format = RAW;
     }
-    format = *(int32 *)cmd_ln_access("-nist");
+    format = cmd_ln_int32("-nist");
     if (format) {
         P->input_format = NIST;
     } 
-    format = *(int32 *)cmd_ln_access("-mswav");
+    format = cmd_ln_int32("-mswav");
     if (format) {
         P->input_format = MSWAV;
     }
     
-    P->nchans = *(int32 *)cmd_ln_access("-nchans");
-    P->whichchan = *(int32 *)cmd_ln_access("-whichchan");
-    P->PRE_EMPHASIS_ALPHA = *(float32 *)cmd_ln_access("-alpha");
-    P->SAMPLING_RATE = *(float32 *)cmd_ln_access("-srate");
-    P->WINDOW_LENGTH = *(float32 *)cmd_ln_access("-wlen");
-    P->FRAME_RATE = *(int32 *)cmd_ln_access("-frate");
-    if (!strcmp((const char *)cmd_ln_access("-feat"), "sphinx")) 
+    P->nchans = cmd_ln_int32("-nchans");
+    P->whichchan = cmd_ln_int32("-whichchan");
+    P->PRE_EMPHASIS_ALPHA = cmd_ln_float32("-alpha");
+    P->SAMPLING_RATE = cmd_ln_float32("-srate");
+    P->WINDOW_LENGTH = cmd_ln_float32("-wlen");
+    P->FRAME_RATE = cmd_ln_int32("-frate");
+    if (!strcmp(cmd_ln_str("-feat"), "sphinx")) 
     {
         P->FB_TYPE = MEL_SCALE;
         P->output_endian = BIG;
@@ -386,19 +386,19 @@ param_t *fe_parse_options(int32 argc, char **argv)
         E_ERROR("MEL_SCALE IS CURRENTLY THE ONLY IMPLEMENTATION\n\n");
         E_FATAL("Make sure you specify '-feat sphinx'\n");
     }	
-    P->NUM_FILTERS = *(int32 *)cmd_ln_access("-nfilt");
-    P->NUM_CEPSTRA = *(int32 *)cmd_ln_access("-ncep");
-    P->LOWER_FILT_FREQ = *(float32 *)cmd_ln_access("-lowerf");
-    P->UPPER_FILT_FREQ = *(float32 *)cmd_ln_access("-upperf");
-    P->FFT_SIZE = *(int32 *)cmd_ln_access("-nfft");
-    if (*(int32 *)cmd_ln_access("-doublebw")) {
+    P->NUM_FILTERS = cmd_ln_int32("-nfilt");
+    P->NUM_CEPSTRA = cmd_ln_int32("-ncep");
+    P->LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
+    P->UPPER_FILT_FREQ = cmd_ln_float32("-upperf");
+    P->FFT_SIZE = cmd_ln_int32("-nfft");
+    if (cmd_ln_int32("-doublebw")) {
         P->doublebw = ON; 
     } else {
         P->doublebw = OFF;
     }
-    P->blocksize = *(int32 *)cmd_ln_access("-blocksize");
-    P->verbose = *(int32 *)cmd_ln_access("-verbose");
-    endian = (char *)cmd_ln_access("-mach_endian");
+    P->blocksize = cmd_ln_int32("-blocksize");
+    P->verbose = cmd_ln_int32("-verbose");
+    endian = cmd_ln_str("-mach_endian");
     if (!strcmp("big", endian)) {
         P->machine_endian = BIG;
     } else {
@@ -408,7 +408,7 @@ param_t *fe_parse_options(int32 argc, char **argv)
             E_FATAL("Machine must be big or little Endian\n");
         }	
     }
-    endian = (char *)cmd_ln_access("-input_endian");
+    endian = cmd_ln_str("-input_endian");
     if (!strcmp("big", endian)) {
         P->input_endian = BIG;
     } else {
@@ -418,8 +418,8 @@ param_t *fe_parse_options(int32 argc, char **argv)
             E_FATAL("Input must be big or little Endian\n");
         }	
     }
-    P->dither = *(int32 *)cmd_ln_access("-dither");
-    P->logspec = *(int32 *)cmd_ln_access("-logspec");
+    P->dither = cmd_ln_int32("-dither");
+    P->logspec = cmd_ln_int32("-logspec");
     
     fe_validate_parameters(P);
     

@@ -41,6 +41,7 @@
 /*
 #include <s2types.h>
 */
+#include <s3/err.h>
 #include "fe.h"
 #include "fe_internal.h"
 
@@ -183,7 +184,7 @@ int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps, float32 *fr_cep)
     
     
     /* frame based processing - let's make some cepstra... */    
-    fr_fea = (float64 *)calloc(FE->NUM_CEPSTRA, sizeof(float64));
+    fr_fea = (float64 *)calloc(FE->FEATURE_DIMENSION, sizeof(float64));
       
     fr_data = spbuf;
     
@@ -196,7 +197,7 @@ int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps, float32 *fr_cep)
     
     fe_frame_to_fea(FE, fr_data, fr_fea);
     
-    for (i=0;i<FE->NUM_CEPSTRA;i++)
+    for (i=0;i<FE->FEATURE_DIMENSION;i++)
       fr_cep[i] = (float32)fr_fea[i];
 
     /* done making cepstra */
@@ -248,9 +249,10 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)/
 
       /*      if (cep!=NULL) fe_free_2d((void**)cep); */ /* It should never not be NULL */
       /* 01.14.01 RAH, added +1 Adding one gives us space to stick the last flushed buffer*/
-      if ((cep = (float32 **)fe_create_2d(frame_count+1,FE->NUM_CEPSTRA,sizeof(float32))) == NULL) {
-	fprintf(stderr,"memory alloc for cep failed in fe_process_utt()\n\tfe_create_2d(%ld,%d,%d)\n...exiting\n",(long int) (frame_count+1),FE->NUM_CEPSTRA,sizeof(float32));  /* typecast to make the compiler happy - EBG */
-	exit(0);
+      if ((cep = (float32 **)fe_create_2d(frame_count+1,FE->FEATURE_DIMENSION,sizeof(float32))) == NULL) {
+	/* typecast to make the compiler happy - EBG */
+	E_FATAL("memory alloc for cep failed in fe_process_utt()\n\tfe_create_2d(%ld,%d,%d)\n...exiting\n",
+		(long int) (frame_count+1), FE->FEATURE_DIMENSION, sizeof(float32)); 
       }
 
 
@@ -270,7 +272,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)/
       
       /* frame based processing - let's make some cepstra... */    
       fr_data = (float64 *)calloc(FE->FRAME_SIZE, sizeof(float64));
-      fr_fea = (float64 *)calloc(FE->NUM_CEPSTRA, sizeof(float64));
+      fr_fea = (float64 *)calloc(FE->FEATURE_DIMENSION, sizeof(float64));
       
       if (fr_data==NULL || fr_fea==NULL){
 	  fprintf(stderr,"memory alloc failed in fe_process_utt()\n...exiting\n");
@@ -286,7 +288,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)/
 	
 	fe_frame_to_fea(FE, fr_data, fr_fea);
 	
-	for (i=0;i<FE->NUM_CEPSTRA;i++)
+	for (i=0;i<FE->FEATURE_DIMENSION;i++)
 	  cep[whichframe][i] = (float32)fr_fea[i];
       }
       /* done making cepstra */
@@ -360,14 +362,14 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector)
     
     /* again, who should implement cep vector? this can be implemented
        easily from outside or easily from in here */
-    if ((fr_fea = (float64 *)calloc(FE->NUM_CEPSTRA, sizeof(float64)))==NULL){
+    if ((fr_fea = (float64 *)calloc(FE->FEATURE_DIMENSION, sizeof(float64)))==NULL){
 	fprintf(stderr,"memory alloc failed in fe_end_utt()\n...exiting\n");
 	exit(0);
     }
 
     fe_hamming_window(spbuf, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
     fe_frame_to_fea(FE, spbuf, fr_fea);	
-    for (i=0;i<FE->NUM_CEPSTRA;i++)
+    for (i=0;i<FE->FEATURE_DIMENSION;i++)
       cepvector[i] = (float32)fr_fea[i];
     frame_count=1;
     free(fr_fea);		/* RAH - moved up */

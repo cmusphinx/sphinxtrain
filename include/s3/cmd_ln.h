@@ -149,6 +149,14 @@ cmd_ln_validate(void);
 const void *
 cmd_ln_access(char *switch_name);
 
+/*
+ * Some convenient wrappers around this function.
+ */
+#define cmd_ln_str(name)	((char *)cmd_ln_access(name))
+#define cmd_ln_int32(name)	(*((int32 *)cmd_ln_access(name)))
+#define cmd_ln_float32(name)	(*((float32 *)cmd_ln_access(name)))
+#define cmd_ln_float64(name)	(*((float64 *)cmd_ln_access(name)))
+
 /* Prints out the command line argument definitions to stderr */
 
 void
@@ -161,9 +169,13 @@ cmd_ln_print_definitions(void);
  * Log record.  Maintained by CVS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/11/22  23:19:05  egouvea
+ * Implemented suppport for log spec. The option was there from the
+ * command line, but, alas, the code wasn't implemented.
  * 
+ * Revision 1.4  2004/07/21 17:46:09  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *
