@@ -61,14 +61,20 @@ void
 print_phone_list(acmod_id_t *p,
 		 uint32 n_p,
 		 char *btw,
-		 acmod_set_t *phone_set);
+		 char *multiw,
+		 acmod_set_t *acmod_set,
+		 uint32 multi_prons
+		 );
 
 acmod_id_t *
 mk_phone_list(char **btw_mark,
+	      char **multiw_mark,
 	      uint32 *n_phone,
 	      char **word,
 	      uint32 n_word,
-	      lexicon_t *lex);
+	      lexicon_t *lex,
+	      uint32 multi_prons
+	      );
 
 #endif /* MK_PHONE_LIST_H */ 
 
@@ -76,9 +82,12 @@ mk_phone_list(char **btw_mark,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:30  awb
- * *** empty log message ***
+ * Revision 1.4  2004/07/17  06:22:27  arthchan2003
+ * fixes of header files for multiple pronounciations
  * 
+ * Revision 1.3  2001/04/05 20:02:30  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:12  awb
  * *** empty log message ***
  *
