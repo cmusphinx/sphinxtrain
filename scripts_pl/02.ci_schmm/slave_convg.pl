@@ -99,6 +99,7 @@ if ($iter == 1) {
     
     # For the first iteration Flat initialize models.
     &FlatInitialize();
+
 }
 
 my $n_parts = ($CFG_NPART) ? $CFG_NPART : 1;
@@ -146,12 +147,6 @@ sub FlatInitialize ()
 
     my $logfile = "$logdir/${CFG_EXPTNAME}.make_ci_mdef_fromphonelist.log";
     &ST_HTML_Print ("\t\tmk_model_def <A HREF=\"$logfile\">Log File</A>\n");    
-
-    #set mach = `~rsingh/51..tools/machine_type.csh`
-    #set MAKE_MDEF = ~rsingh/09..sphinx3code/trainer/bin.$mach/mk_model_def
-    $MAKE_MDEF = "$CFG_BIN_DIR/mk_model_def";
-    system ("$MAKE_MDEF -phonelstfn $phonefile -moddeffn $ci_mdeffile -n_state_pm $CFG_STATESPERHMM 2>$logfile");
-    
     #-------------------------------------------------------------------------
     # Decide on what topology to use for the hmms: 3 state, 5 state, blah state
     # or what, give it to the variable "statesperhmm" and use it to create
@@ -164,6 +159,9 @@ sub FlatInitialize ()
     #$base_dir/training/bin/maketopology.csh $statesperhmm $skipstate >! $topologyfile
     # Note, here we don't want STDERR going to topologyfile, just the STDOUT
     system ("bin/maketopology $CFG_STATESPERHMM $CFG_SKIPSTATE >$topologyfile");
+
+    $MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
+    system ("$MAKE_MDEF -phnlstfn $phonefile -ocimdef $ci_mdeffile -n_state_pm $CFG_STATESPERHMM 2>$logfile");
     
     #-------------------------------------------------------------------------
     # make the flat models using the above topology file and the mdef file

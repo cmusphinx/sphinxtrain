@@ -47,6 +47,7 @@
 ##
 ## Author: Ricky Houghton (converted from scripts by Rita Singh)
 ##
+##
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
@@ -80,179 +81,17 @@ require $cfg_file;
 
 $logdir = "$CFG_LOG_DIR/03.makeuntiedmdef";
 mkdir ($logdir,0777) unless -d $logdir;
-
-$tmpdir	= "$CFG_BASE_DIR/tmp";
-mkdir ($tmpdir,0777) unless -d $tmpdir;
+$logfile = "$logdir/${CFG_EXPTNAME}.make_alltriphonelist.log";
 
 &ST_Log ("MODULE: 03 Make Untied mdef\n");
 
-#--------------------------------------------------------------------------
-# Get the complete list of triphones possible in the dictionary
-#--------------------------------------------------------------------------
-$triphonelist 	= "$tmpdir/$$.triphones.list";
-$tempdictionary = "$tmpdir/$$.dictionary";
-$tempphonelist 	= "$tmpdir/$$.phonelist";
-
-system ("sed \'s+\$+ 0 0 0 0+g\' ${CFG_RAWPHONEFILE} > $tempphonelist");
-system ("echo \"SIL       SIL\" > $tempdictionary"); # Make sure SIL exists
-system ("grep -v \"++\" $CFG_DICTIONARY >> $tempdictionary"); # Remove fillers
-system ("sort +0 $tempdictionary > $tmpdir/$$.sortdictionary");
-system ("mv -f $tmpdir/$$.sortdictionary $tempdictionary");
-
-#set QUICK_COUNT = /net/alf19/usr3/eht/sphinx_ii/src/count_3phone/QUICK_COUNT 
-#set QUICK_COUNT = ~bhiksha/work/sphinx-3/sphinx_ii/src/count_3phone/QUICK_COUNT
-$QUICK_COUNT = "$CFG_BIN_DIR/QUICK_COUNT";
-
-my $logfile = "$logdir/$CFG_EXPTNAME.quick_count.log";
-
-&ST_HTML_Print ("\tQUICK_COUNT <A HREF=\"$logfile\">Log File</A> ");
-
-if (open PIPE,"$QUICK_COUNT -q -p $tempphonelist -b $tempdictionary -o $triphonelist  2>&1 |")  {
-    open LOG,">$logfile"  or die "Unable to open $logfile";
-    while (<PIPE>) {
-	print LOG $_;
-    }
-    close PIPE;
-    close LOG;
-    &ST_HTML_Print ("<font color=\"$CFG_OKAY_COLOR\"> Finished </font>\n");
-} else {
-    &ST_HTML_Print ("<font color=\"$CFG_ERROR_COLOR\"> Failed </font>\n");
-    &ST_LogError ("Unable to run $QUICK_COUNT\n");
-    die "Unable to run $QUICK_COUNT";
-}
-
-    
-unlink "$tempdictionary";
-unlink "$tempphonelist";
-
-
-#----------------------------------------------------------------------------
-# We need to append the triphone list to the properly formatted base phone
-# list to be able to create the mdef file
-#----------------------------------------------------------------------------
-#system ("sed -e \'s+(+ +g\' -e \'s+,+ +g\' -e \'s+)+ +g\' $triphonelist | awk \'{printf(\"%s %s %s %s\n\",$1,$2,$3,$4)}\' | sed \'s+1+i+g\' > $tmpdir/$$.awkedtriphonelist");
-
-system ("sed -e \'s+(+ +g\' -e \'s+,+ +g\' -e \'s+)+ +g\' $triphonelist | awk \'{printf(\"%s %s %s %s\\n\",\$1,\$2,\$3,\$4)}\' | sed \'s+1+i+g\' > $tmpdir/$$.awkedtriphonelist");
-
-system ("sed -e \'s+\$+ - - -+g\' ${CFG_RAWPHONEFILE} > $tmpdir/$$.newbasephonelist");
-system ("cat $tmpdir/$$.newbasephonelist $tmpdir/$$.awkedtriphonelist > $triphonelist");
-
-unlink "$tmpdir/$$.newbasephonelist";
-unlink "$tmpdir/$$.awkedtriphonelist";
-
-
-
-#----------------------------------------------------------------------------
-# Convert the complete list of triphones into an mdef file
-#----------------------------------------------------------------------------
-$alltriphones_mdef = "$CFG_BASE_DIR/model_architecture/${CFG_EXPTNAME}.alltriphones.mdef";
-
-#set MAKE_MDEF = /net/alf24/usr2/rsingh/09..sphinx3code/trainer/bin.alpha/mk_model_def
-$MAKE_MDEF = "$CFG_BIN_DIR/mk_model_def";
-
-$logfile = "$logdir/${CFG_EXPTNAME}.make_alltriphonelist.log";
-
-&ST_HTML_Print ("\tmk_model_def <A HREF=\"$logfile\">Log File</A>");
-
-if (open PIPE,"$MAKE_MDEF -phonelstfn $triphonelist -moddeffn $alltriphones_mdef -n_state_pm $CFG_STATESPERHMM  2>&1|") {
-    open LOG,">$logfile" or die "Unable to open $logfile";
-    while (<PIPE>) {
-	print LOG $_;
-    }
-    close PIPE;
-    close LOG;
-    &ST_HTML_Print ("<font color=\"$CFG_OKAY_COLOR\"> Finished </font>\n");
-} else {
-    &ST_LogError ("Unable to run $mk_model_def\n");
-    &ST_HTML_Print ("<font color=\"$CFG_ERROR_COLOR\"> Failed </font>\n");
-    die "Unable to run $mk_model_def";
-}
-
-unlink "$triphonelist";
-
-#----------------------------------------------------------------------------
-# Find the number of times each of the triphones listed in the 
-# alltriphones_mdef occured in the corpus
-#---------------------------------------------------------------------------
-
-$listofalignedfiles      = $CFG_LISTOFFILES;
-$alignedtranscriptfile   = $CFG_TRANSCRIPTFILE;
-
-$allphones_count_file    = "$tmpdir/$$.allphones.counted";
-$logfile 		 = "$logdir/${CFG_EXPTNAME}.triphonecount.log";
-
-#set COUNTPROGRAM = /net/alf24/usr2/rsingh/09..sphinx3code/trainer/bin.alpha/param_cnt
-$COUNTPROGRAM = "$CFG_BIN_DIR/param_cnt";
-
-# RAH, don't know how to capture STDERR when we are redirecting STDOUT, so pipe it to a seperate file and filter later
-&ST_HTML_Print ("\tparam_cnt <A HREF=\"$logfile\">Log File</A>");
-
-if (open PIPE,"$COUNTPROGRAM -moddeffn $alltriphones_mdef -ts2cbfn ${CFG_HMM_TYPE} -ctlfn $listofalignedfiles -lsnfn $alignedtranscriptfile -dictfn ${CFG_DICTIONARY} -fdictfn ${CFG_FILLERDICT} -segdir dummy -paramtype  phone > $allphones_count_file 2>$logfile|") {
-    # Add filtering code here
-    close PIPE;
-    &ST_HTML_Print ("<font color=\"$CFG_OKAY_COLOR\"> Finished </font>\n");
-} else {
-    &ST_LogError ("Unable to run $param_cnt\n");
-    &ST_HTML_Print ("<font color=\"$CFG_ERROR_COLOR\"> Failed </font>\n");
-    die "Unable to run $param_cnt";
-}
-
-
-
-
-#----------------------------------------------------------------------------
-# From the list of triphones and counts obtained by the previous program
-# pull out all the triphones above a particular threshold.
-# Vary the threshold until we get the desired number of triphones in the
-# untied triphone list. The number we use is 10000
-# This will require about 200 MB per buffer
-#----------------------------------------------------------------------------
-
-$maxdesired = 10000;
-$threshold = 1;
-$numtriph = `awk -v thr=$threshold \'\$5 >= thr && \$2 != \"-\" {print \$1}\' $allphones_count_file | wc -l | awk \'{print \$1}\'`;
-
-while ($numtriph > $maxdesired) {
-    print "\t\t$numtriph\n";
-    $threshold++;
-    $numtriph = `awk -v thr=$threshold \'\$5 >= thr && \$2 != \"-\" {print \$1}\' $allphones_count_file | wc -l | awk \'{print \$1}\'`;
-}
-
-system "awk -v thr=$threshold \'\$5 >= thr && \$2 != \"-\" {print \$1,\$2,\$3,\$4;}\' $allphones_count_file > $tmpdir/$$.triphonelist";
-
-
-system ("sed -e \'s+\$+ - - -+g\' ${CFG_RAWPHONEFILE} > $tmpdir/$$.newbasephonelist");
-system ("cat $tmpdir/$$.newbasephonelist $tmpdir/$$.triphonelist > $triphonelist");
-#unlink "$tmpdir/$$.newbasephonelist";
-#unlink "$allphones_count_file";
-
-#----------------------------------------------------------------------------
-# We finally have a triphone list of the desired size from which we can 
-# create the untied-state mdef file for cd training
-#----------------------------------------------------------------------------
 $untiedmdef = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
 
-$logfile = "$logdir/${CFG_EXPTNAME}.make_untiedmdef.log";
-open LOG,">$logfile" or die "Unable to open $logvile";
+## awb: replace with
+##  mk_mdef_gen -phnlstfn $phonelist TRANSCRIPTFILE DICTIONARY -ountiedmdef ..  n_states .. 
+# -minocc       1         Min occurances of a triphone must occur for inclusion in mdef file
 
-print LOG "Threshold = $threshold\n";
+$MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
+system ("$MAKE_MDEF -phnlstfn $CFG_RAWPHONEFILE -dictfn $CFG_DICTIONARY -fdictfn $CFG_FILLERDICT -lsnfn $CFG_TRANSCRIPTFILE -ountiedmdef  $untiedmdef -n_state_pm  $CFG_STATESPERHMM 2>$logfile");
 
-
-&ST_HTML_Print ("\tmk_model_def <A HREF=\"$logfile\">Log File</A>");
-
-if (open PIPE,"$MAKE_MDEF -phonelstfn $triphonelist -moddeffn $untiedmdef -n_state_pm  ${CFG_STATESPERHMM} 2>&1 |") {
-    while (<PIPE>) {
-	print LOG $_;
-    }
-    close PIPE;
-    close LOG;
-    &ST_HTML_Print ("<font color=\"$CFG_OKAY_COLOR\"> Finished </font>\n");
-} else {
-    &ST_LogError ("Unable to run $MAKE_MDEF\n");
-    &ST_HTML_Print ("<font color=\"$CFG_ERROR_COLOR\"> Failed </font>\n");
-    unlink "$triphonelist";
-    die "Unable to run $MAKE_MDEF";
-}
-    
-unlink "$triphonelist";
-exit 0
+exit 0;
