@@ -57,7 +57,34 @@
 int
 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
+  const char helpstr[] =
+"Description:  \n\
+\n\
+Find the number of times each of the triphones listed \n\
+\n\ in a given model definition file (by -moddeffhn) occured in a set \n\
+of transcription, specified by -lsnfn";
+
+  const char examplestr[] =
+"Example : \n\
+param_cnt -moddeffn mdef -ts2cbfn .cont. -ctlfn controlfile -lsnfn \n\
+transcripts -dictfn dict -fdictfn fillerdict -paramtype phone";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-moddeffn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -154,7 +181,24 @@ parse_cmd_ln(int argc, char *argv[])
 	exit(1);
     }
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
 
     return 0;
 }
@@ -163,9 +207,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/08/09  02:31:59  arthchan2003
+ * param_cnt help and example
  * 
+ * Revision 1.4  2004/07/21 19:17:26  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
