@@ -66,7 +66,7 @@ $log      = "$CFG_CI_LOG_DIR/${CFG_EXPTNAME}.$iter.norm.log";
 
 # Check the number and list of parts done. Compute avg likelihood per frame
 $num_done = 0; $tot_lkhd = 0; $tot_frms = 0;
-for ($i=1;$i<=$npart;$i++){
+for ($i=1;$i<=$CFG_NPART;$i++){
     $done[$i] = 0;
     $input_log = "${CFG_CI_LOG_DIR}/${CFG_EXPTNAME}.${iter}-${i}.bw.log";
     next if (! -s $input_log);
@@ -85,11 +85,11 @@ for ($i=1;$i<=$npart;$i++){
     close LOG;
 }
 
-if ($num_done != $npart) {
+if ($num_done != $CFG_NPART) {
     open OUTPUT,">$log";
-    print "Only $num_done parts of $npart of Baum Welch were successfully completed\n";
+    print "Only $num_done parts of $CFG_NPART of Baum Welch were successfully completed\n";
     print "Parts ";
-    for ($i=1;$i<=$npart;$i++) {
+    for ($i=1;$i<=$CFG_NPART;$i++) {
         print "$i " if ($done[$i] == 0);
     }
     print "failed to run!\n";
