@@ -165,8 +165,8 @@ exit 0;
 
 sub Initialize ()
   {
-    my $cihmmdir = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.ci_semi";
-    my $cdhmmdir = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_semi_untied";
+    my $cihmmdir = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}";
+    my $cdhmmdir = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied";
     mkdir ($cdhmmdir,0777) unless -d $cdhmmdir;
 
     my $logdir  =  "${CFG_LOG_DIR}/04.cd_schmm_untied";

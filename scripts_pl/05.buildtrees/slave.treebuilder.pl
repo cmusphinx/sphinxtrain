@@ -70,7 +70,7 @@ system("$scriptdir/make_questions.pl");
 &ST_Log ("    Tree building\n");
 
 my $mdef_file       = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
-my $mixture_wt_file = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_semi_untied/mixture_weights";
+my $mixture_wt_file = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied/mixture_weights";
 my $tree_base_dir   = "${CFG_BASE_DIR}/trees";
 my $unprunedtreedir = "$tree_base_dir/${CFG_EXPTNAME}.unpruned";
 mkdir ($tree_base_dir,0777) unless -d $tree_base_dir;

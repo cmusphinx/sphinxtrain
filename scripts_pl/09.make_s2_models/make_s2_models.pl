@@ -56,6 +56,15 @@ if (! -s "$cfg_file") {
 }
 require $cfg_file;
 
+# If we created continuous models, we can't create S2 models from
+# them. Sorry, we have to rerun.
+if  ($CFG_HMM_TYPE eq ".cont.") {
+  &ST_Log ("MODULE: 09 Convert to Sphinx2 format models\n");
+  &ST_Log("    Can not create Sphinx-II models from continuous models.\n");
+  &ST_Log("    Please rerun with CFG_HMM_TYPE = '.semi.'\n");
+  exit(0);
+}
+
 my $scriptdir = "scripts_pl/09.make_s2_models";
 my $logdir = "$CFG_LOG_DIR/09.make_s2_models";
 
@@ -74,7 +83,7 @@ $s3mdef = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mde
 $s2dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.s2models";
 mkdir ($s2dir,0777) unless -d $s2dir;
 
-$s3hmmdir="$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_$CFG_N_TIED_STATES"."_delinterp";
+$s3hmmdir="$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_$CFG_N_TIED_STATES"."_delinterp";
 $s3mixw = "$s3hmmdir/mixture_weights";
 $s3mean = "$s3hmmdir/means";
 $s3var = "$s3hmmdir/variances";

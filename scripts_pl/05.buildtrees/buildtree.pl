@@ -68,7 +68,9 @@ mkdir ($logdir,0777) unless -d $logdir;
 $| = 1; # Turn on autoflushing
 
 my $mdef_file       = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
-my $mixture_wt_file = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_semi_untied/mixture_weights";
+my $mixture_wt_file = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied/mixture_weights";
+my $means_file = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied/means";
+my $variances_file = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied/variances";
 my $tree_base_dir   = "${CFG_BASE_DIR}/trees";
 my $unprunedtreedir = "$tree_base_dir/${CFG_EXPTNAME}.unpruned";
 mkdir ($tree_base_dir,0777) unless -d $tree_base_dir;
@@ -109,8 +111,26 @@ sub BuildTree ()
     #	-ssplitthr 8e-4 \
     #	-csplitthr 1e-5 \
 
+    if ($CFG_STATESPERHMM == 5) {
+      $stwt = "1.0 0.3 0.1 0.01 0.001";
+    } elsif  ($CFG_STATESPERHMM == 4) {
+      $stwt = "1.0 0.1 0.0 0.0";
+    } elsif  ($CFG_STATESPERHMM == 3) {
+      $stwt = "1.0 0.05 0.0";
+    } elsif  ($CFG_STATESPERHMM == 2) {
+      $stwt = "1.0 0.025";
+    } elsif  ($CFG_STATESPERHMM == 1) {
+      $stwt = "1";
+    }
+
+    if ($CFG_HMM_TYPE eq ".semi.") {
+      $gauflag = "";
+    } else {
+      $gauflag = "-meanfn $means_file -varfn $variances_file";
+    }
+
     open LOG,">$logfile";    
-    if (open PIPE, "$BUILDTREE -treefn $unprunedtreedir/$phn-$stt.dtree -moddeffn $mdef_file -mixwfn $mixture_wt_file -ts2cbfn ${CFG_HMM_TYPE} -mwfloor 1e-30 -psetfn ${CFG_QUESTION_SET} -phone $phn -state $stt -stwt 1.0 0.3 0.1 0.01 0.001 -ssplitmin 1 -ssplitmax 5 -ssplitthr 0 -csplitmin 1 -csplitmax 500 -csplitthr 0 2>&1 |") {
+    if (open PIPE, "$BUILDTREE ${gauflag} -treefn $unprunedtreedir/$phn-$stt.dtree -moddeffn $mdef_file -mixwfn $mixture_wt_file -ts2cbfn ${CFG_HMM_TYPE} -mwfloor 1e-30 -psetfn ${CFG_QUESTION_SET} -phone $phn -state $stt -stwt $stwt -ssplitmin 1 -ssplitmax 5 -ssplitthr 0 -csplitmin 1 -csplitmax 500 -csplitthr 0 2>&1 |") {
 	
 	while (<PIPE>) {
 	    print LOG "$_";

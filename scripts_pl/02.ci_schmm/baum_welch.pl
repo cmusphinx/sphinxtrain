@@ -69,8 +69,8 @@ $iter   = $ARGV[$index];
 $part   = $ARGV[$index+1];
 $npart  = $ARGV[$index+2];
 
-$modelinitialname="${CFG_EXPTNAME}.ci_semi_flatinitial";
-$modelname="${CFG_EXPTNAME}.ci_semi";
+$modelinitialname="${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}_flatinitial";
+$modelname="${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}";
 $mdefname="${CFG_EXPTNAME}.ci.mdef";
 $processname ="02.ci_schmm";
 
@@ -136,10 +136,10 @@ if (open PIPE, "$BW -moddeffn $moddeffn -ts2cbfn $statepdeffn -mixwfn	$mixwfn -m
     $| = 1;				# Turn on autoflushing
     while (<PIPE>) {
 	if (/(ERROR).*/) {
-	    &ST_LogError ($_);
+	    &ST_LogError ($_ . "\n");
 	}
 	if (/(FATAL).*/) {
-	    &ST_LogError ($_);
+	    &ST_LogError ($_ . "\n");
 	    die "Received a fatal error";
 	}
 	print LOG "$_";
@@ -162,7 +162,7 @@ if (open PIPE, "$BW -moddeffn $moddeffn -ts2cbfn $statepdeffn -mixwfn	$mixwfn -m
     exit (0);
 }
 
-copy $CFG_GIF_DIR/red-ball.gif, $CFG_BASE_DIR/.02.bw.$iter.$part.state.gif;
+copy "$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.02.bw.$iter.$part.state.gif";
 &ST_LogError ("\tFailed to start $BW \n");    
 exit (-1);
 

@@ -67,13 +67,17 @@ if (($#ARGV >= ($index))) {
 }
 
 my $n_parts = ($CFG_NPART) ? $CFG_NPART : 1;
-# as the next stage )deleted interpolation) requires at least 2 parts 
-# we set the default number of parts to be 2
-if ($n_parts < 2) {
-    $n_parts = 2;
-}
+
+# If the number of parts is given as command line argument, overwrite
+# the number coming from the config file
 if (($#ARGV >= ($index+1))) {
-   $n_part= $ARGV[$index+1];
+   $n_parts= $ARGV[$index+1];
+}
+# as the next stage (deleted interpolation) requires at least 2 parts
+# we set the default number of parts to be 2, but only if we're using
+# semi continuous models
+if (($n_parts < 2) and ($CFG_HMM_TYPE eq ".semi.")) {
+    $n_parts = 2;
 }
 
 $| = 1; # Turn on autoflushing
@@ -174,14 +178,14 @@ sub copyci2cd2initialize ()
     # with cd models. This should minimize initialization problems..
      #*************************************************************************
 
-    my $ci_hmmdir = "$CFG_BASE_DIR/model_parameters/${CFG_EXPTNAME}.ci_semi";
+    my $ci_hmmdir = "$CFG_BASE_DIR/model_parameters/${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}";
     my $src_moddeffn = "$CFG_BASE_DIR/model_architecture/${CFG_EXPTNAME}.ci.mdef";
     my $src_mixwfn = "$ci_hmmdir/mixture_weights";
     my $src_meanfn = "$ci_hmmdir/means";
     my $src_varfn = "$ci_hmmdir/variances";
     my $src_tmatfn = "$ci_hmmdir/transition_matrices";
 
-    my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_initial";
+    my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_initial";
     mkdir ($cd_hmmdir,0777) unless -d $hmmdir;
 
     my $dest_moddeffn = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
@@ -198,7 +202,7 @@ sub copyci2cd2initialize ()
 
     open LOG,"> $logfile";
 
-    if (open PIPE,"$COPY -src_moddeffn $src_moddeffn -src_ts2cbfn  .semi. -src_mixwfn   $src_mixwfn -src_meanfn $src_meanfn -src_varfn $src_varfn -src_tmatfn $src_tmatfn -dest_moddeffn $dest_moddeffn -dest_ts2cbfn .semi. -dest_mixwfn $dest_mixwfn -dest_meanfn  $dest_meanfn -dest_varfn $dest_varfn -dest_tmatfn $dest_tmatfn -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
+    if (open PIPE,"$COPY -src_moddeffn $src_moddeffn -src_ts2cbfn  ${CFG_HMM_TYPE} -src_mixwfn   $src_mixwfn -src_meanfn $src_meanfn -src_varfn $src_varfn -src_tmatfn $src_tmatfn -dest_moddeffn $dest_moddeffn -dest_ts2cbfn ${CFG_HMM_TYPE} -dest_mixwfn $dest_mixwfn -dest_meanfn  $dest_meanfn -dest_varfn $dest_varfn -dest_tmatfn $dest_tmatfn -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
 	while ($line = <PIPE>) {
 	    print LOG $line;
 	}

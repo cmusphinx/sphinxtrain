@@ -68,7 +68,7 @@ $iter   = $ARGV[$index];
 $part   = $ARGV[$index+1];
 $npart  = $ARGV[$index+2];
 
-$modelinitialname="${CFG_EXPTNAME}.cd_semi_untied";
+$modelinitialname="${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied";
 $modelname="$modelinitialname";  # same for both in the case
 $mdefname="${CFG_EXPTNAME}.untied.mdef";
 $processname="04.cd_schmm_untied";

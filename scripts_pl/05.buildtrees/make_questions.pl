@@ -53,7 +53,7 @@ if (! -s "$cfg_file") {
 require $cfg_file;
 
 my $mdeffn   = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.ci.mdef";
-my $hmm_dir  = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.ci_semi";
+my $hmm_dir  = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}";
 my $meanfn   = "$hmm_dir/means";
 my $varfn    = "$hmm_dir/variances";
 my $mixwfn   = "$hmm_dir/mixture_weights";

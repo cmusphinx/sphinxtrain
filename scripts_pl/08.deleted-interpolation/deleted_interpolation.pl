@@ -54,6 +54,13 @@ if (! -s "$cfg_file") {
 }
 require $cfg_file;
 
+# If we're creating continous models, we don't need this
+if ($CFG_HMM_TYPE eq ".cont.") {
+  &ST_Log ("MODULE: 08 deleted interpolation\n");
+  &ST_Log("    Step skipped for continuous models\n");
+  exit(0);
+}
+
 # this script runs deleted interpolation on a bunch of semi-cont
 # hmm buffers. You need 2 or more buffers to run this!!
 
@@ -63,13 +70,13 @@ my $INTERP = "$CFG_BIN_DIR/delint";
 my $cilambda = 0.9;
 
 # up to 99 buffers
-my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_"."$CFG_N_TIED_STATES";
+my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_"."$CFG_N_TIED_STATES";
 $bwaccumdir 	     = "";
 for (<${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*>) {
     $bwaccumdir .= " $_";
 }
 
-my $hmm_dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_"."$CFG_N_TIED_STATES"."_delinterp";
+my $hmm_dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_"."$CFG_N_TIED_STATES"."_delinterp";
 mkdir ($hmm_dir,0777) unless -d $hmm_dir;
 
 copy "$cd_hmmdir/means", "$hmm_dir/means";

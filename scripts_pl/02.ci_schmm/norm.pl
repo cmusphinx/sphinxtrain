@@ -62,7 +62,7 @@ $| = 1; # Turn on autoflushing
 die "USAGE: $0 <iter>" if ($#ARGV != $index);
 $iter = $ARGV[$index];
 
-$modelname="${CFG_EXPTNAME}.ci_semi";
+$modelname="${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}";
 $processpart="02.ci_schmm";
 
 $bwaccumdir 	     = "";

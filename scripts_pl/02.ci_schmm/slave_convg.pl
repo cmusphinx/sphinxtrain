@@ -76,7 +76,7 @@ my $modeldir  = "$CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777) unless -d $modeldir;
 
 $| = 1; # Turn on autoflushing
-$logdir = "$CFG_LOG_DIR/02.ci_schmm";
+$logdir = "$CFG_LOG_DIR/02.ci_hmm";
 
 # We have to clean up and run flat initialize if it is the first iteration
 if ($iter == 1) {
@@ -87,7 +87,7 @@ if ($iter == 1) {
     &ST_Log ("logs...");
     rmtree ($logdir) unless ! -d $logdir;
     &ST_Log ("models...\n");
-    rmtree ("$modeldir/${CFG_EXPTNAME}.ci_semi") unless ! -d $modeldir;
+    rmtree ("$modeldir/${CFG_EXPTNAME}.ci_$CFG_DIRLABEL") unless ! -d $modeldir;
     
     # For the first iteration Flat initialize models.
     &FlatInitialize();
@@ -190,10 +190,12 @@ sub FlatInitialize ()
     
     open PHONELIST, "<".$CFG_RAWPHONEFILE;
     open PHONEFILE, ">".$phonefile;
+    $NUM_PHONES = 0;
     while ( $line = <PHONELIST> ) {
       chomp($line);
       $line =~ s/$/ - - - /;
       print PHONEFILE $line . "\n";
+      $NUM_PHONES++;
     }
 
 #    system "sed 's+\$+ - - - +g' $CFG_RAWPHONEFILE > $phonefile";
@@ -220,18 +222,17 @@ sub FlatInitialize ()
     #-------------------------------------------------------------------------
     # make the flat models using the above topology file and the mdef file
     #------------------------------------------------------------------------
-    $outhmm               = "$hmmdir/${CFG_EXPTNAME}.ci_semi_flatinitial";
+    $outhmm               = "$hmmdir/${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}_flatinitial";
     mkdir ($outhmm,0777) unless -d $outhmm;
     
-    #set FLAT = ~rsingh/09..sphinx3code/trainer/bin.$mach/mk_flat
     $FLAT = "$CFG_BIN_DIR/mk_flat";
 
-    $logfile = "$logdir/${CFG_EXPTNAME}.makeflat_cischmm.log";
+    $logfile = "$logdir/${CFG_EXPTNAME}.makeflat_cihmm.log";
     &ST_HTML_Print ("\t\tmk_flat <A HREF=\"$logfile\">Log File</A>\n");    
 
     open LOG,">$logfile";
 
-    if (open PIPE, "$FLAT -moddeffn $ci_mdeffile -topo $topologyfile -mixwfn  $outhmm/mixture_weights -tmatfn $outhmm/transition_matrices -nstream $CFG_NUM_STREAMS -ndensity  256 2>&1 |") {
+    if (open PIPE, "$FLAT -moddeffn $ci_mdeffile -topo $topologyfile -mixwfn  $outhmm/mixture_weights -tmatfn $outhmm/transition_matrices -nstream $CFG_NUM_STREAMS -ndensity  $CFG_NUM_DENSITIES 2>&1 |") {
     
 	while ($line = <PIPE>) {
 	    print LOG $line;
@@ -240,4 +241,140 @@ sub FlatInitialize ()
 	close PIPE;
 	close LOG;
     }
+
+    if ($CFG_HMM_TYPE eq ".semi.") {
+      return (0);
+    }
+
+    #-------------------------------------------------------------------------
+    # Accumulate the means from the training data
+    #------------------------------------------------------------------------
+    
+    $ACCUM = "$CFG_BIN_DIR/init_gau";
+
+    $logfile = "$logdir/${CFG_EXPTNAME}.initmean_cihmm.log";
+    &ST_HTML_Print ("\t\taccum_mean <A HREF=\"$logfile\">Log File</A>\n");    
+
+    open LOG,">$logfile";
+
+    $output_buffer_dir = "$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_1";
+    mkdir ($output_buffer_dir,0777) unless -d $output_buffer_dir;
+
+    if (open PIPE, "$ACCUM -ctlfn $CFG_LISTOFFILES -part 1 -npart 1 -cepdir $CFG_FEATFILES_DIR -cepext $CFG_FEATFILE_EXTENSION -accumdir $output_buffer_dir -agc $CFG_AGC -cmn $CFG_CMN -varnorm $CFG_VARNORM -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
+    
+	while ($line = <PIPE>) {
+	    print LOG $line;
+	}
+	
+	close PIPE;
+	close LOG;
+    }
+
+    #-------------------------------------------------------------------------
+    # Normalize the means
+    #------------------------------------------------------------------------
+    
+    $NORM = "$CFG_BIN_DIR/norm";
+
+    $logfile = "$logdir/${CFG_EXPTNAME}.normmean_cihmm.log";
+    &ST_HTML_Print ("\t\tnorm_mean <A HREF=\"$logfile\">Log File</A>\n");    
+
+    open LOG,">$logfile";
+
+    if (open PIPE, "$NORM -accumdir $output_buffer_dir -meanfn $outhmm/globalmean 2>&1 |") {
+    
+	while ($line = <PIPE>) {
+	    print LOG $line;
+	}
+	
+	close PIPE;
+	close LOG;
+    }
+
+    #-------------------------------------------------------------------------
+    # Accumulate the variances from the training data
+    #------------------------------------------------------------------------
+    
+    $logfile = "$logdir/${CFG_EXPTNAME}.initvar_cihmm.log";
+    &ST_HTML_Print ("\t\taccum_var <A HREF=\"$logfile\">Log File</A>\n");    
+
+    open LOG,">$logfile";
+
+    if (open PIPE, "$ACCUM -meanfn $outhmm/globalmean -ctlfn $CFG_LISTOFFILES -part 1 -npart 1 -cepdir $CFG_FEATFILES_DIR -cepext $CFG_FEATFILE_EXTENSION -accumdir $output_buffer_dir -agc $CFG_AGC -cmn $CFG_CMN -varnorm yes -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
+    
+	while ($line = <PIPE>) {
+	    print LOG $line;
+	}
+	
+	close PIPE;
+	close LOG;
+    }
+
+    #-------------------------------------------------------------------------
+    # Normalize the variances
+    #------------------------------------------------------------------------
+    
+    $logfile = "$logdir/${CFG_EXPTNAME}.normvar_cihmm.log";
+    &ST_HTML_Print ("\t\tnorm_var <A HREF=\"$logfile\">Log File</A>\n");    
+
+    open LOG,">$logfile";
+
+    if (open PIPE, "$NORM -accumdir $output_buffer_dir -varfn $outhmm/globalvar 2>&1 |") {
+    
+	while ($line = <PIPE>) {
+	    print LOG $line;
+	}
+	
+	close PIPE;
+	close LOG;
+    }
+
+    #-------------------------------------------------------------------------
+    # Create the copy operation file, simply a map between states
+    #------------------------------------------------------------------------
+
+    $NUM_CI_STATES = $NUM_PHONES * $CFG_STATESPERHMM;
+    if (open CPFILE, "$CFG_CP_OPERATION") {
+      for ($CI_STATE = 0; $CI_STATE < $NUM_CI_STATES; $CI_STATE++) {
+	print CPFILE "$CI_STATE\t0\n";
+      }
+      close(CPFILE);
+    }
+
+    #-------------------------------------------------------------------------
+    # Copy the means to all other states
+    #------------------------------------------------------------------------
+    
+    $CPPARM = "$CFG_BIN_DIR/cp_parm";
+
+    $logfile = "$logdir/${CFG_EXPTNAME}.cpmean_cihmm.log";
+    &ST_HTML_Print ("\t\tcp_mean <A HREF=\"$logfile\">Log File</A>\n");    
+
+    if (open PIPE, "$CPPARM -cpopsfn $CFG_CP_OPERATION -igaufn $outhmm/globalmean -ncbout $NUM_CI_STATES -ogaufn $outhmm/means -feat $CFG_FEATURE 2>&1 |") {
+    
+	while ($line = <PIPE>) {
+	    print LOG $line;
+	}
+	
+	close PIPE;
+	close LOG;
+    }
+
+    #-------------------------------------------------------------------------
+    # Copy the variances to all other states
+    #------------------------------------------------------------------------
+    
+    $logfile = "$logdir/${CFG_EXPTNAME}.cpvar_cihmm.log";
+    &ST_HTML_Print ("\t\tcp_var <A HREF=\"$logfile\">Log File</A>\n");    
+
+    if (open PIPE, "$CPPARM -cpopsfn $CFG_CP_OPERATION -igaufn $outhmm/globalvar -ncbout $NUM_CI_STATES -ogaufn $outhmm/variances -feat $CFG_FEATURE 2>&1 |") {
+    
+	while ($line = <PIPE>) {
+	    print LOG $line;
+	}
+	
+	close PIPE;
+	close LOG;
+    }
+    unlink $CFG_CP_OPERATION;
 }

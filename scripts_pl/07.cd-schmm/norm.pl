@@ -61,7 +61,7 @@ $| = 1; # Turn on autoflushing
 die "USAGE: $0 <iter>" if ($#ARGV != $index);
 $iter = $ARGV[$index];
 
-$modelname="${CFG_EXPTNAME}.cd_semi_$CFG_N_TIED_STATES";
+$modelname="${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_$CFG_N_TIED_STATES";
 $processpart="07.cd-schmm";
 
 $bwaccumdir 	     = "";

@@ -68,8 +68,8 @@ $iter   = $ARGV[$index];
 $part   = $ARGV[$index+1];
 $npart  = $ARGV[$index+2];
 
-$modelinitialname="${CFG_EXPTNAME}.cd_semi_initial";
-$modelname="${CFG_EXPTNAME}.cd_semi_${CFG_N_TIED_STATES}";
+$modelinitialname="${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_initial";
+$modelname="${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}";
 $mdefname="${CFG_EXPTNAME}.$CFG_N_TIED_STATES.mdef";
 $processname = "07.cd-schmm";
 

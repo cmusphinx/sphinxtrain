@@ -75,7 +75,7 @@ $| = 1; # Turn on autoflushing
 $hmmdir = "$CFG_BASE_DIR/model_parameters";
 mkdir ($hmmdir,0777) unless -d $hmmdir;
 
-$outhmm  = "$hmmdir/${CFG_EXPTNAME}.ci_semi_flatinitial";
+$outhmm  = "$hmmdir/${CFG_EXPTNAME}.ci_${CFGDIRLABEL}_flatinitial";
 mkdir ($outhmm,0777) unless -d $outhmm;
 
 $segdmpdir = "$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_1";
