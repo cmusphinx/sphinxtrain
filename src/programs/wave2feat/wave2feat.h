@@ -33,6 +33,10 @@
  * ====================================================================
  *
  */
+
+#ifndef _WAVE2FEAT_H_
+#define _WAVE2FEAT_H_
+
 #define ON 1
 #define OFF 0
 #define NULL_CHAR '\0'
@@ -106,3 +110,4 @@ int32 fe_writeblock_feat(param_t *P, fe_t *FE, int32 fp, int32 nframes, float32 
 int32 fe_closefiles(int32 fp_in, int32 fp_out);
 int32 fe_dither(int16 *buffer,int32 nsamps);
 
+#endif

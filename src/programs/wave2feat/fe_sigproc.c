@@ -36,8 +36,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include "new_fe.h"
-#include "new_fe_sp.h"
+#include "fe.h"
+#include "fe_internal.h"
 
 
 /*

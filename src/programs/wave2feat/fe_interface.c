@@ -41,8 +41,8 @@
 /*
 #include <s2types.h>
 */
-#include "new_fe.h"
-#include "new_fe_sp.h"
+#include "fe.h"
+#include "fe_internal.h"
 
 /* 
  *   HISTORY

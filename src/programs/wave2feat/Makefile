@@ -45,13 +45,13 @@ DIRNAME=src/programs/wave2feat
 BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
-  new_fe_sp.c \
-  new_fe.c \
-  new_fe_wrapper.c
+  fe_interface.c \
+  fe_sigproc.c \
+  wave2feat.c
 H = \
-  new_fe.h \
-  new_fe_sp.h \
-  new_fe_wrapper.h
+  fe.h \
+  fe_internal.h \
+  wave2feat.h
 
 FILES = Makefile $(SRCS) $(H)
 TARGET = wave2feat

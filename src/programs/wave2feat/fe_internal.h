@@ -34,6 +34,8 @@
  *
  */
 
+#ifndef _FE_INTERNAL_H_
+#define _FE_INTERNAL_H_
 
 #ifndef	M_PI
 #define M_PI	(3.14159265358979323846)
@@ -64,3 +66,4 @@ void fe_print_current(fe_t *FE);
 void fe_parse_general_params(param_t const *P, fe_t *FE);
 void fe_parse_melfb_params(param_t const *P, melfb_t *MEL);
 
+#endif

@@ -56,9 +56,9 @@
 #define lrand48() rand()
 #endif
 
-#include "new_fe.h"
-#include "new_fe_sp.h"
-#include "new_fe_wrapper.h"
+#include "fe.h"
+#include "fe_internal.h"
+#include "wave2feat.h"
 
 /*       
 	 7-Feb-00 M. Seltzer - wrapper created for new front end -

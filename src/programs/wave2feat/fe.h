@@ -33,8 +33,8 @@
  * ====================================================================
  *
  */
-#ifndef _NEW_FE_H_
-#define _NEW_FE_H_
+#ifndef _FE_H_
+#define _FE_H_
 
 
 #define int32 int
