@@ -1478,6 +1478,7 @@ corpus_get_mfcc(vector_t **mfc,
     uint32 n_c;
     uint32 i, j;
     uint32 ret = S3_ERROR;
+    uint32 no_retries=0;
 
     if (!requires_mfcc) {
 	/* asked for mfc data, but not set up to send it */
@@ -1503,9 +1504,20 @@ corpus_get_mfcc(vector_t **mfc,
 	    E_FATAL("Both start and end frame must be set in the ctl file\n");
 	}
 
+	/* ARCHAN: Unless there is any special reason, new programmer
+	   should just do less retries rather than more. The network
+	   is always fast enough to handle situation in nowadays. I
+	   gave 5 minutes as the possible waiting period.  This is
+	   more than we should have.
+	*/
+
 	if (ret == S3_ERROR) {
 	    E_ERROR("MFCC read failed.  Retrying after sleep...\n");
-	    sleep(900);
+	    sleep(30);
+	    no_retries++;
+	    if(no_retries>10){ 
+	      E_FATAL("Failed to get the files after 10 retries of getting MFCC(about 5 minutes)\n ");
+	    }
 	}
     } while (ret == S3_ERROR);
 
@@ -1539,6 +1551,8 @@ corpus_get_mfcc(vector_t **mfc,
 }
 
 
+/* ARCHAN: This part of the code need be merged with the corpus_get_generic_featvec. */
+
 /* ADDED BY BHIKSHA TO READ FEATURES OF GENERIC LENGTH. TO ALLOW
    VECLEN TO BE VALUES OTHER THAN 13. 7 JAN 98 */
 int
@@ -1552,6 +1566,7 @@ corpus_get_generic_featurevec(vector_t **mfc,
     uint32 n_c;
     uint32 i, j;
     uint32 ret=S3_ERROR;
+    uint32 no_retries=0;
 
     if (!requires_mfcc) {
 	/* asked for mfc data, but not set up to send it */
@@ -1579,7 +1594,11 @@ corpus_get_generic_featurevec(vector_t **mfc,
 
 	if (ret == S3_ERROR) {
 	    E_ERROR("MFCC read failed.  Retrying after sleep...\n");
-	    sleep(900);
+	    no_retries++;
+	    sleep(30);
+	    if(no_retries>10){ 
+	      E_FATAL("Failed to get the files after 10 retries of getting MFCC(about 5 minutes)\n ");
+	    }
 	}
     } while (ret == S3_ERROR);
 
@@ -1962,9 +1981,12 @@ read_sildel(uint32 **out_sf,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.8  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.9  2004/11/17  01:18:24  arthchan2003
+ * Changing corpus.c to only retry to get the mfcc file for 5 minute s(10 retries with interval 30), the old way will make a lot of tools to loop forever and user were just confused what's going on.
  * 
+ * Revision 1.8  2004/07/21 18:05:40  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.7  2004/03/01 15:38:00  egouvea
  * Fixed number of data types, bug report 660181
  *
