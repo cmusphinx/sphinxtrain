@@ -53,9 +53,12 @@
  **********************************************************************
  * HISTORY
  * $Log$
- * Revision 1.3  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.4  2003/11/30  05:50:31  egouvea
+ * Replaced obsolete varargs.h with stdargs.h
  * 
+ * Revision 1.3  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2001/02/20 00:28:35  awb
  * *** empty log message ***
  *
@@ -74,17 +77,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <varargs.h>
+#include <stdarg.h>
 
-int quit (status,fmt,va_alist)
-    int status;
-    char *fmt;
-    va_dcl
+int quit ( int status, char *fmt, ... )
 {
 	va_list args;
 
 	fflush(stdout);
-	va_start(args);
+	va_start(args, fmt);
 	(void) vfprintf(stderr, fmt, args);
 	va_end(args);
 	exit(status);

@@ -44,7 +44,7 @@
 #define WREC_H
 
 #include "phrec.h"
-#include <varargs.h>
+#include <stdarg.h>
 
 int quit (int status, char *fmt, ...);
 
