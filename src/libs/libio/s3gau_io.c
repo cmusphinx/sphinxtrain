@@ -98,6 +98,10 @@ s3gau_read(const char *fn,
     /* if do_chk is non-NULL, there is a checksum after the data in the file */
     do_chk = s3get_gvn_fattr("chksum0");
 
+    if (do_chk && !strcmp(do_chk, "no")) {
+        do_chk = NULL;
+    }
+    
     if (s3read(&n_mgau, sizeof(uint32), 1, fp, swap, &chksum) != 1) {
 	goto error;
     }
@@ -139,13 +143,19 @@ s3gau_read(const char *fn,
 	}
     }
 
-    if (s3read((void *)&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
-	goto error;
+    if (do_chk) {
+	/* See if the checksum in the file matches that which
+	   was computed from the read data */
+
+	if (s3read(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
+            goto error;
+	}
+
+	if (sv_chksum != chksum) {
+	    E_FATAL("Checksum error; read corrupt data.\n");
+	}
     }
 
-    if (sv_chksum != chksum) {
-	E_FATAL("Checksum failed\n");
-    }
 
     *out = o;
     *out_n_mgau = n_mgau;
@@ -275,7 +285,6 @@ s3gaucnt_read(const char *fn,
     /* if do_chk is non-NULL, there is a checksum after the data in the file */
     do_chk = s3get_gvn_fattr("chksum0");
 
-    
     if (s3read((void *)&has_means, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
 	return S3_ERROR;
     }
@@ -594,9 +603,13 @@ s3gaudnom_write(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.4  2003/07/16  00:25:35  egouvea
+ * s3 now ignores checksum when reading a density, if checksum is not
+ * part of the density file header.
  * 
+ * Revision 1.3  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:13  awb
  * *** empty log message ***
  *
