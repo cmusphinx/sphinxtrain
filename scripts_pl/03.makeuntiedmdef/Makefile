@@ -45,12 +45,11 @@
 #  Perl scripts
 #
 # ====================================================================
-TOP=..
-DIRNAME=scripts_pl
-BUILD_DIRS = 00.verify 01.vector_quantize 02.ci_schmm 03.makeuntiedmdef \
-             04.cd_schmm_untied 05.buildtrees 
-ALL_DIRS= $(BUILD_DIRS)
-FILES = Makefile RunAll.pl sphinx_train.cfg
+TOP=../..
+DIRNAME=scripts_pl/03.makeuntiedmdef
+BUILD_DIRS = 
+ALL_DIRS=
+FILES = Makefile make_untied_mdef.pl
 
 ALL = 
 

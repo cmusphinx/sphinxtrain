@@ -61,6 +61,7 @@
 #include <s3/s3.h>
 
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
 
 
@@ -69,22 +70,31 @@ next_prime(uint32 n)
 {
     uint32 b;
     uint32 f;
+    uint32 l;
+
+    l = n;
 
     while (1) {
-	b = ceil(sqrt((double)n));
+	b = ceil(sqrt((double)l));
 
 	for (f = 2; f < b; f++) {
-	    if ((n/f)*f == n) {
-		++n;
+	    if ((l/f)*f == l) {
+		++l;
 		break;
 	    }
 	}
 
 	if (f == b)
 	    break;
+	if (l == n)
+	{
+	    fprintf(stderr,"next_prime: failed to find next primt for %d\n",
+		    n);
+	    break;
+	}
     }
 
-    return n;
+    return l;
 }
 
 map_t *
@@ -193,9 +203,12 @@ remap_free(map_t *m)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:13  awb
+ * Revision 1.3  2000/11/17  12:42:53  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:13  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *
