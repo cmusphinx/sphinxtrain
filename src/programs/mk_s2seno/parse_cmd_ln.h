@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1986-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,34 +43,38 @@
  *
  * ====================================================================
  *
+ * File: parse_cmdln.h
+ * 
+ * Description: 
+ * 
+ * Author: 
+ * 	Eric H. Thayer (eht@cs.cmu.edu)
+ *********************************************************************/
+
+#ifndef PARSE_CMDLN_H
+#define PARSE_CMDLN_H
+
+#include <s3/prim_type.h>
+
+int32
+parse_cmd_ln(int argc,
+	     char *argv[]);
+
+#endif /* PARSE_CMDLN_H */ 
+
+
+/*
+ * Log record.  Maintained by RCS.
+ *
+ * $Log$
+ * Revision 1.1  2000/11/22  21:23:18  awb
+ * *** empty log message ***
+ * 
+ * Revision 1.2  1995/10/10  13:10:11  eht
+ * Changed to use <s3/prim_type.h>
+ *
+ * Revision 1.1  1995/06/02  20:31:53  eht
+ * Initial revision
+ *
+ *
  */
-/* Procedure to "unlimit" the memory usage of a program.
-   The limit is set to the maximum that the system allows.
-   The limit is returned.
-
-   Kai-Fu Lee
-   10/86
- */
-
-#include <sys/time.h>
-#include <sys/resource.h>
-#include "count.h"
-
-#ifndef __CYGWIN32__
-int unlimit ()
-{
-  struct rlimit rl;
-
-#ifdef RLIMIT_DATA
-  getrlimit(RLIMIT_DATA,&rl);
-  rl.rlim_cur = rl.rlim_max;
-  setrlimit(RLIMIT_DATA,&rl);
-  return (rl.rlim_cur);
-#else
-  printf("unlimit: setrlimit() of RLIMIT_DATA unsupported on this architecture\n");
-  return 0;
-#endif
-}
-
-#endif
-

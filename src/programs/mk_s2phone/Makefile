@@ -41,13 +41,25 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # ====================================================================
-#                    
-# Project description
-#                    
+#
+#  Programs: mk_s2phone
+#
 # ====================================================================
+TOP=../../..
+DIRNAME=src/programs/mk_s2phone
+BUILD_DIRS = 
+ALL_DIRS= $(BUILD_DIRS)
+SRCS = \
+  main.c \
+  parse_cmd_ln.c
+H = \
+  parse_cmd_ln.h
 
-PROJECT_NAME = Sphinx acoustic training scripts
-PROJECT_PREFIX = SphinxTrain
-PROJECT_VERSION = 0.4
-PROJECT_DATE = Nov 2000
-PROJECT_STATE = current
+FILES = Makefile $(SRCS) $(H) phone.c
+
+TARGET = mk_s2phone
+
+ALL = $(BINDIR)/$(TARGET)
+
+include $(TOP)/config/common_make_rules
+

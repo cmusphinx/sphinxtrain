@@ -49,10 +49,14 @@ Make the melcep feature files
 
 Now we can start on the basic perl scripts, ther
 results will be put in perl_time.html, which you can view as things
-progress.  Note the scirpts aren't guaranteed, and problems do occur, 
+progress.  Note the scripts aren't guaranteed, and problems do occur, 
 though often the erro message is actually indicative of the error.
 
-Does do enough checking, but may help
+There a number of larger choices in building models, one is to
+build continous models or semi-continuous.  Only semi-continous
+can be used by Sphinx2 
+
+Doesn't do enough checking, but may help
    ./scripts_pl/00.verify/verify_all.pl -cfg etc/sphinx_train.cfg 
 Can take several minutes
    ./scripts_pl/01.vector_quantize/slave.VQ.pl -cfg etc/sphinx_train.cfg
@@ -63,16 +67,84 @@ Initial BW training
    ./scripts_pl/04.cd_schmm_untied/slave_convg.pl -cfg etc/sphinx_train.cfg 1
    ./scripts_pl/05.buildtrees/make_questions.pl -cfg etc/sphinx_train.cfg
    ./scripts_pl/05.buildtrees/slave.treebuilder.pl -cfg etc/sphinx_train.cfg
-
-
-
-
-
-
-
-   
-
+   ./scripts_pl/06.prunetree/slave.state-tie-er.pl -cfg etc/sphinx_train.cfg
+   ./scripts_pl/07.cd-schmm/slave_convg.pl -cfg etc/sphinx_train.cfg 1
             
      
-     
+===========================================================================
+Chart of training process 
+
+
+                         Training chart for the
+                         sphinx2  trainer
+                        =========================
+                                OBSOLETE
+               (The sphinx2 trainer is no longer used in CMU)
+                We build sphinx3 semi-continuous models and convert them
+
+
+                         Training chart for the
+                         sphinx3  trainer
+                        =========================
+                             type of model
+                                   |
+                    ----------------------------------
+                    |                                |
+               continuous                      semi-continuous
+                    |                                |
+                    |                         vector-quantization
+                    |                                |
+                    ----------------------------------
+                                   |...make ci mdef
+                                   |...flat_initialize CI models
+                             training CI models
+                                   |...make cd untied mdef
+                                   |...initialize
+                                   |
+                             training CD untied models
+                                   |
+                                   |
+                                   |
+                             decision tree building
+                                   |...prune trees
+                                   |...tie states
+                                   |...make cd tied mdef
+                             training CD tied models
+                                   |
+                                   |
+recursive            ----------------------------------
+gaussian splitting.. |                                |
+                 continuous models              semi-continuous models
+                     |                                |
+                     |                                | 
+                -----------                           |
+                |         |                    deleted interpolation
+          decode with   ADAPT                         |
+          sphinx3                                     |---ADAPT
+          decoder                                     |     |
+                                                ----------------
+                          make cd tied mdef ... | .............|
+                          with decode dict and  |           convert to
+                          pruned trees          |           sphinx2
+                                         decode with           |
+                                         sphinx3               |
+                                         decoder               |     
+                                                               |
+                                                            decode with
+                                                            sphinx2
+                                                            decoder
+                                                  (currently opensource
+                                                   and restricted to
+                                                   working with sampling
+                                                   rates 8khz and 16khz.
+                                                   Once the s3 trainer is
+                                                   released, this will have
+                                                   to change to allow
+                                                   people who train with
+                                                   different sampling rates
+                                                   to use this decoder)
+
+  
+
+======================================================================
 

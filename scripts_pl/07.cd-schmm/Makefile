@@ -41,13 +41,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # ====================================================================
-#                    
-# Project description
-#                    
+#
+#  Perl scripts
+#
 # ====================================================================
+TOP=../..
+DIRNAME=scripts_pl/07.cd-schmm
+BUILD_DIRS = 
+ALL_DIRS = $(BUILD_DIRS)
+FILES = Makefile baum_welch.pl norm.pl norm_and_launchbw.pl slave_conv.pl
 
-PROJECT_NAME = Sphinx acoustic training scripts
-PROJECT_PREFIX = SphinxTrain
-PROJECT_VERSION = 0.4
-PROJECT_DATE = Nov 2000
-PROJECT_STATE = current
+ALL = 
+
+include $(TOP)/config/common_make_rules
+

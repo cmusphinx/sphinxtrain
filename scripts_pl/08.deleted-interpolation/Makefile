@@ -41,13 +41,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # ====================================================================
-#                    
-# Project description
-#                    
+#
+#  Perl scripts
+#
 # ====================================================================
+TOP=../..
+DIRNAME=scripts_pl/08.deleted-interpolation
+BUILD_DIRS = 
+ALL_DIRS = $(BUILD_DIRS)
+FILES = Makefile deleted_interpolation_pl
 
-PROJECT_NAME = Sphinx acoustic training scripts
-PROJECT_PREFIX = SphinxTrain
-PROJECT_VERSION = 0.4
-PROJECT_DATE = Nov 2000
-PROJECT_STATE = current
+ALL = 
+
+include $(TOP)/config/common_make_rules
+

@@ -49,7 +49,7 @@ TOP=../..
 DIRNAME=scripts_pl/02.ci_schmm
 BUILD_DIRS = 
 ALL_DIRS=
-FILES = Makefile baum_welch.pl norm.pl flat_initialize.pl \
+FILES = Makefile baum_welch.pl norm.pl \
         norm_and_launchbw.pl slave_convg.pl test_sub.pl
 
 ALL = 
