@@ -85,7 +85,7 @@ my $MAKE_QUEST = "${CFG_BIN_DIR}/make_quests";
 &ST_HTML_Print ("<A HREF=\"$logfile\">Log File</A>\n");
 
 $|=1;
-if (open PIPE, "$MAKE_QUEST -moddeffn $mdeffn -meanfn $meanfn -varfn $varfn -mixwfn $mixwfn -npermute 8 -niter 0 -qstperstt 30 -tempfn $tempfn -questfn $questfn -type ${CFG_HMM_TYPE} 2>&1 |") {
+if (open PIPE, "$MAKE_QUEST -moddeffn $mdeffn -meanfn $meanfn -varfn $varfn -mixwfn $mixwfn -npermute 8 -niter 1 -qstperstt 20 -tempfn $tempfn -questfn $questfn -type ${CFG_HMM_TYPE} 2>&1 |") {
 
     open LOG,">$logfile";
 while (<PIPE>) {
