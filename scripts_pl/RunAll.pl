@@ -45,10 +45,10 @@ if (lc($ARGV[0]) eq '-cfg') {
     die "-cfg specified, but unable to find file $ARGV[1]" unless (-s $cfg_file);
     require $cfg_file;
 } else {
-    $cfg_file = "./sphinx_train.cfg";
-    die "Must specify -cfg or create default file ./sphinx_train.cfg" unless (-s  $cfg_file);
-    require ("./sphinx_train.cfg");
-    &ST_LogWarning ("-cfg not specified, using the default ./sphinx_train.cfg");
+    $cfg_file = "./etc/sphinx_train.cfg";
+    die "Must specify -cfg or create default file ./etc/sphinx_train.cfg" unless (-s  $cfg_file);
+    require ("./etc/sphinx_train.cfg");
+    &ST_LogWarning ("-cfg not specified, using the default ./etc/sphinx_train.cfg");
 }
 
 # What pieces would you like to compute.
@@ -80,7 +80,7 @@ if (lc($ARGV[0]) eq '-cfg') {
 
 
 for $step (@steps) {
-    $ret_value = system ($step);
+    $ret_value = system ("perl $step");
     die "Something failed: ($step)\n" if $ret_value;
 }
 

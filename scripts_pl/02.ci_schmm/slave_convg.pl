@@ -232,7 +232,7 @@ sub FlatInitialize ()
 
     open LOG,">$logfile";
 
-    if (open PIPE, "$FLAT -moddeffn $ci_mdeffile -topo $topologyfile -mixwfn  $outhmm/mixture_weights -tmatfn $outhmm/transition_matrices -nstream $CFG_NUM_STREAMS -ndensity  $CFG_NUM_DENSITIES 2>&1 |") {
+    if (open PIPE, "$FLAT -moddeffn $ci_mdeffile -topo $topologyfile -mixwfn  $outhmm/mixture_weights -tmatfn $outhmm/transition_matrices -nstream $CFG_NUM_STREAMS -ndensity  $CFG_INITIAL_NUM_DENSITIES 2>&1 |") {
     
 	while ($line = <PIPE>) {
 	    print LOG $line;

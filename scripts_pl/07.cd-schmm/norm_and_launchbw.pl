@@ -188,12 +188,12 @@ sub Launch_BW () {
 
 sub Launch_SplitGaussian() {
     print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
-    if ($n_gau < $CFG_NUM_DENSITIES && $CFG_HMM_TYPE ne ".semi.") {
+    if ($n_gau < $CFG_FINAL_NUM_DENSITIES && $CFG_HMM_TYPE ne ".semi.") {
 # Do stuff
-        if ($CFG_NUM_DENSITIES >= 2 * $n_gau) {
+        if ($CFG_FINAL_NUM_DENSITIES >= 2 * $n_gau) {
 	    $n_split = $n_gau;
         } else {
-	    $n_split = $CFG_NUM_DENSITIES - $n_gau;
+	    $n_split = $CFG_FINAL_NUM_DENSITIES - $n_gau;
         }
         system ("$scriptdir/split_gaussians.pl $n_split");
 
@@ -201,7 +201,7 @@ sub Launch_SplitGaussian() {
 	$iter = 0;
 	$n_gau = $n_gau + $n_split;
         &Launch_BW();
-      } elsif ($n_gau == $CFG_NUM_DENSITIES) {
-	system("$scriptdir/split_gaussians.pl $CFG_NUM_DENSITIES");
+      } elsif ($n_gau == $CFG_FINAL_NUM_DENSITIES) {
+	system("$scriptdir/split_gaussians.pl $CFG_FINAL_NUM_DENSITIES");
       }
 }

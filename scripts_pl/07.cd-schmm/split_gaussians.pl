@@ -60,7 +60,7 @@ require $cfg_file;
 # script.
 # ***************************************************************************
 
-my $n_split = $CFG_NUM_DENSITIES;
+my $n_split = $CFG_FINAL_NUM_DENSITIES;
 
 # If the number of parts is given as command line argument, overwrite
 # the number coming from the config file
