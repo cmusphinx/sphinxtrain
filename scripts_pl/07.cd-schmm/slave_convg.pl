@@ -61,17 +61,25 @@ require $cfg_file;
 # jobs as the number of parts we wish to split the training into.
 #***************************************************************************
 
+# For the first iteration, we initialize the number of gaussian
+# components to 1. That's how we start with continuous models, and
+# it is irrelevant for semi continuous
+my $n_gau = 1;
+if ($#ARGV >= (index)) {
+   $n_gau = $ARGV[$index];
+}
+
 my $iter = 1;
-if (($#ARGV >= ($index))) {
-   $iter= $ARGV[$index];
+if (($#ARGV >= ($index+1))) {
+   $iter= $ARGV[$index+1];
 }
 
 my $n_parts = ($CFG_NPART) ? $CFG_NPART : 1;
 
 # If the number of parts is given as command line argument, overwrite
 # the number coming from the config file
-if (($#ARGV >= ($index+1))) {
-   $n_parts= $ARGV[$index+1];
+if (($#ARGV >= ($index+2))) {
+   $n_parts= $ARGV[$index+2];
 }
 # as the next stage (deleted interpolation) requires at least 2 parts
 # we set the default number of parts to be 2, but only if we're using
@@ -161,7 +169,7 @@ else
 	system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts");
     }
 }
-system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $iter $n_parts");
+system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $n_gau $iter $n_parts");
 
 exit 0;
 

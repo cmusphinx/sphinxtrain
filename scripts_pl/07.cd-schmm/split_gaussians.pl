@@ -54,25 +54,19 @@ if (! -s "$cfg_file") {
 require $cfg_file;
 
 #***************************************************************************
-# This script launches all the ci - continuous training jobs in the proper
-# order. First it cleans up the directories, then launches the 
-# flat initialization, and the baum-welch and norm jobs for the required
-# number of iterations. Within each iteration it launches as many baumwelch
-# jobs as the number of parts we wish to split the training into.
-#***************************************************************************
+# This script splits the current set of gaussian models. The increase
+# in number of Gaussian components is the argument used to call the
+# script.
+# ***************************************************************************
 
-my $iter = 1;
-if (($#ARGV >= ($index))) {
-   $iter= $ARGV[$index];
-}
-
-my $n_split = ($CFG_NSPLIT) ? $CFG_NSPLIT : 1;
+my $n_split = $CFG_NUM_DENSITIES;
 
 # If the number of parts is given as command line argument, overwrite
 # the number coming from the config file
-if (($#ARGV >= ($index+1))) {
-   $n_split= $ARGV[$index+1];
+if (($#ARGV >= ($index))) {
+   $n_split= $ARGV[$index];
 }
+
 # With semi continuous models, we already start with the right number
 # of components
 if ($CFG_HMM_TYPE eq ".semi.") {

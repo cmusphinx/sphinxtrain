@@ -56,10 +56,11 @@ require $cfg_file;
 #*******************************************************************
 $| = 1; # Turn on autoflushing
 
-die "USAGE: $0 <iter> <n_parts>" if ($#ARGV != $index+1);
+die "USAGE: $0 <ngau> <iter> <n_parts>" if ($#ARGV != $index+2);
 
-$iter = $ARGV[$index];
-$n_parts = $ARGV[$index+1];
+$n_gau = $ARGV[$index];
+$iter = $ARGV[$index+1];
+$n_parts = $ARGV[$index+2];
 
 $processname="07.cd-schmm";
 
@@ -158,6 +159,7 @@ if ($convg_ratio < 0) {
 }
 
 if ($convg_ratio > $CFG_CONVERGENCE_RATIO && $iter >= $CFG_MAX_ITERATIONS) {
+    &Launch_SplitGaussian();
     system("echo \"Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating CI training\" >> $log");
     system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
     $date = localtime;
@@ -171,6 +173,7 @@ if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
     exit (0);
 }
 else {
+    &Launch_SplitGaussian();
     print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
     system("echo \"Likelihoods have converged! Baum Welch training completed\!\" >> $log");
     system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
@@ -182,6 +185,23 @@ else {
 sub Launch_BW () {
     $newiter = $iter + 1;
     print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
-    system ("$scriptdir/slave_convg.pl $newiter $n_parts");
+    system ("$scriptdir/slave_convg.pl $n_gau $newiter $n_parts");
 }
 
+sub Launch_SplitGaussian() {
+    if ($n_gau < $CFG_NUM_DENSITIES && $CFG_HMM_TYPE ne ".semi.") {
+# Do stuff
+        if ($CFG_NUM_DENSITIES >= 2 * $n_gau) {
+	    $n_split = $n_gau;
+        } else {
+	    $n_split = $CFG_NUM_DENSITIES - $n_gau;
+        }
+        system ("$scriptdir/split_gaussians.pl $n_split");
+
+# Launch_BW exits
+	$iter = 0;
+        &Launch_BW();
+    } else {
+        return;
+    }
+}
