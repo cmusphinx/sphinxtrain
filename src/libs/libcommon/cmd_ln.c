@@ -521,7 +521,7 @@ cmd_ln_parse(int argc, char *argv[])
     cmd_ln_print_cmd_ln(argc, argv);
 
     for (i = 1, err = 0; i < argc; i++) {
-	if (argv[i][0] != '-') {
+	if ((argv[i][0] != '-') || (argv[i+1] == NULL) || (argv[i+1][0] == '-')) {
 	    E_ERROR("Expecting '%s -switch_1 <arg_1> -switch_2 <arg_2> ...'\n",
 		    argv[0]);
 
@@ -609,9 +609,12 @@ const void *cmd_ln_access(char *switch_name)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/21  18:05:39  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.6  2004/08/31  22:52:01  egouvea
+ * Fixing verification of correct format in cmd line arguments
  * 
+ * Revision 1.5  2004/07/21 18:05:39  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.4  2003/11/18 21:07:25  egouvea
  * Got rid of warning casting the argument to "isspace".
  *
