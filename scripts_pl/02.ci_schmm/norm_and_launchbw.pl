@@ -150,18 +150,11 @@ if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
     exit (0);
 }
 else {
-system ("echo \"The likelihoods have converged. Baum Welch training completed\!\
-" >> $log");
-system ("echo \"*********************************TRAINING COMPLETE**************
-*************\" >> $log");
-`date >> $log`;
     system("echo \"Likelihoods have converged! Baum Welch training completed\!\" >> $log");
     system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
     system("date >> $log");
     exit (0);
 }
-
-exit (0);
 
 
 sub Launch_BW () {
