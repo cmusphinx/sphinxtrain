@@ -53,6 +53,7 @@
  * 	$Author$
  *********************************************************************/
 
+#include <stdlib.h>
 #include <s3/cmd_ln.h>
 
 #include "parse_cmd_ln.h"
@@ -113,9 +114,12 @@ int32 parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2001/01/03  23:36:07  awb
+ * Revision 1.2  2001/03/01  00:47:44  awb
  * *** empty log message ***
  * 
+ * Revision 1.1  2001/01/03 23:36:07  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/11/22 21:23:18  awb
  * *** empty log message ***
  *

@@ -74,13 +74,6 @@
 
 #define NO_STATE	0xffffffff
 
-static char *ord_suff(uint32 i)
-{
-    return (i == 1 ? "st" :
-	    (i == 2 ? "nd" :
-	     (i == 3 ? "rd" : "th")));
-}
-
 int
 main(int argc, char *argv[])
 {

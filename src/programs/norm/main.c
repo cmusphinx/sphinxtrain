@@ -116,38 +116,6 @@ initialize(int argc,
     return S3_SUCCESS;
 }
 
-static void
-free_tmat_accum(float32 ***tmat_acc)
-{
-    ckd_free_3d((void ***)tmat_acc);
-}
-
-static void
-free_mixw_accum(float32 ***mixw_acc)
-{
-    ckd_free_3d((void ***)mixw_acc);
-}
-
-static void
-free_mean_accum(vector_t ***mean)
-{
-    ckd_free((void *)mean[0][0][0]);
-    ckd_free_3d((void ***)mean);
-}
-
-static void
-free_var_accum(vector_t ***var)
-{
-    ckd_free((void *)var[0][0][0]);
-    ckd_free_3d((void ***)var);		
-}
-
-static void
-free_dnom_accum(float32 ***dnom)
-{
-    ckd_free_3d((void ***)dnom);
-}
-
 static int
 ck_readable(const char *fn)
 {
@@ -875,9 +843,12 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:14  awb
+ * Revision 1.3  2001/03/01  00:47:44  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:14  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *

@@ -107,7 +107,7 @@ static void output_mapfile(model_def_t *mdef,FILE *mapfd)
     acmod_t *multi;
     int max_state_num, prev_max_state;
 
-    max_state_num = 0;
+    prev_max_state = max_state_num = 0;
 
     for (i=0; i < mdef->acmod_set->n_ci; i++)
     {

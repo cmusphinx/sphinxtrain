@@ -119,16 +119,17 @@ void make_triphone (char *in_ctl_file)
     len = strlen (sent_name);
     if (sent_name[len - 1] == 'b' && sent_name[len - 2] == '-')
       sent_name[len - 2] = '\0';
-for (tt=0; tt < Num_Sent_Dir; tt++)
-{
-    sprintf(sent_file, "%s/%s.sent", Sent_Dir[tt], sent_name);
-    if ((sent_fp = fopen(sent_file, "r")) != NULL) break;
-}
-if (tt >= Num_Sent_Dir)
-{
-      printf("read_sent(): cannot open %s\n", sent_file);
+    sent_fp = 0;
+    for (tt=0; tt < Num_Sent_Dir; tt++)
+    {
+	sprintf(sent_file, "%s/%s.sent", Sent_Dir[tt], sent_name);
+	if ((sent_fp = fopen(sent_file, "r")) != NULL) break;
+    }
+    if (tt >= Num_Sent_Dir)
+    {
+	printf("read_sent(): cannot open %s\n", sent_file);
 	continue;
-}
+    }
 
     wd[0] = Sil_Word; 
     for (i = 1; fscanf (sent_fp, "%s", thisw) != EOF; i++)
@@ -350,16 +351,17 @@ void find_example (char *in_ctl_file)
     len = strlen (sent_name);
     if (sent_name[len - 1] == 'b' && sent_name[len - 2] == '-')
       sent_name[len - 2] = '\0';
-for (tt=0; tt < Num_Sent_Dir; tt++)
-{
-    sprintf(sent_file, "%s/%s.sent", Sent_Dir[tt], sent_name);
-    if ((sent_fp = fopen(sent_file, "r")) != NULL) break;
-}
-if (tt >= Num_Sent_Dir)
-{
-      printf("read_sent(): cannot open %s\n", sent_file);
+    sent_fp = 0;
+    for (tt=0; tt < Num_Sent_Dir; tt++)
+    {
+	sprintf(sent_file, "%s/%s.sent", Sent_Dir[tt], sent_name);
+	if ((sent_fp = fopen(sent_file, "r")) != NULL) break;
+    }
+    if (tt >= Num_Sent_Dir)
+    {
+	printf("read_sent(): cannot open %s\n", sent_file);
 	continue;
-}
+    }
 
     wd[0] = Sil_Word; 
     for (i = 1; fscanf (sent_fp, "%s", thisw) != EOF; i++)

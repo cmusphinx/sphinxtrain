@@ -66,27 +66,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-static int
-validate_read_file(char *switch_name, void *arg)
-{
-    char *fn = arg;
-    FILE *fp;
-
-    fp = fopen(fn, "r");
-    if (fp != NULL) {
-	fclose(fp);
-	return TRUE;
-    }
-    else
-	return FALSE;
-}
-
-static int
-validate_optional_read_file(char *switch_name, void *arg)
-{
-    if (arg) return validate_read_file(switch_name, arg);
-    else return TRUE;
-}
 
 /* defines, parses and (partially) validates the arguments
    given on the command line */
@@ -189,9 +168,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:14  awb
+ * Revision 1.3  2001/03/01  00:47:44  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:14  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *

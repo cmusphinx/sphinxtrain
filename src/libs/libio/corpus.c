@@ -109,27 +109,6 @@ read_sildel(uint32 **del_sf,
 	    uint32 **del_ef,
 	    uint32 *n_del);
 
-static void
-corpus_requires_mfcc(int32 bool);
-
-static void
-corpus_requires_sent(int32 bool);
-
-static void
-corpus_requires_seg(int32 bool);
-
-static void
-corpus_requires_ccode(int32 bool);
-
-static void
-corpus_requires_dcode(int32 bool);
-
-static void
-corpus_requires_pcode(int32 bool);
-
-static void
-corpus_requires_ddcode(int32 bool);
-
 static char *
 mk_filename(uint32 type, char *rel_path);
 
@@ -293,22 +272,10 @@ fgets_wo_nl(char *str,
     return out;
 }
 
-static void
-corpus_requires_mfcc(int32 bool)
-{
-    requires_mfcc = bool;
-}
-
 int32
 corpus_provides_mfcc()
 {
     return requires_mfcc;
-}
-
-static void
-corpus_requires_sent(int32 bool)
-{
-    requires_sent = bool;
 }
 
 int32
@@ -317,22 +284,10 @@ corpus_provides_sent()
     return requires_sent;
 }
 
-static void
-corpus_requires_seg(int32 bool)
-{
-    requires_seg = bool;
-}
-
 int32
 corpus_provides_seg()
 {
     return requires_seg;
-}
-
-static void
-corpus_requires_ccode(int32 bool)
-{
-    requires_ccode = bool;
 }
 
 int32
@@ -341,34 +296,16 @@ corpus_provides_ccode()
     return requires_ccode;
 }
 
-static void
-corpus_requires_dcode(int32 bool)
-{
-    requires_dcode = bool;
-}
-
 int32
 corpus_provides_dcode()
 {
     return requires_dcode;
 }
 
-static void
-corpus_requires_pcode(int32 bool)
-{
-    requires_pcode = bool;
-}
-
 int32
 corpus_provides_pcode()
 {
     return requires_pcode;
-}
-
-static void
-corpus_requires_ddcode(int32 bool)
-{
-    requires_ddcode = bool;
 }
 
 int32
@@ -2034,9 +1971,12 @@ read_sildel(uint32 **out_sf,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:13  awb
+ * Revision 1.3  2001/03/01  00:47:44  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:13  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *

@@ -269,6 +269,7 @@ put_sdm(float32 **tmat, const char *in_dir_name, const char *ci_name)
     return S3_SUCCESS;
 }
 
+#if 0
 static void
 print_tmat(FILE *fp, float32 **tmat, int n_state)
 {
@@ -281,6 +282,7 @@ print_tmat(FILE *fp, float32 **tmat, int n_state)
     }
 
 }
+#endif
 
 int
 s2_write_dhmm(float32 ***tmat,
@@ -371,9 +373,12 @@ s2_write_hmm(float32 ***tmat,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:13  awb
+ * Revision 1.3  2001/03/01  00:47:44  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:13  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *

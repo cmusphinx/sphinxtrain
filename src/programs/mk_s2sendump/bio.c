@@ -56,7 +56,7 @@
  * 		Created.
  */
 
-
+#include <string.h>
 #include <s3/common.h>
 
 #include <s3/model_inventory.h>
