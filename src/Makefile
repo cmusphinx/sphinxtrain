@@ -47,8 +47,8 @@
 # ====================================================================
 TOP=..
 DIRNAME=src
-BUILD_DIRS = 
-ALL_DIRS=
+BUILD_DIRS = libs programs
+ALL_DIRS=$(BUILD_DIRS)
 FILES = Makefile
 
 ALL = 

@@ -47,14 +47,17 @@
 # ====================================================================
 TOP=.
 DIRNAME=.
-BUILD_DIRS = bin scripts_pl src doc
-ALL_DIRS=config $(BUILD_DIRS)
+BUILD_DIRS = bin scripts_pl src doc include
+ALL_DIRS=config lib $(BUILD_DIRS)
 FILES = Makefile README COPYING
 
-ALL = $(BUILD_DIRS)
+ALL = 
 
 # Try and see if config hasn't been created
-config_dummy := $(shell test -f config/config || { echo '*** '; echo '*** Making default config file ***'; echo '*** '; cat config/config-dist >config/config }  >&2)
+config_dummy := $(shell test -f config/config || ( echo '*** '; echo '*** Making default config file ***'; echo '*** '; cat config/config-dist >config/config )  >&2)
+
+# force a check on the system file
+system_dummy := $(shell test -f config/system.mak || config/system.sh >config/system.mak)
 
 include $(TOP)/config/common_make_rules
 

@@ -1,0 +1,21 @@
+PROGRAMS
+--------
+
+bw         : Baum-Welch reestimation 
+norm       : Accumulate reestimation sums and normalize mixtures
+interp     : Semi-continuous model smoothing
+mk_flat	   : Generate initial estimates for mixing weights and transition probs
+init_gau   : Initialize single Gaussian models from seg files, 
+             word transcripts and dictionary.
+inc_comp   : Increment the number of densities per mixture by some N.
+  	     N is less than or equal to the existing number of densities
+init_mixw  : Initialize a destination set of mixing weights from a source set
+mk_state_param_def : Generate mixture density tying definition
+bldtree    : Build decision trees
+prunetree  : Prune decision trees
+tiestate   : Tie states using pruned decision trees
+
+USEFUL TOOLS
+-------------
+printp    : Print the model parameter file
+

@@ -46,41 +46,85 @@
 #                                                                       
 ########################################################################
 
+# System type
+include $(TOP)/config/system.mak
+
+ifeq ($(SYSTEM_LOADED),)
+	MACHINETYPE=unknown
+	OSTYPE=unknown
+	OSREV=
+endif
+
 #  Include project specific rules
 -include $(TOP)/config/project.mak
+
 
 ## User defined configuration options
 include $(TOP)/config/config
 
-CFLAGS += -Wall $(LOCAL_INCLUDES)
-LDFLAGS += 
-
+## potentially system dependent
+CC=gcc
+AR=ar
+RANLIB=ranlib
 RM = '/bin/rm'
+EXTRA_CC_FLAGS= -Wall
+OPT= -O4
+DBG=
+
+BINDIR=$(shell test -d $(TOP)/bin.$(PLATFORM) || mkdir $(TOP)/bin.$(PLATFORM); echo $(TOP)/bin.$(PLATFORM))
+LIBDIR=$(shell test -d $(TOP)/lib.$(PLATFORM) || mkdir $(TOP)/lib.$(PLATFORM); echo $(TOP)/lib.$(PLATFORM))
+ifdef SRCS
+OBJDIR=$(shell test -d obj.$(PLATFORM) || mkdir obj.$(PLATFORM); echo obj.$(PLATFORM))
+OBJS=$(shell echo $(SRCS:.c=.o) | awk '{for (i=1; i<=NF; i++) printf("'$(OBJDIR)'/%s\n",$$i)}')
+endif
+
+INCLUDES = -I$(TOP)/include
+CFLAGS += $(EXTRA_CC_FLAGS) $(OPT) $(DBG) $(LOCAL_INCLUDES) $(INCLUDES)
+LDFLAGS += -L$(LIBDIR)
+STLIBS = -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc
+LIBS = $(STLIBS) -lm
+
+$(OBJDIR)/%.o : %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 all: .make_build_dirs $(ALL) nothing
 
 nothing:
 	@ echo > /dev/null
 
-.build_lib: $(OBJS)
-	$(AR) cruv $(TOP)/lib/lib$(LIBNAME).a $(OBJS)
-	$(RANLIB) $(TOP)/lib/lib$(LIBNAME).a
-	touch .build_lib
+system.mak : config
+	@echo Check system type >&2
+	@/bin/sh  $(TOP)/config/system.sh > system.mak
 
 .make_build_dirs:
 	@ echo making in $(DIRNAME) ...
+ifneq (,$(BUILD_DIRS))
 	@ for i in $(BUILD_DIRS) ; \
 	do \
-	   $(MAKE) -C $$i --no-print-directory; \
-	done ; \
+	   $(MAKE) --no-print-directory -C $$i || exit ; \
+	done
+endif
+
+
+# Library build rules
+.build_lib: $(OBJS) 
+	$(AR) cruv $(LIBDIR)/lib$(LIBNAME).a $(OBJS)
+	$(RANLIB) $(LIBDIR)/lib$(LIBNAME).a
+	touch .build_lib
+
+# Program build rules
+$(BINDIR)/$(TARGET): $(OBJS) $(DEP_LIBS)
+	$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
 
 clean:
 	@ echo make clean in $(DIRNAME) ...
-	@rm -f *.o *.a *~ $(LOCAL_CLEAN)
+	@rm -f *.o *.a *~ $(OBJDIR)/*.o $(LOCAL_CLEAN)
+ifneq (,$(ALL_DIRS))
 	@ for i in $(ALL_DIRS) ; \
 	do \
 	   $(MAKE) -C $$i --no-print-directory clean; \
-	done ; \
+	done
+endif
 
 #######################################################################
 ###   Making dependencies
@@ -88,7 +132,7 @@ clean:
 
 ## This is a piece of rjc magic taken from "Milton"
 
-DEPEND=make.depend
+DEPEND=make.depend.$(PLATFORM)
 MAKE_DEPEND=$(CC) -MM $(CFLAGS)
 ALL_DEPEND = $(SRCS) $(H)
 
@@ -96,7 +140,7 @@ depend:
 	@ $(RM) -f $(DEPEND)
 	@ # a little hack to get it to remake make.depend
 	@ $(MAKE) nothing
-ifdef ALL_DIRS
+ifneq (,$(ALL_DIRS))
 	@ for i in $(ALL_DIRS) ; \
 	do \
 	   $(MAKE) --no-print-directory -C $$i depend ; \
@@ -145,10 +189,12 @@ file-list:
 	do \
 	   echo $(DIRNAME)/$$f >>$(TOP)/FileList ; \
 	done 
+ifneq (,$(ALL_DIRS))
 	@ for i in $(ALL_DIRS) ; \
 	do \
 	   $(MAKE) -C $$i --no-print-directory file-list; \
 	done
+endif
 
 info:
 	@echo Project Name = $(PROJECT_NAME)

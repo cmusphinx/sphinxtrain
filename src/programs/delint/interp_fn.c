@@ -1,0 +1,242 @@
+/*********************************************************************
+ *
+ * $Header$
+ *
+ * Carnegie Mellon ARPA Speech Group
+ *
+ * Copyright (c) 1995 Carnegie Mellon University.
+ * All rights reserved.
+ *
+ *********************************************************************
+ *
+ * File: interp_fn.c
+ * 
+ * Description: 
+ * 
+ * Author: 
+ * 	Eric H. Thayer (eht@cs.cmu.edu)
+ *********************************************************************/
+
+#include "interp_fn.h"
+
+#include <s3/matrix.h>
+#include <s3/ckd_alloc.h>
+#include <s3/s3.h>	/* define TYING_NO_ID */
+#include <s3/err.h>	/* define E_ERROR, E_INFO, etc */
+
+#include <assert.h>
+/*********************************************************************
+ *
+ * Function: 
+ * 
+ * Description: 
+ * 
+ * Traceability: 
+ * 
+ * Function Inputs: 
+ * 
+ * Global Inputs: 
+ * 
+ * Return Values: 
+ * 
+ * Global Outputs: 
+ * 
+ * Errors: 
+ * 
+ * Pre-Conditions: 
+ * 
+ * Post-Conditions: 
+ * 
+ * Design: 
+ * 
+ * Notes: 
+ * 
+ *********************************************************************/
+
+void
+interp_counts_3d_uniform(float32 ***cnt_buf,	/* count of events in
+						   observation space (i, j) where
+						   START <= i < START+RUN_LENGTH,
+						   0 <= j < D2 */
+			 uint32 start,
+			 uint32 run_length,
+			 uint32 d2,	  /* some other # of classes */
+			 uint32 n_events, /* number of events in all observation
+						     spaces (i, j) */
+			 float32 cnt_lambda)	/* weight of event distributions (i, j)
+						   relative to uniform probability */
+{
+    float32 u_lambda = (1.0 - cnt_lambda);
+    float32 u_prob;
+    float64 wt_u_cnt;
+    uint32 i, j, k, end;
+
+    assert (n_events > 0);
+
+    u_prob = 1.0 / (float32) n_events;
+
+    end = start + run_length;
+
+    /*
+     * Interpolate counts between distribution arising from the
+     * counts and uniform distribution.
+     */
+    for (i = start; i < end; i++) {
+	for (j = 0; j < d2; j++) {
+
+	    /* compute the weighted uniform count for (d1, d2) */
+	    for (k = 0, wt_u_cnt = 0; k < n_events; k++) {
+		wt_u_cnt += cnt_buf[i][j][k];
+	    }
+
+	    wt_u_cnt *= (u_prob * u_lambda);
+
+	    /* interpolate all events in (d1, d2) */
+	    for (k = 0; k < n_events; k++) {
+		cnt_buf[i][j][k] = cnt_buf[i][j][k] * cnt_lambda + wt_u_cnt;
+	    }
+	}
+    }
+}
+
+/*
+ * SPHINX-II doesn't automatically compute context independent
+ * smoothing weights.  We probably should, but wanted to get comparable
+ * system going first.
+ */
+void
+interp_mixw(float32 ****out_mixw,
+	    
+	    float32 ***mixw_acc_a,
+	    float32 ***mixw_acc_b,
+	    float64 *dnom,
+
+	    float32 **lambda,
+	    float32 cilambda,
+
+	    uint32 **ci_mixw,
+	    uint32 **n_tied,
+
+	    uint32 n_cd_state,
+	    uint32 n_ci_state,
+
+	    uint32 n_mixw,
+	    uint32 n_feat,
+	    uint32 n_gau)
+{
+    uint32 i, cd_i, ci_i, j, k, l;
+    float32 uniform;
+    float64 tt_uni, tt_ci, tt_cd;
+    uint32 total_n_tied;
+
+    E_INFO("Interpolating CD states\n");
+
+    uniform = 1.0 / (float32)n_gau;
+
+    /* add b buf to a */
+    accum_3d(mixw_acc_a, mixw_acc_b,
+	     n_mixw, n_feat, n_gau);
+    
+    for (i = 0; i < n_cd_state; i++) {
+
+	cd_i = i + n_ci_state;
+
+	if (n_tied[i][0] != TYING_NO_ID) {
+	    /* n_tied[][] counts the number of times the CD distribution occurs with
+	       the corresponding CI distribution (in ci_mixw[][]). */
+	    for (j = 0, total_n_tied = 0; n_tied[i][j] != TYING_NO_ID; j++) {
+		assert(n_tied[i][j] > 0);
+		total_n_tied += n_tied[i][j];
+
+		ci_i = ci_mixw[i][j];
+		assert(ci_i != TYING_NO_ID);
+
+		for (k = 0; k < n_feat; k++) {
+		    for (l = 0; l < n_gau; l++) {
+			if (mixw_acc_a[cd_i][k][l] > MIN_IEEE_NORM_POS_FLOAT32)
+			    tt_cd = lambda[i][DIST_CD] * mixw_acc_a[cd_i][k][l] * dnom[cd_i];
+			else
+			    tt_cd = 0;
+		    
+			if (mixw_acc_a[ci_i][k][l] > MIN_IEEE_NORM_POS_FLOAT32)
+			    tt_ci = lambda[i][DIST_CI] * mixw_acc_a[ci_i][k][l] * dnom[ci_i];
+			else
+			    tt_ci = 0;
+			
+			tt_uni = lambda[i][DIST_UNIFORM] * uniform;
+			
+			if ( j == 0 )
+			    mixw_acc_b[cd_i][k][l]  = n_tied[i][j] * (tt_cd + tt_ci + tt_uni);
+			else
+			    mixw_acc_b[cd_i][k][l] += n_tied[i][j] * (tt_cd + tt_ci + tt_uni);
+		    }
+		}
+	    }
+	}
+	else {
+	    /* for unobserved tied states, make flat */
+	    float32 uni = 1.0 / (float)n_gau;
+
+	    for (k = 0; k < n_feat; k++)
+		for (l = 0; l < n_gau; l++)
+		    mixw_acc_b[cd_i][k][l] = uni;
+
+	    total_n_tied = 1;
+	}
+
+
+	/* avg the probs */
+	for (k = 0; k < n_feat; k++)
+	    for (l = 0; l < n_gau; l++)
+		mixw_acc_b[cd_i][k][l] /= (float32)total_n_tied;
+
+    }
+
+    /* interpolate CI distributions with uniform distribution */
+    interp_counts_3d_uniform(mixw_acc_a,
+			     0,			/* start state */
+			     n_ci_state,	/* run length */
+			     n_feat, n_gau,
+			     cilambda);
+
+    /* move CI ones to the B buffer, since A will be freed */
+    for (i = 0; i < n_ci_state; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    for (k = 0; k < n_gau; k++) {
+		mixw_acc_b[i][j][k] = mixw_acc_a[i][j][k];
+	    }
+	}
+    }
+
+    *out_mixw = mixw_acc_b;
+    
+    ckd_free_3d((void ***)mixw_acc_a);
+}
+
+/*
+ * Log record.  Maintained by RCS.
+ *
+ * $Log$
+ * Revision 1.1  2000/09/24  21:38:31  awb
+ * *** empty log message ***
+ * 
+ * Revision 1.6  97/07/16  11:36:22  eht
+ * *** empty log message ***
+ * 
+ * Revision 1.5  1995/10/10  12:53:35  eht
+ * Changed to use <s3/prim_type.h>
+ *
+ * Revision 1.4  1995/10/05  12:55:06  eht
+ * Deal w/ untrained tied states and change in acmod_set interface
+ *
+ * Revision 1.3  1995/08/15  13:38:38  eht
+ * weight interpolated probabilities as sphinx-ii does
+ *
+ * Revision 1.2  1995/08/10  20:29:40  eht
+ * Yet another development version
+ *
+ * Revision 1.1  1995/08/09  00:38:05  eht
+ * Initial revision
+ *
+ *
+ */
