@@ -89,6 +89,11 @@
 
 static int32 fe_usage(char **argv);
 
+static void fe_arg_missing(char **argv, char *arg_missing) {
+  fprintf(stderr,"\n*** Argument missing: %s <required argument> ***\n\n", arg_missing);
+  fe_usage(argv);
+}
+
 int32 main(int32 argc, char **argv)
 {
     param_t *P;
@@ -314,27 +319,48 @@ param_t *fe_parse_options(int32 argc, char **argv)
     for (i = 1; i < argc; ++i)
     {
 	if (!strcmp("-i",argv[i])){
-            P->wavfile = argv[++i]; 
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-i");
+	    }
+            P->wavfile = argv[i]; 
 	    P->is_single = ON;
 	}
 	else if (!strcmp("-o",argv[i])){
-            P->cepfile = argv[++i];
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-o");
+	    }
+            P->cepfile = argv[i];
 	}
 	else if (!strcmp("-c",argv[i])){
-            P->ctlfile = argv[++i];
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-c");
+	    }
+            P->ctlfile = argv[i];
 	    P->is_batch = ON;
 	}
 	else if (!strcmp("-di",argv[i])){
-            P->wavdir = argv[++i];
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-di");
+	    }
+            P->wavdir = argv[i];
 	}
 	else if (!strcmp("-do",argv[i])){
-	    P->cepdir = argv[++i];
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-do");
+	    }
+	    P->cepdir = argv[i];
 	}
 	else if (!strcmp("-ei",argv[i])){
-	    P->wavext = argv[++i];
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-ei");
+	    }
+	    P->wavext = argv[i];
 	}
         else if (!strcmp("-eo",argv[i])){
-	    P->cepext = argv[++i];
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-eo");
+	    }
+	    P->cepext = argv[i];
 	}
 	/*
 	else if (!strcmp("-wav",argv[i])){
@@ -351,59 +377,102 @@ param_t *fe_parse_options(int32 argc, char **argv)
 	    P->input_format = RAW;
 	}
 	else if (!strcmp("-nchans",argv[i])){
-	    P->nchans = atoi(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-nchans");
+	    }
+	    P->nchans = atoi(argv[i]);
 	}
 	else if (!strcmp("-whichchan",argv[i])){
-	    P->whichchan = atoi(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-whichchan");
+	    }
+	    P->whichchan = atoi(argv[i]);
 	}
 	else if (!strcmp("-alpha",argv[i])){
-	    P->PRE_EMPHASIS_ALPHA = atof(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-alpha");
+	    }
+	    P->PRE_EMPHASIS_ALPHA = atof(argv[i]);
 	}
 	else if (!strcmp("-srate",argv[i])){
-	    P->SAMPLING_RATE = atof(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-srate");
+	    }
+	    P->SAMPLING_RATE = atof(argv[i]);
 	}	
 	else if (!strcmp("-wlen",argv[i])){
-	    P->WINDOW_LENGTH = atof(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-wlen");
+	    }
+	    P->WINDOW_LENGTH = atof(argv[i]);
 	}
 	else if (!strcmp("-frate",argv[i])){
-	    P->FRAME_RATE = atof(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-frate");
+	    }
+	    P->FRAME_RATE = atof(argv[i]);
 	}
 	else if (!strcmp("-feat",argv[i])){
-	    if (!strcmp("sphinx",argv[++i])){
+  	    if (++i == argc) {
+	      fe_arg_missing(argv, "-feat");
+	    }
+	    if (!strcmp("sphinx",argv[i])){
 		P->FB_TYPE = MEL_SCALE;
 		P->output_endian = BIG;
 	    }
 	    else{
-		fprintf(stderr,"MEL_SCALE IS CURRENTLY THE ONLY IMPLEMENTATION\n");
-		exit(0);
+		fprintf(stderr,"MEL_SCALE IS CURRENTLY THE ONLY IMPLEMENTATION\n\n");
+		fprintf(stderr,"Make sure you specify '-feat sphinx'\n");
+		fe_arg_missing(argv, "-feat");
 	    }	
 	}		    
 	else if (!strcmp("-nfilt",argv[i])){
-	    P->NUM_FILTERS = atoi(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-nfilt");
+	    }
+	    P->NUM_FILTERS = atoi(argv[i]);
 	}
         else if (!strcmp("-ncep",argv[i])){
-	    P->NUM_CEPSTRA = atoi(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-ncep");
+	    }
+	    P->NUM_CEPSTRA = atoi(argv[i]);
 	}
         else if (!strcmp("-lowerf",argv[i])){
-	    P->LOWER_FILT_FREQ = atof(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-lowerf");
+	    }
+	    P->LOWER_FILT_FREQ = atof(argv[i]);
 	}
         else if (!strcmp("-upperf",argv[i])){
-	    P->UPPER_FILT_FREQ = atof(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-upperf");
+	    }
+	    P->UPPER_FILT_FREQ = atof(argv[i]);
 	}
 	else if (!strcmp("-nfft",argv[i])){
-	    P->FFT_SIZE = atoi(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-nfft");
+	    }
+	    P->FFT_SIZE = atoi(argv[i]);
 	}
 	else if (!strcmp("-doublebw",argv[i])){
 	    P->doublebw = ON;
 	}
 	else if (!strcmp("-blocksize",argv[i])){
-	    P->blocksize = atoi(argv[++i]);
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-blocksize");
+	    }
+	    P->blocksize = atoi(argv[i]);
 	}
 	else if (!strcmp("-verbose",argv[i])){
 	    P->verbose = ON;
 	}
 	else if (!strcmp("-mach_endian",argv[i])){
-	    if (!strcmp("big",argv[++i]))
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-mach_endian");
+	    }
+	    if (!strcmp("big",argv[i]))
 		P->machine_endian = BIG;
 	    else if (!strcmp("little",argv[i]))
 		P->machine_endian = LITTLE;
@@ -413,7 +482,10 @@ param_t *fe_parse_options(int32 argc, char **argv)
 	    }	
 	}
 	else if (!strcmp("-input_endian",argv[i])){
-	    if (!strcmp("big",argv[++i]))
+	    if (++i == argc) {
+	      fe_arg_missing(argv, "-input_endian");
+	    }
+	    if (!strcmp("big",argv[i]))
 		P->input_endian = BIG;
 	    else if (!strcmp("little",argv[i]))
 		P->input_endian = LITTLE;

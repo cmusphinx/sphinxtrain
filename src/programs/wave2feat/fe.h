@@ -91,6 +91,7 @@ typedef struct{
     float32 **mel_cosine;
     float32 *left_apex;
     int32 *width;
+    int32 doublewide;
 }melfb_t;
 
 
@@ -117,6 +118,9 @@ typedef struct{
 
 #define MEL_SCALE 1
 #define LOG_LINEAR 2
+
+#define ON 1
+#define OFF 0
 
 /* Default values */
 #define DEFAULT_SAMPLING_RATE 16000.0
