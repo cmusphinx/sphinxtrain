@@ -121,7 +121,7 @@ $ctl_counter = int ($ctl_counter / $npart) if $npart;
 $ctl_counter = 1 unless ($ctl_counter);
 
 copy "$CFG_GIF_DIR/green-ball.gif", "$CFG_BASE_DIR/.02.bw.$iter.$part.state.gif";
-&ST_HTML_Print ("\t<img src=$CFG_BASE_DIR/.02.bw.$iter.$part.state.gif> ");        
+&ST_HTML_Print ("\t" . &ST_ImgSrc("$CFG_BASE_DIR/.02.bw.$iter.$part.state.gif") . " ");        
 &ST_Log ("    Baum welch starting for iteration: $iter ($part of $npart) ");
 &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . "\n");
 
