@@ -95,6 +95,7 @@ fe_t *fe_init(param_t const *P)
     /* We add 0.5 so approximate the float with the closest
      * integer. E.g., 2.3 is truncate to 2, whereas 3.7 becomes 4
      */
+
     FE->FRAME_SHIFT        = (int32)(FE->SAMPLING_RATE/FE->FRAME_RATE + 0.5);/* why 0.5? */
     FE->FRAME_SIZE         = (int32)(FE->WINDOW_LENGTH*FE->SAMPLING_RATE + 0.5); /* why 0.5? */
     FE->PRIOR              = 0;
@@ -152,6 +153,60 @@ int32 fe_start_utt(fe_t *FE)
     return 0;
 }
 
+/*********************************************************************
+   FUNCTION: fe_process_frame
+   PARAMETERS: fe_t *FE, int16 *spch, int32 nsamps, float32 **cep
+   RETURNS: number of frames of cepstra computed 
+   DESCRIPTION: processes the given speech data and returns
+   features. Modified to process one frame of speech only. 
+**********************************************************************/
+int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps, float32 *fr_cep)
+{
+    int32 i, spbuf_len;
+    float64 *spbuf, *fr_data, *fr_fea;
+   
+    spbuf_len = FE->FRAME_SIZE;    
+
+    /* assert(spbuf_len <= nsamps);*/
+    if ((spbuf=(float64 *)calloc(spbuf_len, sizeof(float64)))==NULL){
+      fprintf(stderr,"memory alloc failed in fe_process_utt()\n...exiting\n");
+      exit(0);
+    }
+    
+    /* pre-emphasis if needed,convert from int16 to float64 */
+    if (FE->PRE_EMPHASIS_ALPHA != 0.0){
+      fe_pre_emphasis(spch, spbuf, spbuf_len, FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
+      FE->PRIOR = spch[FE->FRAME_SHIFT - 1];	// Z.A.B for frame by frame analysis  
+      } else{
+	fe_short_to_double(spch, spbuf, spbuf_len);
+      }
+    
+    
+    /* frame based processing - let's make some cepstra... */    
+    fr_fea = (float64 *)calloc(FE->NUM_CEPSTRA, sizeof(float64));
+      
+    fr_data = spbuf;
+    
+    if (fr_data==NULL || fr_fea==NULL){
+      fprintf(stderr,"memory alloc failed in fe_process_utt()\n...exiting\n");
+      exit(0);
+    }
+    
+    fe_hamming_window(fr_data, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
+    
+    fe_frame_to_fea(FE, fr_data, fr_fea);
+    
+    for (i=0;i<FE->NUM_CEPSTRA;i++)
+      fr_cep[i] = (float32)fr_fea[i];
+
+    /* done making cepstra */
+      
+    free(spbuf);
+    free(fr_fea);
+    
+    return 1;
+}
+
 
 /*********************************************************************
    FUNCTION: fe_process_utt
@@ -161,7 +216,7 @@ int32 fe_start_utt(fe_t *FE)
    features. will prepend overflow data from last call and store new
    overflow data within the FE
 **********************************************************************/
-int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)/* RAH, upgraded cep_block to float32 */
 {
     int32 frame_start, frame_count=0, whichframe=0;
     int32 i, spbuf_len, offset=0;  
@@ -351,6 +406,7 @@ int32 fe_close(fe_t *FE)
   }
     
   free(FE->OVERFLOW_SAMPS);
+  free(FE->HAMMING_WINDOW);
   free(FE);
   return(0);
 }

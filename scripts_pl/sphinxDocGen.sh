@@ -6,7 +6,7 @@ for i in  agg_seg bldtree bw cp_parm delint dict2tri inc_comp \
 	  mk_flat mk_mdef_gen mk_mllr_class mk_model_def \
 	  mk_s2cb mk_s2hmm mk_s2phone mk_s2phonemap mk_s2sendump \
 	  mk_s3gau mk_s3mixw mk_ts2cb mllr_solve mllr_transform \
-	  norm param_cnt printp prunetree tiestate
+	  norm param_cnt printp prunetree tiestate wave2feat
 do 
 echo $i
 ./bin.i686-pc-cygwin/$i > tmp 2>&1 
