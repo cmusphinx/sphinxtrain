@@ -455,7 +455,7 @@ print()
 	ret_val = S3_ERROR;
     }
     
-    if(fn==NULL){
+    if(ret_val != S3_SUCCESS){
       E_FATAL("Please specify input by either -tmatfn, -mixwfn, -gaufn, -gaucntfn, -regmatcntfn or -lambdafn\n");
     }
     return ret_val;
@@ -479,9 +479,12 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/08/07  21:24:24  arthchan2003
- * add help and example to printp
+ * Revision 1.6  2004/09/27  22:48:01  egouvea
+ * Fixed the failure condition check
  * 
+ * Revision 1.5  2004/08/07 21:24:24  arthchan2003
+ * add help and example to printp
+ *
  * Revision 1.4  2004/07/21 19:17:26  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *
