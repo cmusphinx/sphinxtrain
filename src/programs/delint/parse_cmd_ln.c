@@ -60,7 +60,61 @@
 int
 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
+    const char helpstr[] =  
+"Description: (copied from Rita's web page.) \n\
+\n\
+Deleted interpolation is the final step in creating semi-continuous \n\
+models. The output of deleted interpolation are semi-continuous models \n\
+in sphinx-3 format. These have to be further converted to sphinx-2 \n\
+format, if you want to use the SPHINX-II decoder. \n\
+\n\
+Deleted interpolation is an iterative process to interpolate between \n\
+CD and CI mixture-weights to reduce the effects of overfitting. The \n\
+data are divided into two sets, and the data from one set are used to \n\
+estimate the optimal interpolation factor between CI and CD models \n\
+trained from the other set. Then the two data sets are switched and \n\
+this procedure is repeated using the last estimated interpolation \n\
+factor as an initialization for the current step. The switching is \n\
+continued until the interpolation factor converges.\n\
+\n\
+To do this, we need *two* balanced data sets. Instead of the actual\n\
+data, however, we use the Bauim-Welch buffers, since the related math\n\
+is convenient. we therefore need an *even* number of buffers that can\n\
+be grouped into two sets. DI cannot be performed if you train using\n\
+only one buffer. At least in the final iteration of the training, you\n\
+must perform the training in (at least) two parts. You could also do\n\
+this serially as one final iteration of training AFTER BW has\n\
+converegd, on a non-lsf setup.\n\
+\n\
+Note here that the norm executable used at the end of every Baum-Welch \n\
+iteration also computes models from the buffers, but it does not\n\
+require an even number of buffers. BW returns numerator terms and\n\
+denominator terms for the final estimation, and norm performs the\n\
+actual division. The number of buffers is not important, but you would \n\
+need to run norm at the end of EVERY iteration of BW, even if you did\n\
+the training in only one part. When you have multiple parts norm sums\n\
+up the numerator terms from the various buffers, and the denominator\n\
+terms, and then does the division. ";
+
+    const char examplestr[]=
+"delint -accumdirs accumdir -moddeffn mdef -mixwfn mixw -cilambda 0.9 -feat  c/1..L-1/,d/1..L-1/,c/0/d/0/dd/0/,dd/1..L-1/ -ceplen 13 -maxiter 4000";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-moddeffn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -114,7 +168,25 @@ parse_cmd_ln(int argc, char *argv[])
 	exit(1);
     }
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
+
 
     return 0;
 }
@@ -124,9 +196,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/08/08  03:49:56  arthchan2003
+ * delint help and example string
  * 
+ * Revision 1.4  2004/07/21 18:30:34  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
