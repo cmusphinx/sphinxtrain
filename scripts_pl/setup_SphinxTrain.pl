@@ -154,7 +154,7 @@ foreach $directory (@dirlist) {
   foreach $executable (@subdirlist) {
     copy("$scriptdir/$directory/$executable", 
 	 "scripts_pl/$directory/$executable");
-    chmod 0755, scripts_pl/$directory/$executable;
+    chmod 0755, "scripts_pl/$directory/$executable";
   }
 }
 
