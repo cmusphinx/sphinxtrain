@@ -242,7 +242,108 @@ validate_silcomp(char *switch_name, void *arg)
 int
 train_cmd_ln_parse(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
+  const char helpstr[] =
+"Description:\n\
+Strictly speaking,  bw only implements the first-part of the Baum-Welch \n\
+algorithm.  That is it go through forward and backward algortihm and\n\
+collect the necessary statistics for parameter estimation.\n\
+\n\
+The advantage of this architecture is that researcher can easily write \n\
+programs to do parameter estimation and they have no need to tweak the \n\
+huge and usually difficult Baum-Welch algorithm. \n\
+\n\
+In terms of functionality, one important thing you need to know is option \n\
+-part and -npart.  They can allow you to split the training into N equal parts\n\
+Say, if there are M utterances in your control file, then this \n\
+will enable you to run the training separately on each (M/N)th \n\
+part. This flag may be set to specify which of these parts you want to \n\
+currently train on. As an example, if your total number of parts (-npart) is 3, \n\
+-part can take one of the values 1,2 or 3.  \n\
+\n\
+To control the speed of the training, -abeam (control alpha search) \n\
+and -bbeam (control beta search) can be used to control the searching \n\
+time.  Notice that if the beams are too small, the path may not reach \n\
+the end of the search and results in estimation error \n\
+Too many lost path may also cause training set likelihood not unable to increase \n\
+\n\
+Several options allow the user to control the behaviour of bw such \n\
+that silence or pauses can be taken care. For example. One could use \n\
+-sildelfn to specify periods of time which was assume to be silence. \n\
+One could also use -sildel and -siltag to specify a silence and allow \n\
+them to be optionall deleted. \n\
+\n\
+Finally, one can use the viterbi training mode of the code.  Notice \n\
+though, the code is not always tested by CMU's researcher \n\
+\n\
+I also included the following paragraph from Rita's web page. I largely adapted from  \n\
+here and I think it is a pretty good wrap-up of the convergence issues \n\
+\"bw is an iterative \n\
+re-estimation process, so you have to run many passes of the \n\
+Baum-Welch re-estimation over your training data. Each of these \n\
+passes, or iterations, results in a slightly better set of models for \n\
+the CI phones. However, since the objective function maximized in each \n\
+of theses passes is the likelihood, too many iterations would \n\
+ultimately result in models which fit very closely to the training \n\
+data. you might not want this to happen for many reasons. Typically, \n\
+5-8 iterations of Baum-Welch are sufficient for getting good estimates \n\
+of the CI models. You can automatically determine the number of \n\
+iterations that you need by looking at the total likelihood of the \n\
+training data at the end of the first iteration and deciding on a \n\
+\"convergence ratio\" of likelihoods. This is simply the ratio of the \n\
+total likelihood in the current iteration to that of the previous \n\
+ iteration. As the models get more and more fitted to the training data \n\
+in each iteration, the training data likelihoods typically increase \n\
+monotonically. The convergence ratio is therefore a small positive \n\
+number. The convergence ratio becomes smaller and smaller as the \n\
+iterations progress, since each time the current models are a little \n\
+less different from the previous ones. Convergence ratios are data and \n\
+task specific, but typical values at which you may stop the Baum-Welch \n\
+iterations for your CI training may range from 0.1-0.001. When the \n\
+models are variance-normalized, the convergence ratios are much \n\
+smaller.\"";
+
+  const char examplestr[]=
+"Example: \n\
+Command used to train continuous HMM \n\
+(Beware, this only illustrates how to use this command, for detail on \n\
+how to tune it, please consult the manual. ) \n\
+bw \n\
+-moddeffn mdef -ts2cbfn .cont.\n\
+-mixwfn mixw -tmatfn tmatn -meanfn mean -varfn var\n\
+-dictfn dict -fdictfn fillerdict \n\
+-ctlfn control_files \n\
+-part 1 -npart 1 \n\
+-cepdir feature_dir -cepext mfc \n\
+-lsnfn transcription \n\
+-accumdir accumdir \n\
+-abeam 1e-200 -bbeam 1e-200 \n\
+-meanreest yes -varreest yes \n\
+-tmatreest yes -feat 1s_12c_12d_3p_12dd \n\
+-ceplen 13 \n\
+\n\
+If yo want to do parallel training for N machines. Run N trainers with \n\
+-part 1 -npart N \n\
+-part 2 -npart N \n\
+.\n\
+.\n\
+-part N -npart N ";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-moddeffn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -560,7 +661,24 @@ train_cmd_ln_parse(int argc, char *argv[])
 	E_FATAL("Unable to validate command line arguments\n");
     }
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
 
     return 0;
 }
@@ -570,9 +688,12 @@ train_cmd_ln_parse(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.8  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.9  2004/08/08  02:58:22  arthchan2003
+ * add help and example strings for bw
  * 
+ * Revision 1.8  2004/07/21 18:30:33  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.7  2004/07/17 08:00:23  arthchan2003
  * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  *
