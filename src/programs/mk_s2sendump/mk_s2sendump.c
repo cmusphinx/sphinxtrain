@@ -76,7 +76,11 @@
 #include "s3/hash.h"
 typedef hash_t hash_table_t;
 #include "s3types.h"
-#include "another_mdef.h"
+#include "another_s3types.h"
+#include "another_senone.h"
+#include "bio.h"
+#include "logs3.h"
+#include "feat.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -116,6 +120,23 @@ static char *fmtdesc[] = {
 #define SWAPL(x)
 #endif
 
+float64 vector_sum_norm (float32 *vec, int32 len)
+{
+    float64 sum, f;
+    int32 i;
+    
+    sum = 0.0;
+    for (i = 0; i < len; i++)
+	sum += vec[i];
+
+    if (sum != 0.0) {
+	f = 1.0 / sum;
+	for (i = 0; i < len; i++)
+	    vec[i] *= f;
+    }
+    
+    return sum;
+}
 
 static void fwrite_int32 (fp, val)
     FILE *fp;
@@ -125,7 +146,7 @@ static void fwrite_int32 (fp, val)
     fwrite (&val, sizeof(int), 1, fp);
 }
 
-static void senone_dump (const mdef_t *mdef, const senone_t *s, char *file)
+static void senone_dump (const model_def_t *mdef, const senone_t *s, char *file)
 {
     int32 i, j, k, c, m, f, n, p, sb, se;
     mixw_t *fw;
@@ -595,10 +616,9 @@ void senone_eval_all (senone_t *s, s3mgauid_t m, int32 f, int32 *dist, int32 n_d
 }
 #endif
 
-
 int main (int32 argc, char **argv)
 {
-    mdef_t *m;
+    model_def_t *m;
     float64 wtflr;
     char *mdeffile, *senfile, *mgaumap, *feattype, *outfile;
     senone_t *s;
@@ -615,7 +635,7 @@ int main (int32 argc, char **argv)
     logs3_init ((float64) 1.0001);
     feat_init (feattype);
 
-    m = mdef_init (mdeffile);
+    model_def_read(&m, mdeffile);
     s = senone_init (senfile, mgaumap, wtflr);
     if (m->n_sen != s->n_sen)
 	E_FATAL("#senones different in mdef(%d) and mixw(%d) files\n", m->n_sen, s->n_sen);
@@ -624,3 +644,4 @@ int main (int32 argc, char **argv)
 
     return 0;
 }
+

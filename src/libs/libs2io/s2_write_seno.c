@@ -247,14 +247,18 @@ s2_write_seno_3(float ***new_mixw,		/* the sphinx-3 mixture weights we are savin
 
     return new_mixw;
 }
+
 
 /*
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:13  awb
+ * Revision 1.3  2001/02/11  14:52:14  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:13  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *

@@ -63,13 +63,13 @@ endif
 include $(TOP)/config/config
 
 ## Compile-time directories 
-BINDIR=$(shell test -d $(TOP)/bin.$(PLATFORM) || mkdir $(TOP)/bin.$(PLATFORM); echo $(TOP)/bin.$(PLATFORM))
+BINDIR=$(shell test -d $(TOP)/bin.$(PLATFORM) || mkdir $(TOP)/bin.$(PLATFORM); echo $(TOP)/bin.$(PLATFORM);)
 SCRIPTDIR=$(BINDIR)
-LIBDIR=$(shell test -d $(TOP)/lib.$(PLATFORM) || mkdir $(TOP)/lib.$(PLATFORM); echo $(TOP)/lib.$(PLATFORM))
+LIBDIR=$(shell test -d $(TOP)/lib.$(PLATFORM) || mkdir $(TOP)/lib.$(PLATFORM); echo $(TOP)/lib.$(PLATFORM);)
 
 ifdef SRCS
-OBJDIR=$(shell test -d obj.$(PLATFORM) || mkdir obj.$(PLATFORM); echo obj.$(PLATFORM))
-OBJS=$(shell echo $(SRCS:.c=.o) | awk '{for (i=1; i<=NF; i++) printf("'$(OBJDIR)'/%s\n",$$i)}')
+OBJDIR=$(shell test -d obj.$(PLATFORM) || mkdir obj.$(PLATFORM); echo obj.$(PLATFORM);)
+OBJS=$(shell echo $(SRCS:.c=.o) | awk '{for (i=1; i<=NF; i++) printf("'$(OBJDIR)'/%s\n",$$i)}';)
 endif
 
 INCLUDES = -I$(TOP)/include
@@ -139,63 +139,28 @@ ifneq (,$(ALL_DIRS))
 	done
 endif
 
-#######################################################################
-###   Making dependencies
-#######################################################################
-
-## This is a piece of rjc magic taken from "Milton"
-
-DEPEND=make.depend.$(PLATFORM)
+DEPEND=make.depend
 MAKE_DEPEND=$(CC) -MM $(CFLAGS)
-ALL_DEPEND = $(SRCS) $(H)
 
 depend:
-	@ $(RM) -f $(DEPEND)
-	@ # a little hack to get it to remake make.depend
+	@ echo make depend in $(DIRNAME) ...
+	@ rm -f $(DEPEND)
 	@ $(MAKE) nothing
-ifneq (,$(ALL_DIRS))
+ifdef ALL_DIRS
 	@ for i in $(ALL_DIRS) ; \
 	do \
-	   $(MAKE) --no-print-directory -C $$i depend ; \
+	   $(MAKE) -C $$i --no-print-directory depend ; \
 	done
 endif
 
-$(DEPEND): $(ALL_DEPEND) 
-	@if [ ! -f $(DEPEND) ] ;\
-		then \
-		{ \
-		echo ' ######################################################################' ;\
-		echo ' # ' ;\
-		echo ' # 	Dependencies created for inclusion in $(SELF).' ;\
-		echo " #		`date`" ;\
-		echo ' # ' ;\
-		echo ' ######################################################################' ;\
-		echo '' ;\
-		} > $(DEPEND) ;\
-	fi
-	@chmod +w $(DEPEND)
-	@for i in  $? ;\
-		do \
-		case $$i in \
-		*.c )   base=`basename $$i .c`; \
-			{ \
-			awk 'BEGIN {s=0} \
-			     s==0 && $$1=="#" && $$2=="'$${base}'" {s=1;next} \
-			     s==0 {print; next} \
-			     s==1 && NF==0 {s=2; next} \
-			     s==2 && NF==0 {s=3; next} \
-			     s==3 {print}' \
-				$(DEPEND) ;\
-			echo "# $${base} `date`" ;\
-			echo ;\
-			$(MAKE_DEPEND) $(DEPEND_FLAGS) $$i ; \
-			echo ;\
-			} > "#xxxx" ;\
-			mv "#xxxx" $(DEPEND) ;;\
-		esac ;\
-	done
-	@chmod -w $(DEPEND)
-
+$(DEPEND): $(SRCS)
+	@ rm -f $(DEPEND)
+	@ for i in $(SRCS) ; \
+	  do \
+            echo "# $$i" ; \
+	    $(MAKE_DEPEND) $$i ; \
+	    echo ; \
+          done > $(DEPEND)
 file-list:
 	@ echo making file-list in $(DIRNAME) ...
 	@ for f in $(FILES) ; \
@@ -221,5 +186,5 @@ info:
 
 # If there are sources in this directory, load in the dependencies
 ifdef SRCS
-include $(DEPEND)
+-include $(DEPEND)
 endif

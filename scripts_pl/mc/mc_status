@@ -45,66 +45,30 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton
+## Author: Alan W Black (awb@cs.cmu.edu)
+##
+## A simple set of scripts for machine clutering, assumes [r|s]sh access
+## accross machines and that directory is accessible from remote machines
+## Note this isn't design for small jobs, its not going to be worth using
+## if the typical job time is less than a few minutes
+##
+## Get's information from etc/mc_config
+## Stores jobs infor in .mc/job_info/
+## Related scripts: mc_status, mc_run, mc_kill
 ##
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
+$mc_info_dir="mc";
+$mc_job_info_dir="$mc_info_dir/job_info";
+$mc_config="etc/mc_config";
 
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
+# With no args, displays cluster machines and there load average
 
-# this script runs deleted interpolation on a bunch of semi-cont
-# hmm buffers. You need 2 or more buffers to run this!!
+mkdir ($mc_info_dir) unless -d $mc_info_dir;
+mkdir ($mc_job_info_dir) unless -d $mc_job_info_dir;
 
-my $nsenones = "$CFG_N_TIED_STATES";
-
-my $INTERP = "$CFG_BIN_DIR/delint";
-my $cilambda = 0.9;
-
-# up to 99 buffers
-my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_"."$CFG_N_TIED_STATES";
-$bwaccumdir 	     = "";
-for (<${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*>) {
-    $bwaccumdir .= " $_";
-}
-
-my $hmm_dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_"."$CFG_N_TIED_STATES"."_delinterp";
-mkdir ($hmm_dir,0777) unless -d $hmm_dir;
-
-system("cp $cd_hmmdir/means $hmm_dir/means");
-system("cp $cd_hmmdir/variances $hmm_dir/variances");
-system("cp $cd_hmmdir/transition_matrices $hmm_dir/transition_matrices");
-my $mixwfn = "$hmm_dir/mixture_weights";
-
-my $moddeffn = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
-
-my $logdir = "$CFG_BASE_DIR/logdir/08.deleted_interpolation";
-mkdir ($logdir,0777) unless -d $logdir;
-my $logfile = "$logdir/$CFG_EXPTNAME.deletedintrep-${nsenones}.log";
-
-$| = 1; # Turn on autoflushing
-&ST_Log ("MODULE: 08 deleted interpolation\n");
-&ST_Log ("    Cleaning up directories: logs...\n");
-system ("rm  -rf $logdir/*");
-
-&ST_Log ("    doing interpolation...\n");
-open LOG,"> $logfile";
-
-if (open PIPE,"$INTERP -accumdirs $bwaccumdir -moddeffn $moddeffn -mixwfn $mixwfn -cilambda $cilambda -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH -maxiter 4000 2>&1 2>&1 |") {
-    while ($line = <PIPE>) {
-       print LOG $line;
-    }
-    close PIPE;
-    close LOG;
+open(CFGFD,"<".$mc_config);
+while (<>) {
+    # print machine, max load, job since when -w give command
 }
 
 exit 0;

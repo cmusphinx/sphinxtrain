@@ -42,38 +42,17 @@
 #
 # ====================================================================
 #
-#  Programs: mk_s2seno
-#
-#  Sucked in stuff from s3 so SphinxTrain can be standalone but 
-#  this make sthis function very bad as it has random stuff from 
-#  libraries that should be those libraries not here.
+#  A set of scripts for running jobs on a named set of machines
 #
 # ====================================================================
-TOP=../../..
-DIRNAME=src/programs/mk_s2sendump
+TOP=../..
+DIRNAME=scripts_pl/mc
 BUILD_DIRS = 
-ALL_DIRS= $(BUILD_DIRS)
-SRCS = \
-  mk_s2sendump.c \
-  parse_cmd_ln.c \
-  bio.c \
-  logs3.c \
-  feat.c
-H = \
-  parse_cmd_ln.h \
-  another_mdef.h \
-  another_s3types.h \
-  another_senone.h \
-  bio.h \
-  s3types.h \
-  logs3.h \
-  feat.h
+ALL_DIRS=
+SCRIPTS=mc_status mc_run mc_kill mc_check
+FILES = Makefile $(SCRIPTS)
 
-FILES = Makefile $(SRCS) $(H)
-
-TARGET = mk_s2sendump
-
-ALL = $(BINDIR)/$(TARGET)
+ALL = 
 
 include $(TOP)/config/common_make_rules
 
