@@ -101,7 +101,7 @@ int32 fe_convert_files(param_t *P)
     int16 *spdata=NULL;
     int32 splen,total_samps,frames_proc,nframes,nblocks,last_frame;
     int32 fp_in,fp_out, last_blocksize=0,curr_block,total_frames;
-    float32 **cep, **last_frame_cep;
+    float32 **cep = NULL, **last_frame_cep;
     
     if ((FE = fe_init(P))==NULL){
 	fprintf(stderr,"memory alloc failed in fe_convert_files()\n...exiting\n");
@@ -143,6 +143,7 @@ int32 fe_convert_files(param_t *P)
 		    frames_proc = fe_process_utt(FE,spdata,splen,&cep);
 		    if (frames_proc>0)
 			fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
+		    fe_free_2d((void **)cep);
 		    curr_block++;
 		    total_frames += frames_proc;
 		    if (spdata!=NULL) { 
@@ -167,7 +168,7 @@ int32 fe_convert_files(param_t *P)
 		frames_proc = fe_process_utt(FE,spdata,splen,&cep);
 		if (frames_proc>0)
 		    fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
-		
+		fe_free_2d((void **)cep);
 		curr_block++;
 		last_frame_cep = (float32 **)fe_create_2d(1,FE->NUM_CEPSTRA,sizeof(float32));
 		last_frame = fe_end_utt(FE, last_frame_cep[0]);
@@ -220,6 +221,7 @@ int32 fe_convert_files(param_t *P)
 		frames_proc = fe_process_utt(FE,spdata,splen,&cep);
 		if (frames_proc>0)
 		    fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
+		fe_free_2d((void **)cep);
 		curr_block++;
 		total_frames += frames_proc;
 		if (spdata!=NULL) { 
@@ -241,7 +243,8 @@ int32 fe_convert_files(param_t *P)
 	    frames_proc = fe_process_utt(FE,spdata,splen,&cep);
 	    if (frames_proc>0)
 		fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
-	    
+	    fe_free_2d((void **)cep);
+
 	    curr_block++;
 	    last_frame_cep = (float32 **)fe_create_2d(1,FE->NUM_CEPSTRA,sizeof(float32));
 	    last_frame = fe_end_utt(FE, last_frame_cep[0]);

@@ -273,7 +273,7 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector)
   /* if there are any samples left in overflow buffer, pad zeros to
      make a frame and then process that frame */
   
-  if ((FE->NUM_OVERFLOW_SAMPS > 0) && COUNT_PARTIAL) { 
+  if ((FE->NUM_OVERFLOW_SAMPS > 0)) { 
     pad_len = FE->FRAME_SIZE - FE->NUM_OVERFLOW_SAMPS;
     memset(FE->OVERFLOW_SAMPS+(FE->NUM_OVERFLOW_SAMPS),0,pad_len*sizeof(int16));
     FE->NUM_OVERFLOW_SAMPS += pad_len;

@@ -60,6 +60,10 @@
 			  SWAPL(low);  SWAPL(high);\
 			  temp = *low; *low = *high; *high = temp;}
 
+/* yes, these "reversed senses" are confusing. FIXME. */
+#define SWAP_W(x)
+#define SWAP_L(x)
+
 #else	/* don't need byte order conversion, do nothing */
 
 #undef NEEDS_SWAP
@@ -69,6 +73,11 @@
 #define SWAPF(x)
 #define SWAPP(x)
 #define SWAPD(x)
+
+/* "reversed senses". FIXME. */
+#define SWAP_W(x)  x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )
+#define SWAP_L(x)  x = ( (((x)<<24)&0xff000000) | (((x)<<8)&0x00ff0000) | \
+                         (((x)>>8)&0x0000ff00) | (((x)>>24)&0x000000ff) )
 
 #endif
 
