@@ -94,6 +94,7 @@ agg_all_seg(segdmp_type_t type,
     FILE *fp;
     uint32 ignore = 0;
     long start;
+    int32 no_retries=0;
     
     if (type == SEGDMP_TYPE_FEAT) {
 	sv_feat = TRUE;
@@ -162,9 +163,13 @@ agg_all_seg(segdmp_type_t type,
 			if (!rpt) {
 			    E_ERROR_SYSTEM("Unable to write to dmp file");
 			    E_INFO("sleeping...\n");
-			    
+			    no_retries++;
 			}
-			sleep(1200);
+			sleep(3);
+
+			if(no_retries > 10){
+			  E_FATAL("Failed to write to a dmp file after 10 retries of getting MFCC(about 30 seconds)\n ");
+			}
 		    }
 		    ++n_out_frame;
 		}
@@ -196,9 +201,12 @@ agg_all_seg(segdmp_type_t type,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/11/17  01:46:58  arthchan2003
+ * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
  * 
+ * Revision 1.4  2004/07/21 18:30:32  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

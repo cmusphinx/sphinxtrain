@@ -1513,10 +1513,10 @@ corpus_get_mfcc(vector_t **mfc,
 
 	if (ret == S3_ERROR) {
 	    E_ERROR("MFCC read failed.  Retrying after sleep...\n");
-	    sleep(30);
+	    sleep(3);
 	    no_retries++;
 	    if(no_retries>10){ 
-	      E_FATAL("Failed to get the files after 10 retries of getting MFCC(about 5 minutes)\n ");
+	      E_FATAL("Failed to get the files after 10 retries of getting MFCC(about 30 seconds)\n ");
 	    }
 	}
     } while (ret == S3_ERROR);
@@ -1595,9 +1595,9 @@ corpus_get_generic_featurevec(vector_t **mfc,
 	if (ret == S3_ERROR) {
 	    E_ERROR("MFCC read failed.  Retrying after sleep...\n");
 	    no_retries++;
-	    sleep(30);
+	    sleep(3);
 	    if(no_retries>10){ 
-	      E_FATAL("Failed to get the files after 10 retries of getting MFCC(about 5 minutes)\n ");
+	      E_FATAL("Failed to get the files after 10 retries (about 30 seconds)\n ");
 	    }
 	}
     } while (ret == S3_ERROR);
@@ -1981,8 +1981,8 @@ read_sildel(uint32 **out_sf,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.9  2004/11/17  01:18:24  arthchan2003
- * Changing corpus.c to only retry to get the mfcc file for 5 minute s(10 retries with interval 30), the old way will make a lot of tools to loop forever and user were just confused what's going on.
+ * Revision 1.10  2004/11/17  01:46:57  arthchan2003
+ * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
  * 
  * Revision 1.8  2004/07/21 18:05:40  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.

@@ -89,7 +89,7 @@
 #include <math.h>
 #include <assert.h>
 
-#define DUMP_RETRY_PERIOD	600	/* If a count dump fails, retry every # of sec's */
+#define DUMP_RETRY_PERIOD	3	/* If a count dump fails, retry every # of sec's */
 
 /*********************************************************************
  *
@@ -533,6 +533,7 @@ main_reestimate(model_inventory_t *inv,
     uint32 n_frame_skipped = 0;
 
     uint32 ckpt_intv = 0;
+    uint32 no_retries=0;
 
     E_INFO("Reestimation: %s\n",
 	   (viterbi ? "Viterbi" : "Baum-Welch"));
@@ -877,8 +878,13 @@ main_reestimate(model_inventory_t *inv,
 			   time_str, DUMP_RETRY_PERIOD/3600.0);
 		    
 		    notified = TRUE;
+		    no_retries++;
+		    if(no_retries>10){ 
+		      E_FATAL("Failed to get the files after 10 retries(about 5 minutes).\n ");
+		    }
 		}
 		sleep(DUMP_RETRY_PERIOD);
+
 	    }
 	}
     }
@@ -899,6 +905,7 @@ main_reestimate(model_inventory_t *inv,
     
     fflush(stdout);
 
+    no_retries=0;
     /* dump the accumulators to a file system */
     while (cmd_ln_access("-accumdir") != NULL &&
 	   accum_dump(cmd_ln_access("-accumdir"), inv,
@@ -927,9 +934,15 @@ main_reestimate(model_inventory_t *inv,
 		   time_str, DUMP_RETRY_PERIOD/3600.0);
 
 	    notified = TRUE;
+	    no_retries++;
+	    if(no_retries>10){ 
+	      E_FATAL("Failed to get the files after 10 retries(about 5 minutes).\n ");
+	    }
 	}
 	
 	sleep(DUMP_RETRY_PERIOD);
+
+
     }
 
     /* Write a log entry on success */
@@ -965,9 +978,12 @@ int main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.8  2004/07/22  00:08:39  egouvea
- * Fixed some compilation warnings.
+ * Revision 1.9  2004/11/17  01:46:58  arthchan2003
+ * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
  * 
+ * Revision 1.8  2004/07/22 00:08:39  egouvea
+ * Fixed some compilation warnings.
+ *
  * Revision 1.7  2004/07/21 18:30:33  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

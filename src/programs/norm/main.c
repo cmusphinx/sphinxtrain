@@ -134,6 +134,7 @@ normalize()
     float32 ****regr = NULL;
     float32 ****A;
     float32 ***B; 
+    uint32 no_retries=0;
 
     
     accum_dir = (const char **)cmd_ln_access("-accumdir");
@@ -314,7 +315,11 @@ normalize()
 		    E_ERROR("Unable to write %s; Retrying...\n", file_name);
 		}
 		++err;
-		sleep(600);
+		sleep(3);
+		no_retries++;
+		if(no_retries>10){ 
+		  E_FATAL("Failed to get the files after 10 retries(about 30 seconds).\n ");
+		}
 	    }
 	} while (err > 1);
     }
@@ -338,7 +343,11 @@ normalize()
 		    E_ERROR("Unable to write %s; Retrying...\n", file_name);
 		}
 		++err;
-		sleep(600);
+		sleep(3);
+		no_retries++;
+		if(no_retries>10){ 
+		  E_FATAL("Failed to get the files after 10 retries(about 5 minutes).\n ");
+		}
 	    }
 	} while (err > 1);
     }
@@ -357,7 +366,11 @@ normalize()
 		    E_ERROR("Unable to write %s; Retrying...\n", file_name);
 		}
 		++err;
-		sleep(600);
+		sleep(3);
+		no_retries++;
+		if(no_retries>10){ 
+		  E_FATAL("Failed to get the files after 10 retries(about 5 minutes).\n ");
+		}
 	    }
 	} while (err > 1);
     }
@@ -380,7 +393,11 @@ normalize()
 		    E_ERROR("Unable to write %s; Retrying...\n", file_name);
 		}
 		++err;
-		sleep(600);
+		sleep(3);
+		no_retries++;
+		if(no_retries>10){ 
+		  E_FATAL("Failed to get the files after 10 retries(about 5 minutes).\n ");
+		}
 	    }
 	} while (err > 1);
     }
@@ -547,9 +564,12 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.9  2004/08/19  22:24:14  arthchan2003
- * Fixing numerical problem of compute_mllr and mllr_solve.  There are small numerical differences between the inputs typed with float64 or float32. In terms of (<6 signficiant digits).  This small difference will translate to perceivable numerical difference in the final matrix. (>5 significant digits).  This fix also marks a stable release for mllr_solve.  I also disallow user to use -regmat in norm because it is highly dangerous and known to be slow and didn't help too much.
+ * Revision 1.10  2004/11/17  01:46:59  arthchan2003
+ * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
  * 
+ * Revision 1.9  2004/08/19 22:24:14  arthchan2003
+ * Fixing numerical problem of compute_mllr and mllr_solve.  There are small numerical differences between the inputs typed with float64 or float32. In terms of (<6 signficiant digits).  This small difference will translate to perceivable numerical difference in the final matrix. (>5 significant digits).  This fix also marks a stable release for mllr_solve.  I also disallow user to use -regmat in norm because it is highly dangerous and known to be slow and didn't help too much.
+ *
  * Revision 1.8  2004/07/27 12:07:31  arthchan2003
  * Check-in mllr_solve, a program that can compute the adaptation matrix. There is still some precision problem at this point. But it is good enough to check-in
  *
