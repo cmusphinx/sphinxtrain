@@ -231,7 +231,8 @@ var -psetfn questions -stwt 1.0 0.05 0.01 -state 0 -ssplitmin 1 \n\
     }
 
     if(isHelp || isExample){
-      E_FATAL("User ask for help or example, stop before proceed\n");
+      E_INFO("User asked for help or example.\n");
+      exit(1);
     }
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
@@ -244,9 +245,12 @@ var -psetfn questions -stwt 1.0 0.05 0.01 -state 0 -ssplitmin 1 \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/11/29  01:11:18  egouvea
- * Fixed license terms in some new files.
+ * Revision 1.6  2004/11/29  01:43:44  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  * 
+ * Revision 1.5  2004/11/29 01:11:18  egouvea
+ * Fixed license terms in some new files.
+ *
  * Revision 1.4  2004/11/29 00:49:20  egouvea
  * Added missing include files to prevent warnings about printf not being defined
  *

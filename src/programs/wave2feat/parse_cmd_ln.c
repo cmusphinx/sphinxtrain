@@ -84,7 +84,8 @@ parse_cmd_ln(int argc, char *argv[])
     }
 
     if(isHelp || isExample){
-      E_FATAL("User asked for help or example, stop before proceeding\n");
+      E_INFO("User asked for help or example.\n");
+      exit(1);
     }
 
     if(!isHelp && !isExample){
@@ -102,8 +103,11 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/09/09  17:59:30  egouvea
- * Adding missing files to wave2feat
+ * Revision 1.2  2004/11/29  01:43:52  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  * 
+ * Revision 1.1  2004/09/09 17:59:30  egouvea
+ * Adding missing files to wave2feat
+ *
  *
  */

@@ -191,7 +191,8 @@ c/1..L-1/,d/1..L-1/,c/0/d/0/dd/0/,dd/1..L-1/ -ceplen 13";
     }
 
     if(isHelp || isExample){
-      E_FATAL("User ask for help or example, stop before proceed\n");
+      E_INFO("User asked for help or example.\n");
+      exit(1);
     }
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
@@ -204,9 +205,12 @@ c/1..L-1/,d/1..L-1/,c/0/d/0/dd/0/,dd/1..L-1/ -ceplen 13";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/08/10  22:15:08  arthchan2003
- * help and example for init_mixw, I think this is the last one before quick_count and wave2feat, we need to think of what we should for those two little babies......
+ * Revision 1.6  2004/11/29  01:43:46  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  * 
+ * Revision 1.5  2004/08/10 22:15:08  arthchan2003
+ * help and example for init_mixw, I think this is the last one before quick_count and wave2feat, we need to think of what we should for those two little babies......
+ *
  * Revision 1.4  2004/07/21 18:30:34  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

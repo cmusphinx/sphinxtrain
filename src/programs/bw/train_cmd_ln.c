@@ -674,7 +674,8 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
     }
 
     if(isHelp || isExample){
-      E_FATAL("User ask for help or example, stop before proceed\n");
+      E_INFO("User asked for help or example.\n");
+      exit(1);
     }
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
@@ -688,9 +689,12 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.9  2004/08/08  02:58:22  arthchan2003
- * add help and example strings for bw
+ * Revision 1.10  2004/11/29  01:43:44  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  * 
+ * Revision 1.9  2004/08/08 02:58:22  arthchan2003
+ * add help and example strings for bw
+ *
  * Revision 1.8  2004/07/21 18:30:33  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

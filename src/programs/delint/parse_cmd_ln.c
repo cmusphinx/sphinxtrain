@@ -181,7 +181,8 @@ terms, and then does the division. ";
     }
 
     if(isHelp || isExample){
-      E_FATAL("User ask for help or example, stop before proceed\n");
+      E_INFO("User asked for help or example.\n");
+      exit(1);
     }
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
@@ -196,9 +197,12 @@ terms, and then does the division. ";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/08/08  03:49:56  arthchan2003
- * delint help and example string
+ * Revision 1.6  2004/11/29  01:43:45  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  * 
+ * Revision 1.5  2004/08/08 03:49:56  arthchan2003
+ * delint help and example string
+ *
  * Revision 1.4  2004/07/21 18:30:34  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

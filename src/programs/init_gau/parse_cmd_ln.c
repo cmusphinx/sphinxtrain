@@ -243,7 +243,8 @@ init_gau -accumdir accumdir -ctlfn controlfn -part 1 -npart 1 -cepdir cepdir -fe
     }
 
     if(isHelp || isExample){
-      E_FATAL("User ask for help or example, stop before proceed\n");
+      E_INFO("User asked for help or example.\n");
+      exit(1);
     }
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
@@ -257,9 +258,12 @@ init_gau -accumdir accumdir -ctlfn controlfn -part 1 -npart 1 -cepdir cepdir -fe
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/08/08  04:21:00  arthchan2003
- * help and example for init_gau
+ * Revision 1.6  2004/11/29  01:43:45  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  * 
+ * Revision 1.5  2004/08/08 04:21:00  arthchan2003
+ * help and example for init_gau
+ *
  * Revision 1.4  2004/07/21 18:30:34  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

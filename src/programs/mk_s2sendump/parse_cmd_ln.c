@@ -137,7 +137,8 @@ mk_s2sendump -moddeffn s3mdef -mixwfn s3mixw -tpfloor 0.0000001 \n\
     }
 
     if(isHelp || isExample){
-      E_FATAL("User ask for help or example, stop before proceed\n");
+      E_INFO("User asked for help or example.\n");
+      exit(1);
     }
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
@@ -151,9 +152,12 @@ mk_s2sendump -moddeffn s3mdef -mixwfn s3mixw -tpfloor 0.0000001 \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/08/10  08:08:28  arthchan2003
- * Sphinx 3 to Sphinx 2 conversion tools' helps and examples
+ * Revision 1.6  2004/11/29  01:43:49  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  * 
+ * Revision 1.5  2004/08/10 08:08:28  arthchan2003
+ * Sphinx 3 to Sphinx 2 conversion tools' helps and examples
+ *
  * Revision 1.4  2004/07/21 19:17:24  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

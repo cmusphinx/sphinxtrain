@@ -189,7 +189,8 @@ norm \n\
     }
 
     if(isHelp || isExample){
-      E_FATAL("User ask for help or example, stop before proceed\n");
+      E_INFO("User asked for help or example.\n");
+      exit(1);
     }
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
@@ -203,9 +204,12 @@ norm \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/08/08  04:53:40  arthchan2003
- * norm's help and example strings
+ * Revision 1.7  2004/11/29  01:43:51  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  * 
+ * Revision 1.6  2004/08/08 04:53:40  arthchan2003
+ * norm's help and example strings
+ *
  * Revision 1.5  2004/07/21 19:17:25  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

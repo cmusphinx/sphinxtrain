@@ -62,7 +62,8 @@ parse_cmd_ln(int argc, char *argv[])
     }
 
     if(isHelp || isExample){
-      E_FATAL("User ask for help or example, stop before proceed\n");
+      E_INFO("User asked for help or example.\n");
+      exit(1);
     }
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
@@ -76,9 +77,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2004/08/07  20:25:46  arthchan2003
- * Add help and example string for mllr_solve. Fix help and example logic for mllr_solve and mllr_transfrom
+ * Revision 1.3  2004/11/29  01:43:51  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  * 
+ * Revision 1.2  2004/08/07 20:25:46  arthchan2003
+ * Add help and example string for mllr_solve. Fix help and example logic for mllr_solve and mllr_transfrom
+ *
  * Revision 1.1  2004/07/27 12:09:26  arthchan2003
  * Missing the whole directory of mllr_solve
  *

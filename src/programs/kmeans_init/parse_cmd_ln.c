@@ -368,7 +368,8 @@ kmeans_init -gthobj single -stride 1 -ntrial 1 -minratio 0.001 \n\
     }
 
     if(isHelp || isExample){
-      E_FATAL("User ask for help or example, stop before proceed\n");
+      E_INFO("User asked for help or example.\n");
+      exit(1);
     }
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
@@ -381,9 +382,12 @@ kmeans_init -gthobj single -stride 1 -ntrial 1 -minratio 0.001 \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/11/29  01:11:33  egouvea
- * Fixed license terms in some new files.
+ * Revision 1.5  2004/11/29  01:43:46  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  * 
+ * Revision 1.4  2004/11/29 01:11:33  egouvea
+ * Fixed license terms in some new files.
+ *
  * Revision 1.3  2004/11/29 00:49:21  egouvea
  * Added missing include files to prevent warnings about printf not being defined
  *
