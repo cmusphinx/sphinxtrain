@@ -55,10 +55,42 @@
 
 #include "parse_cmd_ln.h"
 
+#include <s3/common.h>
+#include <s3/s3.h>
+
+#include <stdio.h>
+#include <assert.h>
+
+#include <sys/stat.h>
+#include <sys/types.h>
+
 int
 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
+  const char helpstr[] =
+"Description: \n\
+Conversion from sphinx 2 codebook to sphinx3 means and variances";
+
+  const char examplestr[]=
+"Example: \n\
+mk_s3gau -meanfn s3mean -varfn s3var -cbdir s2dir -feat 4s_12c_24d_3p_12dd ";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-meanfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -146,7 +178,23 @@ parse_cmd_ln(int argc, char *argv[])
 
     cmd_ln_parse(argc, argv);
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
 
     return 0;
 }
@@ -156,9 +204,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/06/17  19:39:50  arthchan2003
- * add back all command line information into the code
+ * Revision 1.2  2004/08/10  08:31:55  arthchan2003
+ * s2 to s3 conversion tools
  * 
+ * Revision 1.1  2004/06/17 19:39:50  arthchan2003
+ * add back all command line information into the code
+ *
  * Revision 1.4  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
