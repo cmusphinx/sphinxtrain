@@ -2,6 +2,10 @@
 This is so small it isn't documentation, but
 is a reminder about what to do when training
 
+See 
+    http://www.cs.cmu.edu/~rsingh/sphinxman/scriptman1.html
+for more details
+
 Got to a new directory where you have the space
    mkdir time
    cd time
@@ -26,7 +30,7 @@ Create the following files
    etc/time.transcription
        Word transcription of each file, must end in (FILEID), these
        are probably upper case words, but can include filler words too
-           THE TIME IS NOW ... (time0001)
+           <s> THE TIME IS NOW ... </s> (time0001)
    etc/time.filler
        List of filler words and their pronunciation (using the phones) e.g
            <s> SIL
