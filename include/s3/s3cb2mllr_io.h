@@ -50,13 +50,13 @@
 
 int
 s3cb2mllr_read(const char *fn,
-	       uint32 **out_cb2mllr,
+	       int32 **out_cb2mllr,
 	       uint32 *out_n_cb,
 	       uint32 *out_n_mllr);
 
 int
 s3cb2mllr_write(const char *fn,
-		uint32 *cb2mllr,
+		int32 *cb2mllr,
 		uint32 n_cb,
 		uint32 n_mllr);
 
@@ -67,9 +67,12 @@ s3cb2mllr_write(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  17:46:10  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2005/01/18  19:10:05  dhdfu
+ * Fix signedness issues in multi-class MLLR code, incorporate extra error checking from original Sam-Joo Doh code
  * 
+ * Revision 1.4  2004/07/21 17:46:10  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *

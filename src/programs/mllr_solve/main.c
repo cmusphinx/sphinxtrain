@@ -200,6 +200,8 @@ mllr_mat(float32 	*****out_A,
 
       for (i = gau_begin; i < n_mgau; i++) { 
         mc = cb2mllr[i]; 
+	if (mc < 0) continue;	/* skip */
+
         for (j = 0; j < n_stream; j++) { 
 	  len=veclen[j];
 
@@ -296,7 +298,7 @@ int main(int argc, char *argv[])
     float32     ****A  		= NULL;          /* Output mllr: A */
     float32     ***B   		= NULL;          /* Output mllr: B */
 
-    uint32       *cb2mllr   	= NULL;
+    int32       *cb2mllr   	= NULL;
 
 
     /*    int32       **mllr2cb  	= NULL;
@@ -402,7 +404,7 @@ int main(int argc, char *argv[])
 
     if (strcmp(cb2mllrfn, ".1cls.") == 0) {
         n_mllr_class = 1;
-        cb2mllr = (uint32 *) ckd_calloc(n_mgau, sizeof(int32));
+        cb2mllr = (int32 *) ckd_calloc(n_mgau, sizeof(int32));
     }
     else {
         if (s3cb2mllr_read(cb2mllrfn,
@@ -428,6 +430,9 @@ int main(int argc, char *argv[])
             E_FATAL("Can not read model definition file %s\n", moddeffn);
         }
         gau_begin = mdef->n_tied_ci_state;
+        for (i=0; i<gau_begin; i++) {
+            cb2mllr[i] = -1;                    /* skip CI senones */
+        }
         E_INFO("Use CD senones only. (index >= %d)\n",mdef->n_tied_ci_state);
     }
 

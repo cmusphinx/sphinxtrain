@@ -86,7 +86,7 @@ mllr_adapt_mean(const char *outmeanfn,
     uint32  	 n_mllr_class_rd;
 
     int32	 mc;
-    uint32  	 *cb2mllr = NULL;
+    int32  	 *cb2mllr = NULL;
     float32 	 ****A    = NULL;
     float32 	 ***B     = NULL;
     float32 	 *tmean    = NULL;
@@ -207,6 +207,9 @@ mllr_adapt_mean(const char *outmeanfn,
             E_FATAL("Can not read model definition file %s\n", moddeffn);
         }
 	gau_begin = mdef->n_tied_ci_state;
+        for (i=0; i<gau_begin; i++) {
+            cb2mllr[i] = -1;                    /* skip CI senones */
+        }
         E_INFO("Use CD senones only. (index >= %d)\n",mdef->n_tied_ci_state);
     }
 
@@ -217,6 +220,7 @@ mllr_adapt_mean(const char *outmeanfn,
 
     for (i = gau_begin; i < n_mgau; i++) {
 	mc = cb2mllr[i];
+	if (mc < 0) continue;	/* skip */
 
 	for (j = 0; j < n_feat; j++) {
 	    tmean = (float32 *)ckd_calloc(veclen[j],sizeof(float32));
@@ -257,6 +261,7 @@ mllr_adapt_mean(const char *outmeanfn,
     return S3_SUCCESS;
 }
 
+int
 main(int argc, char *argv[])
 {
     const char 	*outmeanfn;
