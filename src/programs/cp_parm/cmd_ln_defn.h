@@ -46,7 +46,51 @@
 
 #ifndef CMD_LN_DEFN_H
 #define CMD_LN_DEFN_H
+  const char helpstr[] =
+"Description: \n\
+Copy parameters such as means and variances from one model to another model.  \n\
+You need to specify a \"copy operation file\" which each operation looks like \n\
+this \n\
+dest_idx1 src_idx1 \n\
+dest_idx2 src_idx2 \n\
+dest_idx3 src_idx3 \n\
+.\n\
+.\n\
+.\n\
+For example, the first line will instruct cp_param copy src model index 1 to \n\
+destionation model index 1. \n\
+This tool is still under heavy development at 20040807 ";
+  const char examplestr[] =
+"Example: \n\
+This example copy mean from a single file from the source file to 5 mean vector in  \n\
+th destination file. \n\
+First you need to prepare a file like this \n\
+0 0 \n\
+1 0 \n\
+2 0 \n\
+3 0 \n\
+4 0 \n\
+\n\
+Lets call it cp_op \n\
+cp_parm -cpopsfn  cp_op \n\
+        -igaufn   globalmean \n\
+        -ncbout   5 \n\
+        -ogaufn   out.means \n\
+        -feat    [Your feature type] ";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-cpopsfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -117,9 +161,12 @@
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/08/08  03:01:33  arthchan2003
+ * help and example strings for cp_parm
  * 
+ * Revision 1.4  2004/07/21 18:30:34  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
