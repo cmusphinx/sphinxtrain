@@ -36,7 +36,10 @@
 int
 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
 #include "cmd_ln_defn.h"
+
 
     cmd_ln_define(defn);
 
@@ -47,7 +50,21 @@ parse_cmd_ln(int argc, char *argv[])
 
     cmd_ln_parse(argc, argv);
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
+	
 
     return 0;
 }
@@ -57,9 +74,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/07/26  05:04:20  arthchan2003
- * mllr_transform committed, it is an adaptation of Sam Joo's mllr_adapt
+ * Revision 1.2  2004/08/03  07:23:12  arthchan2003
+ * Check in the code for usage and example of mllr_transform
  * 
+ * Revision 1.1  2004/07/26 05:04:20  arthchan2003
+ * mllr_transform committed, it is an adaptation of Sam Joo's mllr_adapt
+ *
  * Revision 1.1  97/03/07  08:53:38  eht
  * Initial revision
  * 

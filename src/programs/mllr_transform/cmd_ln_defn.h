@@ -22,55 +22,91 @@
 #include <s3/err.h>
 
 #ifndef CMD_LN_DEFN_H
+    
+    const char helpstr[] = 
+"Usage: mllr_transform [options]\n
+Given a set of MLLR transform, mllr_transform can transform 
+the mean according to formulat y=Ax+b.
+The output and input files are specified by -outmeanfn and
+ -inmeanfn respectively. You may also transform the context-
+dependent model using the option -cdonly.  In that case you
+ need to specify a model definition using -moddeffn.";
+
+    const char examplestr[] = 
+"Example: 
+The simplest case:
+mllr_transform -inmeanfn inMeans -outmeanfn outMeans  -mllrmat matrix 
+
+Adapt only on CD phones:
+mllr_transform  -inmeanfn inMeans -outmeanfn outMeans  -mllrmat matrix 
+-cdonly yes -moddeffn mdef 
+
+Help and example:
+mllr_transform -help yes -example yes
+";
 
     static arg_def_t defn[] = {
-	{ "-outmeanfn",
-	  CMD_LN_STRING,
+	{ "-help",
+	  CMD_LN_BOOLEAN,
 	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
-	  "The output (adapted) Gaussian mean file name"},
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
 
 	{ "-inmeanfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
-	  "A input Gaussian mean file name"},
+	  "Input Gaussian mean file name"},
+
+	{ "-outmeanfn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Output Gaussian mean file name"},
+
 
 	{ "-mllrmat",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
-	  "The Mllr matrices file"},
+	  "The MLLR matrix file"},
 
 	{ "-cb2mllrfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
 	  ".1cls.",
-	  "The codebook-to-MLLR class file (If it is given, ignore -cdonly)"},
+	  "The codebook-to-MLLR class file. Override option -cdonly"},
 
         { "-cdonly",
           CMD_LN_BOOLEAN,
 	  CMD_LN_NO_VALIDATION,
           "no",
-          "Use CD senones only (If yes, -moddeffn should be given.)"},
+          "Use CD senones only. -moddeffn must be given."},
 
         { "-varfloor",
           CMD_LN_FLOAT32,
 	  CMD_LN_NO_VALIDATION,
           "1e-2",
-          "var floor (It's for smoothing out mean. A larger value than other cases.)"},
+          "Value of the variance floor. Mainly for smoothing the mean."},
 
         { "-moddeffn",
           CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
           CMD_LN_NO_DEFAULT,
-          "Model Definition file (to get CD starting point for MLLR)"},
+          "Model Definition file. "},
 
 	{ "-varfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
-	  "A Gaussian var file name for smoothing (hack!!!)"},
+	  "Gaussian variance file name. For smoothing."},
+
 
         { NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION,    CMD_LN_NO_DEFAULT, NULL }
     };
@@ -82,8 +118,11 @@
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/07/26  05:04:20  arthchan2003
- * mllr_transform committed, it is an adaptation of Sam Joo's mllr_adapt
+ * Revision 1.2  2004/08/03  07:23:12  arthchan2003
+ * Check in the code for usage and example of mllr_transform
  * 
+ * Revision 1.1  2004/07/26 05:04:20  arthchan2003
+ * mllr_transform committed, it is an adaptation of Sam Joo's mllr_adapt
+ *
  *
  */
