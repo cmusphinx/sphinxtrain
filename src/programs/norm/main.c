@@ -92,22 +92,6 @@ initialize(int argc,
     /* define, parse and (partially) validate the command line */
     parse_cmd_ln(argc, argv);
 
-    if (cmd_ln_access("-feat")) {
-	/* configure the feature extraction module. */
-	feat_set(cmd_ln_access("-feat"));
-    }
-    else {
-	E_FATAL("Please choose a acoustic feature set using -feat\n");
-    }
-
-    if (cmd_ln_access("-ceplen")) {
-	/* configure the feature extraction module. */
-	feat_set_in_veclen(*(int32 *)cmd_ln_access("-ceplen"));
-    }
-    else {
-	E_FATAL("Please choose a source vector length using -ceplen\n");
-    }
-
     return S3_SUCCESS;
 }
 
@@ -497,9 +481,16 @@ normalize()
         if (out_reg_fn) {
             if (regmat_read(accum_dir[i], &regl, &regr, &veclen, &n_mllr_class, &n_stream, &mllr_mult, &mllr_add) != S3_SUCCESS) {
                 E_FATAL_SYSTEM("Couldn't read MLLR accumulator in %s", accum_dir[i]);
-            } 
+            }
         }
 	if (out_mean_fn || out_var_fn) {
+       	    /* if MLLR accumulator was defined, we need to free the
+	     * veclen vector, which will be allocated again in the
+	     * function calls below.*/
+	    if (out_reg_fn) {
+	        ckd_free((void *) veclen);
+	    }
+
 	    /* NB: Assuming in_mean and in_var are consistent */
 	    if (in_mean_fn) {
 		if (s3gau_read(in_mean_fn,
@@ -838,9 +829,13 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.5  2002/05/16  21:07:14  egouvea
+ * norm was requesting some parameters that it doesn't really need, like
+ * feature string definition and size of input vector. Removed the request.
  * 
+ * Revision 1.4  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.3  2001/03/01 00:47:44  awb
  * *** empty log message ***
  *
