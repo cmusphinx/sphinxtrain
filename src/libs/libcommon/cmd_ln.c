@@ -499,7 +499,7 @@ cmd_ln_print_cmd_ln(int argc, char *argv[])
     fprintf(stderr, "%s", argv[0]);
 
     for (i = 1; i < argc; i++) {
-	if ((argv[i][0] == '-') && isalpha(argv[i][1])) {
+	if ((argv[i][0] == '-') && isalpha((int)argv[i][1])) {
 	    fprintf(stderr, " \\\n");
 	}
 	fprintf(stderr, " %s", argv[i]);
@@ -615,9 +615,12 @@ const void *cmd_ln_access(char *switch_name)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:30  awb
- * *** empty log message ***
+ * Revision 1.4  2003/11/18  21:07:25  egouvea
+ * Got rid of warning casting the argument to "isspace".
  * 
+ * Revision 1.3  2001/04/05 20:02:30  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:13  awb
  * *** empty log message ***
  *

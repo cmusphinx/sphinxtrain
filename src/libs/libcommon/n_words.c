@@ -63,9 +63,9 @@ n_words(char *str)
 
     n = 0;
     for (;;) {
-	while (*str && isspace(*str)) str++;
+	while (*str && isspace((int)*str)) str++;
 	if (*str) {
-	    while (!isspace(*str) && *str) str++;
+	    while (!isspace((int)*str) && *str) str++;
 		++n;
 	}
 	else break;
@@ -78,9 +78,12 @@ n_words(char *str)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:30  awb
- * *** empty log message ***
+ * Revision 1.4  2003/11/18  21:07:25  egouvea
+ * Got rid of warning casting the argument to "isspace".
  * 
+ * Revision 1.3  2001/04/05 20:02:30  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:13  awb
  * *** empty log message ***
  *

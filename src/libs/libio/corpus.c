@@ -1795,7 +1795,7 @@ corpus_read_next_lsn_line(char **trans)
 
 		/* look for the first non-whitespace character before
 		   the open paren */
-		for (--s; (s >= lsn_line) && isspace(*s); s--);
+		for (--s; (s >= lsn_line) && isspace((int)*s); s--);
 		if (s < lsn_line) {
 		  E_FATAL("Utterance transcription is empty: %s\n", lsn_line);
 		}
@@ -1968,9 +1968,12 @@ read_sildel(uint32 **out_sf,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2002/11/13  21:42:52  egouvea
- * Code breaks if transcription is empty.
+ * Revision 1.6  2003/11/18  21:07:25  egouvea
+ * Got rid of warning casting the argument to "isspace".
  * 
+ * Revision 1.5  2002/11/13 21:42:52  egouvea
+ * Code breaks if transcription is empty.
+ *
  * Revision 1.4  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

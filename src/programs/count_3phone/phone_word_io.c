@@ -121,19 +121,19 @@ int new_read_base (char *base_file, struct word **words_ref, int ignore_error)
                     num_phones;
     short           phones[MAX_PHONES_PER_WORD];
 
-    for (i = 0; !isspace (buff[i]); i++)
+    for (i = 0; !isspace ((int)buff[i]); i++)
       ;
     if (!(word->word = (char *) malloc ((i + 1) * (unsigned) sizeof (char))))
       quit (1, "read_base: %s: can't alloc words[%d]\n", base_file, word_num);
     strncpy (word->word, buff, i);
     word->word[i] = '\0';
-    while (isspace (buff[i]))
+    while (isspace ((int)buff[i]))
       i++;
     last = i;
     num_phones = 0;
     end = strlen (buff);
     for (; i <= end; i++)
-      if (isspace (buff[i]))
+      if (isspace ((int)buff[i]))
       {
 	char            phone_name[MAX_PHONE_STRING];
 
@@ -171,7 +171,7 @@ int new_read_base (char *base_file, struct word **words_ref, int ignore_error)
 	}
      }
 
-	while (isspace (buff[i]))
+	while (isspace ((int)buff[i]))
 	  i++;
 	last = i;
 	num_phones++;

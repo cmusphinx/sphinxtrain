@@ -177,7 +177,7 @@ sub Initialize ()
     mkdir ($logdir,0777) unless -d $logdir;
     my $logfile = "$logdir/${CFG_EXPTNAME}.copycitocd.log";
 
-    &ST_Log ("    Initalization Copy CI to CD\n");
+    &ST_Log ("    Initialization Copy CI to CD\n");
 
 
     my $COPY_CI_TO_CD = "${CFG_BIN_DIR}/init_mixw";
