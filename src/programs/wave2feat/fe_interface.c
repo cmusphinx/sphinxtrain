@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1999-2000 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,9 +14,15 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
- * United States of America, and the CMU Sphinx Speech Consortium.
+ * 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
+ *    endorse or promote products derived from this software without
+ *    prior written permission. To obtain permission, contact 
+ *    sphinx@cs.cmu.edu.
+ *
+ * 4. Redistributions of any form whatsoever must retain the following
+ *    acknowledgment:
+ *    "This product includes software developed by Carnegie
+ *    Mellon University (http://www.speech.cs.cmu.edu/)."
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -48,20 +54,15 @@
  *   HISTORY
  *
  *   12-Aug-99 Created by M Seltzer for opensource SPHINX III system
- *   Based in part on past implementations by R Singh, M Siegler, M
- *   Ravishankar, and others
+ *             Based in part on past implementations by R Singh, 
+ *             M Siegler, M Ravishankar, and others
  *             
- *
- *    7-Feb-00 M. Seltzer - changed fe_process_utt usage. Function now
- *    allocated 2d feature array internally and assigns the passed
- *    pointer to it. This was done to allow for varying numbers of
- *    frames to be written when block i/o processing
- *      
- *    17-Apr-01 RAH, upgraded all floats to float32, it was causing
- *    some conflicts with external functions that were using float32.
- *    I know that it doesn't matter for the most part because floats
- *    are normally float32, however it makes things cleaner.
- *    
+
+      7-Feb-00 M. Seltzer - changed fe_process_utt usage. Function now
+      allocated 2d feature array internally and assigns the passed
+      pointer to it. This was done to allow for varying numbers of
+      frames to be written when block i/o processing
+      
  */  
 
 
@@ -78,7 +79,7 @@
    problematic for init of this parameter...
 **********************************************************************/
 
-fe_t *fe_init(param_t const *P)
+fe_t *fe_init(param_t *P)
 {
     fe_t  *FE = (fe_t *) calloc(1,sizeof(fe_t));
 
@@ -94,7 +95,6 @@ fe_t *fe_init(param_t const *P)
     FE->FRAME_SHIFT        = (int32)(FE->SAMPLING_RATE/FE->FRAME_RATE + 0.5);/* why 0.5? */
     FE->FRAME_SIZE         = (int32)(FE->WINDOW_LENGTH*FE->SAMPLING_RATE + 0.5); /* why 0.5? */
     FE->PRIOR              = 0;
-    FE->FRAME_COUNTER 	   = 0;	 	
 
     /* establish buffers for overflow samps and hamming window */
     FE->OVERFLOW_SAMPS = (int16 *)calloc(FE->FRAME_SIZE,sizeof(int16));
@@ -119,15 +119,11 @@ fe_t *fe_init(param_t const *P)
 
 	fe_build_melfilters(FE->MEL_FB);
 	fe_compute_melcosine(FE->MEL_FB);
-    } else {
+    } 
+    else {
 	fprintf(stderr,"MEL SCALE IS CURRENTLY THE ONLY IMPLEMENTATION!\n");
 	return(NULL);
     }
-
-    /*** Z.A.B. ***/	
-    /*** Initialize the overflow buffers ***/		
-    fe_start_utt(FE);
-
     return(FE);
 }
 
@@ -157,7 +153,7 @@ int32 fe_start_utt(fe_t *FE)
    features. will prepend overflow data from last call and store new
    overflow data within the FE
 **********************************************************************/
-int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 ***cep_block)
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)
 {
     int32 frame_start, frame_count=0, whichframe=0;
     int32 i, spbuf_len, offset=0;  
@@ -217,7 +213,6 @@ int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 ***cep_b
 	  fprintf(stderr,"memory alloc failed in fe_process_utt()\n...exiting\n");
 	  exit(0);
       }
-
       for (whichframe=0;whichframe<frame_count;whichframe++){
 
 	for (i=0;i<FE->FRAME_SIZE;i++)
@@ -315,7 +310,6 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector)
     free (spbuf);		/* RAH */
   } else {
     frame_count=0;
-    /* FIXME: This statement has no effect whatsoever! */
     cepvector = NULL;
   }
   
@@ -350,3 +344,4 @@ int32 fe_close(fe_t *FE)
   free(FE);
   return(0);
 }
+

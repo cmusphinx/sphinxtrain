@@ -59,9 +59,7 @@ int
 cvt2triphone(acmod_set_t *acmod_set,
 	     acmod_id_t *phone,
 	     char *btw_mark,
-	     char *multiw_mark,
-	     uint32 n_phone,
-	     uint32 multi_prons);
+	     uint32 n_phone);
 
 #endif /* CVT2TRIPHONE_H */ 
 
@@ -70,8 +68,8 @@ cvt2triphone(acmod_set_t *acmod_set,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/17  06:44:21  arthchan2003
- * fix cvt2triphone again. Paranoia caused by multiple local setups
+ * Revision 1.6  2004/07/17  08:00:22  arthchan2003
+ * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  * 
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***

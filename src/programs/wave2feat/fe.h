@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,9 +14,15 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
- * United States of America, and the CMU Sphinx Speech Consortium.
+ * 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
+ *    endorse or promote products derived from this software without
+ *    prior written permission. To obtain permission, contact 
+ *    sphinx@cs.cmu.edu.
+ *
+ * 4. Redistributions of any form whatsoever must retain the following
+ *    acknowledgment:
+ *    "This product includes software developed by Carnegie
+ *    Mellon University (http://www.speech.cs.cmu.edu/)."
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -33,9 +39,6 @@
  * ====================================================================
  *
  */
-#ifndef _NEW_FE_H_
-#define _NEW_FE_H_
-
 
 #define int32 int
 #define int16 short
@@ -108,7 +111,7 @@ typedef struct{
     int32 START_FLAG;
     int16 PRIOR;
     float64 *HAMMING_WINDOW;
-    int32 FRAME_COUNTER;
+    
 } fe_t;
 
 
@@ -123,13 +126,7 @@ typedef struct{
 #define DEFAULT_SAMPLING_RATE 16000.0
 #define DEFAULT_FRAME_RATE 100
 #define DEFAULT_FRAME_SHIFT 160
-/* The default below is set so that we have an integral number of
- * samples in a frame.
- */
 #define DEFAULT_WINDOW_LENGTH 0.025625
-/* Since the default sampling rate is 16000, let's make the default
- * fft size consistent with it.
- */
 #define DEFAULT_FFT_SIZE 512
 #define DEFAULT_FB_TYPE MEL_SCALE
 #define DEFAULT_NUM_CEPSTRA 13
@@ -139,26 +136,12 @@ typedef struct{
 #define DEFAULT_PRE_EMPHASIS_ALPHA 0.97
 #define DEFAULT_START_FLAG 0
 
-#define BB_SAMPLING_RATE 16000
-#define DEFAULT_BB_FFT_SIZE 512
-#define DEFAULT_BB_FRAME_SHIFT 160
-#define DEFAULT_BB_NUM_FILTERS 40
-#define DEFAULT_BB_LOWER_FILT_FREQ 133.33334
-#define DEFAULT_BB_UPPER_FILT_FREQ 6855.4976
-
-#define NB_SAMPLING_RATE 8000
-#define DEFAULT_NB_FFT_SIZE 256 /*512*/
-#define DEFAULT_NB_FRAME_SHIFT 80
-#define DEFAULT_NB_NUM_FILTERS 31
-#define DEFAULT_NB_LOWER_FILT_FREQ 200
-#define DEFAULT_NB_UPPER_FILT_FREQ 3500
-
-
 #define DEFAULT_BLOCKSIZE 200000
-#define DITHER  OFF
 
-/* Interface */
-fe_t *fe_init(param_t const *P);
+/* Functions */
+
+fe_t *fe_init(param_t *P);
+
 int32 fe_start_utt(fe_t *FE);
 
 int32 fe_end_utt(fe_t *FE, float32 *cepvector);
@@ -167,6 +150,4 @@ int32 fe_close(fe_t *FE);
 
 int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block);
 
-int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps,float32 ***cep_block);
-
-#endif
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,float32 ***cep_block);

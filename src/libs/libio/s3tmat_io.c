@@ -146,7 +146,6 @@ s3tmat_write(const char *fn,
     for (t = 0; t < n_tmat; t++) {
 	for (i = 0; i < n_state-1; i++) {
 	    for (j = 0; j < n_state; j++) {
-	      /*	      E_INFO("t: %d, i: %d, j: %d tmat[t][i][j] %f\n",t,i,j,tmat[t][i][j]);*/
 		if (tmat[t][i][j] < 0) {
 		    E_ERROR("tmat[%u][%u][%u] < 0 (%e)\n",
 			    t, i, j, tmat[t][i][j]);
@@ -189,8 +188,8 @@ s3tmat_write(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/13  06:31:20  arthchan2003
- * code checked in for multiple pronounciations
+ * Revision 1.5  2004/07/17  08:00:23  arthchan2003
+ * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  * 
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***

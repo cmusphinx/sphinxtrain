@@ -403,7 +403,6 @@ s3gaucnt_write(const char *fn,
     uint32 chksum = 0;
     uint32 ignore = 0;
     uint32 n_elem, blk, j, has_means, has_vars;
-    uint32 i,k,l;
 
     s3clr_fattr();
     s3add_fattr("version", GAUCNT_FILE_VERSION, TRUE);
@@ -450,16 +449,6 @@ s3gaucnt_write(const char *fn,
 
     if (has_means) {
 	band_nz_1d(wt_mean[0][0][0], n_elem, MIN_POS_FLOAT32);
-
-	/*	for (i = 0; i < n_cb; i++) {
-	  for (j = 0; j < 1; j++) {
-	    for (k = 0; k < n_density; k++) {
-	      for(l=0 ; l< blk; l++){
-	      E_INFO("i: %d, j: %d, k: %d l %d, wtmean %e\n",i,j,k,l,wt_mean[i][j][k][l]);
-	      }
-	    }
-	  }
-	  }*/
 	
 	if (s3write_1d((void *)wt_mean[0][0][0], sizeof(float32), n_elem, fp, &chksum) != S3_SUCCESS)
 	    return S3_ERROR;
@@ -467,7 +456,6 @@ s3gaucnt_write(const char *fn,
 
     if (has_vars) {
 	floor_nz_1d(wt_var[0][0][0], n_elem, MIN_POS_FLOAT32);
-
 
 	if (s3write_1d((void *)wt_var[0][0][0], sizeof(float32), n_elem, fp, &chksum) != S3_SUCCESS)
 	    return S3_ERROR;
@@ -615,8 +603,8 @@ s3gaudnom_write(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/13  06:31:20  arthchan2003
- * code checked in for multiple pronounciations
+ * Revision 1.6  2004/07/17  08:00:23  arthchan2003
+ * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  * 
  * Revision 1.4  2003/07/16 00:25:35  egouvea
  * s3 now ignores checksum when reading a density, if checksum is not

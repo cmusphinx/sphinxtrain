@@ -68,15 +68,13 @@ state_t *next_utt_states(uint32 *n_state,
 			 model_def_t *mdef,
 			 char *trans,
 			 int32 sil_del,
-			 char* silence_str,
-			 int32 multi_prons
+			 char* silence_str
 			 )
 {
     char **word;
     uint32 n_word;
     uint32 n_phone;
     char *btw_mark;
-    char *multiw_mark;
     acmod_set_t *acmod_set;
     acmod_id_t *phone;
     acmod_id_t optSil;
@@ -84,8 +82,8 @@ state_t *next_utt_states(uint32 *n_state,
     state_t *state_seq;
 
     word  = mk_wordlist(trans, &n_word);
-    phone = mk_phone_list(&btw_mark, &multiw_mark, &n_phone, word, n_word, lex,multi_prons);
 
+    phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
     if (phone == NULL) {
 	E_WARN("Unable to produce CI pones for utt\n");
 
@@ -97,25 +95,18 @@ state_t *next_utt_states(uint32 *n_state,
     acmod_set = inv->acmod_set;
 
 #ifdef NEXT_UTT_STATES_VERBOSE
-    E_INFO("Before triphone conversion\n");
-    print_phone_list(phone, n_phone, btw_mark, multiw_mark, acmod_set, multi_prons);
+    print_phone_list(phone, n_phone, btw_mark, acmod_set);
 #endif
 
-    cvt2triphone(acmod_set, phone, btw_mark, multiw_mark, n_phone,multi_prons);
+    cvt2triphone(acmod_set, phone, btw_mark, n_phone);
 
 #ifdef NEXT_UTT_STATES_VERBOSE
-    E_INFO("After triphone conversion\n");
-    print_phone_list(phone, n_phone, btw_mark, multiw_mark, acmod_set, multi_prons);
+    print_phone_list(phone, n_phone, btw_mark, acmod_set);
 #endif
     
     optSil= acmod_set_name2id(acmod_set, silence_str);
-
-#ifdef NEXT_UTT_STATES_VERBOSE
     E_INFO("Silence id %d\n",optSil);
-#endif
-    state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef,
-			       sil_del,(acmod_id_t)optSil,
-			       multi_prons,btw_mark, multiw_mark);
+    state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef,sil_del,(acmod_id_t)optSil);
 
 #ifdef NEXT_UTT_STATES_VERBOSE
     state_seq_print(state_seq, *n_state, mdef);
@@ -133,12 +124,9 @@ state_t *next_utt_states(uint32 *n_state,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/07/17  06:38:46  arthchan2003
- * commit on the multiple pronounciations code again
+ * Revision 1.7  2004/07/17  08:00:23  arthchan2003
+ * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  * 
- * Revision 1.5  2004/07/13 06:31:20  arthchan2003
- * code checked in for multiple pronounciations
- *
  * Revision 1.4  2004/06/17 19:17:14  arthchan2003
  * Code Update for silence deletion and standardize the name for command -line arguments
  *

@@ -96,10 +96,7 @@ void
 print_phone_list(acmod_id_t *p,
 		 uint32 n_p,
 		 char *btw,
-		 char *multiw,
-		 acmod_set_t *acmod_set,
-		 uint32 multi_prons
-		 )
+		 acmod_set_t *acmod_set)
 {
     uint32 i, j, k;
     uint32 mpl, l;
@@ -121,17 +118,6 @@ print_phone_list(acmod_id_t *p,
 	    printf(fmt, "", (btw[j] ? "+" : " "));
 	}
 	printf("\n");
-
-
-	/*HACK BY ARCHAN at 20040705, hack due to lack of
-          time...... If I have more time, I would have write a nicer graph
-          structure in future. */
-	if(multi_prons){
-	  for (j = i, k = (i + ppl > n_p ? n_p : i + ppl); j < k; j++) {
-	    printf(fmt, "", (multiw[j] ? "m" : " ")); 
-	  }
-	  printf("\n");
-	}
 
 	for (j = i, k = (i + ppl > n_p ? n_p : i + ppl); j < k; j++) {
 	    printf(fmt, acmod_set_id2name(acmod_set, p[j]), " ");
@@ -173,60 +159,30 @@ print_phone_list(acmod_id_t *p,
  *********************************************************************/
 
 acmod_id_t *mk_phone_list(char **btw_mark,
-			  char **multiw_mark,
 			  uint32 *n_phone,
 			  char **word,
 			  uint32 n_word,
-			  lexicon_t *lex,
-			  uint32 multi_prons
-			  )
+			  lexicon_t *lex)
 {
     uint32 n_p;
     lex_entry_t *e;
     char *btw;
-    char *multiw;
     unsigned int i, j, k;
     acmod_id_t *p;
-    uint32 n_prons=0;
-    char *tmp;
-    uint32 n_alloc=10;
-    tmp=ckd_calloc(10,sizeof(char));
 
     /*
      * Determine the # of phones in the sequence.
      */
     for (i = 0, n_p = 0; i < n_word; i++) {
+	e = lexicon_lookup(lex, word[i]);
+	if (e == NULL) {
+	    E_WARN("Unable to lookup %s in the lexicon\n", word[i]);
 
-      e = lexicon_lookup(lex, word[i]);
-      if (e == NULL) {
-	E_WARN("Unable to lookup %s in the lexicon\n", word[i]);
-	return NULL;
-      }
-      n_p += e->phone_cnt;	
-      n_prons=2;
-      strcpy(tmp,"");
-
-      if(strcmp (word[i], "<s>") !=0 && strcmp(word[i], "</s>") !=0){
-	if(multi_prons){
-	  do{
-	    if(strlen(word[i])+ 3 > n_alloc){
-	      tmp = ckd_realloc(tmp,(strlen(word[i])+3)*sizeof(char));
-	      n_alloc= strlen(word[i]) +3 ;
-	    }
-	    
-	    sprintf(tmp,"%s(%d)",word[i],n_prons);
-	    e = lexicon_lookup(lex, tmp);
-	    if(e != NULL){
-	      /*E_INFO("Word %d has expansion %s, length %d\n",i,tmp,e->phone_cnt);*/
-	    n_p += e->phone_cnt;
-	    }
-	    n_prons++;
-	  }while(e != NULL);
+	    return NULL;
 	}
-      }
+	n_p += e->phone_cnt;
     }
-    
-    /*    E_INFO("n_p %d\n",n_p);*/
+
     /*
      * Allocate the phone sequence
      */
@@ -236,8 +192,6 @@ acmod_id_t *mk_phone_list(char **btw_mark,
      * Allocate the between word markers
      */
     btw = ckd_calloc(n_p, sizeof(char));
-    multiw = ckd_calloc(n_p, sizeof(char));
-
 
     for (i = 0, k = 0; i < n_word; i++) {	/* for each word */
 	e = lexicon_lookup(lex, word[i]);
@@ -245,47 +199,17 @@ acmod_id_t *mk_phone_list(char **btw_mark,
 	    p[k] = e->ci_acmod_id[j];
 	}
 	p[k] = e->ci_acmod_id[j];	/* move over the last phone */
+
 	btw[k] = TRUE;			/* mark word boundary following
 					   kth phone */
 
 	++k;
-
-	n_prons=2;
-	strcpy(tmp,"");
-	if(strcmp (word[i], "<s>") !=0 && strcmp(word[i], "</s>") !=0){
-	  if(multi_prons){
-	    do{
-	      sprintf(tmp,"%s(%d)",word[i],n_prons);
-
-	      e = lexicon_lookup(lex, tmp);
-	      if(e!=NULL){
-		/*HACK!, once the code decide there is more than on prons, it would declare the current phone word
-		  boundary is a multi-word boundary */
-		  multiw[k-1] = TRUE;
-		for (j = 0; j < e->phone_cnt-1; j++, k++) {
-		  /* for all but the last phone in the word */
-		  p[k] = e->ci_acmod_id[j];
-		}
-		
-		p[k] = e->ci_acmod_id[j];	/* move over the last phone */
-		btw[k] = TRUE;			/* mark of word boundary following */ 
-
-		++k;  
-		n_prons++;
-	      }
-
-	    }while(e != NULL);
-	  }
-	}
-
-
     }
-    *multiw_mark = multiw;
+
     *btw_mark = btw;
     *n_phone = n_p;
 
     assert(k == n_p);
-    free(tmp);
 
     return p;
 }
@@ -296,8 +220,8 @@ acmod_id_t *mk_phone_list(char **btw_mark,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/13  06:31:19  arthchan2003
- * code checked in for multiple pronounciations
+ * Revision 1.5  2004/07/17  08:00:23  arthchan2003
+ * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  * 
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***

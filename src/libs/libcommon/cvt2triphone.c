@@ -167,9 +167,6 @@ word_posn_t btw_posn(char btw_mark,
  *    char *btw_mark -
  * 	The between word markers for this CI model sequence.
  *
- *    char *multiw_mark -
- * 	Indicate whether the next word is the multiple pronounications of this word 
- *
  *    uint32 n_phone -
  *	The number of CI models in the sequence.
  * 
@@ -188,11 +185,7 @@ int
 cvt2triphone(acmod_set_t *acmod_set,
 	     acmod_id_t *phone,
 	     char *btw_mark,
-	     char *multiw_mark,
-	     uint32 n_phone,
-	     uint32 multi_prons
-	     )
-
+	     uint32 n_phone)
 {
     uint32 i;
     ci_acmod_id_t b = (ci_acmod_id_t)NO_ACMOD;
@@ -203,10 +196,6 @@ cvt2triphone(acmod_set_t *acmod_set,
     static int spoke_my_peace = FALSE;
     acmod_id_t sil = acmod_set_name2id(acmod_set, "SIL");
     char *word_posn_map = WORD_POSN_CHAR_MAP;
-    ci_acmod_id_t last_l = (ci_acmod_id_t)NO_ACMOD;
-    ci_acmod_id_t true_r = (ci_acmod_id_t)NO_ACMOD;
-    
-    uint32 k;
 
     if (acmod_set_n_multi(acmod_set) == 0) {
 	/* nothing to do */
@@ -220,134 +209,57 @@ cvt2triphone(acmod_set_t *acmod_set,
 	return S3_SUCCESS;
     }
 
-    if(!multi_prons){  /*Single pronounciation code */
-      /* 20040706 ARCHAN: I separate the code of multiple pronounciations out.  Because that confuse the code 
-	 by using strange finite state machines code. 
-      */
-      for (i = 0, l = r = sil, posn = WORD_POSN_END; i < n_phone-1; i++) {
+    for (i = 0, l = r = sil, posn = WORD_POSN_END; i < n_phone-1; i++) {
 	/* get new right context */
 	r = phone[i+1];
 	if (acmod_set_has_attrib(acmod_set, r, "filler"))
-	  r = sil;
+	    r = sil;
 	
 	b = phone[i];
-	
+
 	/* determine between word position {begin|start|single} */
 	posn = btw_posn(btw_mark[i], posn);
-
-#if 0
-	E_INFO("Position %d, btw_mark[i] %d, multiw_mark[i] %d\n",posn, btw_mark[i],multiw_mark[i]);
-#endif
 	
 	if (!acmod_set_has_attrib(acmod_set, b, "filler")) {
-	  tri_id = acmod_set_tri2id(acmod_set,
-				    b, l, r, posn);
-	  if (tri_id != NO_ACMOD) {
-	    /* got good triphone, so replace CI w/ tri */
-	    phone[i] = tri_id;
-	  }
-	  else {
+	    tri_id = acmod_set_tri2id(acmod_set,
+				      b, l, r, posn);
+	    if (tri_id != NO_ACMOD) {
+		/* got good triphone, so replace CI w/ tri */
+		phone[i] = tri_id;
+	    }
+	    else {
 #if 0
-	    E_WARN("Missing triphone, (%s %s %s %c), left as CI phone",
+		E_WARN("Missing triphone, (%s %s %s %c), left as CI phone",
 		       acmod_set_id2name(acmod_set, b),
-		   acmod_set_id2name(acmod_set, l),
-		   acmod_set_id2name(acmod_set, r),
-		   word_posn_map[(int)posn]);
+		       acmod_set_id2name(acmod_set, l),
+		       acmod_set_id2name(acmod_set, r),
+		       word_posn_map[(int)posn]);
 #endif
-	  }
+	    }
 	}
 	else {
-	  /* phone[i] is a filler phone, so just leave it as is */
-	  /* Change b to SIL for triphone context purposes */
-	  b = sil;
+	    /* phone[i] is a filler phone, so just leave it as is */
+	    /* Change b to SIL for triphone context purposes */
+	    b = sil;
 	}
-	
-	/* Set next left context is the current base phone (where filler phones
-	 * are mapped to SIL) */
-	l = b;
-      }
-
-    }else{ /*Multiple pronounciation code */
-      /* ARCHAN 20040702 : Hack!, This assumes in the transcripts, there are always
-	 silences between words */
-      /* This hacks enable us to make Viterbi training works after this change */
-
-      last_l = phone[0];
-      for (i = 0, l = r = sil, posn = WORD_POSN_END; i < n_phone-1; i++) {
-	/* get new right context */
-	r = phone[i+1];
-	if (acmod_set_has_attrib(acmod_set, r, "filler"))
-	  r = sil;
-	b = phone[i];
-
-	/* determine between word position {begin|start|single} */
-	posn = btw_posn(btw_mark[i], posn);
-
-	if(btw_mark[i]){
-	  if(multiw_mark[i]){
-	  }else{
-	    last_l = b; 
-	  }
-	}
-	
-
-	if (!acmod_set_has_attrib(acmod_set, b, "filler")) {
-	  if(btw_mark[i]){
-	    /* If before the word boundary */
-	    /* Hardwire the next word to be sil */
-	    if(multiw_mark[i])
-	      tri_id = acmod_set_tri2id(acmod_set, b, l, sil, posn);
-	    else
-	      tri_id = acmod_set_tri2id(acmod_set, b, l, r, posn);
-	    
-	  }else if(i>0 && btw_mark[i-1]){
-	    /* If after the word boundary */
-	    if(multiw_mark[i-1])
-	      tri_id = acmod_set_tri2id(acmod_set, b, last_l, r, posn);
-	    else
-	      tri_id = acmod_set_tri2id(acmod_set, b, l, r, posn);
-	  }else{
-	    tri_id = acmod_set_tri2id(acmod_set, b, l, r, posn);
-	  }
-	  
-	  if (tri_id != NO_ACMOD) 
-	    phone[i] = tri_id;
-	}
-	else {
-	  /* phone[i] is a filler phone, so just leave it as is */
-	  /* Change b to SIL for triphone context purposes */
-	  b = sil;
-	}
-
-
-#if 0
-	E_INFO("tri_id %d b %s, l %s, r %s, last_l %s\n",
-	       tri_id,
-	       acmod_set_id2name(acmod_set, b),
-	       acmod_set_id2name(acmod_set, l),
-	       acmod_set_id2name(acmod_set, r),
-	       acmod_set_id2name(acmod_set, last_l));
-#endif
 
 	/* Set next left context is the current base phone (where filler phones
 	 * are mapped to SIL) */
 	l = b;
-      }
-
     }
-    
+
     b = phone[i];
     r = sil;
-      
+
     /* At this point, b is the right context of
-       * the next to last phone.  Typically, this
-       * is sil or some other filler phone. */
-    
+     * the next to last phone.  Typically, this
+     * is sil or some other filler phone. */
+
     if (!acmod_set_has_attrib(acmod_set, b, "filler")) {
 	if (i > 0) {
-	  E_WARN("utt does not end with filler phone\n");
-	  
-	  r = sil;
+	    E_WARN("utt does not end with filler phone\n");
+
+	    r = sil;
 	}
 	
 	assert( btw_mark[i] );
@@ -357,15 +269,16 @@ cvt2triphone(acmod_set_t *acmod_set,
 	tri_id = acmod_set_tri2id(acmod_set,
 				  b, l, r, posn);
 	if (tri_id != NO_ACMOD)
-	  phone[i] = tri_id;
+	    phone[i] = tri_id;
 	else {
-	  E_WARN("Missing triphone, (%s %s %s %c), left as CI phone",
-		 acmod_set_id2name(acmod_set, b),
-		 acmod_set_id2name(acmod_set, l),
-		 acmod_set_id2name(acmod_set, r),
-		 word_posn_map[(int)posn]);
+	    E_WARN("Missing triphone, (%s %s %s %c), left as CI phone",
+		   acmod_set_id2name(acmod_set, b),
+		   acmod_set_id2name(acmod_set, l),
+		   acmod_set_id2name(acmod_set, r),
+		   word_posn_map[(int)posn]);
 	}
     }
+
     return S3_SUCCESS;
 }
 
@@ -373,8 +286,8 @@ cvt2triphone(acmod_set_t *acmod_set,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/13  06:31:19  arthchan2003
- * code checked in for multiple pronounciations
+ * Revision 1.5  2004/07/17  08:00:23  arthchan2003
+ * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  * 
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***

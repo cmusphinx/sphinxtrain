@@ -265,31 +265,19 @@ count_next_prior_states(uint32 *n_next,
 
 			float32 ***all_tmat,	       
 			int32 sil_del,
-			acmod_id_t sil_id,
-			int32 multi_prons,
-			char* btw,
-			char* multiw)
-
+			acmod_id_t sil_id)
 {
     uint32 tmat_id;
     float32 **model_tmat;
     uint32 i, j, k, l;
     uint32 tp, tn;
     uint32 n_ms;
-    uint32 ph_idx=0;
-    uint32 n_prons =0 ;
-    uint32 pron_idx=0;
-    uint32 no_state=0;
 
     tp = 0;
     tn = 0;
-    
 
     for (i = 0, l = 0; i < n_phone; i++, l += n_ms) {
 
-#if STATE_SEQ_BUILD
-      E_INFO("index %d, btw %d, multiw %d\n",i, btw[i],multiw[i]);
-#endif
 	/* first state of each model has either zero or
 	   one prior states from the prior model */
 	if (i > 0) {
@@ -340,66 +328,9 @@ count_next_prior_states(uint32 *n_next,
 	      ++tn;
 	      ++n_next[l+ n_ms-1];
 	    }
-	    
-	    /* ARCHAN : Another magic, if when lookup there is
-	     multiple prons, count them and increment the next states  */
-
-	    if(multi_prons){
-	      if(btw[i]){
-		if(!multiw[i]){
-		  /* A true word boundary*/
-		  /* This is just a counting routine */
-		  
-		  n_prons=1;  ph_idx=i;
-
-		  do{		  
-		    ph_idx++;
-		    for(ph_idx; ph_idx< n_phone && !btw[ph_idx] ; ph_idx++) ;
-		    if(multiw[ph_idx])  n_prons++;
-		  }while(multiw[ph_idx]);
-
-
-		  if(n_prons>1){
-		    for(pron_idx=1;pron_idx<n_prons;pron_idx++){
-		      ++tn;
-		      ++n_next[l+n_ms-1];
-		    }
-		  }
-		  
-		}else{
-		  /* A multi pronounciation boundary*/
-		  /* Must have somewhere to exit */
-		  /* so no need to add one at here */
-
-		  /* The prior index */
-		  ph_idx=i;
-		  no_state = l + defn[phone[ph_idx]].n_state;
-		  do{ 
-		    ph_idx++;
-		    no_state  += defn[phone[ph_idx]].n_state;
-		    for(ph_idx; ph_idx< n_phone && !btw[ph_idx] ; ph_idx++) {
-		      no_state += defn[phone[ph_idx]].n_state;
-		    }
-		  }while(multiw[ph_idx]);
-
-		  ++tp;
-		  ++n_prior[no_state];
-		}
-	      }
-	    }
-	    
-	    
-
 	}
 
     }
-
-
-#if STATE_SEQ_BUILD
-    for(i=0;i<l;i++){
-      E_INFO("i %d, n_next[i] %d, n_prior[i] %d\n", i, n_next[i],n_prior[i]);
-    }
-#endif
 
     *total_prior = tp;
     *total_next = tn;
@@ -422,11 +353,7 @@ set_next_prior_state(uint32 *next_state,
 
 		     float32 ***all_tmat,
 		     int32 sil_del,
-		     acmod_id_t sil_id,
-		     int32 multi_prons,
-		     char* btw,
-		     char* multiw)
-
+		     acmod_id_t sil_id)
 
 {
     uint32 i;
@@ -439,148 +366,21 @@ set_next_prior_state(uint32 *next_state,
     uint32 n_ms;	/* # of model states */
     uint32 tmat_id;
     float32 **model_tmat;
-    int32 ph_idx=0;
-    uint32 n_prons =0 ;
-    uint32 bk_n_prons=0;
-    uint32 fw_n_prons=0;
-    uint32 pron_idx=0;
-    uint32 no_state=0;
-    uint32 tmp_no_state=0;
-    float32 tmp_prob=0.0;
 
     for (i = 0, l = 0, p = 0, n = 0; i < n_phone; i++, l += n_ms) {
 	p0 = p;
 
 	/* 2nd through last phone have prior states to first phone state */
 	if (i > 0) {
+
 	  /* ARCHAN: wiring for silence deletion */
-
-
-	  if(!multi_prons){
-	    if(sil_del && phone[i]==sil_id){
-	      prior_tprob[p] = 0.5;
-	      prior_state[p++] = l-1;	/* i.e. prior state of first state
-					   is last state of prior model */
-
-	    }else{
-	      prior_tprob[p] = 1.0;
-	      prior_state[p++] = l-1;	/* i.e. prior state of first state
-					   is last state of prior model */
-	    }
+	  if(sil_del && phone[i]==sil_id){
+	    prior_tprob[p] = 0.5;
 	  }else{
-	    if(i>0 && btw[i-1]){
-	      if(!multiw[i-1]){
-		bk_n_prons=1;  ph_idx=i-1;
-		/* Count backward to see how see whether there are
-		   multiple pronunciations in the previous word*/
-		do{		  
-		  ph_idx--;
-		  no_state -= defn[phone[ph_idx]].n_state;
-		  for(ph_idx; ph_idx >= 0  && !btw[ph_idx] ; ph_idx--) ;
-		  if(multiw[ph_idx]) 
-		    bk_n_prons++;
-		}while(multiw[ph_idx]);
-		
-		ph_idx=i-1;
-		fw_n_prons=1 ;
-		
-		/* Count forward to see how see whether there are
-		   multiple pronunciations in the next word*/
-		do{		  
-		  ph_idx++;
-		  no_state += defn[phone[ph_idx]].n_state;
-		  for(ph_idx; ph_idx< n_phone && !btw[ph_idx] ; ph_idx++) ;
-		  
-		  if(multiw[ph_idx])  
-		    fw_n_prons++;
-		}while(multiw[ph_idx]);
-		
-#if STATE_SEQ_BUILD
-		E_INFO("bk_n_prons %d, fw_n_prons %d\n",bk_n_prons,fw_n_prons);
-#endif
-		
-		if(fw_n_prons==1 && bk_n_prons ==1){
-		  if(sil_del && phone[i]==sil_id){
-		    /* special case to incorporate silence */
-		    prior_tprob[p] = 0.5 ;
-		    prior_state[p++] = l-1;
-		  }else{
-		    prior_tprob[p] = 1.0 ;
-		    prior_state[p++] = l-1;
-		  }
-		}else{
-		  tmp_prob = 0.0;
-		  if(fw_n_prons > 1 && bk_n_prons ==1){
-		    tmp_prob = (float) 1.0 / (float) fw_n_prons;
-		  }else if(fw_n_prons == 1 && bk_n_prons >1){
-		    tmp_prob = (float) 1.0;
-		  }else if(fw_n_prons > 1 && bk_n_prons > 1){
-		    E_WARN("Two words consecutive have multiple pronounciations\n");
-		    tmp_prob = (float) 1.0 / (float) fw_n_prons;
-		  }
-		  
-		  /* This time really set the probabilities */
-		  ph_idx=i-1;
-		  no_state=l;
-		  
-		  do{		  
-		    ph_idx--;
-		    no_state -= defn[phone[ph_idx]].n_state;
-		    for(ph_idx; ph_idx >= 0  && !btw[ph_idx] ; ph_idx--) 
-		      no_state -= defn[phone[ph_idx]].n_state;
-		    
-		    if(multiw[ph_idx])  {
-		      prior_tprob[p] = tmp_prob;
-		      prior_state[p++] = no_state-1;
-		    }
-		    
-		  }while(multiw[ph_idx]);
-		  
-		  /* If the previous state is silence, we need 
-		     separate logic to take care of it */
-		  if(sil_del && phone[i]==sil_id){
-		    /* special case to incorporate silence */
-		    prior_tprob[p] = 0.5 ;
-		    prior_state[p++] = l-1;
-		  }else{
-		    prior_tprob[p] = tmp_prob;
-		    prior_state[p++] = l-1;
-		  }
-		}
-		
-	      }else{
-		ph_idx=i-1;
-		no_state=l;
-		n_prons=1;
-		do{		  
-		  no_state -= defn[phone[ph_idx]].n_state;
-		  ph_idx--;
-		  for(ph_idx; ph_idx >=0  && !btw[ph_idx] ; ph_idx--) 
-		    no_state -= defn[phone[ph_idx]].n_state;
-		}while(multiw[ph_idx]);
-		
-		tmp_no_state =no_state;
-		
-		do{		  
-		  ph_idx++;
-		      for(ph_idx; ph_idx< n_phone && !btw[ph_idx] ; ph_idx++) 
-			{
-#if STATE_SEQ_BUILD
-			  E_INFO("# of pronounciations %d\n",n_prons);
-#endif
-			}
-		      if(multiw[ph_idx]) n_prons++;
-		}while(multiw[ph_idx]);
-		
-		prior_tprob[p] = (float) 1.0 / (float) n_prons ; /* It has to be 1/n */
-		prior_state[p++] = no_state-1;
-	      }
-	    }else{
-	      prior_tprob[p] = 1.0;
-	      prior_state[p++] = l-1;	/* i.e. prior state of first state
-					   is last state of prior model */
-	    }
+	    prior_tprob[p] = 1.0;
 	  }
+	  prior_state[p++] = l-1;	/* i.e. prior state of first state
+					   is last state of prior model */
 	}
 
 	tmat_id     = defn[phone[i]].tmat;
@@ -595,10 +395,6 @@ set_next_prior_state(uint32 *next_state,
 		    next_state[n++] = l + k;
 		}
 	    }
-
-#if STATE_SEQ_BUILD
-	    E_INFO("l=%d, j=%d, n_next[l+j] %d, n-n0 %d\n",l,j,n_next[l+j],n-n0);
-#endif
 
 	    assert(n_next[l+j] == (n - n0));
 	}
@@ -618,105 +414,28 @@ set_next_prior_state(uint32 *next_state,
 	    }
 
 #if STATE_SEQ_BUILD
-	    E_INFO("l=%d, j=%d, n_prior[l+j] %d, p-p0 %d\n",l,j, n_prior[l+j],p-p0);
+	    E_INFO("n_prior[l+j] %d, p-p0 %d\n",n_prior[l+j],p-p0);
 	    assert(n_prior[l+j] == (p - p0));
 #endif
 	}
 
 	/* 1st through penultimate phone have next states */
 	if (i < n_phone-1) {
-	  /*The case with silence */
-	  /*Silence deletion logic */
-	  n0 = n ;
 	  if(sil_del && phone[i+1]==sil_id){
 	    next_tprob[n] = 0.5;
 	    next_state[n++] = l + n_ms; /* i.e. next state of last state is 
 					   first state of next model */
-
-
 	    next_tprob[n] = 0.5;
-	    next_state[n++] = l + n_ms + defn[sil_id].n_state   -1; /* i.e another next state of last state is 
+	    next_state[n++] = l + 2* n_ms +  -1; /* i.e another next state of last state is 
 									 the last state of the next model. */
 	      
 	  }else{
-	    if(!multi_prons){
-	      next_tprob[n] = 1.0;
-	      next_state[n++] = l + n_ms;	/* i.e. next state of last state is 
-						   first state of next model */
-	    }else{
-	      if(btw[i]){
-		if(!multiw[i]){
-		  /* A true word boundary*/
-		  /* This is just a counting routine */
-		  n_prons=1;  ph_idx=i;
-
-		  do{		  
-		    ph_idx++;
-		    for(ph_idx; ph_idx< n_phone && !btw[ph_idx] ; ph_idx++) {
-#if STATE_SEQ_BUILD
-		      E_INFO("# of pronounciations %d\n",n_prons);
-#endif
-		    }
-		    if(multiw[ph_idx]) n_prons++;
-		  }while(multiw[ph_idx]);
-
-		  ph_idx=i;
-
-		  no_state = l + n_ms;
-
-		  do{		  
-		    ph_idx++;
-		    no_state += defn[phone[ph_idx]].n_state;
-		    for(ph_idx; ph_idx< n_phone && !btw[ph_idx] ; ph_idx++) {
-		      no_state += defn[phone[ph_idx]].n_state;
-		    }
-
-		    if(multiw[ph_idx])  {
-		      next_tprob[n] = (float) 1 / (float) (n_prons);
-		      next_state[n++] = no_state ;
-
-		    }
-		  }while(multiw[ph_idx]);
-
-		  next_tprob[n] = (float) 1 / (float) (n_prons);
-		  next_state[n++] = l + n_ms;
-
-		}else{
-
-		  next_tprob[n] = 1.0;
-		  ph_idx=i;
-		  no_state = l + defn[phone[ph_idx]].n_state;
-		  
-		  do{ 
-		    ph_idx++;
-		    no_state  += defn[phone[ph_idx]].n_state;
-		    for(ph_idx; ph_idx< n_phone && !btw[ph_idx] ; ph_idx++) {
-		      no_state += defn[phone[ph_idx]].n_state;
-		    }
-		  }while(multiw[ph_idx]);
-		  next_state[n++] = no_state;
-
-		}
-	      }else{
-		/* In the case where we are not in the boundary at all*/
-		next_tprob[n] = 1.0;
-		next_state[n++] = l + n_ms;	
-
-	      }
-	    }
+	    next_tprob[n] = 1.0;
+	    next_state[n++] = l + n_ms;	/* i.e. next state of last state is 
+					   first state of next model */
 	  }
-#if STATE_SEQ_BUILD
-	  E_INFO("l=%d, j=%d, n_next[l+j] %d, n-n0 %d btw[i] %d, multiw[i] %d, n %d\n",l,n_ms-1,n_next[l+n_ms-1],n-n0,btw[i],multiw[i],n);
-#endif
-
-	  assert(n_next[l+n_ms-1] == (n - n0));
-
 	}
     }
-
-#if STATE_SEQ_BUILD
-    E_INFO("n %d, total_next %d, p %d, total_prior %d\n", n,total_next, p, total_prior);
-#endif
     assert( n == total_next );
     assert( p == total_prior );
 
@@ -765,10 +484,7 @@ state_seq_make(uint32 *n_state,
 	       model_inventory_t *inv,
 	       model_def_t *mdef,
 	       int32 sil_del,
-	       acmod_id_t sil_id,
-	       int32 multi_prons,
-	       char* btw,
-	       char* multiw)
+	       acmod_id_t sil_id)
 {
     static state_t *state;	/* The states of the sentence HMM graph */
     static uint32 *n_prior;	/* The in-degree of node i in the sent. HMM */
@@ -843,12 +559,7 @@ state_seq_make(uint32 *n_state,
 			    defn,
 			    all_tmat,
 			    sil_del,
-			    sil_id,
-			    multi_prons,
-			    btw,
-			    multiw);
-
-
+			    sil_id);
 
     
     if (total_next > max_total_next) {
@@ -890,10 +601,7 @@ state_seq_make(uint32 *n_state,
     set_next_prior_state(next_state, next_tprob, n_next, total_next,
 			 prior_state, prior_tprob, n_prior, total_prior,
 			 phone, n_phone, defn,
-			 all_tmat,sil_del,sil_id,
-			 multi_prons,
-			 btw,
-			 multiw);
+			 all_tmat,sil_del,sil_id);
 
     /* Define the model states of the sentence HMM */
     for (i = 0, k = 0, n = 0, p = 0; i < n_phone; i++) {
@@ -1006,8 +714,8 @@ state_seq_make(uint32 *n_state,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/13  06:31:19  arthchan2003
- * code checked in for multiple pronounciations
+ * Revision 1.6  2004/07/17  08:00:23  arthchan2003
+ * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  * 
  * Revision 1.4  2004/06/17 19:17:12  arthchan2003
  * Code Update for silence deletion and standardize the name for command -line arguments

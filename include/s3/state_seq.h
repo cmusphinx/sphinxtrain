@@ -67,10 +67,7 @@ state_seq_make(uint32 *n_state,
 	       model_inventory_t *inv,
 	       model_def_t *mdef,
 	       int32 sil_del,
-	       acmod_id_t sil_id,
-	       int32 multi_prons,
-	       char* btw,
-	       char* multiw);
+	       acmod_id_t sil_id);
 
 
 void
@@ -84,8 +81,8 @@ state_seq_print(state_t *state,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/17  06:22:27  arthchan2003
- * fixes of header files for multiple pronounciations
+ * Revision 1.6  2004/07/17  08:00:22  arthchan2003
+ * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  * 
  * Revision 1.4  2004/06/17 19:17:12  arthchan2003
  * Code Update for silence deletion and standardize the name for command -line arguments
