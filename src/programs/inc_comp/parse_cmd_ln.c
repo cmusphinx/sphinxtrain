@@ -59,7 +59,11 @@ parse_cmd_ln(int argc, char *argv[])
   const char helpstr[] = 
 "Description: \n\
 \n\
-Increae the number of mixture of continuoush HMM";
+Increase the number of mixture of a continuous HMM.  Notice that option \n\
+-ninc actually means the finally number of mixture one wants to \n\
+obtain.  Usually, it is the power of two.  You are also recommended to \n\
+split the number of mixture from 1 -> 2 -> 4 -> 8 -> and so on. \n\
+";
 
 
   const char examplestr[] = 
@@ -69,11 +73,11 @@ inc_comp \n\
  -ninc 16 \n\
  -dcountfn mixture_weights \n\
  -inmixwfn mixture_weights \n\
- -outmixwfn mixture_weights \n\
+ -outmixwfn out_mixture_weights \n\
  -inmeanfn means \n\
- -outmeanfn means \n\
+ -outmeanfn out_means \n\
  -invarfn variance \n\
- -outvarfn variance \n\
+ -outvarfn out_variance \n\
  -ceplen 13";
 
     static arg_def_t defn[] = {
@@ -192,9 +196,12 @@ inc_comp \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/08/08  04:07:24  arthchan2003
- * help and example strings of inc_comp
+ * Revision 1.6  2004/08/26  05:45:33  arthchan2003
+ * update of help and example strings of inc_comp
  * 
+ * Revision 1.5  2004/08/08 04:07:24  arthchan2003
+ * help and example strings of inc_comp
+ *
  * Revision 1.4  2004/07/21 18:30:34  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *
