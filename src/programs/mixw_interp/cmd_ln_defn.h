@@ -46,7 +46,34 @@
 
 #ifndef CMD_LN_DEFN_H
 #define CMD_LN_DEFN_H
+
+
+    const char helpstr[] =  
+"Description: \n\
+\n\
+    A routine that provides and ad-hoc way of speaker adaptation by mixture \n\
+    weight interpolation.  SD and SI model's mixture weight are first \n\
+    determined and they act as an inputs of this program. The output \n\
+    is the interpolated mixture weight. \n\
+\n\
+    The interpolation is controlled by the value lambda (-sillambda) ";
+
+    const char examplestr[]=
+"Example: \n\
+\n\
+    mixw_interp -SImixwfn si_mixw -SDmixwfn  sd_mxiw -outmixwfn final_mixw -SIlambad 0.7";
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
 
         { "-SImixwfn",
           CMD_LN_STRING,
@@ -59,12 +86,6 @@
 	  CMD_LN_NO_VALIDATION,
           CMD_LN_NO_DEFAULT,
           "The SD mixture weight parameter file name"},
-
-        { "-tokencntfn",
-          CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-          CMD_LN_NO_DEFAULT,
-          "The token count file"},
 
         { "-outmixwfn",
           CMD_LN_STRING,
@@ -89,9 +110,12 @@
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:30:35  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/08/10  21:58:51  arthchan2003
+ * Incorporate help and example for the four final tools
  * 
+ * Revision 1.4  2004/07/21 18:30:35  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

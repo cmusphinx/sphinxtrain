@@ -59,7 +59,40 @@
 int
 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
+    const char helpstr[] =  
+"Description: \n\
+\n\
+    This is an implementation of Dr. Rita Singh's automatic question \n\
+    generation.  (Copied from Rita's comment) The current algorithm \n\
+    clusters CI distributions using a hybrid bottom-up top-down \n\
+    clustering algorithm to build linguistic questions for decision \n\
+    trees.\n\
+    (From Arthur : I need to do some tracing before understand it \n\
+    what's the internal of the code)";
+
+    const char examplestr[] =
+"Example: \n\
+make_quest -moddeffn $mdeffn -meanfn $meanfn -varfn $varfn -mixwfn \n\
+mixwfn -npermute 8 -niter 1 -qstperstt 20 -tempfn $tempfn -questfn \n\
+$questfn";
+
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-moddeffn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -142,7 +175,23 @@ parse_cmd_ln(int argc, char *argv[])
 	E_FATAL("Unable to validate command line arguments\n");
     }
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
 
     return 0;
 }
@@ -151,9 +200,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/06/17  19:39:49  arthchan2003
- * add back all command line information into the code
+ * Revision 1.2  2004/08/10  21:58:51  arthchan2003
+ * Incorporate help and example for the four final tools
  * 
+ * Revision 1.1  2004/06/17 19:39:49  arthchan2003
+ * add back all command line information into the code
+ *
  * Revision 1.4  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

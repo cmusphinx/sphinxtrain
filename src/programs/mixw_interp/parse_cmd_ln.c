@@ -70,6 +70,9 @@
 int
 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
 #include "cmd_ln_defn.h"
 
     cmd_ln_define(defn);
@@ -81,7 +84,24 @@ parse_cmd_ln(int argc, char *argv[])
 
     cmd_ln_parse(argc, argv);
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
 
     return 0;
 }
@@ -91,9 +111,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/06/17  19:39:49  arthchan2003
- * add back all command line information into the code
+ * Revision 1.2  2004/08/10  21:58:56  arthchan2003
+ * Incorporate help and example for the four final tools
  * 
+ * Revision 1.1  2004/06/17 19:39:49  arthchan2003
+ * add back all command line information into the code
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
