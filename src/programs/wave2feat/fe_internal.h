@@ -37,6 +37,10 @@
 #ifndef _FE_INTERNAL_H_
 #define _FE_INTERNAL_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef	M_PI
 #define M_PI	(3.14159265358979323846)
 #endif	/* M_PI */
@@ -65,5 +69,9 @@ void fe_free_2d(void **arr);
 void fe_print_current(fe_t *FE);
 void fe_parse_general_params(param_t const *P, fe_t *FE);
 void fe_parse_melfb_params(param_t const *P, melfb_t *MEL);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
