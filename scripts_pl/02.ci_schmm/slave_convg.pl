@@ -334,11 +334,13 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
 
     $NUM_CI_STATES = $NUM_PHONES * $CFG_STATESPERHMM;
-    if (open CPFILE, "$CFG_CP_OPERATION") {
+    if (open CPFILE, ">$CFG_CP_OPERATION") {
       for ($CI_STATE = 0; $CI_STATE < $NUM_CI_STATES; $CI_STATE++) {
 	print CPFILE "$CI_STATE\t0\n";
       }
       close(CPFILE);
+    } else {
+      warn "Can't open $CFG_CP_OPERATION\n"; 
     }
 
     #-------------------------------------------------------------------------
@@ -349,6 +351,8 @@ sub FlatInitialize ()
 
     $logfile = "$logdir/${CFG_EXPTNAME}.cpmean_cihmm.log";
     &ST_HTML_Print ("\t\tcp_mean <A HREF=\"$logfile\">Log File</A>\n");    
+
+    open LOG,">$logfile";
 
     if (open PIPE, "$CPPARM -cpopsfn $CFG_CP_OPERATION -igaufn $outhmm/globalmean -ncbout $NUM_CI_STATES -ogaufn $outhmm/means -feat $CFG_FEATURE 2>&1 |") {
     
@@ -366,6 +370,8 @@ sub FlatInitialize ()
     
     $logfile = "$logdir/${CFG_EXPTNAME}.cpvar_cihmm.log";
     &ST_HTML_Print ("\t\tcp_var <A HREF=\"$logfile\">Log File</A>\n");    
+
+    open LOG,">$logfile";
 
     if (open PIPE, "$CPPARM -cpopsfn $CFG_CP_OPERATION -igaufn $outhmm/globalvar -ncbout $NUM_CI_STATES -ogaufn $outhmm/variances -feat $CFG_FEATURE 2>&1 |") {
     
