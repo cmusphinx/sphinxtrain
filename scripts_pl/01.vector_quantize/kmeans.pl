@@ -74,7 +74,7 @@ require $cfg_file;
 my ($hmmdir,$outhmm,$segdmpdir,$dumpfile,$logfile);
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("    KMeans ");
+&ST_Log ("   KMeans ");
 
 # Definitions
 $hmmdir = "$CFG_BASE_DIR/model_parameters";

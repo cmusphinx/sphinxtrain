@@ -107,7 +107,6 @@ cp -pr $SPHINXTRAINDIR/scripts_pl/0* scripts_pl
 cp -p $SPHINXTRAINDIR/scripts_pl/RunAll.pl scripts_pl
 cp -p $SPHINXTRAINDIR/scripts_pl/maketopology bin
 cp -p $SPHINXTRAINDIR/scripts_pl/make_feats bin
-cp -p $SPHINXTRAINDIR/scripts_pl/make_s2_models bin
 cp -p $SPHINXTRAINDIR/scripts_pl/make_dict bin
 
 echo Generating SphinxTrain specific scripts and config file

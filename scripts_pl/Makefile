@@ -49,11 +49,11 @@ TOP=..
 DIRNAME=scripts_pl
 BUILD_DIRS = 00.verify 01.vector_quantize 02.ci_schmm 03.makeuntiedmdef \
              04.cd_schmm_untied 05.buildtrees \
-             06.prunetree 07.cd-schmm 08.deleted-interpolation
+             06.prunetree 07.cd-schmm 08.deleted-interpolation \
+             09.make_s2_models
 ALL_DIRS= $(BUILD_DIRS)
 FESTIVAL_SCRIPTS = make_dict.festival
-TMPSCRIPTS=setup_SphinxTrain maketopology make_feats \
-           make_s2_models
+TMPSCRIPTS=setup_SphinxTrain maketopology make_feats
 FILES = Makefile RunAll.pl $(TMPSCRIPTS) \
         $(FESTIVAL_SCRIPTS)
 

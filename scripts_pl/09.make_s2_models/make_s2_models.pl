@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ## ====================================================================
 ##
-## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
+## Copyright (c) 2000 Carnegie Mellon University.  All rights 
 ## reserved.
 ##
 ## Redistribution and use in source and binary forms, with or without
@@ -44,9 +44,12 @@
 ## OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ##
 ## ====================================================================
-##
-## Author: Ricky Houghton
-##
+#*************************************************************************
+#  Build SphinxII models from Sphinx3 semicontinous models
+#*************************************************************************
+#
+#  Author: Alan W Black (awb@cs.cmu.edu)
+#
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
@@ -62,48 +65,42 @@ if (! -s "$cfg_file") {
 }
 require $cfg_file;
 
-# this script runs deleted interpolation on a bunch of semi-cont
-# hmm buffers. You need 2 or more buffers to run this!!
-
-my $nsenones = "$CFG_N_TIED_STATES";
-
-my $INTERP = "$CFG_BIN_DIR/delint";
-my $cilambda = 0.9;
-
-# up to 99 buffers
-my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_"."$CFG_N_TIED_STATES";
-$bwaccumdir 	     = "";
-for (<${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*>) {
-    $bwaccumdir .= " $_";
-}
-
-my $hmm_dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_"."$CFG_N_TIED_STATES"."_delinterp";
-mkdir ($hmm_dir,0777) unless -d $hmm_dir;
-
-system("cp $cd_hmmdir/means $hmm_dir/means");
-system("cp $cd_hmmdir/variances $hmm_dir/variances");
-system("cp $cd_hmmdir/transition_matrices $hmm_dir/transition_matrices");
-my $mixwfn = "$hmm_dir/mixture_weights";
-
-my $moddeffn = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
-
-my $logdir = "$CFG_BASE_DIR/logdir/08.deleted_interpolation";
+my $scriptdir = "scripts_pl/09.make_s2_models";
+my $logdir = "$CFG_LOG_DIR/09.make_s2_models";
 mkdir ($logdir,0777) unless -d $logdir;
-my $logfile = "$logdir/$CFG_EXPTNAME.deletedintrep-${nsenones}.log";
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("MODULE: 08 deleted interpolation\n");
-&ST_Log ("    Cleaning up directories: logs...\n");
-system ("rm  -rf $logdir/*");
+&ST_Log ("MODULE: 09 COnvert to Sphinx2 format models\n");
+&ST_Log ("    Cleaning up old log files...\n");
+system ("/bin/rm -f $logdir/*");
 
-open LOG,"> $logfile";
+my $logfile_cb = "$logdir/${CFG_EXPTNAME}.mk_s2cb.log";
+my $logfile_chmm = "$logdir/${CFG_EXPTNAME}.mk_s2chmm.log";
+my $logfile_senone = "$logdir/${CFG_EXPTNAME}.mk_s2seno.log";
+my $logfile_s2phone = "$logdir/${CFG_EXPTNAME}.mk_s2phone.log";
 
-if (open PIPE,"$INTERP -accumdirs $bwaccumdir -moddeffn $moddeffn -mixwfn $mixwfn -cilambda $cilambda -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH -maxiter 4000 2>&1 2>&1 |") {
-    while ($line = <PIPE>) {
-       print LOG $line;
-    }
-    close PIPE;
-    close LOG;
-}
+$s3mdef = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
+$s2dir = "$CFG_BASE_DIR/model_parameters/s2models";
+mkdir ($s2dir,0777) unless -d $s2dir;
+
+$s3hmmdir="$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_semi_$CFG_N_TIED_STATES"."_delinterp";
+$s3mixw = "$s3hmmdir/mixture_weights";
+$s3mean = "$s3hmmdir/means";
+$s3var = "$s3hmmdir/variances";
+$s3tmat = "$s3hmmdir/transition_matrices";
+
+&ST_Log ("    Make codebooks\n");
+system("$CFG_BIN_DIR/mk_s2cb -meanfn $s3mean -varfn $s3var -cbdir $s2dir -varfloor 0.00001 >$logfile_cb 2>&1 ");
+&ST_Log ("    Make chmm files\n");
+system("$CFG_BIN_DIR/mk_s2hmm -moddeffn $s3mdef -mixwfn $s3mixw -tmatfn $s3tmat -hmmdir $s2dir >$logfile_chmm 2>&1");
+&ST_Log ("    Make senome file\n");
+system( "$CFG_BIN_DIR/mk_s2seno -moddeffn $s3mdef -mixwfn $s3mixw -tpfloor 0.0000001 -hmmdir $s2dir >$logfile_senone 2>&1");
+system( "rm $s2dir/*.ccode $s2dir/*.d2code $s2dir/*.p3code $s2dir/*.xcode");
+&ST_Log ("    Make phone and map files\n");
+$tmpf="tmp.phones";
+system ( "grep -v \"^#\" $s3mdef | awk 'NF==12 {print \$1,\$2,\$3,\$4}' >$tmpf\n");
+system("$CFG_BIN_DIR/mk_s2phone -s2phonefn $s2dir/phone -phonelstfn $tmpf >$logfile+s2phone 2>&1");
+
+system("rm -f $tmpf");
 
 exit 0;

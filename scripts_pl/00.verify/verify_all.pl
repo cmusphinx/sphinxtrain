@@ -66,7 +66,7 @@ require $cfg_file;
 $ret_value = 0;
 
 $| = 1;				# Turn on autoflushing
-&ST_Log ("MODULE: 00 $0\n");
+&ST_Log ("MODULE: 00 verify training files\n");
 
 # PHASE 1: Check to see if the phones in the dictionary are listed in the phonelist file
 # PHASE 2: Check to make sure there are not duplicate entries in the dictionary

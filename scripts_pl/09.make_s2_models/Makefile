@@ -1,4 +1,3 @@
-#!/bin/csh -f
 # ====================================================================
 # Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
 #
@@ -43,87 +42,16 @@
 #
 # ====================================================================
 #
-# NOTE:
-# The mdeffile input argument should be built from recognition dictionary
+#  Perl scripts
 #
+# ====================================================================
+TOP=../..
+DIRNAME=scripts_pl/09.make_s2_models
+BUILD_DIRS = 
+ALL_DIRS = $(BUILD_DIRS)
+FILES = Makefile make_s2_models.pl
 
-set echo
+ALL = 
 
-set s3mdef = ./model_architecture/time.6000.mdef
-set s2dir = ./sphinx_2_models
+include $(TOP)/config/common_make_rules
 
-set contdir = ./model_parameters/time.cd_semi_6000_delinterp
-
-set s3mixw = $contdir/mixture_weights
-set s3mean = $contdir/means
-set s3var = $contdir/variances
-set s3tmat = $contdir/transition_matrices
-
-
-###########################################################
-# Create s2dir if it doesn't exist
-
-if (! -e $s2dir) mkdir -p $s2dir
-
-
-###########################################################
-# make s2 codebooks
-
-unset echo
-echo ""
-echo "----------------- Make codebooks -----------------"
-echo ""
-set echo
-
-bin/mk_s2cb \
-    -meanfn $s3mean \
-    -varfn  $s3var \
-    -cbdir  $s2dir \
-    -varfloor 0.00001
-
-
-###########################################################
-# make s2 mixing weights
-
-unset echo
-echo ""
-echo "----------------- Make chmm files -----------------"
-echo ""
-set echo
-
-bin/mk_s2hmm \
-    -moddeffn $s3mdef \
-    -mixwfn   $s3mixw \
-    -tmatfn   $s3tmat \
-    -hmmdir   $s2dir
-
-###########################################################
-# make s2 mixing weights sendump file
-
-unset echo
-echo ""
-echo "----------------- Make sendump file -----------------"
-echo ""
-set echo
-
-bin/mk_s2seno s2_4x $s3mdef .semi. $s3mixw 0.0000001 $s2dir/sendump
-rm $s2dir/*.ccode $s2dir/*.d2code $s2dir/*.p3code $s2dir/*.xcode
-
-###########################################################
-# make s2 phone and map files
-
-unset echo
-echo ""
-echo "----------------- Make phone and map files -----------------"
-echo "**** ASSUMING $s3mdef IS BUILT FOR THE RECOGNITION DICTIONARY ****"
-echo ""
-set echo
-
-set tmpf = tmp.$$
-grep -v "^#" $s3mdef | awk 'NF==12 {print $1,$2,$3,$4}' > $tmpf
-bin/mk_s2phone -s2phonefn $s2dir/phone -phonelstfn $tmpf
-
-rm $tmpf
-
-unset echo
-echo "----------------- DONE -----------------"
