@@ -49,7 +49,7 @@ TOP=../..
 DIRNAME=scripts_pl/07.cd-schmm
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-FILES = Makefile baum_welch.pl norm.pl norm_and_launchbw.pl slave_conv.pl
+FILES = Makefile baum_welch.pl norm.pl norm_and_launchbw.pl slave_convg.pl
 
 ALL = 
 

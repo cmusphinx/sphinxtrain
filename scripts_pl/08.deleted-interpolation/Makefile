@@ -49,7 +49,7 @@ TOP=../..
 DIRNAME=scripts_pl/08.deleted-interpolation
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-FILES = Makefile deleted_interpolation_pl
+FILES = Makefile deleted_interpolation.pl
 
 ALL = 
 

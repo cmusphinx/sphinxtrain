@@ -55,7 +55,7 @@ SRCS = \
 H = \
   parse_cmd_ln.h
 
-FILES = Makefile $(SRCS) $(H) phone.c
+FILES = Makefile $(SRCS) $(H)
 
 TARGET = mk_s2hmm
 
