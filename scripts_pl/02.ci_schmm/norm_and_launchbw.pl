@@ -94,14 +94,14 @@ if ($num_done != $npart) {
     }
     print "failed to run!\n";
     close OUTPUT;
-    exit 0;
+    exit (0);
 }
 
 if ($tot_frms == 0) {
     open OUTPUT,">$log";
     print "Baum welch ran successfully for only 0 frames! Aborting..\n";
     close OUTPUT;
-    exit 0;
+    exit (0);
 }
 
 $lkhd_per_frame = $tot_lkhd/$tot_frms;
@@ -109,7 +109,7 @@ $lkhd_per_frame = $tot_lkhd/$tot_frms;
 $previter = $iter - 1;
 $prev_norm = "${CFG_CI_LOG_DIR}/${CFG_EXPTNAME}.${previter}.norm.log";
 if (! -s $prev_norm) {
-    # we seem to be starting from an intermediate iter value
+    # Either iter == 1 or we are starting from an intermediate iter value
     system ("$CFG_CI_PERL_DIR/norm.pl $iter");
     system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
     &Launch_BW();
