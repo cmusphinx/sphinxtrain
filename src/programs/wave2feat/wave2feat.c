@@ -51,6 +51,7 @@
 #include <time.h>
 #include <sys/file.h>
 #include <sys/stat.h>
+#include <sys/fcntl.h>
 
 #include "new_fe.h"
 #include "new_fe_sp.h"
