@@ -118,7 +118,9 @@ int32 fe_convert_files(param_t *P)
 
 	    if (P->verbose) printf("%s\n",infile);
 
-	    fe_openfiles(P,FE,infile,&fp_in,&total_samps,&nframes,&nblocks,outfile,&fp_out);
+	    if (fe_openfiles(P,FE,infile,&fp_in,&total_samps,&nframes,&nblocks,outfile,&fp_out) != FE_SUCCESS){
+	      exit(0);
+	    }
 
 	    if (nblocks*P->blocksize>=total_samps) 
 		last_blocksize = total_samps - (nblocks-1)*P->blocksize;
@@ -190,7 +192,9 @@ int32 fe_convert_files(param_t *P)
 	fe_build_filenames(P,fileroot,&infile,&outfile);
 	if (P->verbose) printf("%s\n",infile);
 
-	fe_openfiles(P,FE,infile,&fp_in,&total_samps,&nframes,&nblocks,outfile,&fp_out);
+	if (fe_openfiles(P,FE,infile,&fp_in,&total_samps,&nframes,&nblocks,outfile,&fp_out) != FE_SUCCESS){
+	  exit(0);
+	}
 	
 	if (nblocks*P->blocksize>=total_samps) 
 	    last_blocksize = total_samps - (nblocks-1)*P->blocksize;
@@ -236,7 +240,9 @@ int32 fe_convert_files(param_t *P)
 	    last_frame_cep = (float32 **)fe_create_2d(1,FE->NUM_CEPSTRA,sizeof(float32));
 	    last_frame = fe_end_utt(FE, last_frame_cep[0]);
 	    if (last_frame>0){
-		fe_writeblock_feat(P,FE,fp_out,last_frame,last_frame_cep);
+	      if (fe_writeblock_feat(P,FE,fp_out,last_frame,last_frame_cep) != FE_SUCCESS){
+		exit(0);
+	      }
 		frames_proc++;
 	    }
 	    total_frames += frames_proc;

@@ -51,6 +51,8 @@
 #define LITTLE 1
 #define BIG 2
 
+#define FE_SUCCESS 0
+#define FE_OUTPUT_FILE_SUCCESS 0
 #define FE_CONTROL_FILE_ERROR 1
 #define FE_START_ERROR 2
 #define FE_UNKNOWN_SINGLE_OR_BATCH 3
