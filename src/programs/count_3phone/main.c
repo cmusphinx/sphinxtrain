@@ -51,6 +51,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "count.h"
 #include "wrec.h"
 int Num_New_Phones,  Sil_Index, Num_Phones;

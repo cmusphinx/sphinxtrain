@@ -150,6 +150,7 @@ if ($MC && $n_parts > 1)
 	}
 	sleep 30;
     }
+    print "iteration $iter: $n_parts completed\n";
 }
 else
 {

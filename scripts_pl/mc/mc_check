@@ -80,7 +80,7 @@ while ( <CFGFD> ) {
     $mc_job_id="$s[0].$job_num";
     $mc_job_file="$mc_job_info_dir/$mc_job_id";
 
-    system("ssh $s[0] \"(cd $s[1] && wc bin/bw >$mc_job_file.log)\" 2>/dev/null");
+    system("ssh -n $s[0] \"(cd $s[1] && wc bin/bw >$mc_job_file.log)\" 2>/dev/null");
 
     if ( -f "$mc_job_file.log")
     {
@@ -109,7 +109,7 @@ sub get_remote_loadav
     }
     else
     {
-	open rrr,"ssh $remote_machine uptime 2>/dev/null |";
+	open rrr,"ssh -n $remote_machine uptime 2>/dev/null |";
 	while ($line = <rrr>)
         {
 	    chomp($line);

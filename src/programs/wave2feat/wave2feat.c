@@ -741,4 +741,5 @@ int32 fe_usage(char **argv)
 	    __DATE__,__TIME__);
     
     exit(0);
+    return 0;
 }

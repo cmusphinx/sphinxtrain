@@ -61,7 +61,7 @@ $mc_info_dir="mc";
 $mc_job_info_dir="$mc_info_dir/job_info";
 $mc_config="etc/mc_config";
 
-die "config file $mc_config no found" unless -f $mc_config;
+die "config file $mc_config no found\nno_job\n" unless -f $mc_config;
 
 # run job on next unloaded machine
 
@@ -130,7 +130,7 @@ $mc_job_file="$mc_job_info_dir/$mc_job_id";
 # Due to NFS latency, we'll just mark that machine is used now,
 system("/bin/touch $mc_job_file");
 # Do the remote execution 
-system("ssh $best_machine \"(cd $best_dir && /bin/touch $mc_job_file && $mc_command >$mc_job_file.log && /bin/rm $mc_job_file &)\"");
+system("ssh -n $best_machine \"(cd $best_dir && /bin/touch $mc_job_file && $mc_command >$mc_job_file.log && /bin/rm $mc_job_file &)\" 2>/dev/null");
 #}
 
 print $mc_job_file."\n";
@@ -147,7 +147,7 @@ sub get_remote_loadav
     }
     else
     {
-	open rrr,"ssh $remote_machine uptime |";
+	open rrr,"ssh -n $remote_machine uptime |";
 	while ($line = <rrr>)
         {
 	    chomp($line);

@@ -94,7 +94,7 @@ $logdir = "$CFG_LOG_DIR/02.ci_schmm";
 if ($iter == 1) {
     &ST_Log ("MODULE: 02 Training Context Independent models\n");
     &ST_Log ("    Cleaning up directories: accumulator...");
-    system ("rm  -rf $bwaccumdir/${CFG_EXPTNAME}_buff_*");
+    system ("rm -rf $bwaccumdir/${CFG_EXPTNAME}_buff_*");
     &ST_Log ("logs...");
     system ("rm -f $logdir/*");
     &ST_Log ("models...\n");
@@ -148,6 +148,7 @@ if ($MC && $n_parts > 1)
 	}
 	sleep 30;
     }
+    print "iteration $iter: $n_parts completed\n";
 }
 else
 {

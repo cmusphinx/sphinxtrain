@@ -144,7 +144,7 @@ void counter_reset_all ( void )
 	counter_reset (i);
 }
 
-
+#if 0
 static int32 get_namelen ( void )
 {
     int32 i, len;
@@ -159,7 +159,7 @@ static int32 get_namelen ( void )
 
     return (len);
 }
-
+#endif
 
 void counter_print_all (FILE *fp)
 {

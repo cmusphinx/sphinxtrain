@@ -51,6 +51,7 @@
 #define NOISE_WORD(X)  ((X)[0] == '+' && (X)[1] == '+')
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "wrec.h"
 #include "count.h"
 #define MAXPHONES          500000

@@ -57,6 +57,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include "count.h"
 
@@ -78,7 +79,6 @@ void *malloc();
 char *malloc();
 #endif
 
-char           *strcpy (), *strncpy ();
 extern int      Num_Phones, Num_Words;
 extern struct phone *Phone;
 

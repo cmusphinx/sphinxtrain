@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,92 +44,54 @@
  * ====================================================================
  *
  */
-/*********************************************************************
- *
- * File: parse_cmd_ln.c
- * 
- * Traceability: 
- * 
- * Description: 
- * 
- * Author: 
- * 	$Author$
- *********************************************************************/
-
-#include <stdlib.h>
-#include "s3/cmd_ln.h"
-
-#include "cmd_ln.h"
-
-int
-parse_cmd_ln(int argc, char *argv[])
-{
-    static arg_def_t defn[] = {
-	{ "-tmatfn",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
-	      "A SPHINX-III transition matrix parameter file name" },
-	{ "-moddeffn",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
-	      "A SPHINX-III model definition file name" },
-	{ "-floor",
-	      CMD_LN_FLOAT32,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
-	      "Floor weight value to apply before renormalization" },
-	{ "-hmmdir",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
-	      "A directory containing SPHINX-III models consistent with -moddeffn" },
-	{ "-hmmext",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      "chmm",
-	      "Extension of a SPHINX-II model file." },
-	{ NULL,
-	      CMD_LN_UNDEF,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
-	      NULL }
-    };
-
-    cmd_ln_define(defn);
-
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
-
-    cmd_ln_parse(argc, argv);
-
-    cmd_ln_print_configuration();
-
-    return 0;
-}
-
-
 /*
- * Log record.  Maintained by RCS.
+ * logs3.h -- log(base-S3) module.
  *
- * $Log$
- * Revision 1.3  2001/02/20  00:28:35  awb
- * *** empty log message ***
+ * HISTORY
  * 
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/01/21  13:04:17  eht
- * Initial revision
+ * 28-Apr-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
+ * 		Added log_to_logs3_factor(), and logs3_to_p().
  * 
- * Revision 1.1  95/06/02  20:34:58  eht
- * Initial revision
- * 
- *
+ * 05-Nov-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
+ * 		Created.
  */
+
+
+#ifndef _LIBMISC_LOGS3_H_
+#define _LIBMISC_LOGS3_H_
+
+
+/*
+ * In evaluating HMM models, probability values are often kept in log domain,
+ * to avoid overflow.  Furthermore, to enable these logprob values to be held
+ * in int32 variables without significant loss of precision, a logbase of
+ * (1+epsilon), epsilon<<1, is used.  This module maintains this logbase, and
+ * other functions to support it.
+ */
+
+/* Initialize module with a new base (> 1.0).  Returns 0 if successful, -1 otherwise. */
+int32 logs3_init (float64 base);
+
+/* Given logs3p, logs3q (ie, log-S3base of p and q), return logs3(p+q) */
+int32 logs3_add (int32 logs3p, int32 logs3q);
+
+/* Given p, return logs3(p) */
+int32 logs3 (float64 p);
+
+/* Given log(p), return logs3(p) */
+int32 log_to_logs3 (float64 logp);
+
+/* Return the multiplication factor used for converting log values to logs3 */
+float64 log_to_logs3_factor( void );
+
+/* Given logs3(p), return log(p) */
+float64 logs3_to_log (int32 logs3p);
+
+/* Given logs3(p), return p */
+float64 logs3_to_p (int32 logs3p);
+
+/* Given log10(p), return logs3(p) */
+int32 log10_to_logs3 (float64 log10p);
+
+
+#endif

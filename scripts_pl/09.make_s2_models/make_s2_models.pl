@@ -94,9 +94,8 @@ system("$CFG_BIN_DIR/mk_s2cb -meanfn $s3mean -varfn $s3var -cbdir $s2dir -varflo
 &ST_Log ("    Make chmm files\n");
 system("$CFG_BIN_DIR/mk_s2hmm -moddeffn $s3mdef -mixwfn $s3mixw -tmatfn $s3tmat -hmmdir $s2dir >$logfile_chmm 2>&1");
 &ST_Log ("    Make senome file\n");
-system( "$CFG_BIN_DIR/mk_s2seno -moddeffn $s3mdef -mixwfn $s3mixw -tpfloor 0.0000001 -hmmdir $s2dir >$logfile_senone 2>&1");
+system( "$CFG_BIN_DIR/mk_s2sendump -moddeffn $s3mdef -mixwfn $s3mixw -tpfloor 0.0000001 -feattype s2_4x -sendumpfn $s2dir/sendump >$logfile_senone 2>&1");
 #system( "rm $s2dir/*.ccode $s2dir/*.d2code $s2dir/*.p3code $s2dir/*.xcode");
-exit
 &ST_Log ("    Make phone and map files\n");
 $tmpf="tmp.phones";
 system ( "grep -v \"^#\" $s3mdef | awk 'NF==12 {print \$1,\$2,\$3,\$4}' >$tmpf\n");

@@ -58,9 +58,12 @@
  **********************************************************************
  * HISTORY
  * $Log$
- * Revision 1.1  2000/11/17  15:34:51  awb
+ * Revision 1.2  2001/02/20  00:28:35  awb
  * *** empty log message ***
  * 
+ * Revision 1.1  2000/11/17 15:34:51  awb
+ * *** empty log message ***
+ *
  * Revision 1.3  90/12/11  17:58:02  mja
  * 	Add copyright/disclaimer for distribution.
  * 
@@ -72,6 +75,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <varargs.h>
 
 int quit (status,fmt,va_alist)

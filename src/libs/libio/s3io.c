@@ -326,11 +326,15 @@ s3read(void *pointer,
     uint16 *i16;
     uint32 *i32;
     uint32 sum;
+    int q,d,r;
 
-    ret = fread(pointer, size, num_items, stream);
-    if ((long)ret < 0) {
-	return ret;
+    /* big reads accross NFS may fail to allow increment reads */
+    for (d=0,q=num_items; d < num_items; d+=r,q-=r)
+    {
+	r = fread(pointer+(d*size), size, (q > 256) ? 256 : q, stream);
+	if (r <= 0) return r;
     }
+    ret = d;
 
     if (swap) {
 	switch (size) {
@@ -630,6 +634,7 @@ s3write(const void *pointer,
     uint16 *i16;
     uint32 *i32;
     size_t i;
+    size_t q,r,d;
 
     sum = *chksum;
 
@@ -660,7 +665,16 @@ s3write(const void *pointer,
 
     *chksum = sum;
 
-    return fwrite(pointer, size, num_items, stream);
+    /* big writes may not work across NFS so allow for them incrementally */
+    for (q=num_items,d=0; q > 0; d+=r,q-=r)
+    {
+	r = fwrite(pointer+(d*size), size, 
+		   (q > 256) ? 256 : q, stream);
+	if (r <= 0)
+	    return r;
+    }
+
+    return num_items;
 }
 
 
@@ -799,9 +813,12 @@ s3write_1d(void *arr,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:13  awb
+ * Revision 1.3  2001/02/20  00:28:35  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:13  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *

@@ -317,7 +317,7 @@ backward_update(float64 **active_alpha,
 {
     void *tt;			/* temp variable used to do
 				   pointer swapping */
-    uint32 i, j, s, u, q, q_f;	/* various variables of iteration */
+    uint32 i, j=0, s, u, q, q_f;	/* various variables of iteration */
     int32 t;			/* time */
     uint32 *active_a;	/* an active state list */
     uint32 *active_b;	/* another active state list */
@@ -1212,9 +1212,12 @@ free:
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:13  awb
+ * Revision 1.3  2001/02/20  00:28:35  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:13  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *

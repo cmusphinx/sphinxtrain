@@ -93,7 +93,7 @@ if ($iter == 1) {
    &ST_Log ("MODULE: 04 Training Context Dependent models\n");
    &ST_Log ("    Cleaning up directories: accumulator...");
 
-    system ("rm -f $CFG_BWACCUM_DIR/${CFG_EXPTNAME}_buff_?/* ${CFG_BWACCUM_DIR}/${CFG_EXPTNAME}_buff_??/*");
+    system ("rm -rf $CFG_BWACCUM_DIR/${CFG_EXPTNAME}_buff_*");
 
     &ST_Log ("logs...");
     system ("rm -rf $logdir") unless $TESTING;
@@ -105,7 +105,9 @@ if ($iter == 1) {
     &Initialize () unless $TESTING;
 }
 
-if ($MC && $n_parts > 1)
+# The parallel version can't really cope with the huge disk read/writes
+# so we always make this serial
+if (0 && $MC && $n_parts > 1)
 {
     # multi-processor version -- assumes ssh machine works
     for ($i=1; $i<=$n_parts; $i++)
@@ -131,6 +133,7 @@ if ($MC && $n_parts > 1)
 	{
 	    print "running job $i on $job_name \n";
 	    $parts[$i] = $job_name;
+	    sleep 30; # to offset the runs
 	}
     }
     # Wait for them all to finish
@@ -148,6 +151,7 @@ if ($MC && $n_parts > 1)
 	}
 	sleep 30;
     }
+    print "iteration $iter: $n_parts completed\n";
 }
 else
 {

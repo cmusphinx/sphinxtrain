@@ -146,6 +146,7 @@ static void fwrite_int32 (fp, val)
     fwrite (&val, sizeof(int), 1, fp);
 }
 
+
 static void senone_dump (const model_def_t *mdef, const senone_t *s, char *file)
 {
     int32 i, j, k, c, m, f, n, p, sb, se;
@@ -153,6 +154,7 @@ static void senone_dump (const model_def_t *mdef, const senone_t *s, char *file)
     FILE *fpout;
     int32 lut[256];
     senprob_t *sp;
+    int n_emit_state,d,d2,pmax,lpmax;
     
     E_INFO("Writing S2 format sendump file: %s\n", file);
     if ((fpout = fopen(file, "wb")) == NULL)
@@ -193,8 +195,10 @@ static void senone_dump (const model_def_t *mdef, const senone_t *s, char *file)
     sp = (senprob_t *) ckd_calloc (s->n_sen, sizeof(senprob_t));
 
     /* Write PDFs (#feat x #wt x #sen) */
-    if (mdef->n_emit_state != 5)
-	E_FATAL("#States(%d) != 5\n", mdef->n_emit_state);
+    if (mdef->max_n_state - 1 != 5)
+
+	E_FATAL("#States(%d) != 5\n", mdef->max_n_state - 1);
+    n_emit_state = mdef->max_n_state - 1;
     for (f = 0; f < s->n_feat; f++) {
 	fw = s->mgau2sen[0].feat_mixw;
 
@@ -203,14 +207,19 @@ static void senone_dump (const model_def_t *mdef, const senone_t *s, char *file)
 	     * In S3, all CI-senones (for all CI-phones) come first.  CD-senones later.
 	     * But in S2, for each CI-phone, CD-senones come first and then CI-senones.
 	     */
-	    k = 0;
-	    for (p = 0; p < mdef->n_ciphone; p++) {
+	    k = 0, d=mdef->acmod_set->n_ci;
+	    lpmax = mdef->acmod_set->n_ci * n_emit_state - 1;
+	    for (p = 0; p < mdef->acmod_set->n_ci; p++) {
 		/* CD senones first; find start and end points in S3 data */
-		sb = 0;
-		for (j = 0; j < p; j++)
-		    sb += mdef->ciphone2n_cd_sen[j];
-		sb += (mdef->n_ciphone * mdef->n_emit_state);
-		se = sb + mdef->ciphone2n_cd_sen[p] - 1;
+		for (pmax = lpmax ; mdef->defn[d].tmat == p; d++)
+		{
+		    for (d2=0; d2 < n_emit_state; d2++)
+			if (mdef->defn[d].state[d2] > pmax)
+			    pmax = mdef->defn[d].state[d2];
+		}
+		sb = lpmax + 1;
+		se = pmax;
+		lpmax = pmax;
 		
 		for (i = sb; i <= se; i++) {
 		    m = s->sen2mgau[i];
@@ -222,8 +231,8 @@ static void senone_dump (const model_def_t *mdef, const senone_t *s, char *file)
 		}
 
 		/* CI senones next */
-		sb = p * mdef->n_emit_state;
-		se = sb + mdef->n_emit_state - 1;
+		sb = p * n_emit_state;
+		se = sb + n_emit_state - 1;
 		
 		for (i = sb; i <= se; i++) {
 		    m = s->sen2mgau[i];
@@ -234,7 +243,7 @@ static void senone_dump (const model_def_t *mdef, const senone_t *s, char *file)
 		    sp[k++] = fw[f].prob[j][c];
 		}
 	    }
-	    assert (k == mdef->n_sen);
+	    assert (k == mdef->n_tied_state);
 	    
 	    /* Write lut for feat f, codeword c */
 	    for (i = 0; i < 256; i++)
@@ -247,7 +256,6 @@ static void senone_dump (const model_def_t *mdef, const senone_t *s, char *file)
 
     fclose (fpout);
 }
-
 
 static int32 senone_mgau_map_read (senone_t *s, char *file_name)
 {
@@ -528,7 +536,6 @@ static int32 senone_mixw_read(senone_t *s, char *file_name, float64 mixwfloor)
     return 0;
 }
 
-
 /* In the old S3 files, all senones have the same "shape" (#codewords/senone/feat) */
 senone_t *senone_init (char *mixwfile, char *sen2mgau_map, float64 mixwfloor)
 {
@@ -556,7 +563,6 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map, float64 mixwfloor)
     
     return s;
 }
-
 
 #if 0
 int32 senone_eval (senone_t *s, s3senid_t sid, int32 f, int32 *dist, int32 n_dist)
@@ -625,9 +631,11 @@ int main (int32 argc, char **argv)
     
     parse_cmd_ln(argc, argv);
 
-    feattype = (char *)cmd_ln_access("-feattype");
+    feattype = "s2_4x";
+
     mdeffile = (char *)cmd_ln_access("-moddeffn");
-    mgaumap = (char *)cmd_ln_access("-mgaumap");
+/*    mgaumap = (char *)cmd_ln_access("-mgaumap"); */
+    mgaumap = ".semi.";
     senfile = (char *)cmd_ln_access("-mixwfn");
     wtflr = (float64)(*(float32 *)cmd_ln_access("-tpfloor"));
     outfile = (char *)cmd_ln_access("-sendumpfn");
@@ -637,8 +645,9 @@ int main (int32 argc, char **argv)
 
     model_def_read(&m, mdeffile);
     s = senone_init (senfile, mgaumap, wtflr);
-    if (m->n_sen != s->n_sen)
-	E_FATAL("#senones different in mdef(%d) and mixw(%d) files\n", m->n_sen, s->n_sen);
+    printf("%p\n",s);
+    if (m->n_tied_state != s->n_sen)
+	E_FATAL("#senones different in mdef(%d) and mixw(%d) files\n", m->n_tied_state, s->n_sen);
     
     senone_dump (m, s, outfile);
 
