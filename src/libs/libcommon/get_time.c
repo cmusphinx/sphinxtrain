@@ -19,12 +19,7 @@
  *    prior written permission. To obtain permission, contact 
  *    sphinx@cs.cmu.edu.
  *
- * 4. Products derived from this software may not be called "Sphinx"
- *    nor may "Sphinx" appear in their names without prior written
- *    permission of Carnegie Mellon University. To obtain permission,
- *    contact sphinx@cs.cmu.edu.
- *
- * 5. Redistributions of any form whatsoever must retain the following
+ * 4. Redistributions of any form whatsoever must retain the following
  *    acknowledgment:
  *    "This product includes software developed by Carnegie
  *    Mellon University (http://www.speech.cs.cmu.edu/)."
@@ -135,9 +130,12 @@ get_time(uint32 *sec, float32 *frac_sec)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2000/09/29  22:35:13  awb
+ * Revision 1.3  2001/04/05  20:02:30  awb
  * *** empty log message ***
  * 
+ * Revision 1.2  2000/09/29 22:35:13  awb
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *

@@ -35,5 +35,4 @@ EOF
 	exit 1
 fi
 
-
 AC_OUTPUT(config/config config/system.mak)
