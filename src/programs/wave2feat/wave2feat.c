@@ -45,8 +45,10 @@
 #include <string.h>
 #include <time.h>
 #include <sys/file.h>
+#include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
+#include <assert.h>
 
 #include "new_fe.h"
 #include "new_fe_sp.h"
@@ -105,7 +107,7 @@ int32 fe_convert_files(param_t *P)
 	fprintf(stderr,"memory alloc failed in fe_convert_files()\n...exiting\n");
 	exit(0);
     }
-    
+
     if (P->is_batch){
 	if ((ctlfile = fopen(P->ctlfile,"r")) == NULL){
 	    fprintf(stderr,"Unable to open control file %s\n",P->ctlfile);
@@ -113,13 +115,13 @@ int32 fe_convert_files(param_t *P)
 	}
 	while (fscanf(ctlfile,"%s",fileroot)!=EOF){
 	    fe_build_filenames(P,fileroot,&infile,&outfile);
-	    
+
+	    if (P->verbose) printf("%s\n",infile);
+
 	    fe_openfiles(P,FE,infile,&fp_in,&total_samps,&nframes,&nblocks,outfile,&fp_out);
 
 	    if (nblocks*P->blocksize>=total_samps) 
 		last_blocksize = total_samps - (nblocks-1)*P->blocksize;
-	    
-	    if (P->verbose) printf("%s\n",infile);
 	    
 	    if (!fe_start_utt(FE)){
 		curr_block=1;
@@ -376,6 +378,25 @@ param_t *fe_parse_options(int32 argc, char **argv)
 	    exit(0);
         }
     }
+    if (P->is_single) {
+      if ((P->wavfile == NULL) || (P->cepfile == NULL)) {
+	fprintf(stderr, "No input or output file given\n");
+	exit(0);
+      }
+    }
+    else if (P->is_batch) {
+      if ((P->wavdir == NULL) || (P->cepdir == NULL) ||
+	  (P->wavext == NULL) || (P->cepext == NULL)) {
+	fprintf(stderr, "No input or output directory given or "
+		"no input or output extension given\n");
+	exit(0);
+      }
+    }
+    else {
+      fprintf(stderr, "Can't be simultaneously single and batch mode\n");
+      fprintf(stderr, "Define control file or input/output files\n");
+      exit(0);
+    }
     if (P->wavfile == NULL && P->wavdir == NULL){
 	fprintf(stderr,"No input file or file directory given\n");
 	exit(0);
@@ -405,7 +426,8 @@ void fe_init_params(param_t *P)
     P->NUM_FILTERS = DEFAULT_NUM_FILTERS;
     P->UPPER_FILT_FREQ = DEFAULT_UPPER_FILT_FREQ;
     P->LOWER_FILT_FREQ = DEFAULT_LOWER_FILT_FREQ;
-    P->is_batch = ON;
+    P->is_batch = OFF;
+    P->is_single = OFF;
     P->blocksize = DEFAULT_BLOCKSIZE;
     P->verbose = OFF;
     P->input_format=NIST;
@@ -546,7 +568,6 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
     else if (P->input_format == RAW){
 	P->input_endian = P->machine_endian;
     }
-    
     
     if ((fp = open(infile, O_RDONLY, 0644))<0){
         fprintf(stderr,"Cannot open %s\n",infile);
