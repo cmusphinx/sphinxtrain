@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 2004 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,15 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. To obtain permission, contact 
- *    sphinx@cs.cmu.edu.
- *
- * 4. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by Carnegie
- *    Mellon University (http://www.speech.cs.cmu.edu/)."
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -160,9 +154,12 @@ mk_s3mixw -mixwfn s3mixw -moddeffn s3mdef -hmmdir s2hmmdir";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2004/08/10  08:31:56  arthchan2003
- * s2 to s3 conversion tools
+ * Revision 1.3  2004/11/29  01:11:35  egouvea
+ * Fixed license terms in some new files.
  * 
+ * Revision 1.2  2004/08/10 08:31:56  arthchan2003
+ * s2 to s3 conversion tools
+ *
  * Revision 1.1  2004/06/17 19:39:50  arthchan2003
  * add back all command line information into the code
  *
