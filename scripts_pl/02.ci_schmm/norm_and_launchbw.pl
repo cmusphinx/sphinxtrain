@@ -45,6 +45,7 @@
 ##
 ## ====================================================================
 ##
+## Modified: Rita Singh, 27 Nov 2000
 ## Author: Ricky Houghton (converted from scripts by Rita Singh)
 ##
 
@@ -63,64 +64,102 @@ mkdir ($CFG_CI_LOG_DIR,0777) unless -d $CFG_CI_LOG_DIR;
 
 $log      = "$CFG_CI_LOG_DIR/${CFG_EXPTNAME}.$iter.norm.log";
 
-#$num_done = `grep "MLLR regmat" $CFG_CI_LOG_DIR/${CFG_EXPTNAME}.${iter}-*.bw.log | wc -l | awk '{print $1}'`;
-
-# Attempt to replace above:
-$num_done = 0;
-for $input_log (<${CFG_CI_LOG_DIR}/${CFG_EXPTNAME}.${iter}-*.bw.log>) {
- open LOG,$input_log;
- while (<LOG>) {
-     $num_done++ if /.*(MLLR regmat).*/;
- }
- close LOG;
+# Check the number and list of parts done. Compute avg likelihood per frame
+$num_done = 0; $tot_lkhd = 0; $tot_frms = 0;
+for ($i=1;$i<=$npart;$i++){
+    $done[$i] = 0;
+    $input_log = "${CFG_CI_LOG_DIR}/${CFG_EXPTNAME}.${iter}-${i}.bw.log";
+    next if (! -s $input_log);
+    open LOG,$input_log;
+    while (<LOG>) {
+        if (/.*(Counts saved to).*/) {
+            $num_done++;
+            $done[$i] = 1;
+        }
+        if (/.*(overall>).*/){
+            ($jnk,$jnk,$nfrms,$jnk,$jnk,$lkhd) = split(/ /);
+            $tot_lkhd = $tot_lkhd + $lkhd;
+            $tot_frms = $tot_frms + $nfrms;
+        }
+    }
+    close LOG;
 }
-
-print "$num_done parts of $npart of Baum Welch were successfully completed\n";
 
 if ($num_done != $npart) {
-  open OUTPUT,">$log";
-  print OUTPUT "Some of the baum-welch jobs seem to have bombed out. Expected $npart, got $num_done.\nAborting\!\!\!\\n";
-  close OUTPUT;
-  exit 0;
+    open OUTPUT,">$log";
+    print "Only $num_done parts of $npart of Baum Welch were successfully completed\n";
+    print "Parts "
+    for ($i=1;$i<=$npart;$i++) {
+        print "$i " if ($done[$i] == 0);
+    }
+    print "failed to run!\n";
+    close OUTPUT;
+    exit 0;
 }
 
-system ("$CFG_CI_PERL_DIR/norm.pl $iter");
+if ($tot_frms == 0) {
+    open OUTPUT,">$log";
+    print "Baum welch ran successfully for only 0 frames! Aborting..\n";
+    close OUTPUT;
+    exit 0;
+}
 
-# RAH, this needs to be cleaned up
-$like = `grep "overall>" $logdir/${$CFG_EXPTNAME}.${iter}-*.bw.log | awk '{X += $3;Y += $6} END {print Y/X}'`;
-system ("echo \"Current Overall Likelihood Per Frame = $like\" >> $log");
+$lkhd_per_frame = $tot_lkhd/$tot_frms;
+system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
 
-if ($iter == 1) { # Always perform a second iteration
+$previter = $iter - 1;
+$prev_norm = "${CFG_CI_LOG_DIR}/${CFG_EXPTNAME}.${previter}.norm.log";
+if (! -s $prev_norm) {
+    # we seem to be starting from an intermediate iter value
+    system ("$CFG_CI_PERL_DIR/norm.pl $iter");
     &Launch_BW();
     exit (0);
 }
 
-$previter = $iter - 1;
-$prevlike = `grep "overall>" $logdir/${exptname}.${previter}-*.bw.log | awk '{ X += $3; Y += $6} END {print Y/X}'`;
+# Find the likelihood from the previous iteration
+open LOG,$prev_norm; $prevlkhd = -99999999;
+while (<LOG>) {
+   if (/.*(Current Overall Likelihood Per Frame).*/){
+      ($jnk,$jnk,$jnk,$jnk,$jnk,$jnk,$prevlkhd) = split(/ /);
+   }
+}
+close LOG;
 
-
-# we seem to be starting from an intermediate iter value
-if  ($prevlike eq "") {
-  &Launch_BW();
-  exit (0);
+if ($prevlkhd == -99999999) {
+    # Some error with previous norm.log. Continue Baum Welch
+    system ("$CFG_CI_PERL_DIR/norm.pl $iter");
+    &Launch_BW();
+    exit (0);
 }
 
+if ($prevlkhd == 0) {
+    $convg_ratio = 1;
+}
+else {
 
-#hack to handle sign
-$absprev = `echo "$prevlike"|awk '$1 < 0 {print -$1} $1 > 0 {print $1}'`;
-system ("echo \"$prevlike $like $absprev\"|awk '{printf(\"Convergence Ratio = %f\n\",($2-$1)/$3)}' >> $log");
-$testval = `echo "$prevlike $like $absprev"|awk -v th=$CFG_CONVERGENCE_RATIO '($2-$1)/$3 > th {print 1} ($2-$1)/$3 < th {print 0}'`;
-
-
-if ($testval == 1) {
-  &Launch_BW();
-  exit (0);
+    $absprev = $prevlkhd;
+    $absprev = -$absprev if ($prevlkhd < 0);
+    $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
 
-# if testval != 1, the likelihoods have converged. No further jobs needed
-system ("echo \"The likelihoods have converged. Baum Welch training completed\!\" >> $log");
-system ("echo \"*********************************TRAINING COMPLETE***************************\" >> $log");
+system("echo \"Convergence ratio = $convg_ratio\" >> $log");
+
+if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
+    system ("$CFG_CI_PERL_DIR/norm.pl $iter");
+    &Launch_BW();
+    exit (0);
+}
+else {
+system ("echo \"The likelihoods have converged. Baum Welch training completed\!\
+" >> $log");
+system ("echo \"*********************************TRAINING COMPLETE**************
+*************\" >> $log");
 `date >> $log`;
+    system("echo \"Likelihoods have converged! Baum Welch training completed\!\" >> $log");
+    system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
+    system("date >> $log");
+    exit (0);
+}
 
 exit (0);
 
