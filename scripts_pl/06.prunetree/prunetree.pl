@@ -78,4 +78,11 @@ my $logdir = "$CFG_LOG_DIR/06.prunetree";
 mkdir ($logdir,0777) unless -d $logdir;
 my $logfile = "$logdir/$CFG_EXPTNAME.prunetree.$n_tied_states.log";
 
+$| = 1; # Turn on autoflushing
+&ST_Log ("    Prune trees ");
+system("echo");
+&ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A> ");
+
 system ("$PRUNETREE -itreedir $unprunedtreedir -nseno $n_tied_states -otreedir $prunedtreedir -moddeffn $mdef_file -psetfn $CFG_QUESTION_SET -minocc $occurance_threshold 2>$logfile");
+
+&ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");

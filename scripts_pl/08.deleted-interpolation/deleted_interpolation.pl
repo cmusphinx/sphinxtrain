@@ -91,7 +91,10 @@ $| = 1; # Turn on autoflushing
 &ST_Log ("    Cleaning up directories: logs...\n");
 system ("rm  -rf $logdir/*");
 
-&ST_Log ("    doing interpolation...\n");
+&ST_Log ("    Doing interpolation...");
+system("echo");
+&ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A> ");
+
 open LOG,"> $logfile";
 
 if (open PIPE,"$INTERP -accumdirs $bwaccumdir -moddeffn $moddeffn -mixwfn $mixwfn -cilambda $cilambda -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH -maxiter 4000 2>&1 2>&1 |") {
@@ -100,6 +103,9 @@ if (open PIPE,"$INTERP -accumdirs $bwaccumdir -moddeffn $moddeffn -mixwfn $mixwf
     }
     close PIPE;
     close LOG;
+    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
+} else {
+    &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> completed </font>\n");
 }
 
 exit 0;

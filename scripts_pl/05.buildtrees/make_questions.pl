@@ -78,7 +78,8 @@ my $MAKE_QUEST = "${CFG_BIN_DIR}/make_quests";
 $| = 1; # Turn on autoflushing
 &ST_Log ("MODULE: 05a Build Trees\n");
 &ST_Log ("    Make Questions ");
-&ST_HTML_Print ("<A HREF=\"$logfile\">Log File</A>\n");
+system("echo");
+&ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A> ");
 
 $|=1;
 if (open PIPE, "$MAKE_QUEST -moddeffn $mdeffn -meanfn $meanfn -varfn $varfn -mixwfn $mixwfn -npermute 8 -niter 1 -qstperstt 20 -tempfn $tempfn -questfn $questfn -type ${CFG_HMM_TYPE} 2>&1 |") {
@@ -89,11 +90,11 @@ while (<PIPE>) {
 }
 close PIPE;
 close LOG;
-&ST_Log ("\tFinished\n");
+&ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
 $| = 0;
 exit 0;
 }
 
 
-&ST_Log ("\tFailure\n");
+&ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> completed </font>\n");
 exit -1

@@ -111,6 +111,7 @@ sub BuildTree ()
     # either set of values
     #	-stwt     1.0 0.1 0.01 
     #	-stwt     1.0 0.3 0.2 
+    #   -stwt     1.0 0.3 0.1 0.01 0.001
     #	-ssplitthr 8e-4 \
     #	-csplitthr 1e-5 \
 

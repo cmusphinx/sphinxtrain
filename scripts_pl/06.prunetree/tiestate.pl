@@ -76,5 +76,11 @@ my $logfile = "$logdir/$CFG_EXPTNAME.tiestate.$n_tied_states.log";
 
 my $TIESTATE = "$CFG_BIN_DIR/tiestate";
 
+$| = 1; # Turn on autoflushing
+&ST_Log ("    Tie states ");
+system("echo");
+&ST_HTML_Print ("\t\t<A HREF=\"$logfile\">Log File</A> ");
+
 system("$TIESTATE -imoddeffn $untied_mdef_file -omoddeffn $tied_mdef_file -treedir $prunedtreedir -psetfn $CFG_QUESTION_SET 2>$logfile");
 
+&ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");

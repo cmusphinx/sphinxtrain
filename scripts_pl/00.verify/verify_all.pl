@@ -327,6 +327,9 @@ $| = 1;				# Turn on autoflushing
 
 }
 
+mkdir ($CFG_LOG_DIR,0755) unless -d $CFG_LOG_DIR;
+mkdir ("$CFG_BASE_DIR/bwaccumdir",0755) unless -d "$CFG_LOG_DIR/bwaccumdir";
+
     
 exit ($ret_value);
 

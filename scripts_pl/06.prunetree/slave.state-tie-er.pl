@@ -66,7 +66,7 @@ my $logdir = "$CFG_LOG_DIR/06.prunetree";
 mkdir ($logdir,0777) unless -d $logdir;
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("MODULE: 06 Prune Trees)\n");
+&ST_Log ("MODULE: 06 Prune Trees\n");
 &ST_Log ("    Cleaning up old log files...\n");
 system ("/bin/rm -f $logdir/*");
 
@@ -76,6 +76,8 @@ $MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
 $modarchdir          = "$CFG_BASE_DIR/model_architecture";
 $ALLTRIPHONESMDDEF = "$modarchdir/$CFG_EXPTNAME.alltriphones.mdef";
 $phonefile           = "$modarchdir/$CFG_EXPTNAME.phonelist";
+
+&ST_HTML_Print ("\t\tmk_model_def <A HREF=\"$logfile\">Log File</A>\n");
 
 system ("$MAKE_MDEF -phnlstfn $phonefile -oalltphnmdef $ALLTRIPHONESMDDEF -dictfn $CFG_DICTIONARY -fdictfn $CFG_FILLERDICT -n_state_pm $CFG_STATESPERHMM 2>$logfile");
 

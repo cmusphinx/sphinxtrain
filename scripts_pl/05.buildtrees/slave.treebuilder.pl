@@ -68,6 +68,7 @@ my $logdir = "${CFG_LOG_DIR}/05.buildtrees";
 mkdir ($logdir,0777) unless -d $logdir;
 
 $| = 1; # Turn on autoflushing
+system("$scriptdir/make_questions.pl");
 &ST_Log ("MODULE: 05b Build Trees\n");
 &ST_Log ("    Cleaning up old log files...\n");
 system ("rm -f $logdir/${CFG_EXPTNAME}.buildtree.*");
