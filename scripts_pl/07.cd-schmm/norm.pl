@@ -67,6 +67,7 @@ require $cfg_file;
 #  all those parts and then computes the discrete probability distributions
 #  associated with all the states. It also computes the transition matrices.
 #****************************************************************************
+$| = 1; # Turn on autoflushing
 
 die "USAGE: $0 <iter>" if ($#ARGV != $index);
 $iter = $ARGV[$index];

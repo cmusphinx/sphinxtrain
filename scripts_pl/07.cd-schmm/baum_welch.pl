@@ -69,6 +69,7 @@ require $cfg_file;
 # it needs as inputs an initial set of semicont models in s3 format
 # a mdef file and cepstra with transcription files.
 #************************************************************************
+$| = 1; # Turn on autoflushing
 
 die "USAGE: $0 <iter> <part> <npart>" if ($#ARGV != ($index + 2));
 
@@ -114,7 +115,7 @@ if ( $CFG_FORCEDALIGN eq "no" ) {
     $transcriptfile  = "$CFG_BASE_DIR/generated/${CFG_EXPTNAME}.alignedtranscripts";
 }
 
-$topn     = $CFG_CI_TOPN;
+$topn     = 4;
 $logdir   = "$CFG_LOG_DIR/$processname";
 $logfile  = "$logdir/${CFG_EXPTNAME}.$iter-$part.bw.log";
 mkdir ($logdir,0777) unless -d $logdir;

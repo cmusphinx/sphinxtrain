@@ -71,14 +71,17 @@ require $cfg_file;
 #*****************************************************************************
 
 #Clean up from previous runs
-system "rm -rf $CFG_VQ_LOG_DIR/*" if -d "$CFG_VQ_LOG_DIR";
+$logdir = "$CFG_LOG_DIR/01.vector_quantize";
+mkdir ($logdir,0777) unless -d $logdir;
 
 $| = 1; # Turn on autoflushing
 # No error checking
 &ST_Log ("MODULE: 01 Vector Quantization\n");
+system ("rm -f $logdir/*");
+$scriptdir="$CFG_BASE_DIR/scripts_pl/01.vector_quantize";
 
-system ("$CFG_VQ_PERL_DIR/agg_seg.pl -cfg $cfg_file");
-system ("$CFG_VQ_PERL_DIR/kmeans.pl -cfg $cfg_file");
+system ("$scriptdir/agg_seg.pl -cfg $cfg_file");
+system ("$scriptdir/kmeans.pl -cfg $cfg_file");
 
 &ST_Log ("\n");
 

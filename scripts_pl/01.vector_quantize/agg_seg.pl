@@ -87,13 +87,14 @@ close CTL;
 
 $stride = 1 unless int($stride = $len/2500);
 
-mkdir ($CFG_VQ_LOG_DIR,0777) unless -d $CFG_VQ_LOG_DIR;
+$logdir = "$CFG_LOG_DIR/01.vector_quantize";
+mkdir ($logdir,0777) unless -d $logdir;
 
 $segdmpdir = "$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_1";
 mkdir ($segdmpdir,0777) unless -d $segdmpdir;
 
 $dumpfile = "$segdmpdir/${CFG_EXPTNAME}.dmp";
-$logfile = "$CFG_VQ_LOG_DIR/${CFG_EXPTNAME}.vq.agg_seg.log";
+$logfile = "$logdir/${CFG_EXPTNAME}.vq.agg_seg.log";
 &ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A> ");
 
 # run it here 

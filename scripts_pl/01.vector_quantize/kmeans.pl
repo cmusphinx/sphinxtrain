@@ -74,7 +74,7 @@ require $cfg_file;
 my ($hmmdir,$outhmm,$segdmpdir,$dumpfile,$logfile);
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("\tKMeans ");
+&ST_Log ("    KMeans ");
 
 # Definitions
 $hmmdir = "$CFG_BASE_DIR/model_parameters";
@@ -88,8 +88,9 @@ mkdir ($segdmpdir,0777) unless -d $segdmpdir;
 
 $dumpfile = "$segdmpdir/${CFG_EXPTNAME}.dmp";
 
-mkdir ($CFG_VQ_LOG_DIR,0777) unless -d $CFG_VQ_LOG_DIR;
-$logfile = "$CFG_VQ_LOG_DIR/${CFG_EXPTNAME}.kmeans.log";
+$logdir = "$CFG_LOG_DIR/01.vector_quantize";
+mkdir ($logdir,0777) unless -d $logdir;
+$logfile = "$logfile/${CFG_EXPTNAME}.kmeans.log";
 
 &ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A>");
 

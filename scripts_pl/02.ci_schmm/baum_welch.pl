@@ -70,6 +70,8 @@ require $cfg_file;
 # a mdef file and cepstra with transcription files.
 #************************************************************************
 
+$| = 1; # Turn on autoflushing
+
 die "USAGE: $0 <iter> <part> <npart>" if ($#ARGV != ($index + 2));
 
 $iter   = $ARGV[$index];
@@ -114,7 +116,7 @@ if ( $CFG_FORCEDALIGN eq "no" ) {
     $transcriptfile  = "$CFG_BASE_DIR/generated/${CFG_EXPTNAME}.alignedtranscripts";
 }
 
-$topn     = $CFG_CI_TOPN;
+$topn     = 4;
 $logdir   = "$CFG_LOG_DIR/$processname";
 $logfile  = "$logdir/${CFG_EXPTNAME}.$iter-$part.bw.log";
 mkdir ($logdir,0777) unless -d $logdir;

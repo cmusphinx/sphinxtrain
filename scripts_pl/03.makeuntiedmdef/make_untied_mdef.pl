@@ -85,6 +85,8 @@ $logfile = "$logdir/${CFG_EXPTNAME}.make_alltriphonelist.log";
 
 $| = 1; # Turn on autoflushing
 &ST_Log ("MODULE: 03 Make Untied mdef\n");
+&ST_Log ("    Cleaning up old log files...\n");
+system ("rm -f $logdir/*");
 
 $untiedmdef = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
 
