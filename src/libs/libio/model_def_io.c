@@ -294,7 +294,7 @@ update_totals(model_def_t *mdef,
     if (defn->n_state > mdef->max_n_state)
 	mdef->max_n_state = defn->n_state;
 
-    if (defn->n_state < mdef->max_n_state)
+    if (defn->n_state < mdef->min_n_state)
 	mdef->min_n_state = defn->n_state;
 }
 
@@ -608,9 +608,12 @@ model_def_read(model_def_t **out_model_def,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.4  2002/06/12  03:30:36  egouvea
+ * Fixed minor typing mistakes in scripts and c code.
  * 
+ * Revision 1.3  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:13  awb
  * *** empty log message ***
  *

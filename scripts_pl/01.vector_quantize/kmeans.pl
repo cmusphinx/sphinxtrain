@@ -85,7 +85,7 @@ $dumpfile = "$segdmpdir/${CFG_EXPTNAME}.dmp";
 
 $logdir = "$CFG_LOG_DIR/01.vector_quantize";
 mkdir ($logdir,0777) unless -d $logdir;
-$logfile = "$logfile/${CFG_EXPTNAME}.kmeans.log";
+$logfile = "$logdir/${CFG_EXPTNAME}.kmeans.log";
 
 &ST_HTML_Print ("\t<A HREF=\"$logfile\">Log File</A>");
 

@@ -225,7 +225,7 @@ sub FlatInitialize ()
     $FLAT = "$CFG_BIN_DIR/mk_flat";
 
     $logfile = "$logdir/${CFG_EXPTNAME}.makeflat_cischmm.log";
-    &ST_HTML_Print ("\t\tmk_flat<A HREF=\"$logfile\">Log File</A>\n");    
+    &ST_HTML_Print ("\t\tmk_flat <A HREF=\"$logfile\">Log File</A>\n");    
 
     open LOG,">$logfile";
 
