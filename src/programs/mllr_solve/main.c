@@ -106,10 +106,11 @@ mllr_mat(float32 	*****out_A,
 
 {
       vector_t 	***var  	= NULL; 
-      float32 	*****regl  	= NULL; 
-      float32 	****regr   	= NULL; 
       float32 	****A  		= NULL;		
       float32 	***B   		= NULL; 	
+
+      float64 	*****regl  	= NULL; 
+      float64 	****regr   	= NULL; 
 
       float32     wt_mean_var;
       float32     wt_dcount_var;
@@ -184,14 +185,14 @@ mllr_mat(float32 	*****out_A,
       E_INFO(" ---- A. Accum regl, regr\n"); 
       E_INFO(" No classes %d, no. stream %d\n",n_mllr_class,n_stream);
 
-      regl = (float32 *****)ckd_calloc_2d(n_mllr_class, n_stream, sizeof(float32 ***)); 
-      regr = (float32 ****) ckd_calloc_2d(n_mllr_class, n_stream, sizeof(float32 **)); 
+      regl = (float64 *****)ckd_calloc_2d(n_mllr_class, n_stream, sizeof(float64 ***)); 
+      regr = (float64 ****) ckd_calloc_2d(n_mllr_class, n_stream, sizeof(float64 **)); 
       
       for (i = 0; i < n_mllr_class; i++) { 
           for (j = 0; j < n_stream; j++) { 
               len = veclen[j]; 
-              regl[i][j] = (float32 ***)ckd_calloc_3d(len, len+1, len+1, sizeof(float32)); 
-              regr[i][j] = (float32 **) ckd_calloc_2d(len, len+1, sizeof(float32)); 
+              regl[i][j] = (float64 ***)ckd_calloc_3d(len, len+1, len+1, sizeof(float64)); 
+              regr[i][j] = (float64 **) ckd_calloc_2d(len, len+1, sizeof(float64)); 
           } 
       } 
       
@@ -212,13 +213,13 @@ mllr_mat(float32 	*****out_A,
 		for (p = 0; p < len; p++) { 
 		  wt_dcount_var_mean = wt_dcount_var * tmean[p]; 
 		  for (q = p; q < len; q++) { 
-		    regl[mc][j][l][p][q] += wt_dcount_var_mean * tmean[q]; 
+		    regl[mc][j][l][p][q] += (float64) (wt_dcount_var_mean * tmean[q]); 
 		  } 
-		  regl[mc][j][l][p][len] += wt_dcount_var_mean; 
-		  regr[mc][j][l][p] += wt_mean_var * tmean[p]; 
+		  regl[mc][j][l][p][len] += (float64)(wt_dcount_var_mean); 
+		  regr[mc][j][l][p] += (float64)(wt_mean_var * tmean[p]); 
 		} 
-		regl[mc][j][l][len][len] += wt_dcount_var; 
-		regr[mc][j][l][len] += (float32)(wt_mean_var); 
+		regl[mc][j][l][len][len] += (float64)wt_dcount_var; 
+		regr[mc][j][l][len] += (float64)(wt_mean_var); 
 	      } 
 	    } 
 	  } 

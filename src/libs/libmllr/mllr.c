@@ -129,18 +129,61 @@ regmat_read (const char    *accumdir,
     return S3_SUCCESS;
 }
 
+
+void dump_regmat_statistics(float64 *****regl,
+		       float64 ****regr,
+		       uint32 nclass,
+		       uint32 nfeat,
+		       const uint32  *veclen)
+
+{
+  uint32  i,j,k,l,m,len;
+
+  printf("regl\n");
+  for(m=0; m <nclass ; m++){
+    for(i=0; i < nfeat ;i++){
+      len=veclen[i];
+      for(l=0; l < len ; l++){
+	printf("class: %d, stream: %d, mixture %d\n",m,i,l);
+	for(j=0;j<len;j++){
+	  printf("%d ", j);
+	  for(k=0;k<len;k++){
+	    printf("%f ",regl[m][i][l][j][k]);
+	  }
+	    printf("\n");
+	}
+	}
+    }
+  }
+  
+  printf("regr\n");
+  for(m=0; m <nclass ; m++){
+    for(i=0; i < nfeat ;i++){
+      len=veclen[i];
+      for(l=0; l < len ; l++){
+	printf("class: %d, stream: %d, mixture %d\n",m,i,l);
+	for(j=0;j<len;j++){
+	  printf("%f ",regr[m][i][l][j]);
+	}
+	printf("\n");
+      }
+    }
+  }
+    
+}
+
 /* 
 20040726 : ARCHAN : What is this routine doing?  This routine can do
 the conventional Legetter's method of maximum likelihood linear
 regression.  For every regression class, every stream (nfeat is the
-number of stream).  Some body outside this 
-
+number of stream).  
 */
+
 
 int32
 compute_mllr (
-             float32 *****regl,
-             float32 ****regr,
+             float64 *****regl,
+             float64 ****regr,
              const uint32  *veclen,
              uint32  nclass,
              uint32  nfeat,
@@ -156,6 +199,15 @@ compute_mllr (
 
     Aloc = (float32 ****) ckd_calloc_2d(nclass, nfeat, sizeof(float32 ***));
     Bloc = (float32 ***) ckd_calloc_2d(nclass, nfeat, sizeof(float32 **));
+
+#if 0
+    dump_regmat_statistics(regl,
+			   regr,
+			   nclass,
+			   nfeat
+			   veclen);
+
+#endif
 
     for (m = 0; m < nclass; m++) {
 	for (i = 0; i < nfeat; i++) {
@@ -286,8 +338,8 @@ invert(float32 **ainv,
 }
 
 int32
-solve  (float32 **regl,
-        float32 *regr,
+solve  (float64 **regl,
+        float64 *regr,
 	int32   len,
 	float64 *A)
 {

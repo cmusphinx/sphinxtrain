@@ -135,7 +135,6 @@ normalize()
     float32 ****A;
     float32 ***B; 
 
-    out_reg_fn = (const char *)cmd_ln_access("-regmatfn");
     
     accum_dir = (const char **)cmd_ln_access("-accumdir");
     oaccum_dir = (const char *)cmd_ln_access("-oaccumdir");
@@ -148,6 +147,12 @@ normalize()
     in_mean_fn = (const char *)cmd_ln_access("-inmeanfn");
     in_var_fn = (const char *)cmd_ln_access("-invarfn");
     out_dcount_fn = (const char *)cmd_ln_access("-dcountfn");
+
+    out_reg_fn = (const char *)cmd_ln_access("-regmatfn");
+    if(out_reg_fn){
+      E_FATAL("Using norm for computing regression matrix is obsolete, please use mllr_transform\n");
+    }
+    
 
     /* must be at least one accum dir */
     assert(accum_dir[0] != NULL);
@@ -542,9 +547,12 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.8  2004/07/27  12:07:31  arthchan2003
- * Check-in mllr_solve, a program that can compute the adaptation matrix. There is still some precision problem at this point. But it is good enough to check-in
+ * Revision 1.9  2004/08/19  22:24:14  arthchan2003
+ * Fixing numerical problem of compute_mllr and mllr_solve.  There are small numerical differences between the inputs typed with float64 or float32. In terms of (<6 signficiant digits).  This small difference will translate to perceivable numerical difference in the final matrix. (>5 significant digits).  This fix also marks a stable release for mllr_solve.  I also disallow user to use -regmat in norm because it is highly dangerous and known to be slow and didn't help too much.
  * 
+ * Revision 1.8  2004/07/27 12:07:31  arthchan2003
+ * Check-in mllr_solve, a program that can compute the adaptation matrix. There is still some precision problem at this point. But it is good enough to check-in
+ *
  * Revision 1.7  2004/07/21 22:32:27  egouvea
  * Fixed some compatibility issues between platforms: make sure we open
  * files with "wb" or "rb", move some #include not defined for all

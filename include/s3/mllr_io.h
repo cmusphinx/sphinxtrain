@@ -63,7 +63,7 @@ free_mllr_B(float32 ***B,
 	    uint32  n_stream);
 
 int32
-free_mllr_reg(float32 *****regl,
-              float32 ****regr,
+free_mllr_reg(float64 *****regl,
+              float64 ****regr,
               uint32  n_class,
               uint32  n_stream);
