@@ -46,7 +46,6 @@ BUILD_DIRS =
 ALL_DIRS= $(BUILD_DIRS)
 OTHER_SRCS =   read_seno_dtree.c
 SRCS = \
-  add-table.c \
   areadchar.c \
   areadfloat.c \
   areadint.c \
