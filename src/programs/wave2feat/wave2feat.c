@@ -409,6 +409,7 @@ void fe_init_params(param_t *P)
     P->NUM_FILTERS = DEFAULT_NUM_FILTERS;
     P->UPPER_FILT_FREQ = DEFAULT_UPPER_FILT_FREQ;
     P->LOWER_FILT_FREQ = DEFAULT_LOWER_FILT_FREQ;
+    P->is_batch = ON;
     P->blocksize = DEFAULT_BLOCKSIZE;
     P->verbose = OFF;
     P->input_format=NIST;
@@ -423,7 +424,6 @@ void fe_init_params(param_t *P)
     P->cepdir = NULL;
     P->wavext = NULL;
     P->cepext = NULL;
-  
     
 }
 
