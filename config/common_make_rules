@@ -69,7 +69,7 @@ RANLIB=ranlib
 RM = '/bin/rm'
 EXTRA_CC_FLAGS= -Wall
 OPT= -O4
-DBG= -g
+#DBG= -g
 
 BINDIR=$(shell test -d $(TOP)/bin.$(PLATFORM) || mkdir $(TOP)/bin.$(PLATFORM); echo $(TOP)/bin.$(PLATFORM))
 LIBDIR=$(shell test -d $(TOP)/lib.$(PLATFORM) || mkdir $(TOP)/lib.$(PLATFORM); echo $(TOP)/lib.$(PLATFORM))
