@@ -125,7 +125,7 @@ corpus_read_next_lsn_line(char **trans);
 #define DATA_TYPE_DDCODE 6
 #define DATA_TYPE_MLLR  7
 
-#define N_DATA_TYPE	7
+#define N_DATA_TYPE	8
 
 #define MAX_LSN_LINE	8192
 
@@ -1968,9 +1968,12 @@ read_sildel(uint32 **out_sf,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2003/11/18  21:07:25  egouvea
- * Got rid of warning casting the argument to "isspace".
+ * Revision 1.7  2004/03/01  15:38:00  egouvea
+ * Fixed number of data types, bug report 660181
  * 
+ * Revision 1.6  2003/11/18 21:07:25  egouvea
+ * Got rid of warning casting the argument to "isspace".
+ *
  * Revision 1.5  2002/11/13 21:42:52  egouvea
  * Code breaks if transcription is empty.
  *
