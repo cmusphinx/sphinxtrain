@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 ## ====================================================================
 ##
 ## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
@@ -48,16 +48,26 @@
 ## Author: Ricky Houghton (converted from scripts by Rita Singh)
 ##
 
+my $index = 0;
+if (lc($ARGV[0]) eq '-cfg') {
+    $cfg_file = $ARGV[1];
+    $index = 2;
+} else {
+    $cfg_file = "etc/sphinx_train.cfg";
+}
 
-require "/sphx_train/testing/scripts_pl/sphinx_train.cfg";
-
+if (! -s "$cfg_file") {
+    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
+    exit -3;
+}
+require $cfg_file;
 
 #*******************************************************************
 #*******************************************************************
 
-die "USAGE: $0 <iter>" if ($#ARGV != 0);
+die "USAGE: $0 <iter>" if ($#ARGV != $index);
 
-$iter = $ARGV[0];
+$iter = $ARGV[$index];
 
 # cover up to 100 different buffer directories....
 #$buffer_dirs = ($base_dir/bwaccumdir/${exptname}_buff_? $base_dir/bwaccumdir/${exptname}_buff_??);

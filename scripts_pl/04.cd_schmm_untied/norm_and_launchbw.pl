@@ -49,21 +49,33 @@
 ##
 
 
-require "/sphx_train/testing/scripts_pl/sphinx_train.cfg";
+my $index = 0;
+if (lc($ARGV[0]) eq '-cfg') {
+    $cfg_file = $ARGV[1];
+    $index = 2;
+} else {
+    $cfg_file = "etc/sphinx_train.cfg";
+}
+
+if (! -s "$cfg_file") {
+    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
+    exit -3;
+}
+require $cfg_file;
 
 #*******************************************************************
 #*******************************************************************
 
-die "USAGE: $0 <iter>" if ($#ARGV != 0);
-$iter   		= $ARGV[0];
+die "USAGE: $0 <iter>" if ($#ARGV != $index);
+$iter   		= $ARGV[$index];
 
 $logdir              = "${CFG_LOG_DIR}/04.cd_schmm_untied";
 mkdir ($logdir,0777) unless $logdir;
-$log 	     = "${CFG_LOG_DIR}/${CFG_EXPTNAME}.${iter}.norm.log";
+$log 	     = "$logdir/${CFG_EXPTNAME}.${iter}.norm.log";
 
 $num_done = `grep "MLLR regmat" $logdir/${CFG_EXPTNAME}.${iter}-*.bw.log | wc -l | awk '{print $1}'`;
 
-print "$num_done parts of $npart_untied of Baum Welch successfully completed" >! $log;
+print "$num_done parts of $npart_untied of Baum Welch successfully completed" >> $log;
 
 if ($num_done != $npart_untied) {
     open LOG,">>$log";
@@ -71,9 +83,9 @@ if ($num_done != $npart_untied) {
     print LOG "Here is a list of jobs that died..";
 
     $p_id = 1;
-    system  ("grep \"Counts saved\" $logdir/${CFG_EXPTNAME}.$iter-*.bw.log | awk -F\"_\" '{print $NF}' |sort -n > ! /tmp/xx.$p_id");
+    system  ("grep \"Counts saved\" $logdir/${CFG_EXPTNAME}.$iter-*.bw.log | awk -F\"_\" '{print $NF}' |sort -n > /tmp/xx.$p_id");
 #    system ("~rsingh/51..tools/interval 1 $npart_untied >! /tmp/xy.$$
-    system ("$CFG_BIN_DIR/interval 1 $npart_untied >! /tmp/xy.$p_id");
+    system ("$CFG_BIN_DIR/interval 1 $npart_untied > /tmp/xy.$p_id");
     system ("diff /tmp/xx.$p_id /tmp/xy.$p_id|grep \">\" >> $log");
     print LOG "Aborting\!\!\!";
     close LOG;
@@ -98,7 +110,7 @@ $prevlike = `grep "Current Overall Li" $logdir/${exptname}.${previter}.norm.log 
 
 #hack to handle sign
 $absprev = `echo "$prevlike"|awk '$1 < 0 {print -$1} $1 > 0 {print $1}'`;
-print LOG "$prevlike $like $absprev"|awk '{printf("Convergence Ratio = %f\n",($2-$1)/$3)}';
+#print LOG "$prevlike $like $absprev"|awk '{printf("Convergence Ratio = %f\n",($2-$1)/$3)}';
 $testval = `echo "$prevlike $like $absprev"|awk -v th=$convergence_ratio '($2-$1)/$3 > th {print 1} ($2-$1)/$3 < th {print 0}'`;
 
 &launch_bw if ($testval == 1);

@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 ## ====================================================================
 ##
 ## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
@@ -49,20 +49,30 @@
 ## Author: Ricky Houghton (converted from scripts by Rita Singh)
 ##
 
+my $index = 0;
+if (lc($ARGV[0]) eq '-cfg') {
+    $cfg_file = $ARGV[1];
+    $index = 2;
+} else {
+    $cfg_file = "etc/sphinx_train.cfg";
+}
 
-require "../sphinx_train.cfg";
-
+if (! -s "$cfg_file") {
+    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
+    exit -3;
+}
+require $cfg_file;
 
 #*******************************************************************
 #*******************************************************************
 
-die "USAGE: $0 <iter>" if ($#ARGV != 0);
+die "USAGE: $0 <iter>" if ($#ARGV != $index);
 
-$iter = $ARGV[0];
+$iter = $ARGV[$index];
 
 mkdir ($CFG_CI_LOG_DIR,0777) unless -d $CFG_CI_LOG_DIR;
 
-$log      = "$CFG_CI_LOG_DIR/${CFG_EXPTNAME}.$iter.norm.log";
+$log = "$CFG_CI_LOG_DIR/${CFG_EXPTNAME}.$iter.norm.log";
 
 # Check the number and list of parts done. Compute avg likelihood per frame
 $num_done = 0; $tot_lkhd = 0; $tot_frms = 0;
@@ -141,6 +151,8 @@ else {
     $absprev = -$absprev if ($prevlkhd < 0);
     $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
+
+print "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
 
 if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
     system ("$CFG_CI_PERL_DIR/norm.pl $iter");

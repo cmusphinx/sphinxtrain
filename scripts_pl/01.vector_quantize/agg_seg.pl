@@ -49,24 +49,24 @@
 ##
 
 
-# RAH Force passage of config file, or look for it in the current directory
+my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
     $cfg_file = $ARGV[1];
-    die "-cfg specified, but unable to find file $ARGV[1]" unless (-s $cfg_file);
-    require $cfg_file;
+    $index = 2;
 } else {
-    $cfg_file = "./sphinx_train.cfg";
-    die "Must specify -cfg or create default file ./sphinx_train.cfg" unless (-s  $cfg_file);
-    require ("./sphinx_train.cfg");
-    &ST_LogWarning ("-cfg not specified, using the default ./sphinx_train.cfg");
+    $cfg_file = "etc/sphinx_train.cfg";
 }
 
+if (! -s "$cfg_file") {
+    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
+    exit -3;
+}
+require $cfg_file;
 
 my ($AGG_SEG,$len,$stride,$segdmpdir,$dumpfile,$logfile);
 
 &ST_Log ("\tAggSeg ");
 
-#$AGG_SEG  = "~rsingh/09..sphinx3code/trainer/bin.alpha/agg_seg"
 $AGG_SEG  = "$CFG_BIN_DIR/agg_seg";
 
 #unlimit
