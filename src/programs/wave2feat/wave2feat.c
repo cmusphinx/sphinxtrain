@@ -749,7 +749,11 @@ int32 fe_usage(char **argv)
 	    "\t -feat <sphinx> (SPHINX format - big endian)\n"
 	    "\n"
 	    " MACHINE FORMAT\n"
+#ifdef WORDS_BIGENDIAN
+	    "\t -mach_endian <big | little [def=big]>\n"
+#else
 	    "\t -mach_endian <big | little [def=little]>\n"
+#endif
 	    "\n"
 	    " FILTER PARAMETERS\n"
 	    "\t -alpha  <premphasis parameter [def=%.3f]>\n"
