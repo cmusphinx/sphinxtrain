@@ -153,9 +153,9 @@ else {
 }
 
 print "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+system ("$CFG_CI_PERL_DIR/norm.pl $iter");
 
 if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
-    system ("$CFG_CI_PERL_DIR/norm.pl $iter");
     system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
     system("echo \"Convergence ratio = $convg_ratio\" >> $log");
     &Launch_BW();
