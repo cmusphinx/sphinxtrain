@@ -57,7 +57,7 @@
 
 #ifdef WIN32
 
-#ifndef CYGNUS
+#ifndef __CYGWIN32__
 #include <windows.h>
 
 #define sleep(x) Sleep((x)*1000)
@@ -85,9 +85,12 @@ drand48(void);
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:30  awb
- * *** empty log message ***
+ * Revision 1.4  2001/11/30  22:55:59  egouvea
+ * Added changes so it compiles with cygwin.
  * 
+ * Revision 1.3  2001/04/05 20:02:30  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:12  awb
  * *** empty log message ***
  *

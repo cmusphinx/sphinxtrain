@@ -47,16 +47,18 @@
    10/86
  */
 
+#if ((! WIN32) && (! _HPUX_SOURCE))
 #include <sys/time.h>
 #include <sys/resource.h>
 #include "count.h"
+#endif
+#include <stdio.h>
 
-#ifndef __CYGWIN32__
 int unlimit ()
 {
+#if ((! WIN32) && (! _HPUX_SOURCE) && defined(RLIMIT_DATA))
   struct rlimit rl;
 
-#ifdef RLIMIT_DATA
   getrlimit(RLIMIT_DATA,&rl);
   rl.rlim_cur = rl.rlim_max;
   setrlimit(RLIMIT_DATA,&rl);
@@ -66,6 +68,3 @@ int unlimit ()
   return 0;
 #endif
 }
-
-#endif
-
