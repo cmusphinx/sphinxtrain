@@ -73,6 +73,10 @@ typedef struct{
     int32 input_endian;
     int32 output_endian;
     int32 dither;
+    int32 logspec;
+    int32 doublebw;
+    int32 nchans;
+    int32 whichchan;
 } param_t;
 
 

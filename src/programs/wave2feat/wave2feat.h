@@ -42,11 +42,14 @@
 #define ON 1
 #define OFF 0
 #define NULL_CHAR '\0'
-#define MAXCHARS 1024
+#define MAXCHARS 2048
 
 #define WAV 1
 #define RAW 2
 #define NIST 3
+#define MSWAV 4
+
+#define ONE_CHAN 1
 
 #define LITTLE 1
 #define BIG 2
@@ -73,15 +76,25 @@
 #define SWAPL(x)        *(x) = ((0xff & (*(x))>>24) | (0xff00 & (*(x))>>8) |\
                         (0xff0000 & (*(x))<<8) | (0xff000000 & (*(x))<<24))
 #define SWAPF(x)        SWAPL((int *) x)
-    /* #else */ 
- /* don't need byte order conversion, do nothing */
-    /*
-      #undef NEEDS_SWAP
-      #define SWAPW(x)    
-      #define SWAPL(x)
-      #define SWAPF(x)  
-      #endif 
-    */
+
+
+/* Some defines for MS Wav Files */
+/* The MS Wav file is a RIFF file, and has the following 44 byte header */
+typedef struct RIFFHeader{
+    char rifftag[4];      /* "RIFF" string */
+    int32 TotalLength;      /* Total length */
+    char wavefmttag[8];   /* "WAVEfmt " string (note space after 't') */
+    int32 RemainingLength;  /* Remaining length */
+    int16 data_format;    /* data format tag, 1 = PCM */
+    int16 numchannels;    /* Number of channels in file */
+    int32 SamplingFreq;     /* Sampling frequency */
+    int32 BytesPerSec;      /* Average bytes/sec */
+    int16 BlockAlign;     /* Block align */
+    int16 BitsPerSample;  /* 8 or 16 bit */
+    char datatag[4];      /* "data" string */
+    int32 datalength;       /* Raw data length */
+} MSWAV_hdr;
+
 
 param_t *fe_parse_options(int argc, char **argv);
 void fe_init_params(param_t *P);
