@@ -46,10 +46,41 @@
 #include <s3/cmd_ln.h>
 
 #include "parse_cmd_ln.h"
+#include <s3/common.h>
+#include <s3/s3.h>
+
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 int32 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
+  const char helpstr[]=
+"Description: \n\
+\n\
+Convert s3 model definition file to s2 phone and map files.";
+
+  const char examplestr[]=
+"Example: \n\
+\n\
+mk_s2phonemap -moddeffn s3mean -phonefn s2/phone -mapfn s2/map";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-moddeffn",
 	      CMD_LN_STRING,
 	      CMD_LN_NO_VALIDATION,
@@ -81,7 +112,25 @@ int32 parse_cmd_ln(int argc, char *argv[])
 
     cmd_ln_parse(argc, argv);
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
+
 
     return 0;
 }
@@ -91,9 +140,12 @@ int32 parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2004/07/21  18:30:43  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.4  2004/08/10  08:08:28  arthchan2003
+ * Sphinx 3 to Sphinx 2 conversion tools' helps and examples
  * 
+ * Revision 1.3  2004/07/21 18:30:43  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.2  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
