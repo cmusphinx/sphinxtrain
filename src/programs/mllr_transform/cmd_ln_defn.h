@@ -24,7 +24,8 @@
 #ifndef CMD_LN_DEFN_H
     
     const char helpstr[] = 
-"Usage: mllr_transform [options]\n
+"Description: 
+
 Given a set of MLLR transform, mllr_transform can transform 
 the mean according to formulat y=Ax+b.
 The output and input files are specified by -outmeanfn and
@@ -34,14 +35,18 @@ dependent model using the option -cdonly.  In that case you
 
     const char examplestr[] = 
 "Example: 
+
 The simplest case:
+
 mllr_transform -inmeanfn inMeans -outmeanfn outMeans  -mllrmat matrix 
 
 Adapt only on CD phones:
+
 mllr_transform  -inmeanfn inMeans -outmeanfn outMeans  -mllrmat matrix 
 -cdonly yes -moddeffn mdef 
 
 Help and example:
+
 mllr_transform -help yes -example yes
 ";
 
@@ -118,9 +123,12 @@ mllr_transform -help yes -example yes
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2004/08/03  07:23:12  arthchan2003
- * Check in the code for usage and example of mllr_transform
+ * Revision 1.3  2004/08/03  07:31:17  arthchan2003
+ * make the changes more latex friendly\n
  * 
+ * Revision 1.2  2004/08/03 07:23:12  arthchan2003
+ * Check in the code for usage and example of mllr_transform
+ *
  * Revision 1.1  2004/07/26 05:04:20  arthchan2003
  * mllr_transform committed, it is an adaptation of Sam Joo's mllr_adapt
  *
