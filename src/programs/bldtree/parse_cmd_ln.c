@@ -67,7 +67,9 @@ parse_cmd_ln(int argc, char *argv[])
 \n\
 Given a set of questions. Build decision tree for a set of feature of\n\
 a particular phone.  By default, decision tree are not built for \n\
-filler phones and the phone tagged with SIL.  ";
+filler phones and the phone tagged with SIL.  One very confusing \n\
+parameters of this tool is -stwt, if you are training a n-state \n\
+HMM, you need to specify n values after this flag.  ";
 
     const char examplestr[] =
 " bld_tree -treefn tree -moddeffn mdef -mixwfn mixw -meanfn mean -varfn \n\
@@ -247,9 +249,12 @@ var -psetfn questions -stwt 1.0 0.05 0.01 -state 0 -ssplitmin 1 \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2004/08/08  01:58:55  arthchan2003
- * adding help and example strings for bldtree
+ * Revision 1.3  2004/08/26  05:50:09  arthchan2003
+ * update bldtree's on-line help to clarify the use of -stwt.
  * 
+ * Revision 1.2  2004/08/08 01:58:55  arthchan2003
+ * adding help and example strings for bldtree
+ *
  * Revision 1.1  2004/06/17 19:39:46  arthchan2003
  * add back all command line information into the code
  *
