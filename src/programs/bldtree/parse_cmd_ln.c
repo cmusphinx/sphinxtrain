@@ -59,7 +59,35 @@
 int
 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
+    const char helpstr[] =  
+"Description:\n\
+\n\
+Given a set of questions. Build decision tree for a set of feature of\n\
+a particular phone.  By default, decision tree are not built for \n\
+filler phones and the phone tagged with SIL.  ";
+
+    const char examplestr[] =
+" bld_tree -treefn tree -moddeffn mdef -mixwfn mixw -meanfn mean -varfn \n\
+var -psetfn questions -stwt 1.0 0.05 0.01 -state 0 -ssplitmin 1 \n\
+-ssplitmax 7 -ssplitthr 1e-10 -csplitmin 1 -csplitmax 2000 -csplitthr \n\
+1e-10 -cntthresh 10";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-treefn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -127,7 +155,7 @@ parse_cmd_ln(int argc, char *argv[])
 	  CMD_LN_INT32,
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
-	  "Build tree for this state position"},
+	  "Build tree for this state position. E.g. For a three state HMM, this value can be 0,1 or 2. For a 5 state HMM, this value can be 0,1,2,3 or 4, and so on "},
 
 	{ "-mwfloor",
 	  CMD_LN_FLOAT32,
@@ -139,7 +167,7 @@ parse_cmd_ln(int argc, char *argv[])
 	  CMD_LN_STRING_LIST,
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
-	  "Weights on neighboring states" },
+	  "Weights on neighboring states, This flag needs a string of numbers equal to the number of HMM-states"},
 
 	{ "-ssplitthr",
 	  CMD_LN_FLOAT32,
@@ -151,13 +179,13 @@ parse_cmd_ln(int argc, char *argv[])
 	  CMD_LN_INT32,
 	  CMD_LN_NO_VALIDATION,
 	  "1",
-	  "Minimum # of simple tree splits to do" },
+	  "Minimum of simple tree splits to do."},
 
 	{ "-ssplitmax",
 	  CMD_LN_INT32,
 	  CMD_LN_NO_VALIDATION,
 	  "5",
-	  "Minimum # of simple tree splits to do" },
+	  "The maximum number of bifurcations in the simple tree before it is used to build complex questions."},
 
 	{ "-csplitthr",
 	  CMD_LN_FLOAT32,
@@ -193,7 +221,24 @@ parse_cmd_ln(int argc, char *argv[])
 	E_FATAL("Unable to validate command line arguments\n");
     }
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
 
     return 0;
 }
@@ -202,9 +247,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2004/06/17  19:39:46  arthchan2003
- * add back all command line information into the code
+ * Revision 1.2  2004/08/08  01:58:55  arthchan2003
+ * adding help and example strings for bldtree
  * 
+ * Revision 1.1  2004/06/17 19:39:46  arthchan2003
+ * add back all command line information into the code
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
