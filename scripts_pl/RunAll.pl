@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl5
+#!/usr/bin/perl
 ## ====================================================================
 ##
 ## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 

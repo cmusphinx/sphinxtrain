@@ -1,4 +1,4 @@
-#!/usr/opt/PERL5004/bin/perl -w
+#!/usr/bin/perl -w
 ## ====================================================================
 ##
 ## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 

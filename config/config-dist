@@ -1,4 +1,4 @@
-# ====================================================================
+# ==================================================-*-mode:Makefile-*-
 # Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,17 @@
 #                                                                     
 # ====================================================================
 
-## NONE
+## potentially system dependent
+CC=gcc
+OPT= -O4
+#DBG= -g
+EXTRA_CC_FLAGS= -Wall
+EXTRA_LD_FLAGS= 
 
+AR=ar
+RANLIB=ranlib
+RM = '/bin/rm'
 
+FESTIVAL=/home/awb/projects/1.4.1/festival/bin/festival
+PERL=/usr/bin/perl
 

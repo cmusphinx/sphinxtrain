@@ -47,7 +47,7 @@
 # ====================================================================
 TOP=.
 DIRNAME=.
-BUILD_DIRS = bin scripts_pl include src 
+BUILD_DIRS = bin scripts_pl scripts include src 
 ALL_DIRS=config lib doc $(BUILD_DIRS)
 FILES = Makefile README COPYING
 

@@ -62,17 +62,11 @@ endif
 ## User defined configuration options
 include $(TOP)/config/config
 
-## potentially system dependent
-CC=gcc
-AR=ar
-RANLIB=ranlib
-RM = '/bin/rm'
-EXTRA_CC_FLAGS= -Wall
-OPT= -O4
-#DBG= -g
-
+## Compile-time directories 
 BINDIR=$(shell test -d $(TOP)/bin.$(PLATFORM) || mkdir $(TOP)/bin.$(PLATFORM); echo $(TOP)/bin.$(PLATFORM))
+SCRIPTDIR=$(BINDIR)
 LIBDIR=$(shell test -d $(TOP)/lib.$(PLATFORM) || mkdir $(TOP)/lib.$(PLATFORM); echo $(TOP)/lib.$(PLATFORM))
+
 ifdef SRCS
 OBJDIR=$(shell test -d obj.$(PLATFORM) || mkdir obj.$(PLATFORM); echo obj.$(PLATFORM))
 OBJS=$(shell echo $(SRCS:.c=.o) | awk '{for (i=1; i<=NF; i++) printf("'$(OBJDIR)'/%s\n",$$i)}')
@@ -80,7 +74,7 @@ endif
 
 INCLUDES = -I$(TOP)/include
 CFLAGS += $(EXTRA_CC_FLAGS) $(OPT) $(DBG) $(LOCAL_INCLUDES) $(INCLUDES)
-LDFLAGS += -L$(LIBDIR)
+LDFLAGS += -L$(LIBDIR) $(EXTRA_LD_FLAGS)
 STLIBS = -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc
 LIBS = $(STLIBS) -lm
 
@@ -115,6 +109,25 @@ endif
 # Program build rules
 $(BINDIR)/$(TARGET): $(OBJS) $(DEP_LIBS)
 	$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
+
+# Festival Script build rules
+$(SCRIPTDIR)/%: %.festival
+	@ echo "#!/bin/sh" > $@
+	@ echo "\"true\"; exec "$(FESTIVAL)' --script $$0 $$*' >>$@
+	@ cat $< >>$@
+	@ chmod +x $@
+
+# csh Script build rules
+$(SCRIPTDIR)/%: %.csh
+	@ echo "#!/bin/csh" > $@
+	@ cat $< >>$@
+	@ chmod +x $@
+
+# Perl Script build rules
+$(SCRIPTDIR)/%: %.pl
+	@ echo "#!"$PERL > $@
+	@ cat $< >>$@
+	@ chmod +x $@
 
 clean:
 	@ echo make clean in $(DIRNAME) ...
