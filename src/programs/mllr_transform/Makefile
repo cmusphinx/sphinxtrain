@@ -18,7 +18,7 @@
 #    prior written permission. To obtain permission, contact 
 #    sphinx@cs.cmu.edu.
 #
-# 4. Redistributions of any form whatsoever must retain the following
+# 54 Redistributions of any form whatsoever must retain the following
 #    acknowledgment:
 #    "This product includes software developed by Carnegie
 #    Mellon University (http://www.speech.cs.cmu.edu/)."
@@ -37,49 +37,25 @@
 #
 # ====================================================================
 #
-#  C programs
+#  Programs: mllr_transform
 #
 # ====================================================================
-TOP=../..
-DIRNAME=src/programs
-BUILD_DIRS = agg_seg \
-	bldtree \
-	bw \
-	count_3phone \
-	cp_parm \
-	delint \
-	dict2tri \
-	inc_comp \
-	init_gau \
-	init_mixw \
-	kmeans_init \
-	make_quests \
-	mixw_interp \
-	mk_flat \
-	mk_mdef_gen \
-	mk_mllr_class \
-	mk_model_def \
-	mk_s2cb \
-	mk_s2hmm \
-	mk_s2sendump \
-	mk_s2phone \
-	mk_s2phonemap \
-	mk_s3gau \
-	mk_s3mixw \
-	mk_s3tmat \
-	mk_ts2cb \
-	mllr_transform \
-	norm \
-	param_cnt \
-	printp \
-	prunetree \
-	tiestate \
-	wave2feat
+TOP=../../..
+DIRNAME=src/programs/mllr_transform
+BUILD_DIRS = 
+ALL_DIRS= $(BUILD_DIRS)
+SRCS = \
+  main.c \
+  parse_cmd_ln.c 
+H = \
+  cmd_ln_defn.h \
+  parse_cmd_ln.h
 
-ALL_DIRS= $(BUILD_DIRS) 
-FILES = Makefile README
 
-ALL = 
+FILES = Makefile $(SRCS) $(H)
+TARGET = mllr_transform
+
+ALL = $(BINDIR)/$(TARGET)
 
 include $(TOP)/config/common_make_rules
 
