@@ -64,7 +64,7 @@ int quit (int status, char *fmt, ...);
 #define MAX_CLASSES		5
 #define MAX_CONF		5
 #define MAX_PHONES_PER_WORD	30
-#define MAX_PHONE_STRING	30
+#define MAX_PHONE_STRING	60
 
 
 

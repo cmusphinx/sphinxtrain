@@ -53,7 +53,7 @@
 #define MAX_FRAMES		256
 #define MIN_DOUBLE		1.0e-300
 #define PHONE_FILE		"/usr/kfl/phrec/ctl/word.phone"
-#define MAX_PHONE_STRING	30
+#define MAX_PHONE_STRING	60
 
 struct phone
 {
