@@ -61,7 +61,39 @@
 int
 parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
+  const char helpstr[] = 
+"Description: (Copy from Rita's web manual) To initialize the means and variances, global values of \n\
+ these parameters are first estimated and then copied into appropriate \n\
+ positions in the parameter files. The global mean is computed using \n\
+ all the vectors you have in your feature files. This is usually a \n\
+ very large number, so the job is divided into many parts. At this \n\
+ stage you tell the Sphinx how many parts you want it to divide this \n\
+ operation into (depending on the computing facilities you have) and \n\
+ the Sphinx \"accumulates\" or gathers up the vectors for each part \n\
+ separately and writes it into an intermediate buffer on your \n\
+ machine. The executable init_gau is used for this purpose.";
+
+  const char examplestr[]=
+"Example:\n\
+\n\
+init_gau -accumdir accumdir -ctlfn controlfn -part 1 -npart 1 -cepdir cepdir -feat 1s_12c_12d_3p_12dd -ceplen 13 ";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-moddeffn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -198,7 +230,25 @@ parse_cmd_ln(int argc, char *argv[])
 	E_FATAL("Unable to validate command line\n");
     }
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
+
 
     return 0;
 }
@@ -207,9 +257,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2004/08/08  04:21:00  arthchan2003
+ * help and example for init_gau
  * 
+ * Revision 1.4  2004/07/21 18:30:34  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
