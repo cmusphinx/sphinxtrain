@@ -1,6 +1,6 @@
 Pre-release notes. 
 ^^^^^^^^^^^^^^^^^
-As at 2004-08-25, there was no official release of SphinxTrain by CMU
+As at 2004-09-17, there was no official release of SphinxTrain by CMU
 or by the developers of Sphinx.  Major reason is that SphinxTrain is
 in many senses not stable.  
 
@@ -10,8 +10,8 @@ Before we can get SphinxTrain release, this release notes will used to
 record the change made in SphinxTrain correspond to a particular
 release of sphinx 3.x.  We also note down the corresponding timestamp.
 
-2004-08-25 Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon Unversity. 
-	SphinxTrian timestamp ???????? 
+2004-09-17 Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon Unversity. 
+	SphinxTrian timestamp: SPHINX3_5_CMU_INTERNAL_RELEASE
 	correspond to sphinx 3.5 release
 	Changes since the last record.
 	-The feature extraction libraries of SphinxTrain is now
