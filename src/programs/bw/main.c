@@ -161,6 +161,7 @@ main_initialize(int argc,
     int mean_reest;
     int var_reest;
     int sil_del;
+    int multi_prons;
     int mllr_mult;
     int mllr_add;
     int did_restore = FALSE;
@@ -283,6 +284,7 @@ main_initialize(int argc,
     mllr_mult  = *(int32 *)cmd_ln_access("-mllrmult");
     mllr_add   = *(int32 *)cmd_ln_access("-mllradd");
     sil_del    = *(int32 *)cmd_ln_access("-sildel");
+    multi_prons = *(int32 *)cmd_ln_access("-multiprons");
 
     E_INFO("Will %sreestimate mixing weights.\n",
 	   (mixw_reest ? "" : "NOT "));
@@ -296,6 +298,8 @@ main_initialize(int argc,
 	   (mllr_add ? "" : "NOT "));
     E_INFO("WIll %soptionally delete silence in Baum Welch or Viterbi. \n",
 	   (sil_del ? "" : "NOT "));
+    E_INFO("WIll %sexpand multiple pronounciations in graph building. \n",
+	   (multi_prons ? "" : "NOT "));
 
     if (*(int32 *)cmd_ln_access("-mixwreest")) {
 	if (mod_inv_alloc_mixw_acc(inv) != S3_SUCCESS)
@@ -509,6 +513,7 @@ main_reestimate(model_inventory_t *inv,
     uint32 var_reest;	/* if TRUE, reestimate variances */
     uint32 mllr_mult;  /* if TRUE estimate multiplicative term of MLLR */
     uint32 mllr_add;   /* if TRUE estimate additive term of MLLR */
+    int multi_prons;   /* if TRUE expand multiple pronounciations */
     uint32 sil_del;    /* if TRUE optionally delete silence at the end */
     char *trans;
     char* silence_str;
@@ -573,6 +578,7 @@ main_reestimate(model_inventory_t *inv,
     mllr_mult = *(int32 *)cmd_ln_access("-mllrmult");
     mllr_add = *(int32 *)cmd_ln_access("-mllradd");
     sil_del    = *(int32 *)cmd_ln_access("-sildel");
+    multi_prons = *(int32 *)cmd_ln_access("-multiprons");
     silence_str = cmd_ln_access("-siltag");
 
     if (cmd_ln_access("-ckptintv")) {
@@ -629,6 +635,7 @@ main_reestimate(model_inventory_t *inv,
     printf("\t<frame_log_lik>\n");
     printf("\t<utt_log_lik>\n");
     printf("\t... timing info ... \n");
+
 
     n_utt = 0;
     while (corpus_next_utt()) {
@@ -724,7 +731,7 @@ main_reestimate(model_inventory_t *inv,
 	    timing_start(upd_timer);
 	if (!viterbi) {
 	    /* create a sentence HMM */
-	    state_seq = next_utt_states(&n_state, lex, inv, mdef, trans, sil_del, silence_str);
+	    state_seq = next_utt_states(&n_state, lex, inv, mdef, trans, sil_del, silence_str,multi_prons);
 	    printf(" %5u", n_state);
 
 	    /* accumulate reestimation sums for the utterance */
@@ -761,6 +768,7 @@ main_reestimate(model_inventory_t *inv,
 	    acmod_id_t *phone;
 	    uint32 n_phone;
 	    char *btw_mark;
+	    char *multiw_mark;
 	    uint32 *s_seq;
 	    uint32 *t_seq;
 	    uint32 *ms_seq;
@@ -769,8 +777,8 @@ main_reestimate(model_inventory_t *inv,
 	    assert(n_seg == n_frame);
 
 	    word = mk_wordlist(trans, &n_word);
-	    phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
-	    cvt2triphone(inv->mdef->acmod_set, phone, btw_mark, n_phone);
+	    phone = mk_phone_list(&btw_mark,&multiw_mark, &n_phone, word, n_word, lex,multi_prons);
+	    cvt2triphone(inv->mdef->acmod_set, phone, btw_mark, multiw_mark, n_phone, multi_prons);
 	    s_seq = mk_sseq(seg, n_frame, phone, n_phone, inv->mdef);
 	    mk_trans_seq(&t_seq, &ms_seq, seg, n_frame, phone, n_phone, inv->mdef);
 
@@ -778,6 +786,9 @@ main_reestimate(model_inventory_t *inv,
 	    ckd_free(word);
 	    ckd_free(phone);
 	    ckd_free(btw_mark);
+	    if(multiw_mark){
+	      ckd_free(multiw_mark);
+	    }
 
 	    /* create a tied state sequence from the state segmentation */
 	    
@@ -971,9 +982,12 @@ int main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/06/17  19:17:14  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
+ * Revision 1.5  2004/07/13  06:31:20  arthchan2003
+ * code checked in for multiple pronounciations
  * 
+ * Revision 1.4  2004/06/17 19:17:14  arthchan2003
+ * Code Update for silence deletion and standardize the name for command -line arguments
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

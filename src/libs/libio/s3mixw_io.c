@@ -38,7 +38,7 @@
  *
  * ====================================================================
  *
- */
+
 /*********************************************************************
  *
  * File: s3mixw_io.c
@@ -204,6 +204,7 @@ s3mixw_write(const char *fn,
     for (i = 0; i < n_mixw; i++) {
 	for (j = 0; j < n_feat; j++) {
 	    for (k = 0; k < n_density; k++) {
+	      /*	      E_INFO("i: %d, j: %d, k: %d mixw[i][j][k] %e\n",i,j,k,mixw[i][j][k]);*/
 		if (mixw[i][j][k] < 0) {
 		    E_ERROR("mixw[%u][%u][%u] < 0 (%e)\n",
 			    i,j,k,mixw[i][j][k]);
@@ -245,9 +246,12 @@ s3mixw_write(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/04/05  20:02:31  awb
- * *** empty log message ***
+ * Revision 1.4  2004/07/13  06:31:20  arthchan2003
+ * code checked in for multiple pronounciations
  * 
+ * Revision 1.3  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/09/29 22:35:13  awb
  * *** empty log message ***
  *
