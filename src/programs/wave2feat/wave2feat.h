@@ -47,7 +47,7 @@
 #define NIST 3
 #define MSWAV 4
 
-#define ONE_CHAN 1
+#define ONE_CHAN "1"
 
 #define LITTLE 1
 #define BIG 2
@@ -59,7 +59,7 @@
 #define FE_UNKNOWN_SINGLE_OR_BATCH 3
 #define FE_INPUT_FILE_OPEN_ERROR 4
 #define FE_INPUT_FILE_READ_ERROR 5
-#define FE_INPUT_FILE_ALLOC_MEM_ERROR 6
+#define FE_MEM_ALLOC_ERROR 6
 #define FE_OUTPUT_FILE_WRITE_ERROR 7
 #define FE_OUTPUT_FILE_OPEN_ERROR 8
 

@@ -36,15 +36,18 @@
 #ifndef _FE_H_
 #define _FE_H_
 
+#include <s3/prim_type.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+  /*
 #define int32 int
 #define int16 short
 #define float32 float
 #define float64 double
-
+  */
 typedef struct{
     float32 SAMPLING_RATE;
     int32 FRAME_RATE;
@@ -123,23 +126,23 @@ typedef struct{
 #define OFF 0
 
 /* Default values */
-#define DEFAULT_SAMPLING_RATE 16000.0
-#define DEFAULT_FRAME_RATE 100
+#define DEFAULT_SAMPLING_RATE "16000.0"
+#define DEFAULT_FRAME_RATE "100"
 #define DEFAULT_FRAME_SHIFT 160
 /* The default below is set so that we have an integral number of
  * samples in a frame.
  */
-#define DEFAULT_WINDOW_LENGTH 0.025625
+#define DEFAULT_WINDOW_LENGTH "0.025625"
 /* Since the default sampling rate is 16000, let's make the default
  * fft size consistent with it.
  */
-#define DEFAULT_FFT_SIZE 512
+#define DEFAULT_FFT_SIZE "512"
 #define DEFAULT_FB_TYPE MEL_SCALE
-#define DEFAULT_NUM_CEPSTRA 13
-#define DEFAULT_NUM_FILTERS 40
-#define DEFAULT_LOWER_FILT_FREQ 133.33334
-#define DEFAULT_UPPER_FILT_FREQ 6855.4976
-#define DEFAULT_PRE_EMPHASIS_ALPHA 0.97
+#define DEFAULT_NUM_CEPSTRA "13"
+#define DEFAULT_NUM_FILTERS "40"
+#define DEFAULT_LOWER_FILT_FREQ "133.33334"
+#define DEFAULT_UPPER_FILT_FREQ "6855.4976"
+#define DEFAULT_PRE_EMPHASIS_ALPHA "0.97"
 #define DEFAULT_START_FLAG 0
 
 #define BB_SAMPLING_RATE 16000
@@ -157,7 +160,7 @@ typedef struct{
 #define DEFAULT_NB_UPPER_FILT_FREQ 3500
 
 
-#define DEFAULT_BLOCKSIZE 200000
+#define DEFAULT_BLOCKSIZE "200000"
 #define DITHER  OFF
 
 /* Interface */

@@ -91,6 +91,10 @@ fe_t *fe_init(param_t const *P)
     fe_parse_general_params(P,FE);
 
     /* compute remaining FE parameters */
+
+    /* We add 0.5 so approximate the float with the closest
+     * integer. E.g., 2.3 is truncate to 2, whereas 3.7 becomes 4
+     */
     FE->FRAME_SHIFT        = (int32)(FE->SAMPLING_RATE/FE->FRAME_RATE + 0.5);/* why 0.5? */
     FE->FRAME_SIZE         = (int32)(FE->WINDOW_LENGTH*FE->SAMPLING_RATE + 0.5); /* why 0.5? */
     FE->PRIOR              = 0;

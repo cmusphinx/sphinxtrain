@@ -47,10 +47,13 @@ ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
   fe_interface.c \
   fe_sigproc.c \
+  parse_cmd_ln.c \
   wave2feat.c
 H = \
+  cmd_ln_defn.h \
   fe.h \
   fe_internal.h \
+  parse_cmd_ln.h \
   wave2feat.h
 
 FILES = Makefile $(SRCS) $(H)

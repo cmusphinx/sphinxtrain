@@ -499,64 +499,64 @@ void fe_parse_general_params(param_t const *P, fe_t *FE)
 {
 
     if (P->SAMPLING_RATE != 0) 
-	FE->SAMPLING_RATE = P->SAMPLING_RATE;
+      FE->SAMPLING_RATE = P->SAMPLING_RATE;
     else
-	FE->SAMPLING_RATE = DEFAULT_SAMPLING_RATE;
+      FE->SAMPLING_RATE = (float32)atof(DEFAULT_SAMPLING_RATE);
 
     if (P->FRAME_RATE != 0) 
-	FE->FRAME_RATE = P->FRAME_RATE;
+      FE->FRAME_RATE = P->FRAME_RATE;
     else 
-	FE->FRAME_RATE = DEFAULT_FRAME_RATE;
+      FE->FRAME_RATE = (int32)atof(DEFAULT_FRAME_RATE);
     
     if (P->WINDOW_LENGTH != 0) 
 	FE->WINDOW_LENGTH = P->WINDOW_LENGTH;
     else 
-	FE->WINDOW_LENGTH = (float32) DEFAULT_WINDOW_LENGTH;
+      FE->WINDOW_LENGTH = (float32)atof(DEFAULT_WINDOW_LENGTH);
     
     if (P->FB_TYPE != 0) 
-	FE->FB_TYPE = P->FB_TYPE;
+      FE->FB_TYPE = P->FB_TYPE;
     else 
-	FE->FB_TYPE = DEFAULT_FB_TYPE;
+      FE->FB_TYPE = DEFAULT_FB_TYPE;
  
     if (P->PRE_EMPHASIS_ALPHA != 0) 
-	FE->PRE_EMPHASIS_ALPHA = P->PRE_EMPHASIS_ALPHA;
+      FE->PRE_EMPHASIS_ALPHA = P->PRE_EMPHASIS_ALPHA;
     else 
-	FE->PRE_EMPHASIS_ALPHA = (float32) DEFAULT_PRE_EMPHASIS_ALPHA;
+      FE->PRE_EMPHASIS_ALPHA = (float32)atof(DEFAULT_PRE_EMPHASIS_ALPHA);
  
     if (P->NUM_CEPSTRA != 0) 
-	FE->NUM_CEPSTRA = P->NUM_CEPSTRA;
+      FE->NUM_CEPSTRA = P->NUM_CEPSTRA;
     else 
-	FE->NUM_CEPSTRA = DEFAULT_NUM_CEPSTRA;
+      FE->NUM_CEPSTRA = atoi(DEFAULT_NUM_CEPSTRA);
 
     if (P->FFT_SIZE != 0) 
-	FE->FFT_SIZE = P->FFT_SIZE;
+      FE->FFT_SIZE = P->FFT_SIZE;
     else 
-	FE->FFT_SIZE = DEFAULT_FFT_SIZE;
+      FE->FFT_SIZE = atoi(DEFAULT_FFT_SIZE);
  
 }
 
 void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
 {
     if (P->SAMPLING_RATE != 0) 
-	MEL->sampling_rate = P->SAMPLING_RATE;
+      MEL->sampling_rate = P->SAMPLING_RATE;
     else 
-	MEL->sampling_rate = DEFAULT_SAMPLING_RATE;
+      MEL->sampling_rate = (float32)atof(DEFAULT_SAMPLING_RATE);
 
     if (P->FFT_SIZE != 0) 
-	MEL->fft_size = P->FFT_SIZE;
+      MEL->fft_size = P->FFT_SIZE;
     else {
       if (MEL->sampling_rate == BB_SAMPLING_RATE)
 	MEL->fft_size = DEFAULT_BB_FFT_SIZE;
       if (MEL->sampling_rate == NB_SAMPLING_RATE)
 	MEL->fft_size = DEFAULT_NB_FFT_SIZE;
       else 
-	MEL->fft_size = DEFAULT_FFT_SIZE;
+	MEL->fft_size = atoi(DEFAULT_FFT_SIZE);
     }
  
     if (P->NUM_CEPSTRA != 0) 
-	MEL->num_cepstra = P->NUM_CEPSTRA;
+      MEL->num_cepstra = P->NUM_CEPSTRA;
     else 
-	MEL->num_cepstra = DEFAULT_NUM_CEPSTRA;
+      MEL->num_cepstra = atoi(DEFAULT_NUM_CEPSTRA);
  
     if (P->NUM_FILTERS != 0)	
 	MEL->num_filters = P->NUM_FILTERS;

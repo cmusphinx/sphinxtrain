@@ -59,6 +59,8 @@
 #include "fe.h"
 #include "fe_internal.h"
 #include "wave2feat.h"
+#include "parse_cmd_ln.h"
+#include <s3/err.h>
 
 /*       
 	 7-Feb-00 M. Seltzer - wrapper created for new front end -
@@ -81,21 +83,13 @@
 	 added -mach_endian switch to specify machine's byte format
 */
 
-static int32 fe_usage(char **argv);
-
-static void fe_arg_missing(char **argv, char *arg_missing) {
-  fprintf(stderr,"\n*** Argument missing: %s <required argument> ***\n\n", arg_missing);
-  fe_usage(argv);
-}
-
 int32 main(int32 argc, char **argv)
 {
     param_t *P;
 
     P = fe_parse_options(argc,argv);
-    if (fe_convert_files(P)){
-	fprintf(stderr,"error converting files...exiting\n");
-	return(-1);
+    if (fe_convert_files(P) != FE_SUCCESS){
+	E_FATAL("error converting files...exiting\n");
     }
     
     fe_free_param(P);
@@ -113,24 +107,26 @@ int32 fe_convert_files(param_t *P)
     int32 splen,total_samps,frames_proc,nframes,nblocks,last_frame;
     int32 fp_in,fp_out, last_blocksize=0,curr_block,total_frames;
     float32 **cep = NULL, **last_frame_cep;
+    int32 return_value;
     
     if ((FE = fe_init(P))==NULL){
-	fprintf(stderr,"memory alloc failed in fe_convert_files()\n...exiting\n");
-	exit(0);
+	E_ERROR("memory alloc failed...exiting\n");
+	return(FE_MEM_ALLOC_ERROR);
     }
 
     if (P->is_batch){
 	if ((ctlfile = fopen(P->ctlfile,"r")) == NULL){
-	    fprintf(stderr,"Unable to open control file %s\n",P->ctlfile);
+	    E_ERROR("Unable to open control file %s\n",P->ctlfile);
 	    return(FE_CONTROL_FILE_ERROR);
 	}
 	while (fscanf(ctlfile,"%s",fileroot)!=EOF){
 	    fe_build_filenames(P,fileroot,&infile,&outfile);
 
-	    if (P->verbose) printf("%s\n",infile);
+	    if (P->verbose) E_INFO("%s\n",infile);
 
-	    if (fe_openfiles(P,FE,infile,&fp_in,&total_samps,&nframes,&nblocks,outfile,&fp_out) != FE_SUCCESS){
-	      exit(0);
+	    return_value = fe_openfiles(P,FE,infile,&fp_in,&total_samps,&nframes,&nblocks,outfile,&fp_out);
+	    if (return_value != FE_SUCCESS){
+	      return(return_value);
 	    }
 
 	    if (nblocks*P->blocksize>=total_samps) 
@@ -144,12 +140,12 @@ int32 fe_convert_files(param_t *P)
 		while(curr_block < nblocks){
 		    splen = P->blocksize;
 		    if ((spdata = (int16 *)calloc(splen,sizeof(int16)))==NULL){
-			fprintf(stderr,"Unable to allocate memory block of %d shorts for input speech\n",splen);
-			exit(0);
+			E_ERROR("Unable to allocate memory block of %d shorts for input speech\n",splen);
+			return(FE_MEM_ALLOC_ERROR);
 		    } 
 		    if (fe_readblock_spch(P,fp_in,splen,spdata)!=splen){
-			fprintf(stderr,"error reading speech data\n");
-			exit(0);
+			E_ERROR("error reading speech data\n");
+			return(FE_INPUT_FILE_READ_ERROR);
 		    }
 		    frames_proc = fe_process_utt(FE,spdata,splen,&cep);
 		    if (frames_proc>0)
@@ -167,13 +163,13 @@ int32 fe_convert_files(param_t *P)
 		splen=last_blocksize;
 		
 		if ((spdata = (int16 *)calloc(splen,sizeof(int16)))==NULL){
-		    fprintf(stderr,"Unable to allocate memory block of %d shorts for input speech\n",splen);
-		    exit(0);
+		    E_ERROR("Unable to allocate memory block of %d shorts for input speech\n",splen);
+		    return(FE_MEM_ALLOC_ERROR);
 		} 
 
 		if (fe_readblock_spch(P,fp_in,splen,spdata)!=splen){
-		    fprintf(stderr,"error reading speech data\n");
-		    exit(0);
+		    E_ERROR("error reading speech data\n");
+		    return(FE_INPUT_FILE_READ_ERROR);
 		}
 		
 		frames_proc = fe_process_utt(FE,spdata,splen,&cep);
@@ -198,7 +194,7 @@ int32 fe_convert_files(param_t *P)
 		
 	    }
 	    else{
-		fprintf(stderr,"fe_start_utt() failed\n");
+		E_ERROR("fe_start_utt() failed\n");
 		return(FE_START_ERROR);
 	    }
 	}
@@ -209,9 +205,9 @@ int32 fe_convert_files(param_t *P)
 	
 	fe_build_filenames(P,fileroot,&infile,&outfile);
 	if (P->verbose) printf("%s\n",infile);
-
-	if (fe_openfiles(P,FE,infile,&fp_in,&total_samps,&nframes,&nblocks,outfile,&fp_out) != FE_SUCCESS){
-	  exit(0);
+	return_value = fe_openfiles(P,FE,infile,&fp_in,&total_samps,&nframes,&nblocks,outfile,&fp_out);
+	if (return_value != FE_SUCCESS){
+	  return(return_value);
 	}
 	
 	if (nblocks*P->blocksize>=total_samps) 
@@ -225,12 +221,12 @@ int32 fe_convert_files(param_t *P)
 	    while(curr_block < nblocks){
 		splen = P->blocksize;
 		if ((spdata = (int16 *)calloc(splen,sizeof(int16)))==NULL){
-		    fprintf(stderr,"Unable to allocate memory block of %d shorts for input speech\n",splen);
-		    exit(0);
+		    E_ERROR("Unable to allocate memory block of %d shorts for input speech\n",splen);
+		    return(FE_MEM_ALLOC_ERROR);
 		} 
 		if (fe_readblock_spch(P,fp_in,splen,spdata)!=splen){
-		    fprintf(stderr,"Error reading speech data\n");
-		    exit(0);
+		    E_ERROR("Error reading speech data\n");
+		    return(FE_INPUT_FILE_READ_ERROR);
 		}
 		frames_proc = fe_process_utt(FE,spdata,splen,&cep);
 		if (frames_proc>0)
@@ -247,12 +243,12 @@ int32 fe_convert_files(param_t *P)
 	    if (spdata!=NULL) free(spdata);
 	    splen =last_blocksize;
 	    if ((spdata = (int16 *)calloc(splen,sizeof(int16)))==NULL){
-		fprintf(stderr,"Unable to allocate memory block of %d shorts for input speech\n",splen);
-		exit(0);
+		E_ERROR("Unable to allocate memory block of %d shorts for input speech\n",splen);
+		return(FE_MEM_ALLOC_ERROR);
 	    } 
 	    if (fe_readblock_spch(P,fp_in,splen,spdata)!=splen){
-		fprintf(stderr,"Error reading speech data\n");
-		exit(0);
+		E_ERROR("Error reading speech data\n");
+		return(FE_INPUT_FILE_READ_ERROR);
 	    }
 	    frames_proc = fe_process_utt(FE,spdata,splen,&cep);
 	    if (frames_proc>0)
@@ -277,280 +273,166 @@ int32 fe_convert_files(param_t *P)
 	    fe_free_2d((void **)last_frame_cep);
 	}
 	else{
-	    fprintf(stderr,"fe_start_utt() failed\n");
+	    E_ERROR("fe_start_utt() failed\n");
 	    return(FE_START_ERROR);
 	}
 	
 	fe_close(FE);
     }
     else{
-	fprintf(stderr,"Unknown mode - single or batch?\n");
+	E_ERROR("Unknown mode - single or batch?\n");
 	return(FE_UNKNOWN_SINGLE_OR_BATCH);
 	
     }
     
-    return(0);
+    return(FE_SUCCESS);
     
 }
 
+void fe_validate_parameters(param_t *P) 
+{
+    
+    if ((P->is_batch) && (P->is_single)) {
+        E_FATAL("You cannot define an input file and a control file\n");
+    }
+    
+    if (P->wavfile == NULL && P->wavdir == NULL){
+        E_FATAL("No input file or file directory given\n");
+    }
+    
+    if (P->cepfile == NULL && P->cepdir == NULL){
+        E_FATAL("No cepstra file or file directory given\n");
+    }
+    
+    if (P->ctlfile==NULL && P->cepfile==NULL && P->wavfile==NULL){
+        E_FATAL("No control file given\n");
+    }
+    
+    if (P->nchans>1){
+        E_INFO("Files have %d channels of data\n", P->nchans);
+        E_INFO("Will extract features for channel %d\n", P->whichchan);
+    }
+    
+    if (P->whichchan > P->nchans) {
+        E_FATAL("You cannot select channel %d out of %d\n", P->whichchan, P->nchans);
+    }
+    
+    if ((P->UPPER_FILT_FREQ * 2) > P->SAMPLING_RATE) {
+        E_WARN("Upper frequency higher than Nyquist frequency");
+    }
+    
+    if (P->doublebw==ON) {
+        E_INFO("Will use double bandwidth filters\n");
+    }
+}
+
+
 param_t *fe_parse_options(int32 argc, char **argv) 
 {
-    int32 i;
     param_t *P;
+    int32 format;
+    char *endian;
+    
+    parse_cmd_ln(argc, argv);
     
     if ((P=(param_t *)malloc(sizeof(param_t)))==NULL){
-	fprintf(stderr,"memory alloc failed in fe_parse_options()\n...exiting\n");
-	exit(0);
+        E_FATAL("memory alloc failed in fe_parse_options()\n...exiting\n");
     }
     
-    if (argc == 1){
-	fprintf(stderr,"No Command Line Arguments given\n");
-	fe_usage(argv);
-    }
-	    
     fe_init_params(P);
     
-    for (i = 1; i < argc; ++i)
+    P->wavfile = (char *)cmd_ln_access("-i");
+    if (P->wavfile != CMD_LN_NO_DEFAULT) {
+        P->is_single = ON;
+    }
+    
+    P->cepfile = (char *)cmd_ln_access("-o");
+    
+    P->ctlfile = (char *)cmd_ln_access("-c");
+    if (P->ctlfile != CMD_LN_NO_DEFAULT) {
+        P->is_batch = ON;
+    }
+    
+    P->wavdir = (char *)cmd_ln_access("-di");
+    P->cepdir = (char *)cmd_ln_access("-do");
+    P->wavext = (char *)cmd_ln_access("-ei");
+    P->cepext = (char *)cmd_ln_access("-eo");
+    format = *(int32 *)cmd_ln_access("-raw");
+    if (format) {
+        P->input_format = RAW;
+    }
+    format = *(int32 *)cmd_ln_access("-nist");
+    if (format) {
+        P->input_format = NIST;
+    } 
+    format = *(int32 *)cmd_ln_access("-mswav");
+    if (format) {
+        P->input_format = MSWAV;
+    }
+    
+    P->nchans = *(int32 *)cmd_ln_access("-nchans");
+    P->whichchan = *(int32 *)cmd_ln_access("-whichchan");
+    P->PRE_EMPHASIS_ALPHA = *(float32 *)cmd_ln_access("-alpha");
+    P->SAMPLING_RATE = *(float32 *)cmd_ln_access("-srate");
+    P->WINDOW_LENGTH = *(float32 *)cmd_ln_access("-wlen");
+    P->FRAME_RATE = *(int32 *)cmd_ln_access("-frate");
+    if (!strcmp((const char *)cmd_ln_access("-feat"), "sphinx")) 
     {
-	if (!strcmp("-i",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-i");
-	    }
-            P->wavfile = argv[i]; 
-	    P->is_single = ON;
-	}
-	else if (!strcmp("-o",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-o");
-	    }
-            P->cepfile = argv[i];
-	}
-	else if (!strcmp("-c",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-c");
-	    }
-            P->ctlfile = argv[i];
-	    P->is_batch = ON;
-	}
-	else if (!strcmp("-di",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-di");
-	    }
-            P->wavdir = argv[i];
-	}
-	else if (!strcmp("-do",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-do");
-	    }
-	    P->cepdir = argv[i];
-	}
-	else if (!strcmp("-ei",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-ei");
-	    }
-	    P->wavext = argv[i];
-	}
-        else if (!strcmp("-eo",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-eo");
-	    }
-	    P->cepext = argv[i];
-	}
-	/*
-	else if (!strcmp("-wav",argv[i])){
-	    P->input_format = WAV;
-	}
-	*/
-	else if (!strcmp("-nist",argv[i])){
-	    P->input_format = NIST;
-	}
-	else if (!strcmp("-mswav",argv[i])){
-	    P->input_format = MSWAV;
-	}
-	else if (!strcmp("-raw",argv[i])){
-	    P->input_format = RAW;
-	}
-	else if (!strcmp("-nchans",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-nchans");
-	    }
-	    P->nchans = atoi(argv[i]);
-	}
-	else if (!strcmp("-whichchan",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-whichchan");
-	    }
-	    P->whichchan = atoi(argv[i]);
-	}
-	else if (!strcmp("-alpha",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-alpha");
-	    }
-	    P->PRE_EMPHASIS_ALPHA = atof(argv[i]);
-	}
-	else if (!strcmp("-srate",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-srate");
-	    }
-	    P->SAMPLING_RATE = atof(argv[i]);
-	}	
-	else if (!strcmp("-wlen",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-wlen");
-	    }
-	    P->WINDOW_LENGTH = atof(argv[i]);
-	}
-	else if (!strcmp("-frate",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-frate");
-	    }
-	    P->FRAME_RATE = atof(argv[i]);
-	}
-	else if (!strcmp("-feat",argv[i])){
-  	    if (++i == argc) {
-	      fe_arg_missing(argv, "-feat");
-	    }
-	    if (!strcmp("sphinx",argv[i])){
-		P->FB_TYPE = MEL_SCALE;
-		P->output_endian = BIG;
-	    }
-	    else{
-		fprintf(stderr,"MEL_SCALE IS CURRENTLY THE ONLY IMPLEMENTATION\n\n");
-		fprintf(stderr,"Make sure you specify '-feat sphinx'\n");
-		fe_arg_missing(argv, "-feat");
-	    }	
-	}		    
-	else if (!strcmp("-nfilt",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-nfilt");
-	    }
-	    P->NUM_FILTERS = atoi(argv[i]);
-	}
-        else if (!strcmp("-ncep",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-ncep");
-	    }
-	    P->NUM_CEPSTRA = atoi(argv[i]);
-	}
-        else if (!strcmp("-lowerf",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-lowerf");
-	    }
-	    P->LOWER_FILT_FREQ = atof(argv[i]);
-	}
-        else if (!strcmp("-upperf",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-upperf");
-	    }
-	    P->UPPER_FILT_FREQ = atof(argv[i]);
-	}
-	else if (!strcmp("-nfft",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-nfft");
-	    }
-	    P->FFT_SIZE = atoi(argv[i]);
-	}
-	else if (!strcmp("-doublebw",argv[i])){
-	    P->doublebw = ON;
-	}
-	else if (!strcmp("-blocksize",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-blocksize");
-	    }
-	    P->blocksize = atoi(argv[i]);
-	}
-	else if (!strcmp("-verbose",argv[i])){
-	    P->verbose = ON;
-	}
-	else if (!strcmp("-mach_endian",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-mach_endian");
-	    }
-	    if (!strcmp("big",argv[i]))
-		P->machine_endian = BIG;
-	    else if (!strcmp("little",argv[i]))
-		P->machine_endian = LITTLE;
-	    else{
-		fprintf(stderr,"Machine must be big or little Endian\n");
-		exit(0);
-	    }	
-	}
-	else if (!strcmp("-input_endian",argv[i])){
-	    if (++i == argc) {
-	      fe_arg_missing(argv, "-input_endian");
-	    }
-	    if (!strcmp("big",argv[i]))
-		P->input_endian = BIG;
-	    else if (!strcmp("little",argv[i]))
-		P->input_endian = LITTLE;
-	    else{
-		fprintf(stderr,"Machine must be big or little Endian\n");
-		exit(0);
-	    }	
-	}
-	else if (!strcmp("-dither",argv[i])){
-	    P->dither = ON;
-	}
-	else if (!strcmp("-logspec",argv[i])){
-	    P->logspec = ON;
-	}
-	else if (!strcmp("-help",argv[i])){
-	    fe_usage(argv);
-	}
-        else{
-            fprintf(stderr,"%s - unknown argument\n", argv[i]);
-	    exit(0);
-        }
+        P->FB_TYPE = MEL_SCALE;
+        P->output_endian = BIG;
+    } 
+    else 
+    {
+        E_ERROR("MEL_SCALE IS CURRENTLY THE ONLY IMPLEMENTATION\n\n");
+        E_FATAL("Make sure you specify '-feat sphinx'\n");
+    }	
+    P->NUM_FILTERS = *(int32 *)cmd_ln_access("-nfilt");
+    P->NUM_CEPSTRA = *(int32 *)cmd_ln_access("-ncep");
+    P->LOWER_FILT_FREQ = *(float32 *)cmd_ln_access("-lowerf");
+    P->UPPER_FILT_FREQ = *(float32 *)cmd_ln_access("-upperf");
+    P->FFT_SIZE = *(int32 *)cmd_ln_access("-nfft");
+    if (*(int32 *)cmd_ln_access("-doublebw")) {
+        P->doublebw = ON; 
+    } else {
+        P->doublebw = OFF;
     }
-    if (P->wavfile == NULL && P->wavdir == NULL){
-	fprintf(stderr,"No input file or file directory given\n");
-	exit(0);
+    P->blocksize = *(int32 *)cmd_ln_access("-blocksize");
+    P->verbose = *(int32 *)cmd_ln_access("-verbose");
+    endian = (char *)cmd_ln_access("-mach_endian");
+    if (!strcmp("big", endian)) {
+        P->machine_endian = BIG;
+    } else {
+        if (!strcmp("little", endian)) {
+            P->machine_endian = LITTLE;
+        } else {
+            E_FATAL("Machine must be big or little Endian\n");
+        }	
     }
-    if (P->cepfile == NULL && P->cepdir == NULL){
-	fprintf(stderr,"No cepstra file or file directory given\n");
-	exit(0);
+    endian = (char *)cmd_ln_access("-input_endian");
+    if (!strcmp("big", endian)) {
+        P->input_endian = BIG;
+    } else {
+        if (!strcmp("little", endian)) {
+            P->input_endian = LITTLE;
+        } else {
+            E_FATAL("Input must be big or little Endian\n");
+        }	
     }
-    if (P->ctlfile==NULL && P->cepfile==NULL && P->wavfile==NULL){
-	fprintf(stderr,"No control file given\n");
-	exit(0);
-    }
-    if (P->nchans>1){
-      fprintf(stderr,"Files have %d channels of data\n", P->nchans);
-      fprintf(stderr, "Will extract features for channel %d\n", P->whichchan);
-    }
-
-    if (P->doublebw==ON)
-	fprintf(stderr,"Will use double bandwidth filters\n");
-
+    P->dither = *(int32 *)cmd_ln_access("-dither");
+    P->logspec = *(int32 *)cmd_ln_access("-logspec");
+    
+    fe_validate_parameters(P);
+    
     return (P);
+    
 }
 
 
 void fe_init_params(param_t *P)
 {
-    P->SAMPLING_RATE = DEFAULT_SAMPLING_RATE;
-    P->FRAME_RATE = DEFAULT_FRAME_RATE;
-    P->WINDOW_LENGTH = DEFAULT_WINDOW_LENGTH;
     P->FB_TYPE = DEFAULT_FB_TYPE;
-    P->PRE_EMPHASIS_ALPHA = DEFAULT_PRE_EMPHASIS_ALPHA;
-    P->NUM_CEPSTRA = DEFAULT_NUM_CEPSTRA;
-    P->FFT_SIZE = DEFAULT_FFT_SIZE;
-    P->NUM_FILTERS = DEFAULT_NUM_FILTERS;
-    P->UPPER_FILT_FREQ = DEFAULT_UPPER_FILT_FREQ;
-    P->LOWER_FILT_FREQ = DEFAULT_LOWER_FILT_FREQ;
     P->is_batch = OFF;
     P->is_single = OFF;
-    P->blocksize = DEFAULT_BLOCKSIZE;
-    P->verbose = OFF;
-    P->input_format=NIST;
-    P->input_endian = LITTLE;
-#ifdef WORDS_BIGENDIAN
-    P->machine_endian = BIG;
-#else
-    P->machine_endian = LITTLE;
-#endif
-    P->output_endian = BIG;
-    P->dither = OFF;
     P->wavfile = NULL;
     P->cepfile = NULL;
     P->ctlfile = NULL;
@@ -558,9 +440,6 @@ void fe_init_params(param_t *P)
     P->cepdir = NULL;
     P->wavext = NULL;
     P->cepext = NULL;
-    P->nchans = ONE_CHAN;
-    P->whichchan = ONE_CHAN;
-    P->doublebw = OFF;
     
 }
 
@@ -571,38 +450,38 @@ int32 fe_build_filenames(param_t *P, char *fileroot, char **infilename, char **o
     char chanlabel[MAXCHARS];
     
     if (P->nchans>1)
-	sprintf(chanlabel, ".ch%d", P->whichchan);
+        sprintf(chanlabel, ".ch%d", P->whichchan);
     
     if (P->is_batch){
-	sprintf(cbuf,"%s","");
-	strcat(cbuf,P->wavdir);
-	strcat(cbuf,"/");
-	strcat(cbuf,fileroot);
-	strcat(cbuf,".");
-	strcat(cbuf,P->wavext);
-	*infilename = fe_copystr(*infilename,cbuf);
-	
-	sprintf(cbuf,"%s","");
-	strcat(cbuf,P->cepdir);
-	strcat(cbuf,"/");
-	strcat(cbuf,fileroot);
-	if (P->nchans>1)
-	    strcat(cbuf, chanlabel);
-	strcat(cbuf,".");
-	strcat(cbuf,P->cepext);
-	*outfilename = fe_copystr(*outfilename,cbuf);	
+        sprintf(cbuf,"%s","");
+        strcat(cbuf,P->wavdir);
+        strcat(cbuf,"/");
+        strcat(cbuf,fileroot);
+        strcat(cbuf,".");
+        strcat(cbuf,P->wavext);
+        *infilename = fe_copystr(*infilename,cbuf);
+        
+        sprintf(cbuf,"%s","");
+        strcat(cbuf,P->cepdir);
+        strcat(cbuf,"/");
+        strcat(cbuf,fileroot);
+        if (P->nchans>1)
+            strcat(cbuf, chanlabel);
+        strcat(cbuf,".");
+        strcat(cbuf,P->cepext);
+        *outfilename = fe_copystr(*outfilename,cbuf);	
     }
     else if (P->is_single){
-	sprintf(cbuf,"%s","");
-	strcat(cbuf,P->wavfile);
-	*infilename = fe_copystr(*infilename,cbuf);
-
-	sprintf(cbuf,"%s","");
-	strcat(cbuf,P->cepfile);
-	*outfilename = fe_copystr(*outfilename,cbuf);
+        sprintf(cbuf,"%s","");
+        strcat(cbuf,P->wavfile);
+        *infilename = fe_copystr(*infilename,cbuf);
+        
+        sprintf(cbuf,"%s","");
+        strcat(cbuf,P->cepfile);
+        *outfilename = fe_copystr(*outfilename,cbuf);
     }
     else{
-	fprintf(stderr,"Unspecified Batch or Single Mode\n");
+        E_FATAL("Unspecified Batch or Single Mode\n");
     }
     
     return 0;
@@ -628,8 +507,8 @@ int32 fe_count_frames(fe_t *FE, int32 nsamps, int32 count_partial_frames)
     int32 frame_start,frame_count = 0;
     
     for (frame_start=0;frame_start+FE->FRAME_SIZE<=nsamps;
-	 frame_start+=FE->FRAME_SHIFT)
-	frame_count++;
+    frame_start+=FE->FRAME_SHIFT)
+        frame_count++;
    
     if (count_partial_frames){
 	if ((frame_count-1)*FE->FRAME_SHIFT+FE->FRAME_SIZE < nsamps)
@@ -648,184 +527,184 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
     char line[MAXCHARS];
     int got_it=0;
     
-
+    
     /* Note: this is kind of a hack to read the byte format from the
-       NIST header */
+    NIST header */
     if (P->input_format == NIST){
         if ((fp2 = fopen(infile,"rb")) == NULL){
-	    fprintf(stderr,"Cannot read %s\n",infile);
-	    return(FE_INPUT_FILE_READ_ERROR);
-	}
-	*line=0;
-	got_it = 0;
-	while(strcmp(line,"end_head") && !got_it){
-	    fscanf(fp2,"%s",line);
-	    if (!strcmp(line,"sample_byte_format")){
-		fscanf(fp2,"%s",line);
-		if (!strcmp(line,"-s2")){
-		    fscanf(fp2,"%s",line);
-		    if (!strcmp(line,"01")){
-			P->input_endian=LITTLE;
-			got_it=1;
-		    }
-		    else if(!strcmp(line,"10")){
-			P->input_endian=BIG;
-			got_it = 1;
-		    }
-		    else
-			fprintf(stderr,"Unknown/unsupported byte order\n");	
-		}
-		else 
-		    fprintf(stderr,"Error determining byte format\n");
-	    }
-	}
-	if (!got_it){
-	    fprintf(stderr,"Can't find byte format in header, setting to machine's endian\n");
-	    P->input_endian = P->machine_endian;
-	}	    
-	fclose(fp2);
+            E_ERROR("Cannot read %s\n",infile);
+            return(FE_INPUT_FILE_READ_ERROR);
+        }
+        *line=0;
+        got_it = 0;
+        while(strcmp(line,"end_head") && !got_it){
+            fscanf(fp2,"%s",line);
+            if (!strcmp(line,"sample_byte_format")){
+                fscanf(fp2,"%s",line);
+                if (!strcmp(line,"-s2")){
+                    fscanf(fp2,"%s",line);
+                    if (!strcmp(line,"01")){
+                        P->input_endian=LITTLE;
+                        got_it=1;
+                    }
+                    else if(!strcmp(line,"10")){
+                        P->input_endian=BIG;
+                        got_it = 1;
+                    }
+                    else
+                        E_ERROR("Unknown/unsupported byte order\n");
+                }
+                else 
+                    E_ERROR("Error determining byte format\n");
+            }
+        }
+        if (!got_it){
+            E_WARN("Can't find byte format in header, setting to machine's endian\n");
+            P->input_endian = P->machine_endian;
+        }	    
+        fclose(fp2);
     }
     else if (P->input_format == RAW){
-      /*
-	P->input_endian = P->machine_endian;
-      */
+    /*
+    P->input_endian = P->machine_endian;
+        */
     }
     else if (P->input_format == MSWAV){
-	P->input_endian = LITTLE; // Default for MS WAV riff files
+        P->input_endian = LITTLE; // Default for MS WAV riff files
     }
     
     
     if ((fp = open(infile, O_RDONLY | O_BINARY, 0644))<0){
         fprintf(stderr,"Cannot open %s\n",infile);
-  	return (FE_INPUT_FILE_OPEN_ERROR);
+        return (FE_INPUT_FILE_OPEN_ERROR);
     }
     else{
         if (fstat(fp,&filestats)!=0) printf("fstat failed\n");
-	
-	if (P->input_format == NIST){
-	    short *hdr_buf;
-
-	    len = (filestats.st_size-HEADER_BYTES)/sizeof(short);
-	    /* eat header */
-	    hdr_buf = (short *)calloc(HEADER_BYTES/sizeof(short),sizeof(short));
-	    if (read(fp,hdr_buf,HEADER_BYTES)!=HEADER_BYTES){
-		fprintf(stderr,"Cannot read %s\n",infile);
-		return (FE_INPUT_FILE_READ_ERROR);
-	    }
-	    free(hdr_buf);    
-	}
-	else if (P->input_format == RAW){
-	    len = filestats.st_size/sizeof(int16);
-	}
-	else if (P->input_format == MSWAV){
+        
+        if (P->input_format == NIST){
+            short *hdr_buf;
+            
+            len = (filestats.st_size-HEADER_BYTES)/sizeof(short);
+            /* eat header */
+            hdr_buf = (short *)calloc(HEADER_BYTES/sizeof(short),sizeof(short));
+            if (read(fp,hdr_buf,HEADER_BYTES)!=HEADER_BYTES){
+                E_ERROR("Cannot read %s\n",infile);
+                return (FE_INPUT_FILE_READ_ERROR);
+            }
+            free(hdr_buf);    
+        }
+        else if (P->input_format == RAW){
+            len = filestats.st_size/sizeof(int16);
+        }
+        else if (P->input_format == MSWAV){
             /* Read the header */
             MSWAV_hdr *hdr_buf;
-	    if ((hdr_buf = (MSWAV_hdr*) calloc(1,sizeof(MSWAV_hdr))) == NULL){
-	        fprintf(stderr,"Cannot allocate for input file header\n");
-	        return (FE_INPUT_FILE_READ_ERROR);
+            if ((hdr_buf = (MSWAV_hdr*) calloc(1,sizeof(MSWAV_hdr))) == NULL){
+                E_ERROR("Cannot allocate for input file header\n");
+                return (FE_INPUT_FILE_READ_ERROR);
             }
             if (read(fp,hdr_buf,sizeof(MSWAV_hdr)) != sizeof(MSWAV_hdr)){
-	        fprintf(stderr,"Cannot allocate for input file header\n");
-	        return (FE_INPUT_FILE_READ_ERROR);
+                E_ERROR("Cannot allocate for input file header\n");
+                return (FE_INPUT_FILE_READ_ERROR);
             }
-	    /* Check header */
-	    if (strncmp(hdr_buf->rifftag,"RIFF",4)!=0 ||
-		strncmp(hdr_buf->wavefmttag,"WAVEfmt",7)!=0) {
-	        fprintf(stderr,"Error in mswav file header\n");
-	        return (FE_INPUT_FILE_READ_ERROR);
+            /* Check header */
+            if (strncmp(hdr_buf->rifftag,"RIFF",4)!=0 ||
+                strncmp(hdr_buf->wavefmttag,"WAVEfmt",7)!=0) {
+                E_ERROR("Error in mswav file header\n");
+                return (FE_INPUT_FILE_READ_ERROR);
             }
-	    if (strncmp(hdr_buf->datatag,"data",4)!=0) {
-	      /* In this case, there are other "chunks" before the
-	       * data chunk, which we can ignore. We have to find the
-	       * start of the data chunk, which begins with the string
-	       * "data".
-	       */
-	      int16 found=OFF;
-	      char readChar;
-	      char *dataString = "data";
-	      int16 charPointer = 0;
-	      printf("LENGTH: %d\n", strlen(dataString));
-	      while (found != ON) {
-		if (read(fp,&readChar,sizeof(char)) != sizeof(char)){
-		  fprintf(stderr,"Failed reading wav file.\n");
-		  return (FE_INPUT_FILE_READ_ERROR);
-		}
-		if (readChar == dataString[charPointer]) {
-		  charPointer++;
-		}
-		if (charPointer == strlen(dataString)) {
-		  found = ON;
-		  strcpy(hdr_buf->datatag, dataString);
-		  if (read(fp,&(hdr_buf->datalength),sizeof(int32)) != sizeof(int32)){
-		    fprintf(stderr,"Failed reading wav file.\n");
-		    return (FE_INPUT_FILE_READ_ERROR);
-		  }
-		}
-	      }
-	    }
+            if (strncmp(hdr_buf->datatag,"data",4)!=0) {
+            /* In this case, there are other "chunks" before the
+            * data chunk, which we can ignore. We have to find the
+            * start of the data chunk, which begins with the string
+            * "data".
+                */
+                int16 found=OFF;
+                char readChar;
+                char *dataString = "data";
+                int16 charPointer = 0;
+                printf("LENGTH: %d\n", strlen(dataString));
+                while (found != ON) {
+                    if (read(fp,&readChar,sizeof(char)) != sizeof(char)){
+                        E_ERROR("Failed reading wav file.\n");
+                        return (FE_INPUT_FILE_READ_ERROR);
+                    }
+                    if (readChar == dataString[charPointer]) {
+                        charPointer++;
+                    }
+                    if (charPointer == (int)strlen(dataString)) {
+                        found = ON;
+                        strcpy(hdr_buf->datatag, dataString);
+                        if (read(fp,&(hdr_buf->datalength),sizeof(int32)) != sizeof(int32)){
+                            E_ERROR("Failed reading wav file.\n");
+                            return (FE_INPUT_FILE_READ_ERROR);
+                        }
+                    }
+                }
+            }
             if (P->input_endian!=P->machine_endian) { // If machine is Big Endian
                 hdr_buf->datalength = SWAPL(&(hdr_buf->datalength));
-	        hdr_buf->data_format = SWAPW(&(hdr_buf->data_format));
+                hdr_buf->data_format = SWAPW(&(hdr_buf->data_format));
                 hdr_buf->numchannels = SWAPW(&(hdr_buf->numchannels));
                 hdr_buf->BitsPerSample = SWAPW(&(hdr_buf->BitsPerSample));
                 hdr_buf->SamplingFreq = SWAPL(&(hdr_buf->SamplingFreq));
-	        hdr_buf->BytesPerSec = SWAPL(&(hdr_buf->BytesPerSec));
-	    }
-	    /* Check Format */
-	    if (hdr_buf->data_format != 1 || hdr_buf->BitsPerSample != 16){
-                fprintf(stderr,"MS WAV file not in 16-bit PCM format\n");
-		return (FE_INPUT_FILE_READ_ERROR);
-	    }
-	    len = hdr_buf->datalength / sizeof(short);
-	    P->nchans = hdr_buf->numchannels;
-	    /* DEBUG: Dump Info */
-	    fprintf(stderr,"Reading MS Wav file %s:\n", infile);
-	    fprintf(stderr,"\t16 bit PCM data, %d channels %d samples\n",P->nchans,len);
-	    fprintf(stderr,"\tSampled at %d\n",hdr_buf->SamplingFreq);
-	    free(hdr_buf);
-	}
-	else {
-	    fprintf(stderr,"Unknown input file format\n");
-	    return(FE_INPUT_FILE_OPEN_ERROR);
-	}
+                hdr_buf->BytesPerSec = SWAPL(&(hdr_buf->BytesPerSec));
+            }
+            /* Check Format */
+            if (hdr_buf->data_format != 1 || hdr_buf->BitsPerSample != 16){
+                E_ERROR("MS WAV file not in 16-bit PCM format\n");
+                return (FE_INPUT_FILE_READ_ERROR);
+            }
+            len = hdr_buf->datalength / sizeof(short);
+            P->nchans = hdr_buf->numchannels;
+            /* DEBUG: Dump Info */
+            E_INFO("Reading MS Wav file %s:\n", infile);
+            E_INFO("\t16 bit PCM data, %d channels %d samples\n",P->nchans,len);
+            E_INFO("\tSampled at %d\n",hdr_buf->SamplingFreq);
+            free(hdr_buf);
+        }
+        else {
+            E_ERROR("Unknown input file format\n");
+            return(FE_INPUT_FILE_OPEN_ERROR);
+        }
     }
-
-
+    
+    
     len = len/P->nchans;
     *nsamps = len;
     *fp_in = fp;
-
+    
     numblocks = (int)((float)len/(float)P->blocksize);
     if (numblocks*P->blocksize<len)
-	numblocks++;
-
+        numblocks++;
+    
     *nblocks = numblocks;  
-
+    
     if ((fp = open(outfile, O_CREAT | O_WRONLY | O_TRUNC | O_BINARY, 0644)) < 0) {
-        printf("Unable to open %s for writing features\n",outfile);
+        E_ERROR("Unable to open %s for writing features\n",outfile);
         return(FE_OUTPUT_FILE_OPEN_ERROR);
     }
     else{
-	/* compute number of frames and write cepfile header */
-	numframes = fe_count_frames(FE,len,COUNT_PARTIAL);
-	if (P->logspec != ON)
-	    outlen = numframes*FE->NUM_CEPSTRA;
-	else
-	    outlen = numframes*FE->MEL_FB->num_filters;
-	if (P->output_endian != P->machine_endian)
-	    SWAPL(&outlen);
-	if  (write(fp, &outlen, 4) != 4) {
-	    printf("Data write error on %s\n",outfile);
-	    close(fp);
-	    return(FE_OUTPUT_FILE_WRITE_ERROR);
-	}
-	if (P->output_endian != P->machine_endian)
-	    SWAPL(&outlen);
+        /* compute number of frames and write cepfile header */
+        numframes = fe_count_frames(FE,len,COUNT_PARTIAL);
+        if (P->logspec != ON)
+            outlen = numframes*FE->NUM_CEPSTRA;
+        else
+            outlen = numframes*FE->MEL_FB->num_filters;
+        if (P->output_endian != P->machine_endian)
+            SWAPL(&outlen);
+        if  (write(fp, &outlen, 4) != 4) {
+            E_ERROR("Data write error on %s\n",outfile);
+            close(fp);
+            return(FE_OUTPUT_FILE_WRITE_ERROR);
+        }
+        if (P->output_endian != P->machine_endian)
+            SWAPL(&outlen);
     }
-
+    
     *nframes = numframes;  
     *fp_out = fp;
-
+    
     return 0;
 }
 
@@ -842,12 +721,12 @@ int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf)
         if (P->input_format==RAW || P->input_format==NIST || P->input_format==MSWAV){    
 	    nreadbytes = nsamps*sizeof(int16);
 	    if ((bytes_read = read(fp,buf,nreadbytes))!=nreadbytes){
-  	        fprintf(stderr,"error reading block\n");
+  	        E_ERROR("error reading block\n");
 		return(0);
 	    }	
 	}
 	else{
-  	    fprintf(stderr,"unknown input file format\n");
+  	    E_ERROR("unknown input file format\n");
 	    return(0);
 	}
 	cum_bytes_read = bytes_read;
@@ -864,7 +743,7 @@ int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf)
 		nreadbytes = actsamps*sizeof(int16);
 		
 		if ((bytes_read = read(fp,tmpbuf,nreadbytes))!=nreadbytes){
-		    fprintf(stderr,"error reading block (got %d not %d)\n",bytes_read,nreadbytes);
+		    E_ERROR("error reading block (got %d not %d)\n",bytes_read,nreadbytes);
 		    return(0);
 		}
 		
@@ -875,7 +754,7 @@ int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf)
 		cum_bytes_read += bytes_read/nchans;
 	    }
 	    else{
-		fprintf(stderr,"unknown input file format\n");
+		E_ERROR("unknown input file format\n");
 		return(0);
 	    }
 	    free(tmpbuf);
@@ -886,7 +765,7 @@ int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf)
 	    cum_bytes_read = 0;
 	    
 	    if (actsamps*nchans != nsamps){
-		fprintf(stderr,"Warning: Blocksize %d is not an integer multiple of Number of channels %d\n",nsamps, nchans);
+		E_WARN("Blocksize %d is not an integer multiple of Number of channels %d\n",nsamps, nchans);
 	    }
 	    
 	    if (P->input_format==RAW || P->input_format==NIST){    
@@ -897,7 +776,7 @@ int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf)
 		    nreadbytes = nsamps*sizeof(int16);
 		    
 		    if ((bytes_read = read(fp,tmpbuf,nreadbytes))!=nreadbytes){
-			fprintf(stderr,"error reading block (got %d not %d)\n",bytes_read,nreadbytes);
+			E_ERROR("error reading block (got %d not %d)\n",bytes_read,nreadbytes);
 			return(0);
 		    }
 		    
@@ -909,7 +788,7 @@ int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf)
 		}
 	    }
 	    else{
-		fprintf(stderr,"unknown input file format\n");
+		E_ERROR("unknown input file format\n");
 		return(0);
 	    }
 	    free(tmpbuf);
@@ -917,7 +796,7 @@ int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf)
     }
     
     else{
-	fprintf(stderr,"unknown number of channels!\n");
+	E_ERROR("unknown number of channels!\n");
 	return(0);
     }
   
@@ -949,9 +828,8 @@ int32 fe_writeblock_feat(param_t *P, fe_t *FE, int32 fp, int32 nframes, float32 
     
     nwritebytes = length*sizeof(float32);
     if  (write(fp, feat[0], nwritebytes) != nwritebytes) {
-        fprintf(stderr,"Error writing block of features\n");
         close(fp);
-	exit (1);
+        E_FATAL("Error writing block of features\n");
     }
 
     if (P->output_endian != P->machine_endian){
@@ -985,70 +863,5 @@ int32 fe_free_param(param_t *P)
 {
 
     /* but no one calls it (29/09/00) */
-    return 0;
-}
-
-int32 fe_usage(char **argv)
-{
-
-    fprintf(stderr,
-	    "wave2mfcc - Convert audio stream into Mel-Frequency Cepstrum Coefficients\n"
-	    "Usage: %s\n"
-	    " FILE CONTROL)\n"
-	    "\t (single) -i <audio file> -o <cep file>\n"
-	    "\t (batch)  -c <control file> -di <input directory>   -ei <input extension>\n"
-	    "\t                            -do <output directory>  -eo <output extension>\n"
-	    "\n"
-	    " INPUT FORMAT\n"
-	    "\t -nist (NIST sphere format)\n"
-	    "\t -raw (raw binary data)\n"
-	    "\t -mswav (Microsoft Wav file)\n"
-	    "\t -input_endian <big | little [def=little]> (ignored if NIST or MS Wav)\n"
-	    "\t -nchans <number of channels of data [def=1]> (interlaced samples assumed)\n"
-	    "\t -whichchan <channel to process [def=1]>\n"
-	    "\n"
-	    " OUTPUT FORMAT\n"
-	    "\t -logspec (write out logspectral files instead of cepstra)\n"
-	    "\t -feat <sphinx> (SPHINX format - big endian)\n"
-	    "\n"
-	    " MACHINE FORMAT\n"
-#ifdef WORDS_BIGENDIAN
-	    "\t -mach_endian <big | little [def=big]>\n"
-#else
-	    "\t -mach_endian <big | little [def=little]>\n"
-#endif
-	    "\n"
-	    " FILTER PARAMETERS\n"
-	    "\t -alpha  <premphasis parameter [def=%.3f]>\n"
-	    "\t -srate  <sampling rate [def=%.3f Hz]>\n"
-	    "\t -frate  <frame rate [def=%.3f frames/sec]>\n"
-	    "\t -wlen   <Hamming window length [def=%.4f sec]>\n"
-	    "\t -nfft   <size of FFT [def=%d samples]>\n"
-	    "\t -nfilt  <number of fitler banks [def=%d]>\n"
-	    "\t -lowerf <lower edge of filters [def=%.5f Hz]>\n"
-	    "\t -upperf <upper edge of filters [def=%.5f Hz]>\n"
-	    "\t -ncep   <number of cep coefficients [def=%d]>\n"
-	    "\t -doublebw <use double bandwidth filters (same center freq)>\n"
-	    "\n"
-	    " INPUT PROCESSING\n"
-	    "\t -dither (add 1/2-bit noise)\n"
-	    "\n"
-	    " DIAGNOSTICS\n"
-	    "\t -verbose (show input filenames)\n" 
-	    "\t -h[elp] (this screen)\n"
-	    "** compiled %s %s **\n",
-	    argv[0],
-	    (float)DEFAULT_PRE_EMPHASIS_ALPHA,
-	    (float)DEFAULT_SAMPLING_RATE,
-	    (float)DEFAULT_FRAME_RATE,
-	    (float)DEFAULT_WINDOW_LENGTH,
-	    (int32)DEFAULT_FFT_SIZE,
-	    (int32)DEFAULT_NUM_FILTERS,
-	    (float)DEFAULT_LOWER_FILT_FREQ,
-	    (float)DEFAULT_UPPER_FILT_FREQ,
-	    (int32)DEFAULT_NUM_CEPSTRA,
-	    __DATE__,__TIME__);
-    
-    exit(0);
     return 0;
 }

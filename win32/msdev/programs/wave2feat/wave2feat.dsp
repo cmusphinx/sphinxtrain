@@ -93,6 +93,10 @@ SOURCE=..\..\..\..\src\programs\wave2feat\fe_sigproc.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\src\programs\wave2feat\parse_cmd_ln.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\src\programs\wave2feat\wave2feat.c
 # End Source File
 # End Group
@@ -101,11 +105,19 @@ SOURCE=..\..\..\..\src\programs\wave2feat\wave2feat.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=..\..\..\..\src\programs\wave2feat\cmd_ln_defn.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\src\programs\wave2feat\fe.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\..\src\programs\wave2feat\fe_internal.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\wave2feat\parse_cmd_ln.h
 # End Source File
 # Begin Source File
 
