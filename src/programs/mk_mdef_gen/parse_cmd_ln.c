@@ -46,9 +46,66 @@
 
 #include <stdlib.h>
 
+#include <s3/cmd_ln.h>
+#include <s3/s3.h>
+
+#include <sys_compat/misc.h>
+#include <sys_compat/file.h>
+
+#include <stdio.h>
+#include <assert.h>
+
+
 void parse_cmd_ln(int argc, char *argv[])
 {
+  uint32      isHelp;
+  uint32      isExample;
+
+  const char helpstr[] = 
+"Description: \n\
+\n\
+(Copied from Rita's comment and I think it is a pretty good description.) \n\
+    Multi-function routine to generate mdef for context-independent \n\
+    training, untied training, and all-triphones mdef for state tying.\n\
+ Flow: \n\
+    if (triphonelist) make CI phone list and CD phone list \n\
+	  if alltriphones mdef needed, make mdef \n\
+    if (rawphonelist) Make ci phone list,  \n\
+        if cimdef needed, make mdef \n\
+        Generate alltriphones list from dictionary \n\
+        if alltriphones mdef needed, make mdef \n\
+    if neither triphonelist or rawphonelist quit \n\
+    Count triphones and triphone types in transcript \n\
+    Adjust threshold according to min-occ and maxtriphones \n\
+    Prune triphone list \n\
+    Make untied mdef ";
+
+  const char examplestr[]=
+"Example: \n\
+Create CI model definition file \n\
+mk_mdef_gen -phnlstfn phonefile -ocimdef ci_mdeffile -n_state_pm 3\n\
+\n\
+Create untied CD model definition file \n\
+mk_mdef_gen -phnlstfn rawphonefile -dictfn dict -fdictfn filler_dict \n\
+-lsnfn transcription -ountiedmdef untie_mdef -n_state_pm 3 \n\
+-maxtriphones 10000 \n\
+Create tied CD model definition file \n\
+mk_mdef_gen -phnlstfn rawphone -oalltphnmdef untie_mdef -dictfn dict \n\
+ -fdictfn filler_dict -n_state_pm 3.";
+
     static arg_def_t defn[] = {
+	{ "-help",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows the usage of the tool"},
+
+	{ "-example",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Shows example of how to use the tool"},
+
 	{ "-phnlstfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -135,7 +192,23 @@ void parse_cmd_ln(int argc, char *argv[])
 
     cmd_ln_parse(argc, argv);
 
-    cmd_ln_print_configuration();
+    isHelp    = *(uint32 *) cmd_ln_access("-help");
+    isExample    = *(uint32 *) cmd_ln_access("-example");
+
+    if(isHelp){
+      printf("%s\n\n",helpstr);
+    }
+
+    if(isExample){
+      printf("%s\n\n",examplestr);
+    }
+
+    if(isHelp || isExample){
+      E_FATAL("User ask for help or example, stop before proceed\n");
+    }
+    if(!isHelp && !isExample){
+      cmd_ln_print_configuration();
+    }
 }
 
 
