@@ -198,7 +198,7 @@ sub FlatInitialize ()
 
 
     my $logfile = "$logdir/${CFG_EXPTNAME}.make_ci_mdef_fromphonelist.log";
-    &ST_HTML_Print ("\t\tmk_model_def <A HREF=\"$logfile\">Log File</A>\n");    
+    &ST_HTML_Print ("\t\tmk_mdef_gen <A HREF=\"$logfile\">Log File</A>\n");    
     #-------------------------------------------------------------------------
     # Decide on what topology to use for the hmms: 3 state, 5 state, blah state
     # or what, give it to the variable "statesperhmm" and use it to create

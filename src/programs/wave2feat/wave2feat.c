@@ -44,6 +44,7 @@
 #if !defined(WIN32)
 #include <unistd.h>
 #include <sys/file.h>
+#define O_BINARY 0
 #endif
 #include <string.h>
 #include <time.h>

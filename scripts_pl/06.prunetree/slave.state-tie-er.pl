@@ -77,7 +77,7 @@ $modarchdir          = "$CFG_BASE_DIR/model_architecture";
 $ALLTRIPHONESMDDEF = "$modarchdir/$CFG_EXPTNAME.alltriphones.mdef";
 $phonefile           = "$modarchdir/$CFG_EXPTNAME.phonelist";
 
-&ST_HTML_Print ("\t\tmk_model_def <A HREF=\"$logfile\">Log File</A>\n");
+&ST_HTML_Print ("\t\tmk_mdef_gen <A HREF=\"$logfile\">Log File</A>\n");
 
 system ("$MAKE_MDEF -phnlstfn $phonefile -oalltphnmdef $ALLTRIPHONESMDDEF -dictfn $CFG_DICTIONARY -fdictfn $CFG_FILLERDICT -n_state_pm $CFG_STATESPERHMM 2>$logfile");
 
