@@ -58,15 +58,19 @@ fi
 
 
 # Must be compatible to existing acoustic models
-#WIDEBAND= -alpha  0.97
+# WIDEBAND (NARROWBAND) = -alpha  0.97
 #          -srate  16000 (8000)
 #          -frate  100
 #          -wlen   0.0256
 #          -nfft   512
 #          -nfilt  40 (31)
 #          -lowerf 130
-#          -upperf 6800
+#          -upperf 6800 (3500)
 #          -ncep   13
 
+# This script defaults to processing files in a control file with
+# default data format being NIST's Sphere. Change "-nist" to "-raw"
+# for raw headerless audio data. Run the command without arguments to
+# find if the machine endian setting is correct.
 
 bin/wave2feat -verbose -c $1 -nist -di wav -ei wav -do feat -eo feat 
