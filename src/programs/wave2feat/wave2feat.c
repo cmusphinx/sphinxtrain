@@ -549,7 +549,7 @@ char *fe_copystr(char *dest_str, char *src_str)
     
     src_len = strlen(src_str);
     len = src_len;
-    s = (char *)malloc((char)(len+1));
+    s = (char *)malloc(len+1);
     for (i=0;i<src_len;i++)
 	*(s+i) = *(src_str+i);
     *(s+src_len) = NULL_CHAR;
