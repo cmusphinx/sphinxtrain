@@ -185,10 +185,10 @@ sub copyci2cd2initialize ()
     my $src_varfn = "$ci_hmmdir/variances";
     my $src_tmatfn = "$ci_hmmdir/transition_matrices";
 
-    my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_initial";
-    mkdir ($cd_hmmdir,0777) unless -d $hmmdir;
+    my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_initial";
+    mkdir ($cd_hmmdir,0777) unless -d $cd_hmmdir;
 
-    my $dest_moddeffn = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
+    my $dest_moddeffn = "$CFG_BASE_DIR/model_architecture/${CFG_EXPTNAME}.$CFG_N_TIED_STATES.mdef";
     my $dest_mixwfn = "$cd_hmmdir/mixture_weights";
     my $dest_meanfn = "$cd_hmmdir/means";
     my $dest_varfn = "$cd_hmmdir/variances";
