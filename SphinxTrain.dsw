@@ -1,0 +1,1241 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "agg_seg"=.\win32\msdev\programs\agg_seg\agg_seg.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "bldtree"=.\win32\msdev\programs\bldtree\bldtree.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "bw"=.\win32\msdev\programs\bw\bw.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "cp_parm"=.\win32\msdev\programs\cp_parm\cp_parm.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "delint"=.\win32\msdev\programs\delint\delint.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "dict2tri"=.\win32\msdev\programs\dict2tri\dict2tri.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "inc_comp"=.\win32\msdev\programs\inc_comp\inc_comp.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "init_gau"=.\win32\msdev\programs\init_gau\init_gau.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "init_mixw"=.\win32\msdev\programs\init_mixw\init_mixw.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "kmeans_init"=.\win32\msdev\programs\kmeans_init\kmeans_init.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "libcep_feat"=.\win32\msdev\libs\libcep_feat\libcep_feat.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libclust"=.\win32\msdev\libs\libclust\libclust.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libcommon"=.\win32\msdev\libs\libcommon\libcommon.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libio"=.\win32\msdev\libs\libio\libio.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libmllr"=.\win32\msdev\libs\libmllr\libmllr.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libmodinv"=.\win32\msdev\libs\libmodinv\libmodinv.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "librpcc"=.\win32\msdev\libs\librpcc\librpcc.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libs2io"=.\win32\msdev\libs\libs2io\libs2io.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "make_quests"=.\win32\msdev\programs\make_quests\make_quests.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mixw_interp"=.\win32\msdev\programs\mixw_interp\mixw_interp.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_flat"=.\win32\msdev\programs\mk_flat\mk_flat.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_mdef_gen"=.\win32\msdev\programs\mk_mdef_gen\mk_mdef_gen.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_mllr_class"=.\win32\msdev\programs\mk_mllr_class\mk_mllr_class.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_model_def"=.\win32\msdev\programs\mk_model_def\mk_model_def.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_s2cb"=.\win32\msdev\programs\mk_s2cb\mk_s2cb.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_s2hmm"=.\win32\msdev\programs\mk_s2hmm\mk_s2hmm.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_s2phone"=.\win32\msdev\programs\mk_s2phone\mk_s2phone.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_s2phonemap"=.\win32\msdev\programs\mk_s2phonemap\mk_s2phonemap.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_s2sendump"=.\win32\msdev\programs\mk_s2sendump\mk_s2sendump.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_s2seno"=.\win32\msdev\programs\mk_s2seno\mk_s2seno.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_s3gau"=.\win32\msdev\programs\mk_s3gau\mk_s3gau.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_s3mixw"=.\win32\msdev\programs\mk_s3mixw\mk_s3mixw.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_s3tmat"=.\win32\msdev\programs\mk_s3tmat\mk_s3tmat.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mk_ts2cb"=.\win32\msdev\programs\mk_ts2cb\mk_ts2cb.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "norm"=.\win32\msdev\programs\norm\norm.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "param_cnt"=.\win32\msdev\programs\param_cnt\param_cnt.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "printp"=.\win32\msdev\programs\printp\printp.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "prunetree"=.\win32\msdev\programs\prunetree\prunetree.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "tiestate"=.\win32\msdev\programs\tiestate\tiestate.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "wave2feat"=.\win32\msdev\programs\wave2feat\wave2feat.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+
