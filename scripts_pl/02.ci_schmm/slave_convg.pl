@@ -263,7 +263,7 @@ sub FlatInitialize ()
     
     #$base_dir/training/bin/maketopology.csh $statesperhmm $skipstate >! $topologyfile
     # Note, here we don't want STDERR going to topologyfile, just the STDOUT
-    system ("/sphx_train/csh/maketopology.csh $CFG_STATESPERHMM $CFG_SKIPSTATE >$topologyfile");
+    system ("bin/maketopology $CFG_STATESPERHMM $CFG_SKIPSTATE >$topologyfile");
     
     #-------------------------------------------------------------------------
     # make the flat models using the above topology file and the mdef file
