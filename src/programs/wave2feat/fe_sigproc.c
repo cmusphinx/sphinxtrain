@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,15 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. To obtain permission, contact 
- *    sphinx@cs.cmu.edu.
- *
- * 4. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by Carnegie
- *    Mellon University (http://www.speech.cs.cmu.edu/)."
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -170,16 +164,16 @@ int32 fe_compute_melcosine(melfb_t *MEL_FB)
 
 float32 fe_mel(float32 x)
 {
-    return((float32) 2595.0*(float32)log10(1.0+x/700.0));
+    return (float32)(2595.0*log10(1.0+x/700.0));
 }
 
 float32 fe_melinv(float32 x)
 {
-    return((float32) 700.0*((float32)pow(10.0,x/2595.0) - (float32) 1.0));
+    return (float32)(700.0*(pow(10.0,x/2595.0) - 1.0));
 }
 
 
-void fe_pre_emphasis(int16 *in, float64 *out, int32 len, float32
+void fe_pre_emphasis(int16 const *in, float64 *out, int32 len, float32
 		     factor, int16 prior)
 {
     int32 i;
@@ -191,7 +185,7 @@ void fe_pre_emphasis(int16 *in, float64 *out, int32 len, float32
  
 }
 
-void fe_short_to_double(int16 *in, float64 *out, int32 len)
+void fe_short_to_double(int16 const *in, float64 *out, int32 len)
 {
     int32 i;
     
@@ -255,7 +249,7 @@ void fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
 
 
 
-void fe_spec_magnitude(float64 *data, int32 data_len, float64 *spec, int32 fftsize)
+void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32 fftsize)
 {
     int32  j,wrap;
     complex  *FFT, *IN;
@@ -306,7 +300,7 @@ void fe_spec_magnitude(float64 *data, int32 data_len, float64 *spec, int32 fftsi
     return;
 }
 
-void fe_mel_spec(fe_t *FE, float64 *spec, float64 *mfspec)
+void fe_mel_spec(fe_t *FE, float64 const *spec, float64 *mfspec)
 {
     int32 whichfilt, start, i;
     float32 dfreq;
@@ -357,7 +351,7 @@ void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
     return;
 }
 
-int32 fe_fft(complex *in, complex *out, int32 N, int32 invert)
+int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert)
 {
   static int32
     s, k,			/* as above				*/
@@ -501,7 +495,7 @@ void fe_free_2d(void **arr)
     
 }
 
-void fe_parse_general_params(param_t *P, fe_t *FE)
+void fe_parse_general_params(param_t const *P, fe_t *FE)
 {
 
     if (P->SAMPLING_RATE != 0) 
@@ -541,7 +535,7 @@ void fe_parse_general_params(param_t *P, fe_t *FE)
  
 }
 
-void fe_parse_melfb_params(param_t *P, melfb_t *MEL)
+void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
 {
     if (P->SAMPLING_RATE != 0) 
 	MEL->sampling_rate = P->SAMPLING_RATE;
@@ -550,8 +544,14 @@ void fe_parse_melfb_params(param_t *P, melfb_t *MEL)
 
     if (P->FFT_SIZE != 0) 
 	MEL->fft_size = P->FFT_SIZE;
-    else 
+    else {
+      if (MEL->sampling_rate == BB_SAMPLING_RATE)
+	MEL->fft_size = DEFAULT_BB_FFT_SIZE;
+      if (MEL->sampling_rate == NB_SAMPLING_RATE)
+	MEL->fft_size = DEFAULT_NB_FFT_SIZE;
+      else 
 	MEL->fft_size = DEFAULT_FFT_SIZE;
+    }
  
     if (P->NUM_CEPSTRA != 0) 
 	MEL->num_cepstra = P->NUM_CEPSTRA;
@@ -560,24 +560,50 @@ void fe_parse_melfb_params(param_t *P, melfb_t *MEL)
  
     if (P->NUM_FILTERS != 0)	
 	MEL->num_filters = P->NUM_FILTERS;
-    else 
-	MEL->num_filters = DEFAULT_NUM_FILTERS;
+    else {
+      if (MEL->sampling_rate == BB_SAMPLING_RATE)
+	MEL->num_filters = DEFAULT_BB_NUM_FILTERS;
+      else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+	MEL->num_filters = DEFAULT_NB_NUM_FILTERS;
+      else {
+	fprintf(stderr,"Please define the number of MEL filters needed\n");
+	fprintf(stderr,"Modify include/new_fe.h and new_fe_sp.c\n");
+	fflush(stderr); exit(0);
+      }
+    }
 
     if (P->UPPER_FILT_FREQ != 0)	
-	MEL->upper_filt_freq = P->UPPER_FILT_FREQ;
-    else 
-	MEL->upper_filt_freq = (float32) DEFAULT_UPPER_FILT_FREQ;
+      MEL->upper_filt_freq = P->UPPER_FILT_FREQ;
+    else{
+      if (MEL->sampling_rate == BB_SAMPLING_RATE)
+	MEL->upper_filt_freq = (float32) DEFAULT_BB_UPPER_FILT_FREQ;
+      else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+	MEL->upper_filt_freq = (float32) DEFAULT_NB_UPPER_FILT_FREQ;
+      else {
+	fprintf(stderr,"Please define the upper filt frequency needed\n");
+	fprintf(stderr,"Modify include/new_fe.h and new_fe_sp.c\n");
+	fflush(stderr); exit(0);
+      }
+    } 
 
     if (P->LOWER_FILT_FREQ != 0)	
-	MEL->lower_filt_freq = P->LOWER_FILT_FREQ;
-    else 
-	MEL->lower_filt_freq = (float32) DEFAULT_LOWER_FILT_FREQ;
+      MEL->lower_filt_freq = P->LOWER_FILT_FREQ;
+    else {
+      if (MEL->sampling_rate == BB_SAMPLING_RATE)
+	MEL->lower_filt_freq = (float32) DEFAULT_BB_LOWER_FILT_FREQ;
+      else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+	MEL->lower_filt_freq = (float32) DEFAULT_NB_LOWER_FILT_FREQ;
+      else {
+	fprintf(stderr,"Please define the lower filt frequency needed\n");
+	fprintf(stderr,"Modify include/new_fe.h and new_fe_sp.c\n");
+	fflush(stderr); exit(0);
+      }
+    } 
 
     if (P->doublebw == ON)
 	MEL->doublewide = ON;
     else
 	MEL->doublewide = OFF;
-    
 
 }
 
