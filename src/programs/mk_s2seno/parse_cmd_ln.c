@@ -69,7 +69,7 @@ Note: by Arthur: not sure whether it is obsolete";
 
   const char examplestr[]=
 "Example: \n\
-(by Arthur: I believe this tool is obsolete, we may want to delete it later on. ) \n\";
+(by Arthur: I believe this tool is obsolete, we may want to delete it later on. ) \n";
 
     static arg_def_t defn[] = {
 	{ "-help",
@@ -177,9 +177,12 @@ Note: by Arthur: not sure whether it is obsolete";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/11/29  01:43:49  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ * Revision 1.6  2005/04/07  21:23:39  egouvea
+ * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
  * 
+ * Revision 1.5  2004/11/29 01:43:49  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ *
  * Revision 1.4  2004/08/10 08:31:54  arthchan2003
  * s2 to s3 conversion tools
  *

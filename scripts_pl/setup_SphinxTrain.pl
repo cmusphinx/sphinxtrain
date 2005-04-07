@@ -105,7 +105,7 @@ if (open (SYSDESC, "$SPHINXTRAINDIR/config/system.mak")) {
   close(SYSDESC);
   print "Platform: $PLATFORM\n";
 } else {
-  print "Platform: Win32\m";
+  print "Platform: Win32\n";
   $PLATFORM = "";
 }
 
@@ -141,7 +141,7 @@ if (opendir(DIR, "$SPHINXTRAINDIR/bin$PLATFORM/scripts_pl")) {
   die "Can't open $SPHINXTRAINDIR/bin$PLATFORM/scripts_pl";
 }
 print "Copying scripts from $scriptdir\n";
-@dirlist = grep /^[0m]/, readdir DIR;
+@dirlist = grep /^(0.*|mc)$/, readdir DIR;
 closedir(DIR);
 
 # Copy the directory tree. We do so by creating each directory, and

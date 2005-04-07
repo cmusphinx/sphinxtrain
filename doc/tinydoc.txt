@@ -1,40 +1,50 @@
 
-This is so small it isn't documentation, but
-is a reminder about what to do when training
+This is so small it isn't documentation, but is a reminder about what
+to do when training
 
-See 
+See:
+
+    http://www.speech.cs.cmu.edu/sphinxman/
     http://www.speech.cs.cmu.edu/sphinxman/scriptman1.html
-    http://www.speech.cs.cmu.edu/sphinxman/s3manual.html
+
 for much more details
 
-This is a quick note for how the scripts to train S3 models
-and convert them for use with S2.
+This is a quick note for how the scripts to train S3 models and
+convert them for use with S2.
 
 Got to a new directory where you have the space
+
    mkdir time
    cd time
+
 Set up the directory structure, scripts and config files
-   $SPHINXTRAINDIR/scripts_pl/setup_SphinxTrain time
+
+   perl $SPHINXTRAINDIR/scripts_pl/setup_SphinxTrain.pl $SPHINXTRAINDIR time
+
 The main config file is put into etc/sphinx_train.cfg
 
-Put you waveform files in wav/
+Put your waveform files in wav/
 
-Create the following files
+Create the following files:
+
    etc/time.fileids  
        List of file ids for each wav file e.g.
             time0001
             time0002
             ...
+
    etc/time.phone
        The phones in the phone set
             SIL
             AA
             AE
             ..
+
    etc/time.transcription
        Word transcription of each file, must end in (FILEID), these
        are probably upper case words, but can include filler words too
            <s> THE TIME IS NOW ... </s> (time0001)
+
    etc/time.filler
        List of filler words and their pronunciation (using the phones) e.g
            <s> SIL
@@ -46,8 +56,9 @@ Create a dictionary with (only works for US English)
 
    bin/make_dict etc/time.transcription
 
-WIll create etc/word.known etc/word.unknown files,. check them
-once you are happy, 
+This will create etc/word.known etc/word.unknown files; check them.
+
+Once you are happy, 
 
    mv etc/word.known etc/time.dic
 
@@ -55,43 +66,46 @@ Make the melcep feature files
 
    bin/make_feats etc/time.fileids
 
-Now we can start on the basic perl scripts, ther
-results will be put in perl_time.html, which you can view as things
-progress.  Note the scripts aren't guaranteed, and problems do occur, 
-though often the error message is actually indicative of the error.
+Now we can start on the basic perl scripts. Their results will be put
+in perl_time.html, which you can view as things progress.  Note the
+scripts aren't guaranteed, and problems do occur, though often the
+error message is actually indicative of the error.
 
-There a number of larger choices in building models, one is to
-build continous models or semi-continuous.  Only semi-continous
-can be used by Sphinx2 
+There is a number of larger choices in building models, one is to
+build continuous models or semi-continuous.  Only semi-continuous can
+be used by Sphinx2, and preferably continuous models are used with
+Sphinx-3.
 
-Doesn't do enough checking, but may help
-   ./scripts_pl/00.verify/verify_all.pl 
-Can take several minutes
-   ./scripts_pl/01.vector_quantize/slave.VQ.pl
-Initial BW training
-   ./scripts_pl/02.ci_schmm/slave_convg.pl
-   ./scripts_pl/03.makeuntiedmdef/make_untied_mdef.pl
-   ./scripts_pl/04.cd_schmm_untied/slave_convg.pl
-   ./scripts_pl/05.buildtrees/make_questions.pl
-   ./scripts_pl/05.buildtrees/slave.treebuilder.pl
-   ./scripts_pl/06.prunetree/slave.state-tie-er.pl
-   ./scripts_pl/07.cd-schmm/slave_convg.pl
-   ./scripts_pl/08.deleted-interpolation/deleted_interpolation.pl
+The directory ./scripts_pl has several subdirectories starting with
+"0" (zero). Each of these has a file named "slave.something.pl", or it
+has a single .pl file. To run the trainer, run the "slave*.pl" or the
+single "*.pl" file in each directory, in sequence. The file
+"./scripts_pl/RunAll.pl" has an example of a script that runs all the
+steps in sequence".
+
+Example:
+
+# Doesn't do enough checking, but may help
+   perl ./scripts_pl/00.verify/verify_all.pl 
+# Can take several minutes
+   perl ./scripts_pl/01.vector_quantize/slave.VQ.pl
+# Initial BW training
+   perl ./scripts_pl/02.ci_schmm/slave_convg.pl
+   perl ./scripts_pl/03.makeuntiedmdef/make_untied_mdef.pl
+   perl ./scripts_pl/04.cd_schmm_untied/slave_convg.pl
+   perl ./scripts_pl/05.buildtrees/slave.treebuilder.pl
+   perl ./scripts_pl/06.prunetree/slave.state-tie-er.pl
+   perl ./scripts_pl/07.cd-schmm/slave_convg.pl
+   perl ./scripts_pl/08.deleted-interpolation/deleted_interpolation.pl
+   perl ./scripts_pl/09.make_s2_models/make_s2_models.pl
      
 ===========================================================================
 Chart of training process 
 
 
-                         Training chart for the
-                         sphinx2  trainer
-                        =========================
-                                OBSOLETE
-               (The sphinx2 trainer is no longer used in CMU)
-                We build sphinx3 semi-continuous models and convert them
 
-
-                         Training chart for the
-                         sphinx3  trainer
+                         Training chart for
+                             SphinxTrain
                         =========================
                              type of model
                                    |

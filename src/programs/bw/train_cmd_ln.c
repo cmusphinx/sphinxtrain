@@ -278,32 +278,7 @@ them to be optionall deleted. \n\
 Finally, one can use the viterbi training mode of the code.  Notice \n\
 though, the code is not always tested by CMU's researcher \n\
 \n\
-I also included the following paragraph from Rita's web page. I largely adapted from  \n\
-here and I think it is a pretty good wrap-up of the convergence issues \n\
-\"bw is an iterative \n\
-re-estimation process, so you have to run many passes of the \n\
-Baum-Welch re-estimation over your training data. Each of these \n\
-passes, or iterations, results in a slightly better set of models for \n\
-the CI phones. However, since the objective function maximized in each \n\
-of theses passes is the likelihood, too many iterations would \n\
-ultimately result in models which fit very closely to the training \n\
-data. you might not want this to happen for many reasons. Typically, \n\
-5-8 iterations of Baum-Welch are sufficient for getting good estimates \n\
-of the CI models. You can automatically determine the number of \n\
-iterations that you need by looking at the total likelihood of the \n\
-training data at the end of the first iteration and deciding on a \n\
-\"convergence ratio\" of likelihoods. This is simply the ratio of the \n\
-total likelihood in the current iteration to that of the previous \n\
- iteration. As the models get more and more fitted to the training data \n\
-in each iteration, the training data likelihoods typically increase \n\
-monotonically. The convergence ratio is therefore a small positive \n\
-number. The convergence ratio becomes smaller and smaller as the \n\
-iterations progress, since each time the current models are a little \n\
-less different from the previous ones. Convergence ratios are data and \n\
-task specific, but typical values at which you may stop the Baum-Welch \n\
-iterations for your CI training may range from 0.1-0.001. When the \n\
-models are variance-normalized, the convergence ratios are much \n\
-smaller.\"";
+I also included the following paragraph from Rita's web page. ";
 
   const char examplestr[]=
 "Example: \n\
@@ -689,9 +664,12 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.10  2004/11/29  01:43:44  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ * Revision 1.11  2005/04/07  21:23:39  egouvea
+ * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
  * 
+ * Revision 1.10  2004/11/29 01:43:44  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ *
  * Revision 1.9  2004/08/08 02:58:22  arthchan2003
  * add help and example strings for bw
  *

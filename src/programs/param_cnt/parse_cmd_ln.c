@@ -64,7 +64,8 @@ parse_cmd_ln(int argc, char *argv[])
 "Description:  \n\
 \n\
 Find the number of times each of the triphones listed \n\
-\n\ in a given model definition file (by -moddeffhn) occured in a set \n\
+\n\
+in a given model definition file (by -moddeffhn) occured in a set \n\
 of transcription, specified by -lsnfn";
 
   const char examplestr[] =
@@ -208,9 +209,12 @@ transcripts -dictfn dict -fdictfn fillerdict -paramtype phone";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/11/29  01:43:51  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ * Revision 1.7  2005/04/07  21:23:40  egouvea
+ * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
  * 
+ * Revision 1.6  2004/11/29 01:43:51  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ *
  * Revision 1.5  2004/08/09 02:31:59  arthchan2003
  * param_cnt help and example
  *
