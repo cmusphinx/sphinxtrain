@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/perl
 # ====================================================================
 # Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
 #
@@ -32,39 +32,83 @@
 #
 # ====================================================================
 
-#if [ ! "$SPHINXTRAINDIR" ]
-#then
-#   echo "environment variable SPHINXTRAINDIR is unset"
-#   echo "set it to your local SphinxTrain directory e.g."
-#   echo '   bash$ export SPHINXTRAINDIR=/home/awb/projects/SphinxTrain/'
-#   echo or
-#   echo '   csh% setenv SPHINXTRAINDIR /home/awb/projects/SphinxTrain/'
-#   exit 1
-#fi
+use strict;
+use Getopt::Long;
+use Pod::Usage;
 
-if [ $# != 1 ]
-then
-    echo "Make (MFC) Feature files "
-    echo "Usage: bin/make_feats etc/DBNAME.fileids"
-    echo "DBNAME short name for this training set"
-    exit 1
-fi
+my ($help, $ctl);
 
+if ($#ARGV == -1) {
+  pod2usage(2);
+}
 
-# Must be compatible to existing acoustic models
-# WIDEBAND (NARROWBAND) = -alpha  0.97
-#          -srate  16000 (8000)
-#          -frate  100
-#          -wlen   0.0256
-#          -nfft   512
-#          -nfilt  40 (31)
-#          -lowerf 130
-#          -upperf 6800 (3500)
-#          -ncep   13
+Getopt::Long::Configure('no_auto_abbrev', 'pass_through');
 
-# This script defaults to processing files in a control file with
-# default data format being NIST's Sphere. Change "-nist" to "-raw"
-# for raw headerless audio data. Run the command without arguments to
-# find if the machine endian setting is correct.
+GetOptions('help|h' => \$help,
+	   'ctl=s' => \$ctl);
 
-bin/wave2feat -verbose -c $1 -nist -di wav -ei wav -do feat -eo feat 
+if ($help) {
+  pod2usage( -exitval => "NOEXIT",
+             -verbose => 1 );
+  system("bin/wave2feat");
+  exit(-1);
+} elsif ($ctl) {
+  system("bin/wave2feat -verbose yes -c $ctl -nist yes " .
+	 "-di wav -ei sph -do feat -eo feat");
+} else {
+  system("bin/wave2feat @ARGV");
+}
+
+__END__
+
+=head1 NAME
+
+make_feats.pl - creates feature files (cepstra) from wave files
+
+=head1 SYNOPSIS
+
+=over 4
+
+=item make_feats.pl -help 
+
+For full list of arguments
+
+=item  make_feats.pl -ctl <control file>
+
+For processing the files in the control file with default arguments
+
+=item make_feats.pl <program arguments>
+
+If specifying all arguments
+
+=back
+
+=head1 ARGUMENTS
+
+Obtained by running "bin/wave2feat" without arguments.
+
+The recommended parameters for wideband (default) and narrowband (in parentheses) are:
+
+=over 4
+
+=item B<-alpha>  0.97
+
+=item B<-srate>  16000 (8000)
+
+=item B<-frate>  100
+
+=item B<-wlen>   0.0256
+
+=item B<-nfft>   512
+
+=item B<-nfilt>  40 (31)
+
+=item B<-lowerf> 130
+
+=item B<-upperf> 6800 (3500)
+
+=item B<-ncep>   13
+
+=back
+
+=cut

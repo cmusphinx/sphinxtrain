@@ -160,7 +160,7 @@ foreach $directory (@dirlist) {
 
 # We now copy additional files
 copy("$SPHINXTRAINDIR/scripts_pl/maketopology.pl", "bin/maketopology.pl");
-copy("$SPHINXTRAINDIR/scripts_pl/make_feats", "bin/make_feats");
+copy("$SPHINXTRAINDIR/scripts_pl/make_feats.pl", "bin/make_feats.pl");
 copy("$SPHINXTRAINDIR/scripts_pl/make_dict", "bin/make_dict");
 
 # Set the permissions to executable;
