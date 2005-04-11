@@ -36,6 +36,7 @@
 ##
 ## Author: Ricky Houghton (converted from scripts by Rita Singh)
 ##
+use File::Copy;
 
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
@@ -106,7 +107,7 @@ $| = 1;				# Turn on autoflushing
 
     
     # Read the phonelist and stick phones into phonelist_hash
-    open PHONE,"$CFG_RAWPHONEFILE";
+    open PHONE,"$CFG_RAWPHONEFILE" or die "Can not open phone list ($CFG_RAWPHONEFILE)\n";
     while (<PHONE>) {
 	chomp;
 	$phonelist_hash{uc($_)}++;
@@ -122,7 +123,7 @@ $| = 1;				# Turn on autoflushing
 	    $status = 'FAILED';
 	    $ord = ord($key);
 	    $ret_value = -1;
-	    system ("cp $CFG_GIF_DIR/red-ball.gif $CFG_BASE_DIR/.00.1.state.gif");
+	    copy("$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.00.1.state.gif");
 	    &ST_LogWarning ("This phone ($key -> $ord) occurs in the dictionary ($CFG_DICTIONARY), but not in the phonelist ($CFG_RAWPHONEFILE\n");
 	}
     }

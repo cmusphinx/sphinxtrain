@@ -54,7 +54,7 @@ if ($help) {
   exit(-1);
 } elsif ($ctl) {
   system("bin/wave2feat -verbose yes -c $ctl -nist yes " .
-	 "-di wav -ei sph -do feat -eo feat");
+	 "-di wav -ei sph -do feat -eo mfc");
 } else {
   system("bin/wave2feat @ARGV");
 }

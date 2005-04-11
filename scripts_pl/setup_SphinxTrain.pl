@@ -144,6 +144,8 @@ print "Copying scripts from $scriptdir\n";
 @dirlist = grep /^(0.*|mc)$/, readdir DIR;
 closedir(DIR);
 
+push @dirlist, ".";
+
 # Copy the directory tree. We do so by creating each directory, and
 # the copying it to the correct location here. We also set the permissions.
 foreach $directory (@dirlist) {
@@ -152,9 +154,11 @@ foreach $directory (@dirlist) {
     die "Can't open subdir $directory\n";
   @subdirlist = grep !/^\./, readdir SUBDIR;
   foreach $executable (@subdirlist) {
-    copy("$scriptdir/$directory/$executable", 
-	 "scripts_pl/$directory/$executable");
-    chmod 0755, "scripts_pl/$directory/$executable";
+    if (-f "$scriptdir/$directory/$executable") {
+      copy("$scriptdir/$directory/$executable", 
+	   "scripts_pl/$directory/$executable");
+      chmod 0755, "scripts_pl/$directory/$executable";
+    }
   }
 }
 
