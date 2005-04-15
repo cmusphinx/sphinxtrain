@@ -138,7 +138,7 @@ $| = 1;				# Turn on autoflushing
 	if ($dict_hash{$key} > 1) {
 	    $ret_value = -2;
 	    $duplicate_status = 'FAILED';
-	    system ("cp $CFG_GIF_DIR/red-ball.gif $CFG_BASE_DIR/.00.2.state.gif");
+	    copy("$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.00.2.state.gif");
 	    &ST_LogWarning("This word ($key) has duplicate entries in ($CFG_DICTIONARY)\n");
 	}
     }

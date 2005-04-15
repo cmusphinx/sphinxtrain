@@ -32,11 +32,8 @@
 #
 # ====================================================================
 
-use strict;
 use Getopt::Long;
 use Pod::Usage;
-
-my ($help, $ctl);
 
 if ($#ARGV == -1) {
   pod2usage(2);
@@ -45,16 +42,33 @@ if ($#ARGV == -1) {
 Getopt::Long::Configure('no_auto_abbrev', 'pass_through');
 
 GetOptions('help|h' => \$help,
-	   'ctl=s' => \$ctl);
+	   'ctl=s' => \$ctl,
+	   'cfg=s' => \$cfg_file);
+
 
 if ($help) {
   pod2usage( -exitval => "NOEXIT",
              -verbose => 1 );
   system("bin/wave2feat");
   exit(-1);
-} elsif ($ctl) {
-  system("bin/wave2feat -verbose yes -c $ctl -nist yes " .
-	 "-di wav -ei sph -do feat -eo mfc");
+}
+
+if (!defined $cfg_file) {
+  print ("-cfg not specified, using the default ./etc/sphinx_train.cfg\n");
+  $cfg_file = "./etc/sphinx_train.cfg";
+}
+
+if (defined $ctl) {
+  if (! -s "$cfg_file") {
+    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
+    exit -3;
+  }
+
+  require $cfg_file;
+
+  system("bin/wave2feat -verbose yes -c \"$ctl\" -nist yes " .
+	 "-di wav -ei sph -do \"$CFG_FEATFILES_DIR\" " .
+	 "-eo \"$CFG_FEATFILE_EXTENSION\"");
 } else {
   system("bin/wave2feat @ARGV");
 }
@@ -73,7 +87,7 @@ make_feats.pl - creates feature files (cepstra) from wave files
 
 For full list of arguments
 
-=item  make_feats.pl -ctl <control file>
+=item  make_feats.pl [-cfg <cfg file>] -ctl <control file>
 
 For processing the files in the control file with default arguments
 
