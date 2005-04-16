@@ -120,8 +120,12 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
       
       /* 2/fwidth for triangles of area 1 */
       height = 2/(float32)fwidth;
-      leftslope = height/(centerfr-leftfr);
-      rightslope = height/(centerfr-rightfr);
+      if (centerfr != leftfr) {
+	leftslope = height/(centerfr-leftfr);
+      }
+      if (centerfr != rightfr) {
+	rightslope = height/(centerfr-rightfr);
+      }
 
       /* Round to the nearest integer instead of truncating and adding
 	 one, which breaks if the divide is already an integer */      
