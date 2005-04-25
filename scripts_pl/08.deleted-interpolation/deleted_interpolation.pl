@@ -72,8 +72,8 @@ my $cilambda = 0.9;
 # up to 99 buffers
 my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_"."$CFG_N_TIED_STATES";
 $bwaccumdir 	     = "";
-for (<${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*>) {
-    $bwaccumdir .= " $_";
+for (<"${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*">) {
+    $bwaccumdir .= " \"$_\"";
 }
 
 my $hmm_dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_"."$CFG_N_TIED_STATES"."_delinterp";
@@ -100,7 +100,7 @@ mkdir ($logdir,0777);
 
 open LOG,"> $logfile";
 
-if (open PIPE,"$INTERP -accumdirs $bwaccumdir -moddeffn $moddeffn -mixwfn $mixwfn -cilambda $cilambda -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH -maxiter 4000 2>&1 2>&1 |") {
+if (open PIPE,"\"$INTERP\" -accumdirs $bwaccumdir -moddeffn \"$moddeffn\" -mixwfn \"$mixwfn\" -cilambda $cilambda -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH -maxiter 4000 2>&1 |") {
     while ($line = <PIPE>) {
        print LOG $line;
     }

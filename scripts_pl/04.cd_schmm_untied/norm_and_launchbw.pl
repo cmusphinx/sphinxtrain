@@ -91,19 +91,19 @@ for ($i=1;$i<=$n_parts;$i++){
 
 if ($num_done != $n_parts) {
     open OUTPUT,">$log";
-    print "Only $num_done parts of $n_parts of Baum Welch were successfully completed\n";
+    print OUTPUT "Only $num_done parts of $n_parts of Baum Welch were successfully completed\n";
     print "Parts ";
     for ($i=1;$i<=$n_parts;$i++) {
-        print "$i " if ($done[$i] == 0);
+        print OUTPUT "$i " if ($done[$i] == 0);
     }
-    print "failed to run!\n";
+    print OUTPUT "failed to run!\n";
     close OUTPUT;
     exit (0);
 }
 
 if ($tot_frms == 0) {
     open OUTPUT,">$log";
-    print "Baum welch ran successfully for only 0 frames! Aborting..\n";
+    print OUTPUT "Baum welch ran successfully for only 0 frames! Aborting..\n";
     close OUTPUT;
     exit (0);
 }
@@ -114,8 +114,10 @@ $previter = $iter - 1;
 $prev_norm = "${logdir}/${CFG_EXPTNAME}.${previter}.norm.log";
 if (! -s $prev_norm) {
     # Either iter == 1 or we are starting from an intermediate iter value
-    system ("$scriptdir/norm.pl $iter");
-    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+    system ("perl \"$scriptdir/norm.pl\" $iter");
+    open OUTPUT, ">> $log";
+    print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+    close OUTPUT;
     &Launch_BW();
     exit (0);
 }
@@ -131,8 +133,10 @@ close LOG;
 
 if ($prevlkhd == -99999999) {
     # Some error with previous norm.log. Continue Baum Welch
-    system ("$scriptdir/norm.pl $iter");
-    system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
+    system ("perl \"$scriptdir/norm.pl\" $iter");
+    open OUTPUT, ">> $log";
+    print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+    close OUTPUT;
     &Launch_BW();
     exit (0);
 }
@@ -147,22 +151,27 @@ else {
     $absprev = -$absprev if ($prevlkhd < 0);
     $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
-system ("$scriptdir/norm.pl $iter ");
+system ("perl \"$scriptdir/norm.pl\" $iter ");
 
-system("echo \"Current Overall Likelihood Per Frame = $lkhd_per_frame\" >> $log");
-system("echo \"Convergence ratio = $convg_ratio\" >> $log");
+open OUTPUT, ">> $log";
+print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+print OUTPUT "Convergence ratio = $convg_ratio\n";
 
 if ($convg_ratio < 0) {
-    system("echo \"*WARNING*: NEGATIVE CONVERGENCE RATIO! CHECK YOUR DATA AND TRASNCRIPTS\" >> $log");
+    print OUTPUT "*WARNING*: NEGATIVE CONVERGENCE RATIO! CHECK YOUR DATA AND TRASNCRIPTS\n";
     print "*WARNING*: NEGATIVE CONVERGENCE RATIO AT ITER ${iter}! CHECK BW AND NORM LOGFILES\n";
 }
 
+close OUTPUT;
+
 if ($convg_ratio > $CFG_CONVERGENCE_RATIO && $iter >= $CFG_MAX_ITERATIONS) {
-    system("echo \"Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating CI training\" >> $log");
-    system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
+    open OUTPUT, ">> $log";
+    print OUTPUT "Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating CI training\n";
+    print OUTPUT "******************************TRAINING COMPLETE*************************\n";
     $date = localtime;
-    system("echo $date >> $log");
+    print OUTPUT "$date\n";
     print "Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating CI training\n";
+    close OUTPUT;
     exit (0);
 }
 
@@ -172,16 +181,18 @@ if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
 }
 else {
     print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
-    system("echo \"Likelihoods have converged! Baum Welch training completed\!\" >> $log");
-    system("echo \"******************************TRAINING COMPLETE*************************\" >> $log");
+    open OUTPUT, ">> $log";
+    print OUTPUT "Likelihoods have converged! Baum Welch training completed\!\n";
+    print OUTPUT "******************************TRAINING COMPLETE*************************\n";
     $date = localtime;
-    system("echo $date >> $log");
+    print OUTPUT "$date\n";
+    close OUTPUT;
     exit (0);
 }
 
 sub Launch_BW () {
     $newiter = $iter + 1;
     print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
-    system ("$scriptdir/slave_convg.pl $newiter $n_parts");
+    system ("perl \"$scriptdir/slave_convg.pl\" $newiter $n_parts");
 }
 

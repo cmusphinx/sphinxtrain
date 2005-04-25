@@ -95,7 +95,7 @@ $logfile = "$logdir/${CFG_EXPTNAME}.vq.agg_seg.log";
 # run it here 
 #system ("$AGG_SEG -segdmpdirs $segdmpdir -segdmpfn $dumpfile  -segtype all -ctlfn $CFG_LISTOFFILES -cepdir $CFG_FEATFILES_DIR -cepext $CFG_FEATFILE_EXTENSION -ceplen $CFG_VECTOR_LENGTH -agc $CFG_AGC -cmn $CFG_CMN -feat $CFG_FEATURE -stride $stride");
 
-if (open PIPE,"$AGG_SEG -segdmpdirs $segdmpdir -segdmpfn $dumpfile  -segtype all -ctlfn $CFG_LISTOFFILES -cepdir $CFG_FEATFILES_DIR -cepext $CFG_FEATFILE_EXTENSION -ceplen $CFG_VECTOR_LENGTH -agc $CFG_AGC -cmn $CFG_CMN -feat $CFG_FEATURE -stride $stride  2>&1 |") {
+if (open PIPE, "\"$AGG_SEG\" -segdmpdirs \"$segdmpdir\" -segdmpfn \"$dumpfile\"  -segtype all -ctlfn \"$CFG_LISTOFFILES\" -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -ceplen $CFG_VECTOR_LENGTH -agc $CFG_AGC -cmn $CFG_CMN -feat $CFG_FEATURE -stride $stride  2>&1 |") {
     open LOG,">$logfile";
     while (<PIPE>) {
 	print LOG "$_";

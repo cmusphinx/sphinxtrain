@@ -76,6 +76,6 @@ $| = 1; # Turn on autoflushing
 &ST_Log ("    Prune trees\n");
 &ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
-system ("$PRUNETREE -itreedir $unprunedtreedir -nseno $n_tied_states -otreedir $prunedtreedir -moddeffn $mdef_file -psetfn $CFG_QUESTION_SET -minocc $occurance_threshold 2>$logfile");
+system ("\"$PRUNETREE\" -itreedir \"$unprunedtreedir\" -nseno $n_tied_states -otreedir \"$prunedtreedir\" -moddeffn \"$mdef_file\" -psetfn \"$CFG_QUESTION_SET\" -minocc $occurance_threshold > \"$logfile\" 2>&1");
 
 &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");

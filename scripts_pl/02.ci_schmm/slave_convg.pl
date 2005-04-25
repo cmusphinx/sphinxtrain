@@ -99,7 +99,7 @@ if ($MC && $n_parts > 1)
     # multi-processor version -- assumes ssh machine works
     for ($i=1; $i<=$n_parts; $i++)
     {
-        $job_command = "$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts";
+        $job_command = "\"$scriptdir/baum_welch.pl\" -cfg \"$cfg_file\" $iter $i $n_parts";
 #	print $job_command."\n";
 	open rrr,"scripts_pl/mc/mc_run.pl $job_command |";
 	while ($line = <rrr>)
@@ -151,10 +151,10 @@ else
     # once done call norm_and_lauchbw.pl
     for ($i=1; $i<=$n_parts; $i++)
     {
-	system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts");
+	system ("perl \"$scriptdir/baum_welch.pl\" -cfg \"$cfg_file\" $iter $i $n_parts");
     }
 }
-system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $iter $n_parts");
+system ("perl \"$scriptdir/norm_and_launchbw.pl\" -cfg \"$cfg_file\" $iter $n_parts");
 
 exit 0;
 
@@ -214,11 +214,11 @@ sub FlatInitialize ()
     
     #$base_dir/training/bin/maketopology.csh $statesperhmm $skipstate >! $topologyfile
     # Note, here we don't want STDERR going to topologyfile, just the STDOUT
-    system ("$CFG_BIN_DIR/maketopology.pl $CFG_STATESPERHMM $CFG_SKIPSTATE >$topologyfile");
+    system ("perl \"$CFG_BIN_DIR/maketopology.pl\" $CFG_STATESPERHMM $CFG_SKIPSTATE > \"$topologyfile\"");
 
     $MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
-    system ("$MAKE_MDEF -phnlstfn $phonefile -ocimdef $ci_mdeffile -n_state_pm $CFG_STATESPERHMM 2>$logfile");
-    
+    system ("\"$MAKE_MDEF\" -phnlstfn \"$phonefile\" -ocimdef \"$ci_mdeffile\" -n_state_pm $CFG_STATESPERHMM > \"$logfile\" 2>&1");
+
     #-------------------------------------------------------------------------
     # make the flat models using the above topology file and the mdef file
     #------------------------------------------------------------------------
@@ -232,7 +232,7 @@ sub FlatInitialize ()
 
     open LOG,">$logfile";
 
-    if (open PIPE, "$FLAT -moddeffn $ci_mdeffile -topo $topologyfile -mixwfn  $outhmm/mixture_weights -tmatfn $outhmm/transition_matrices -nstream $CFG_NUM_STREAMS -ndensity  $CFG_INITIAL_NUM_DENSITIES 2>&1 |") {
+    if (open PIPE, "\"$FLAT\" -moddeffn \"$ci_mdeffile\" -topo \"$topologyfile\" -mixwfn  \"$outhmm/mixture_weights\" -tmatfn \"$outhmm/transition_matrices\" -nstream $CFG_NUM_STREAMS -ndensity  $CFG_INITIAL_NUM_DENSITIES 2>&1 |") {
     
 	while ($line = <PIPE>) {
 	    print LOG $line;
@@ -260,7 +260,7 @@ sub FlatInitialize ()
     $output_buffer_dir = "$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_1";
     mkdir ($output_buffer_dir,0777) unless -d $output_buffer_dir;
 
-    if (open PIPE, "$ACCUM -ctlfn $CFG_LISTOFFILES -part 1 -npart 1 -cepdir $CFG_FEATFILES_DIR -cepext $CFG_FEATFILE_EXTENSION -accumdir $output_buffer_dir -agc $CFG_AGC -cmn $CFG_CMN -varnorm $CFG_VARNORM -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
+    if (open PIPE, "\"$ACCUM\" -ctlfn \"$CFG_LISTOFFILES\" -part 1 -npart 1 -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -accumdir \"$output_buffer_dir\" -agc $CFG_AGC -cmn $CFG_CMN -varnorm $CFG_VARNORM -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
     
 	while ($line = <PIPE>) {
 	    print LOG $line;
@@ -281,7 +281,7 @@ sub FlatInitialize ()
 
     open LOG,">$logfile";
 
-    if (open PIPE, "$NORM -accumdir $output_buffer_dir -meanfn $outhmm/globalmean 2>&1 |") {
+    if (open PIPE, "\"$NORM\" -accumdir \"$output_buffer_dir\" -meanfn \"$outhmm/globalmean\" 2>&1 |") {
     
 	while ($line = <PIPE>) {
 	    print LOG $line;
@@ -300,7 +300,7 @@ sub FlatInitialize ()
 
     open LOG,">$logfile";
 
-    if (open PIPE, "$ACCUM -meanfn $outhmm/globalmean -ctlfn $CFG_LISTOFFILES -part 1 -npart 1 -cepdir $CFG_FEATFILES_DIR -cepext $CFG_FEATFILE_EXTENSION -accumdir $output_buffer_dir -agc $CFG_AGC -cmn $CFG_CMN -varnorm yes -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
+    if (open PIPE, "\"$ACCUM\" -meanfn \"$outhmm/globalmean\" -ctlfn \"$CFG_LISTOFFILES\" -part 1 -npart 1 -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -accumdir \"$output_buffer_dir\" -agc $CFG_AGC -cmn $CFG_CMN -varnorm yes -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
     
 	while ($line = <PIPE>) {
 	    print LOG $line;
@@ -319,7 +319,7 @@ sub FlatInitialize ()
 
     open LOG,">$logfile";
 
-    if (open PIPE, "$NORM -accumdir $output_buffer_dir -varfn $outhmm/globalvar 2>&1 |") {
+    if (open PIPE, "\"$NORM\" -accumdir \"$output_buffer_dir\" -varfn \"$outhmm/globalvar\" 2>&1 |") {
     
 	while ($line = <PIPE>) {
 	    print LOG $line;
@@ -354,7 +354,7 @@ sub FlatInitialize ()
 
     open LOG,">$logfile";
 
-    if (open PIPE, "$CPPARM -cpopsfn $CFG_CP_OPERATION -igaufn $outhmm/globalmean -ncbout $NUM_CI_STATES -ogaufn $outhmm/means -feat $CFG_FEATURE 2>&1 |") {
+    if (open PIPE, "\"$CPPARM\" -cpopsfn \"$CFG_CP_OPERATION\" -igaufn \"$outhmm/globalmean\" -ncbout $NUM_CI_STATES -ogaufn \"$outhmm/means\" -feat $CFG_FEATURE 2>&1 |") {
     
 	while ($line = <PIPE>) {
 	    print LOG $line;
@@ -373,7 +373,7 @@ sub FlatInitialize ()
 
     open LOG,">$logfile";
 
-    if (open PIPE, "$CPPARM -cpopsfn $CFG_CP_OPERATION -igaufn $outhmm/globalvar -ncbout $NUM_CI_STATES -ogaufn $outhmm/variances -feat $CFG_FEATURE 2>&1 |") {
+    if (open PIPE, "\"$CPPARM\" -cpopsfn \"$CFG_CP_OPERATION\" -igaufn \"$outhmm/globalvar\" -ncbout $NUM_CI_STATES -ogaufn \"$outhmm/variances\" -feat $CFG_FEATURE 2>&1 |") {
     
 	while ($line = <PIPE>) {
 	    print LOG $line;

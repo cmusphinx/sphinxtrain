@@ -37,6 +37,8 @@
 ## Author: Ricky Houghton 
 ##
 
+use File::Copy;
+
 my $index = 0;
 if (lc($ARGV[0]) eq '-cfg') {
     $cfg_file = $ARGV[1];
@@ -66,8 +68,8 @@ $modelname="${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_$CFG_N_TIED_STATES";
 $processpart="07.cd-schmm";
 
 $bwaccumdir 	     = "";
-for (<${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*>) {
-    $bwaccumdir .= " $_";
+for (<"${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*">) {
+    $bwaccumdir .= " \"$_\"";
 }
 $hmmdir 	     = "${CFG_BASE_DIR}/model_parameters/$modelname";
 mkdir ($hmmdir,0777) unless -d $hmmdir;
@@ -80,8 +82,39 @@ $logdir              = "${CFG_LOG_DIR}/$processpart";
 mkdir ($logdir,0777) unless $logdir;
 $logfile 	     = "$logdir/${CFG_EXPTNAME}.${n_gau}.${iter}.norm.log";
 
+copy "$CFG_GIF_DIR/green-ball.gif", "$CFG_BASE_DIR/.07.norm.${n_gau}.$iter.state.gif";
+&ST_HTML_Print ("\t" . &ST_ImgSrc("$CFG_BASE_DIR/.07.norm.${n_gau}.$iter.state.gif") . " ");   
+&ST_Log ("    Normalization for iteration: $iter ");
+&ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . " ");
+
 $NORM  = "$CFG_BIN_DIR/norm";
 
-system ("$NORM -accumdir $bwaccumdir -mixwfn $mixture_weights  -tmatfn $transition_matrices -meanfn $means -varfn $variances -feat ${CFG_FEATURE} -ceplen 	${CFG_VECTOR_LENGTH} 2> $logfile");
+open LOG,">$logfile";
+
+if (open PIPE, "\"$NORM\" -accumdir $bwaccumdir -mixwfn \"$mixture_weights\"  -tmatfn \"$transition_matrices\" -meanfn \"$means\" -varfn \"$variances\" -feat ${CFG_FEATURE} -ceplen ${CFG_VECTOR_LENGTH} 2>&1 |") {
+
+    $| = 1;				# Turn on autoflushing
+    while (<PIPE>) {
+	if (/(ERROR).*/) {
+	    &ST_LogError ($_ . "\n");
+	}
+	if (/(FATAL).*/) {
+	    &ST_LogError ($_ . "\n");
+	    die "Received a fatal error";
+	}
+	print LOG "$_";
+    }
+    close PIPE;
+    $| = 0;
+    $date = localtime;
+    print LOG "$date\n";
+    close LOG;
+    &ST_Log ("Finished\n");
+    exit (0);
+}
+
+copy "$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.07.norm.${n_gau}.$iter.state.gif";
+&ST_LogError ("\tFailed to start $NORM \n");    
+exit (-1);
 
 exit 0;

@@ -97,7 +97,7 @@ my $modeldir  = "$CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777) unless -d $modeldir;
 
 # We have to clean up and run flat initialize if it is the first iteration
-if (($iter == 1) && ($n_gau == 1) || ($CFG_HMM_TYPE eq ".semi.")) {
+if (($iter == 1) && (($n_gau == 1) || ($CFG_HMM_TYPE eq ".semi."))) {
     
     &ST_Log ("MODULE: 07 Training Context dependent models\n");
     &ST_Log ("    Cleaning up directories: accumulator...");
@@ -114,7 +114,7 @@ if ($MC && $n_parts > 1)
     # multi-processor version -- assumes ssh machine works
     for ($i=1; $i<=$n_parts; $i++)
     {
-        $job_command = "$scriptdir/baum_welch.pl -cfg $cfg_file $n_gau $iter $i $n_parts";
+        $job_command = "\"$scriptdir/baum_welch.pl\" -cfg \"$cfg_file\" $n_gau $iter $i $n_parts";
 	open rrr,"scripts_pl/mc/mc_run.pl $job_command |";
 #	print $job_command."\n";
 	while ($line = <rrr>)
@@ -166,16 +166,16 @@ else
     # once done call norm_and_lauchbw.pl
     for ($i=1; $i<=$n_parts; $i++)
     {
-	system ("$scriptdir/baum_welch.pl -cfg $cfg_file $n_gau $iter $i $n_parts");
+	system ("perl \"$scriptdir/baum_welch.pl\" -cfg \"$cfg_file\" $n_gau $iter $i $n_parts");
     }
 }
-system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $n_gau $iter $n_parts");
+system ("perl \"$scriptdir/norm_and_launchbw.pl\" -cfg \"$cfg_file\" $n_gau $iter $n_parts");
 
 exit 0;
 
 sub copyci2cd2initialize ()
 {
-    &ST_Log ("    Copy CI to CD initialize\n");
+    &ST_Log ("    Copy CI to CD initialize ");
     
     #**************************************************************************
     # this script copies the mixw/mean/var/tmat from a ci (continuous) HMM
@@ -206,11 +206,13 @@ sub copyci2cd2initialize ()
     mkdir ($logdir,0777) unless -d $logdir;
     my $logfile = "$logdir/$CFG_EXPTNAME.copy.ci.2.cd.log";
 
+    &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . "\n");
+
     my $COPY = "$CFG_BIN_DIR/init_mixw";
 
     open LOG,"> $logfile";
 
-    if (open PIPE,"$COPY -src_moddeffn $src_moddeffn -src_ts2cbfn  ${CFG_HMM_TYPE} -src_mixwfn   $src_mixwfn -src_meanfn $src_meanfn -src_varfn $src_varfn -src_tmatfn $src_tmatfn -dest_moddeffn $dest_moddeffn -dest_ts2cbfn ${CFG_HMM_TYPE} -dest_mixwfn $dest_mixwfn -dest_meanfn  $dest_meanfn -dest_varfn $dest_varfn -dest_tmatfn $dest_tmatfn -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
+    if (open PIPE,"\"$COPY\" -src_moddeffn \"$src_moddeffn\" -src_ts2cbfn  ${CFG_HMM_TYPE} -src_mixwfn \"$src_mixwfn\" -src_meanfn \"$src_meanfn\" -src_varfn \"$src_varfn\" -src_tmatfn \"$src_tmatfn\" -dest_moddeffn \"$dest_moddeffn\" -dest_ts2cbfn ${CFG_HMM_TYPE} -dest_mixwfn \"$dest_mixwfn\" -dest_meanfn \"$dest_meanfn\" -dest_varfn \"$dest_varfn\" -dest_tmatfn \"$dest_tmatfn\" -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
 	while ($line = <PIPE>) {
 	    print LOG $line;
 	}

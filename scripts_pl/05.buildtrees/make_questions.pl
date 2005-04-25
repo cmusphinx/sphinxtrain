@@ -74,17 +74,17 @@ $| = 1; # Turn on autoflushing
 &ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
 $|=1;
-if (open PIPE, "$MAKE_QUEST -moddeffn $mdeffn -meanfn $meanfn -varfn $varfn -mixwfn $mixwfn -npermute 8 -niter 1 -qstperstt 20 -tempfn $tempfn -questfn $questfn -type ${CFG_HMM_TYPE} 2>&1 |") {
+if (open PIPE, "\"$MAKE_QUEST\" -moddeffn \"$mdeffn\" -meanfn \"$meanfn\" -varfn \"$varfn\" -mixwfn \"$mixwfn\" -npermute 8 -niter 1 -qstperstt 20 -tempfn \"$tempfn\" -questfn \"$questfn\" -type ${CFG_HMM_TYPE} 2>&1 |") {
 
-    open LOG,">$logfile";
-while (<PIPE>) {
+  open LOG,">$logfile";
+  while (<PIPE>) {
     print LOG "$_";
-}
-close PIPE;
-close LOG;
-&ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
-$| = 0;
-exit 0;
+  }
+  close PIPE;
+  close LOG;
+  &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
+  $| = 0;
+  exit 0;
 }
 
 

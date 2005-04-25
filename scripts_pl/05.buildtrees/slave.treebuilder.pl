@@ -60,7 +60,7 @@ require $cfg_file;
 my ($phone,$state);
 my $scriptdir = "$CFG_SCRIPT_DIR/05.buildtrees";
 my $logdir = "${CFG_LOG_DIR}/05.buildtrees";
-&ST_Log ("Module: 05 Build Trees\n");
+&ST_Log ("MODULE: 05 Build Trees\n");
 &ST_Log ("    Cleaning up old log files...\n");
 rmtree ("$logdir");
 mkdir ($logdir,0777) unless -d $logdir;
@@ -88,7 +88,7 @@ foreach $phone (<INPUT>) {
 
     if ($MC)   # do multi-machine 
     {
-        $job_command = "$scriptdir/buildtree.pl -cfg $cfg_file $phone";
+        $job_command = "\"$scriptdir/buildtree.pl\" -cfg \"$cfg_file\" $phone";
 	$job_name = "no_job";
 	while ($job_name eq "no_job")
         {
@@ -118,7 +118,7 @@ foreach $phone (<INPUT>) {
     }
     else
     {
-	system("$scriptdir/buildtree.pl $phone");
+	system("perl \"$scriptdir/buildtree.pl\" $phone");
     }
     close INPUT;
 }

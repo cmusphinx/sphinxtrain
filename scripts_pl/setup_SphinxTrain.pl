@@ -36,70 +36,79 @@
 #
 # ====================================================================
 
+use strict;
 use File::Copy;
 use Cwd;
+use Getopt::Long;
+use Pod::Usage;
 
-# Print help message if number of arguments is not right (2 or more)
-if ($#ARGV < 1) {
-  print "Usage: $0 [-force] <SphinxTrain location> <task>\n";
-  print "where\n";
-  print "\t'-force' forces the script to overwrite the current setup\n";
-  print "\t<SphinxTrain location> is your local SphinxTrain directory\n";
-  print "\t<task> is a short name for this training set\n";
-  print "\nThe setup is built on the current working directory.\n";
-  print "\n";
-  print "e.g.:\n";
-  print "\t $0 /usr0/robust/SphinxTrain mytask\n";
-  print "\t $0 .. debug\n";
-  exit;
+if ($#ARGV == -1) {
+  pod2usage(2);
 }
 
-$FORCE = shift;
-if ($FORCE eq "-force") {
-  $SPHINXTRAINDIR = shift;
-} else {
-  $SPHINXTRAINDIR = $FORCE;
-  $FORCE = "";
+my ($SPHINXTRAINDIR,
+    $DBNAME,
+    $help,
+    $force);
+
+$SPHINXTRAINDIR = $0;
+
+$SPHINXTRAINDIR =~ s/^(.*)[\/\\]scripts_pl[\\\/].*$/$1/i;
+
+$force = 0;
+
+my $result = GetOptions('help|h' => \$help,
+		     'force' => \$force,
+		     'sphinxtraindir|st=s' => \$SPHINXTRAINDIR,
+		     'task=s' => \$DBNAME);
+
+if (($result == 0) or (defined($help)) or (!defined($DBNAME))) {
+  pod2usage( -verbose => 1 );
+  exit(-1);
 }
-$DBNAME = shift;
 
 # Check if the current directory - where the setup will be installed - is empty
 opendir(DIR, ".") or die "Can't open current directory";
-@dirlist = grep !/^\./, readdir DIR;
+my @dirlist = grep !/^\./, readdir DIR;
 closedir(DIR);
 
 if ($#dirlist > 0) {
-  print "Current directory not empty\n";
-  if ($FORCE) {
-    print "Will overwrite current setup\n";
+  print "Current directory not empty.\n";
+  if ($force) {
+    print "Will overwrite existing files.\n";
   } else {
-    die "Use the option '-force' if you wish to overwrite the current setup\n";
+    print "Will leave existing files as they are, and copy non-existing files.\n";
   }
 }
 
 # Start building the directory structure
 print "Making basic directory structure\n";
-mkdir bin unless -d bin;
-mkdir etc unless -d etc;
-mkdir feat unless -d feat;
-mkdir wav unless -d wav;
+mkdir "bin" unless -d bin;
+mkdir "etc" unless -d etc;
+mkdir "feat" unless -e feat;
+mkdir "wav" unless -e wav;
 
-mkdir logdir unless -d logdir;
-mkdir bwaccumdir unless -d bwaccumdir;
-mkdir model_parameters unless -d model_parameters;
-mkdir model_architecture unless -d model_architecture;
+mkdir "logdir" unless -d logdir;
+mkdir "bwaccumdir" unless -d bwaccumdir;
+mkdir "model_parameters" unless -d model_parameters;
+mkdir "model_architecture" unless -d model_architecture;
 
 # have to find these somewhere
-mkdir gifs unless -d gifs;
-copy("$SPHINXTRAINDIR/etc/images/green-ball.gif", "gifs/green-ball.gif");
-copy("$SPHINXTRAINDIR/etc/images/red-ball.gif", "gifs/red-ball.gif");
+mkdir "gifs" unless -d gifs;
+replace_file("$SPHINXTRAINDIR/etc/images/green-ball.gif",
+	     "gifs/green-ball.gif",
+	     $force);
+replace_file("$SPHINXTRAINDIR/etc/images/red-ball.gif",
+	     "gifs/red-ball.gif",
+	     $force);
 
 # Figure out the platform string definition
+my $PLATFORM = "";
 if (open (SYSDESC, "$SPHINXTRAINDIR/config/system.mak")) {
   while (<SYSDESC>) {
     next unless m/PLATFORM/;
     chomp;
-    @words = split;
+    my @words = split;
     $PLATFORM = "." . $words[$#words];
   }
   close(SYSDESC);
@@ -113,6 +122,7 @@ if (open (SYSDESC, "$SPHINXTRAINDIR/config/system.mak")) {
 # directory bin/Release, that is, release build in windows. Then we
 # back off to the Debug build. If it still fails, then we're probably
 # in linux/unix, and we use the platform info to find the executables
+my $execdir;
 if (opendir(DIR, "$SPHINXTRAINDIR/bin/Release")) {
   $execdir = "$SPHINXTRAINDIR/bin/Release";
 } elsif (opendir(DIR, "$SPHINXTRAINDIR/bin/Debug")) {
@@ -125,14 +135,17 @@ if (opendir(DIR, "$SPHINXTRAINDIR/bin/Release")) {
 print "Copying executables from $execdir\n";
 @dirlist = grep !/^\./, readdir DIR;
 closedir(DIR);
-foreach $executable (@dirlist) {
- copy("$execdir/$executable", "bin/$executable");
+foreach my $executable (@dirlist) {
+ replace_file("$execdir/$executable",
+	      "bin/$executable",
+	      $force);
 }
 
 # Likewise, we try to open the scripts dir under bin. If not present,
 # we're backoff to copying from the main scripts dir. We just need to
 # copy directories from scripts_pl that start with '0' or 'm'
-mkdir scripts_pl unless -d scripts_pl;
+my $scriptdir;
+mkdir "scripts_pl" unless -d scripts_pl;
 if (opendir(DIR, "$SPHINXTRAINDIR/bin$PLATFORM/scripts_pl")) {
   $scriptdir = "$SPHINXTRAINDIR/bin$PLATFORM/scripts_pl";
 } elsif (opendir(DIR, "$SPHINXTRAINDIR/scripts_pl")) {
@@ -148,27 +161,32 @@ push @dirlist, ".";
 
 # Copy the directory tree. We do so by creating each directory, and
 # the copying it to the correct location here. We also set the permissions.
-foreach $directory (@dirlist) {
+foreach my $directory (@dirlist) {
   mkdir "scripts_pl/$directory" unless -d "scripts_pl/$directory";
   opendir(SUBDIR, "$scriptdir/$directory") or 
     die "Can't open subdir $directory\n";
-  @subdirlist = grep !/^\./, readdir SUBDIR;
-  foreach $executable (@subdirlist) {
-    if (-f "$scriptdir/$directory/$executable") {
-      copy("$scriptdir/$directory/$executable", 
-	   "scripts_pl/$directory/$executable");
-      chmod 0755, "scripts_pl/$directory/$executable";
-    }
+  my @subdirlist = grep /\.pl$/, readdir SUBDIR;
+  foreach my $executable (@subdirlist) {
+    replace_file("$scriptdir/$directory/$executable",
+		 "scripts_pl/$directory/$executable",
+		 $force);
+    chmod 0755, "scripts_pl/$directory/$executable";
   }
 }
 
 # We now copy additional files
-copy("$SPHINXTRAINDIR/scripts_pl/maketopology.pl", "bin/maketopology.pl");
-copy("$SPHINXTRAINDIR/scripts_pl/make_feats.pl", "bin/make_feats.pl");
-copy("$SPHINXTRAINDIR/scripts_pl/make_dict", "bin/make_dict");
+replace_file("$SPHINXTRAINDIR/scripts_pl/maketopology.pl",
+	     "bin/maketopology.pl",
+	     $force);
+replace_file("$SPHINXTRAINDIR/scripts_pl/make_feats.pl",
+	     "bin/make_feats.pl",
+	     $force);
+replace_file("$SPHINXTRAINDIR/scripts_pl/make_dict",
+	     "bin/make_dict",
+	     $force);
 
 # Set the permissions to executable;
-opendir(DIR, bin) or die "Can't open bin directory\n";
+opendir(DIR, "bin") or die "Can't open bin directory\n";
 @dirlist = grep !/^\./, readdir DIR;
 closedir(DIR);
 @dirlist = map { "bin/$_" } @dirlist;
@@ -182,7 +200,7 @@ open (CFGOUT, ">etc/sphinx_train.cfg") or die "Can't open etc/sphinx_train.cfg\n
 while (<CFGIN>) {
   chomp;
   s/___DB_NAME___/$DBNAME/g;
-  $currDir = cwd;
+  my $currDir = cwd;
   s/___BASE_DIR___/$currDir/g;
   s/___SPHINXTRAIN_DIR___/$SPHINXTRAINDIR/g;
   print CFGOUT "$_\n";
@@ -192,8 +210,65 @@ close(CFGOUT);
 
 print "Set up for acoustic training for $DBNAME complete";
 
+sub replace_file {
+  my $source = shift;
+  my $destination = shift;
+  my $force = shift;
 
+  if (($force) or (! -s $destination)) {
+    print "Replacing file $destination with $source\n";
+    copy("$source", "$destination");
+  }
+}
 
+__END__
 
+=head1 NAME
 
+setup_SphinxTrain.pl - setup the SphinxTrain environment for a new task
 
+=head1 SYNOPSIS
+
+=over 4
+
+=item To setup a new SphinxTrain task
+
+Create the new directory (e.g., mkdir RM1)
+
+Go to the new directory (e.g., cd RM1)
+
+Run this script (e.g., perl $SPHINXTRAIN/scripts_pl/setup_SphinxTrain.pl RM1)
+
+=item ./scripts_pl/setup_SphinxTrain.pl -help
+
+For full list of arguments
+
+=item  ./scripts_pl/setup_SphinxTrain.pl [-force] [-sphinxtraindir <SphinxTrain directory>] -task <task name>
+
+For setting up the SphinxTrain environment, located at <SphinxTrain directory>, into current directory, naming the task <task name>
+
+=back
+
+=head1 ARGUMENTS
+
+=over 4
+
+=item B<-force>
+
+Force the setup script to overwrite existing files. Optional.
+
+=item B<-sphinxtraindir>
+
+The location of the SphinxTrain suite. If not provided, same location as this script is assumed. Optional.
+
+=item B<-task>
+
+The name of the new task. Required.
+
+=item B<-help>
+
+The help screen (this screen). Optional.
+
+=back
+
+=cut

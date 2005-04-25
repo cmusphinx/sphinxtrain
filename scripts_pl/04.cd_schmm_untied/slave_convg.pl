@@ -103,7 +103,7 @@ if (0 && $MC && $n_parts > 1)
     # multi-processor version -- assumes ssh machine works
     for ($i=1; $i<=$n_parts; $i++)
     {
-        $job_command = "$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts";
+        $job_command = "\"$scriptdir/baum_welch.pl\" -cfg \"$cfg_file\" $iter $i $n_parts";
 #	print $job_command."\n";
 	open rrr,"scripts_pl/mc/mc_run.pl $job_command |";
 	while ($line = <rrr>)
@@ -156,10 +156,10 @@ else
     # once done call norm_and_lauchbw.pl
     for ($i=1; $i<=$n_parts; $i++)
     {
-	system ("$scriptdir/baum_welch.pl -cfg $cfg_file $iter $i $n_parts");
+	system ("perl \"$scriptdir/baum_welch.pl\" -cfg \"$cfg_file\" $iter $i $n_parts");
     }
 }
-system ("$scriptdir/norm_and_launchbw.pl -cfg $cfg_file $iter $n_parts");
+system ("perl \"$scriptdir/norm_and_launchbw.pl\" -cfg \"$cfg_file\" $iter $n_parts");
 
 exit 0;
 
@@ -173,14 +173,15 @@ sub Initialize ()
     mkdir ($logdir,0777) unless -d $logdir;
     my $logfile = "$logdir/${CFG_EXPTNAME}.copycitocd.log";
 
-    &ST_Log ("    Initialization Copy CI to CD\n");
+    &ST_Log ("    Initialization Copy CI to CD ");
+    &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . "\n");
 
 
     my $COPY_CI_TO_CD = "${CFG_BIN_DIR}/init_mixw";
 
     open LOG,"> $logfile";
 
-    if (open PIPE,"$COPY_CI_TO_CD -src_moddeffn ${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.ci.mdef -src_ts2cbfn  ${CFG_HMM_TYPE} -src_mixwfn   $cihmmdir/mixture_weights -src_meanfn   $cihmmdir/means -src_varfn    $cihmmdir/variances -src_tmatfn  $cihmmdir/transition_matrices -dest_moddeffn ${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef -dest_ts2cbfn ${CFG_HMM_TYPE} -dest_mixwfn $cdhmmdir/mixture_weights -dest_meanfn $cdhmmdir/means -dest_varfn $cdhmmdir/variances -dest_tmatfn $cdhmmdir/transition_matrices -feat ${CFG_FEATURE} -ceplen ${CFG_VECTOR_LENGTH} 2>&1 |") {
+    if (open PIPE,"\"$COPY_CI_TO_CD\" -src_moddeffn \"${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.ci.mdef\" -src_ts2cbfn ${CFG_HMM_TYPE} -src_mixwfn \"$cihmmdir/mixture_weights\" -src_meanfn \"$cihmmdir/means\" -src_varfn \"$cihmmdir/variances\" -src_tmatfn \"$cihmmdir/transition_matrices\" -dest_moddeffn \"${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef\" -dest_ts2cbfn ${CFG_HMM_TYPE} -dest_mixwfn \"$cdhmmdir/mixture_weights\" -dest_meanfn \"$cdhmmdir/means\" -dest_varfn \"$cdhmmdir/variances\" -dest_tmatfn \"$cdhmmdir/transition_matrices\" -feat ${CFG_FEATURE} -ceplen ${CFG_VECTOR_LENGTH} 2>&1 |") {
 	
 	while ($line = <PIPE>) {
 	    print LOG $line;

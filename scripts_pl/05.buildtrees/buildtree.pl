@@ -126,11 +126,11 @@ sub BuildTree ()
     if ($CFG_HMM_TYPE eq ".semi.") {
       $gauflag = "";
     } else {
-      $gauflag = "-meanfn $means_file -varfn $variances_file";
+      $gauflag = "-meanfn \"$means_file\" -varfn \"$variances_file\"";
     }
 
     open LOG,">$logfile";    
-    if (open PIPE, "$BUILDTREE ${gauflag} -treefn $unprunedtreedir/$phn-$stt.dtree -moddeffn $mdef_file -mixwfn $mixture_wt_file -ts2cbfn ${CFG_HMM_TYPE} -mwfloor 1e-30 -psetfn ${CFG_QUESTION_SET} -phone $phn -state $stt -stwt $stwt -ssplitmin 1 -ssplitmax 5 -ssplitthr 0 -csplitmin 1 -csplitmax 500 -csplitthr 0 2>&1 |") {
+    if (open PIPE, "\"$BUILDTREE\" ${gauflag} -treefn \"$unprunedtreedir/$phn-$stt.dtree\" -moddeffn \"$mdef_file\" -mixwfn \"$mixture_wt_file\" -ts2cbfn ${CFG_HMM_TYPE} -mwfloor 1e-30 -psetfn \"${CFG_QUESTION_SET}\" -phone $phn -state $stt -stwt $stwt -ssplitmin 1 -ssplitmax 5 -ssplitthr 0 -csplitmin 1 -csplitmax 500 -csplitthr 0 2>&1 |") {
 	
 	while (<PIPE>) {
 	    print LOG "$_";

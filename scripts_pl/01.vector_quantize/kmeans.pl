@@ -75,7 +75,7 @@ $| = 1; # Turn on autoflushing
 $hmmdir = "$CFG_BASE_DIR/model_parameters";
 mkdir ($hmmdir,0777) unless -d $hmmdir;
 
-$outhmm  = "$hmmdir/${CFG_EXPTNAME}.ci_${CFGDIRLABEL}_flatinitial";
+$outhmm  = "$hmmdir/${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}_flatinitial";
 mkdir ($outhmm,0777) unless -d $outhmm;
 
 $segdmpdir = "$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_1";
@@ -94,7 +94,7 @@ $logfile = "$logdir/${CFG_EXPTNAME}.kmeans.log";
 # -grandvar   yes   
 
 $| = 1;
-if (open PIPE,"${CFG_BIN_DIR}/kmeans_init -gthobj single -stride 1 -ntrial 1 -minratio 0.001 -ndensity 256 -meanfn $outhmm/means -varfn $outhmm/variances -reest no -segdmpdirs $segdmpdir -segdmpfn   $dumpfile -ceplen     ${CFG_VECTOR_LENGTH} -feat ${CFG_FEATURE} -agc $CFG_AGC -cmn ${CFG_CMN} 2>&1 |") {
+if (open PIPE, "\"${CFG_BIN_DIR}/kmeans_init\" -gthobj single -stride 1 -ntrial 1 -minratio 0.001 -ndensity 256 -meanfn \"$outhmm/means\" -varfn \"$outhmm/variances\" -reest no -segdmpdirs \"$segdmpdir\" -segdmpfn \"$dumpfile\" -ceplen ${CFG_VECTOR_LENGTH} -feat ${CFG_FEATURE} -agc $CFG_AGC -cmn ${CFG_CMN} 2>&1 |") {
     
     open LOG,">$logfile";
     while (<PIPE>) {

@@ -77,8 +77,8 @@ $| = 1; # Turn on autoflushing
 &ST_Log ("MODULE: 01 Vector Quantization\n");
 $scriptdir="$CFG_BASE_DIR/scripts_pl/01.vector_quantize";
 if ($CFG_HMM_TYPE eq ".semi.") {
-  system ("$scriptdir/agg_seg.pl -cfg $cfg_file");
-  system ("$scriptdir/kmeans.pl -cfg $cfg_file");
+  system ("perl \"$scriptdir/agg_seg.pl\" -cfg \"$cfg_file\"");
+  system ("perl \"$scriptdir/kmeans.pl\" -cfg \"$cfg_file\"");
 } else {
   &ST_Log("    Skipped for continuous models\n");
 }

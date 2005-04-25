@@ -137,15 +137,15 @@ my $SPLIT = "$CFG_BIN_DIR/inc_comp";
 
 open LOG,"> $logfile";
 
-my $split_cmd = "$SPLIT " .
+my $split_cmd = "\"$SPLIT\" " .
   "-ninc $n_split " .
-  "-dcountfn $src_mixwfn " .
-  "-inmixwfn  $src_mixwfn " .
-  "-outmixwfn $dest_mixwfn " .
-  "-inmeanfn  $src_meanfn " .
-  "-outmeanfn $dest_meanfn " .
-  "-invarfn   $src_varfn " .
-  "-outvarfn  $dest_varfn " .
+  "-dcountfn \"$src_mixwfn\" " .
+  "-inmixwfn  \"$src_mixwfn\" " .
+  "-outmixwfn \"$dest_mixwfn\" " .
+  "-inmeanfn  \"$src_meanfn\" " .
+  "-outmeanfn \"$dest_meanfn\" " .
+  "-invarfn   \"$src_varfn\" " .
+  "-outvarfn  \"$dest_varfn\" " .
   "-feat      $CFG_FEATURE " .
   "-ceplen    $CFG_VECTOR_LENGTH ";
 

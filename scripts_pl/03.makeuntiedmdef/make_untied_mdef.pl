@@ -85,7 +85,7 @@ $untiedmdef = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
 # -minocc       1         Min occurances of a triphone must occur for inclusion in mdef file
 
 $MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
-system ("$MAKE_MDEF -phnlstfn $CFG_RAWPHONEFILE -dictfn $CFG_DICTIONARY -fdictfn $CFG_FILLERDICT -lsnfn $CFG_TRANSCRIPTFILE -ountiedmdef  $untiedmdef -n_state_pm  $CFG_STATESPERHMM -maxtriphones 10000 2>$logfile");
+system ("\"$MAKE_MDEF\" -phnlstfn \"$CFG_RAWPHONEFILE\" -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -lsnfn \"$CFG_TRANSCRIPTFILE\" -ountiedmdef \"$untiedmdef\" -n_state_pm  $CFG_STATESPERHMM -maxtriphones 10000 > \"$logfile\" 2>&1");
 
 &ST_HTML_Print ("\t\tmk_untied_mdef " . &ST_FormatURL("$logfile", "Log File") . "\n");
 
