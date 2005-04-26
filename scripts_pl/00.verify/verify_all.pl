@@ -75,13 +75,12 @@ $| = 1;				# Turn on autoflushing
     while (<DICT>) {
 	if (/^(\S+)\s(.*)$/) {
 	    $dict_hash{lc($1)}++;
-	    $tmp = $2;
-	    $tmp =~ s/\t/ /g;
-	    $tmp =~ s/  / /g;
-	    @phones = split / /,$tmp;
+	    $phonetic = $2;
+	    # Aggregate the non-space characters and store the results
+	    # in @phone
+	    @phones = ($phonetic =~ m/(\S+)/g);
 	    for $phone (@phones) {
-		$phone =~ s/  / /g;
-		$dict_phone_hash{uc($phone)}++ if $phone;
+		$dict_phone_hash{uc($phone)}++;
 	    }
 	}
 	$counter++;
@@ -92,13 +91,10 @@ $| = 1;				# Turn on autoflushing
     while (<DICT>) {
 	if (/^(\S+)\s(.*)$/) {
 	    $dict_hash{lc($1)}++;
-	    $tmp = $2;
-	    $tmp =~ s/\t/ /g;
-	    $tmp =~ s/  / /g;
-	    @phones = split / /,$tmp;
+	    $phonetic = $2;
+	    @phones = ($phonetic =~ m/(\S+)/g);
 	    for $phone (@phones) {
-		$phone =~ s/  / /g;
-		$dict_phone_hash{uc($phone)}++ if $phone;
+		$dict_phone_hash{uc($phone)}++;
 	    }
 	}
 	$counter++;
@@ -110,7 +106,7 @@ $| = 1;				# Turn on autoflushing
     open PHONE,"$CFG_RAWPHONEFILE" or die "Can not open phone list ($CFG_RAWPHONEFILE)\n";
     while (<PHONE>) {
 	chomp;
-	$phonelist_hash{uc($_)}++;
+	$phonelist_hash{uc($_)} = 0;
     }
     close PHONE;
     
@@ -119,12 +115,22 @@ $| = 1;				# Turn on autoflushing
     
     $status = 'passed';
     for $key (sort (keys %dict_phone_hash)){
-	if (! defined($phonelist_hash{$key})) {
+	if (defined($phonelist_hash{$key})) {
+	    $phonelist_hash{$key} = 1;
+	} else {
 	    $status = 'FAILED';
-	    $ord = ord($key);
 	    $ret_value = -1;
 	    copy("$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.00.1.state.gif");
-	    &ST_LogWarning ("This phone ($key -> $ord) occurs in the dictionary ($CFG_DICTIONARY), but not in the phonelist ($CFG_RAWPHONEFILE\n");
+	    &ST_LogWarning ("This phone ($key) occurs in the dictionary ($CFG_DICTIONARY), but not in the phonelist ($CFG_RAWPHONEFILE)\n");
+	}
+    }
+
+    for $key (sort (keys %phonelist_hash)) {
+      if ($phonelist_hash{$key} == 0) {
+	    $status = 'FAILED';
+	    $ret_value = -1;
+	    copy("$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.00.1.state.gif");
+	    &ST_LogWarning ("This phone ($key) occurs in the phonelist ($CFG_RAWPHONEFILE), but not in the dictionary ($CFG_DICTIONARY)\n");
 	}
     }
 
@@ -225,9 +231,9 @@ $| = 1;				# Turn on autoflushing
     &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
 
 
-    # 4a) Should already have estimates on the total training time, 
+    # 5) Should already have estimates on the total training time, 
 
-    &ST_Log ("    Phase 4a: CTL - Determine amount of training data, see if n_tied_states seems reasonable.\n");
+    &ST_Log ("    Phase 5: CTL - Determine amount of training data, see if n_tied_states seems reasonable.\n");
     $status = 'passed';
     $total_training_data = 0;
     for $ctl_line (@ctl_lines) {
@@ -271,10 +277,12 @@ $| = 1;				# Turn on autoflushing
     @ctl_lines = ();
 }
 
+%transcript_phonelist_hash = ();
 
-
+# Verify that all transcription words are in the dictionary, and all
+# phones are covered
 {
-    &ST_Log("    Phase 5: TRANSCRIPT - Checking that all the words in the transcript are in the dictionary\n");
+    &ST_Log("    Phase 6: TRANSCRIPT - Checking that all the words in the transcript are in the dictionary\n");
     open DICT,"$CFG_DICTIONARY" or die "Can not open the dictionary ($CFG_DICTIONARY)";
     @dict = <DICT>;
     close DICT;
@@ -282,7 +290,7 @@ $| = 1;				# Turn on autoflushing
     
     for (@dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
-	$d{lc($1)} = $2;
+	$d{lc($1)} = uc($2);
     }
     
     open DICT,"$CFG_FILLERDICT" or die "Can not open filler dict ($CFG_FILLERDICT)\n";
@@ -292,7 +300,7 @@ $| = 1;				# Turn on autoflushing
     
     for (@fill_dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
-	$d{lc($1)} = $2;
+	$d{lc($1)} = uc($2);
     }
     
     @dict = undef;			# not needed
@@ -302,14 +310,19 @@ $| = 1;				# Turn on autoflushing
     
     $status = 'passed';
     while (<TRN>) {
-	($text) = map /(.*)\s*\(.*\)$/,$_;
+	($text) = m/(.*)\s*\(.*\)$/;
 	if ($text) {
-	    @words = split / /,$text;
+	    @words = split /\s+/,$text;
 	    for $word (@words) {
 		if (! $d{lc($word)} && ($word =~ m/\S+/)) {
 		    &ST_LogWarning ("This word: $word was in the transcript file, but is not in the dictionary ($text)\n");
 		    $status = 'FAILED';
 		    $ret_value = -5;
+		} else {
+		    @phones = ($d{lc($word)} =~ m/(\S+)/g);
+		    for $phone (@phones) {
+		        $transcript_phonelist_hash{$phone} = 1;
+		    }
 		}
 	    }
 	}
@@ -321,6 +334,24 @@ $| = 1;				# Turn on autoflushing
     &ST_HTML_Print ("\t\t<font color=\"$CFG_WARNING_COLOR\"> $status </font>\n") if($status eq 'WARNING');
 
 }
+
+{
+    &ST_Log("    Phase 7: TRANSCRIPT - Checking that all the phones in the transcript are in the phonelist, and all phones in the phonelist appear at least once\n");
+    $status = 'passed';
+
+    for $phone (sort keys %phonelist_hash) {
+      if (!defined $transcript_phonelist_hash{$phone}) {
+	    &ST_LogWarning ("This phone ($phone) occurs in the phonelist ($CFG_RAWPHONEFILE), but not in any word in the transcription ($CFG_TRANSCRIPTFILE)\n");
+	    $status = 'FAILED';
+      }
+    }
+
+
+    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
+    &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
+    &ST_HTML_Print ("\t\t<font color=\"$CFG_WARNING_COLOR\"> $status </font>\n") if($status eq 'WARNING');
+
+  }
 
 mkdir ($CFG_LOG_DIR,0755) unless -d $CFG_LOG_DIR;
 mkdir ("$CFG_BASE_DIR/bwaccumdir",0755) unless -d "$CFG_LOG_DIR/bwaccumdir";

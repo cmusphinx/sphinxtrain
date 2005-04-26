@@ -41,6 +41,7 @@ use File::Copy;
 use Cwd;
 use Getopt::Long;
 use Pod::Usage;
+use File::stat;
 
 if ($#ARGV == -1) {
   pod2usage(2);
@@ -49,16 +50,22 @@ if ($#ARGV == -1) {
 my ($SPHINXTRAINDIR,
     $DBNAME,
     $help,
-    $force);
+    $force,
+    $update);
+
+my $LEAVE_MODE = 0;
+my $UPDATE_MODE = 1;
+my $FORCE_MODE = 2;
+
+my $replace_mode = $LEAVE_MODE;
 
 $SPHINXTRAINDIR = $0;
 
 $SPHINXTRAINDIR =~ s/^(.*)[\/\\]scripts_pl[\\\/].*$/$1/i;
 
-$force = 0;
-
 my $result = GetOptions('help|h' => \$help,
 		     'force' => \$force,
+		     'update' => \$update,
 		     'sphinxtraindir|st=s' => \$SPHINXTRAINDIR,
 		     'task=s' => \$DBNAME);
 
@@ -67,6 +74,9 @@ if (($result == 0) or (defined($help)) or (!defined($DBNAME))) {
   exit(-1);
 }
 
+$replace_mode = $UPDATE_MODE if (defined $update);
+$replace_mode = $FORCE_MODE if (defined $force);
+
 # Check if the current directory - where the setup will be installed - is empty
 opendir(DIR, ".") or die "Can't open current directory";
 my @dirlist = grep !/^\./, readdir DIR;
@@ -74,8 +84,10 @@ closedir(DIR);
 
 if ($#dirlist > 0) {
   print "Current directory not empty.\n";
-  if ($force) {
+  if ($replace_mode == $FORCE_MODE) {
     print "Will overwrite existing files.\n";
+  } elsif ($replace_mode == $UPDATE_MODE) {
+    print "Will overwrite existing files if they're older.\n";
   } else {
     print "Will leave existing files as they are, and copy non-existing files.\n";
   }
@@ -97,10 +109,10 @@ mkdir "model_architecture" unless -d model_architecture;
 mkdir "gifs" unless -d gifs;
 replace_file("$SPHINXTRAINDIR/etc/images/green-ball.gif",
 	     "gifs/green-ball.gif",
-	     $force);
+	     $replace_mode);
 replace_file("$SPHINXTRAINDIR/etc/images/red-ball.gif",
 	     "gifs/red-ball.gif",
-	     $force);
+	     $replace_mode);
 
 # Figure out the platform string definition
 my $PLATFORM = "";
@@ -138,7 +150,7 @@ closedir(DIR);
 foreach my $executable (@dirlist) {
  replace_file("$execdir/$executable",
 	      "bin/$executable",
-	      $force);
+	      $replace_mode);
 }
 
 # Likewise, we try to open the scripts dir under bin. If not present,
@@ -169,7 +181,7 @@ foreach my $directory (@dirlist) {
   foreach my $executable (@subdirlist) {
     replace_file("$scriptdir/$directory/$executable",
 		 "scripts_pl/$directory/$executable",
-		 $force);
+		 $replace_mode);
     chmod 0755, "scripts_pl/$directory/$executable";
   }
 }
@@ -177,13 +189,13 @@ foreach my $directory (@dirlist) {
 # We now copy additional files
 replace_file("$SPHINXTRAINDIR/scripts_pl/maketopology.pl",
 	     "bin/maketopology.pl",
-	     $force);
+	     $replace_mode);
 replace_file("$SPHINXTRAINDIR/scripts_pl/make_feats.pl",
 	     "bin/make_feats.pl",
-	     $force);
+	     $replace_mode);
 replace_file("$SPHINXTRAINDIR/scripts_pl/make_dict",
 	     "bin/make_dict",
-	     $force);
+	     $replace_mode);
 
 # Set the permissions to executable;
 opendir(DIR, "bin") or die "Can't open bin directory\n";
@@ -208,16 +220,22 @@ while (<CFGIN>) {
 close(CFGIN);
 close(CFGOUT);
 
-print "Set up for acoustic training for $DBNAME complete";
+print "Set up for acoustic training for $DBNAME complete\n";
 
 sub replace_file {
   my $source = shift;
   my $destination = shift;
-  my $force = shift;
+  my $replace_mode = shift;
 
-  if (($force) or (! -s $destination)) {
-    print "Replacing file $destination with $source\n";
+  if (($replace_mode == $FORCE_MODE) or (! -s $destination)) {
+#    print "Replacing file $destination with $source\n";
     copy("$source", "$destination");
+  } elsif ($replace_mode == $UPDATE_MODE) {
+    my $source_time = stat($source);
+    my $dest_time = stat($destination);
+    if (($source_time->mtime) > ($dest_time->mtime)) {
+      copy("$source", "$destination");
+    }
   }
 }
 
@@ -256,6 +274,10 @@ For setting up the SphinxTrain environment, located at <SphinxTrain directory>, 
 =item B<-force>
 
 Force the setup script to overwrite existing files. Optional.
+
+=item B<-update>
+
+Update existing files if they are older than in SphinxTrain. Optional.
 
 =item B<-sphinxtraindir>
 
