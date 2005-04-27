@@ -38,7 +38,7 @@ TOP=../..
 DIRNAME=scripts_pl/07.cd-schmm
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-PERLSCRIPTS = baum_welch.pl norm.pl norm_and_launchbw.pl slave_convg.pl
+PERLSCRIPTS = baum_welch.pl norm.pl norm_and_launchbw.pl slave_convg.pl split_gaussians.pl
 SCRIPTS = $(PERLSCRIPTS:%=$(SCRIPTDIR)/$(DIRNAME)/%)
 FILES = Makefile $(PERLSCRIPTS)
 

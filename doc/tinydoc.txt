@@ -19,7 +19,7 @@ Got to a new directory where you have the space
 
 Set up the directory structure, scripts and config files
 
-   perl $SPHINXTRAINDIR/scripts_pl/setup_SphinxTrain.pl $SPHINXTRAINDIR time
+   perl $SPHINXTRAINDIR/scripts_pl/setup_SphinxTrain.pl -task time
 
 The main config file is put into etc/sphinx_train.cfg
 
@@ -64,7 +64,7 @@ Once you are happy,
 
 Make the melcep feature files
 
-   bin/make_feats etc/time.fileids
+   perl scripts_pl/make_feats.pl -ctl etc/time.fileids
 
 Now we can start on the basic perl scripts. Their results will be put
 in perl_time.html, which you can view as things progress.  Note the

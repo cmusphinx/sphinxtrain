@@ -42,7 +42,7 @@ BUILD_DIRS = 00.verify 01.vector_quantize 02.ci_schmm 03.makeuntiedmdef \
              09.make_s2_models mc
 ALL_DIRS= $(BUILD_DIRS)
 FESTIVAL_SCRIPTS = make_dict.festival
-TMPSCRIPTS=setup_SphinxTrain maketopology make_feats
+TMPSCRIPTS=setup_SphinxTrain.pl maketopology.pl make_feats.pl setup_tutorial.pl
 FILES = Makefile RunAll.pl $(TMPSCRIPTS) \
         $(FESTIVAL_SCRIPTS)
 
