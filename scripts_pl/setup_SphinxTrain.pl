@@ -153,18 +153,9 @@ foreach my $executable (@dirlist) {
 	      $replace_mode);
 }
 
-# Likewise, we try to open the scripts dir under bin. If not present,
-# we're backoff to copying from the main scripts dir. We just need to
-# copy directories from scripts_pl that start with '0' or 'm'
-my $scriptdir;
+# We copy the scripts from the scripts_pl directory directly.
 mkdir "scripts_pl" unless -d scripts_pl;
-if (opendir(DIR, "$SPHINXTRAINDIR/bin$PLATFORM/scripts_pl")) {
-  $scriptdir = "$SPHINXTRAINDIR/bin$PLATFORM/scripts_pl";
-} elsif (opendir(DIR, "$SPHINXTRAINDIR/scripts_pl")) {
-  $scriptdir = "$SPHINXTRAINDIR/scripts_pl";
-} else {
-  die "Can't open $SPHINXTRAINDIR/bin$PLATFORM/scripts_pl";
-}
+my $scriptdir = "$SPHINXTRAINDIR/scripts_pl";
 print "Copying scripts from $scriptdir\n";
 @dirlist = grep /^(0.*|mc)$/, readdir DIR;
 closedir(DIR);
@@ -172,12 +163,13 @@ closedir(DIR);
 push @dirlist, ".";
 
 # Copy the directory tree. We do so by creating each directory, and
-# the copying it to the correct location here. We also set the permissions.
+# then copying it to the correct location here. We also set the permissions.
 foreach my $directory (@dirlist) {
   mkdir "scripts_pl/$directory" unless -d "scripts_pl/$directory";
   opendir(SUBDIR, "$scriptdir/$directory") or 
     die "Can't open subdir $directory\n";
   my @subdirlist = grep /\.pl$/, readdir SUBDIR;
+  closedir(SUBDIR);
   foreach my $executable (@subdirlist) {
     replace_file("$scriptdir/$directory/$executable",
 		 "scripts_pl/$directory/$executable",
