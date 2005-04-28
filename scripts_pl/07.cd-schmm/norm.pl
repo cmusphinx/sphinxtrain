@@ -68,8 +68,12 @@ $modelname="${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_$CFG_N_TIED_STATES";
 $processpart="07.cd-schmm";
 
 $bwaccumdir 	     = "";
-for (<"${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*">) {
-    $bwaccumdir .= " \"$_\"";
+opendir(ACCUMDIR, "${CFG_BASE_DIR}/bwaccumdir")
+    or die "Could not open ${CFG_BASE_DIR}/bwaccumdir\n";
+@bwaccumdirs = grep /${CFG_EXPTNAME}_buff_/, readdir(ACCUMDIR);
+closedir(ACCUMDIR);
+for (@bwaccumdirs) {
+    $bwaccumdir .= " \"${CFG_BASE_DIR}/bwaccumdir/$_\"";
 }
 $hmmdir 	     = "${CFG_BASE_DIR}/model_parameters/$modelname";
 mkdir ($hmmdir,0777) unless -d $hmmdir;
