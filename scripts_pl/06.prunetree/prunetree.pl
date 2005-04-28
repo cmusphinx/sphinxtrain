@@ -60,7 +60,7 @@ die "USAGE: $0 <iteration number>" if (($#ARGV != ($index)));
 my $n_tied_states = $ARGV[$index];
 my $occurance_threshold = 0;
 
-my $mdef_file = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.alltriphones.mdef ";
+my $mdef_file = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.alltriphones.mdef";
 
 my $unprunedtreedir = "$CFG_BASE_DIR/trees/$CFG_EXPTNAME.unpruned";
 my $prunedtreedir  = "$CFG_BASE_DIR/trees/$CFG_EXPTNAME.$n_tied_states";
