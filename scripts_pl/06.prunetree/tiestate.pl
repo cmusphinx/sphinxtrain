@@ -74,6 +74,8 @@ $| = 1; # Turn on autoflushing
 &ST_Log ("    Tie states\n");
 &ST_HTML_Print ("\t\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
-system("\"$TIESTATE\" -imoddeffn \"$untied_mdef_file\" -omoddeffn \"$tied_mdef_file\" -treedir \"$prunedtreedir\" -psetfn \"$CFG_QUESTION_SET\" > \"$logfile\" 2>&1");
+$status = system("\"$TIESTATE\" -imoddeffn \"$untied_mdef_file\" -omoddeffn \"$tied_mdef_file\" -treedir \"$prunedtreedir\" -psetfn \"$CFG_QUESTION_SET\" > \"$logfile\" 2>&1");
 
 &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
+
+exit ($status != 0);

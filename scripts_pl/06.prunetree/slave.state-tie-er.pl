@@ -75,8 +75,11 @@ $phonefile           = "$modarchdir/$CFG_EXPTNAME.phonelist";
 
 &ST_HTML_Print ("\t\tmk_mdef_gen " . &ST_FormatURL("$logfile", "Log File") . "\n");
 
-system ("\"$MAKE_MDEF\" -phnlstfn \"$phonefile\" -oalltphnmdef \"$ALLTRIPHONESMDDEF\" -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -n_state_pm $CFG_STATESPERHMM > \"$logfile\" 2>&1");
+$status = system ("\"$MAKE_MDEF\" -phnlstfn \"$phonefile\" -oalltphnmdef \"$ALLTRIPHONESMDDEF\" -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -n_state_pm $CFG_STATESPERHMM > \"$logfile\" 2>&1");
 
-system("perl \"$scriptdir/prunetree.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES");
-system("perl \"$scriptdir/tiestate.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES");
+$status = system("perl \"$scriptdir/prunetree.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES") unless $status;
+
+$status = system("perl \"$scriptdir/tiestate.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES") unless $status;
+
+exit ($status != 0);
 
