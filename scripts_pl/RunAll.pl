@@ -56,7 +56,6 @@ if (lc($ARGV[0]) eq '-cfg') {
 		 "\"$CFG_SCRIPT_DIR/02.ci_schmm/slave_convg.pl\" -cfg \"$cfg_file\" 1",
 		 "\"$CFG_SCRIPT_DIR/03.makeuntiedmdef/make_untied_mdef.pl\" -cfg \"$cfg_file\"",
 		 "\"$CFG_SCRIPT_DIR/04.cd_schmm_untied/slave_convg.pl\" -cfg \"$cfg_file\" 1",
-		 "\"$CFG_SCRIPT_DIR/05.buildtrees/make_questions.pl\" -cfg \"$cfg_file\"",
 		 "\"$CFG_SCRIPT_DIR/05.buildtrees/slave.treebuilder.pl\" -cfg \"$cfg_file\"",
 		 "\"$CFG_SCRIPT_DIR/06.prunetree/slave.state-tie-er.pl\" -cfg \"$cfg_file\"",
 		 "\"$CFG_SCRIPT_DIR/07.cd-schmm/slave_convg.pl\" -cfg \"$cfg_file\" 1",
