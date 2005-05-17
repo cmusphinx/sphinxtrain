@@ -67,7 +67,7 @@ if (($#ARGV >= ($index))) {
 }
 my $n_parts = ($CFG_NPART) ? $CFG_NPART : 1;
 if (($#ARGV >= ($index+1))) {
-   $n_part= $ARGV[$index+1];
+   $n_parts = $ARGV[$index+1];
 }
 
 my $scriptdir = "$CFG_SCRIPT_DIR/02.ci_schmm";
@@ -147,7 +147,7 @@ if ($MC && $n_parts > 1)
 }
 else
 {
-    # Call baum_welch with iter part and n_part, 
+    # Call baum_welch with iter part and n_parts, 
     # once done call norm_and_lauchbw.pl
     for ($i=1; $i<=$n_parts; $i++)
     {
