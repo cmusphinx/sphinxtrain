@@ -66,7 +66,7 @@ rmtree ("$logdir");
 mkdir ($logdir,0777) unless -d $logdir;
 
 $| = 1; # Turn on autoflushing
-system("$scriptdir/make_questions.pl");
+system("perl $scriptdir/make_questions.pl -cfg \"$cfg_file\"");
 &ST_Log ("    Tree building\n");
 
 my $mdef_file       = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
@@ -118,7 +118,7 @@ foreach $phone (<INPUT>) {
     }
     else
     {
-	system("perl \"$scriptdir/buildtree.pl\" $phone");
+	system("perl \"$scriptdir/buildtree.pl\"  -cfg \"$cfg_file\" $phone");
     }
     close INPUT;
 }
