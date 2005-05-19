@@ -118,7 +118,7 @@ foreach $phone (<INPUT>) {
     }
     else
     {
-	system("perl \"$scriptdir/buildtree.pl\"  -cfg \"$cfg_file\" $phone");
+	system("perl \"$scriptdir/buildtree.pl\"  -cfg \"$cfg_file\" \"$phone\"");
     }
     close INPUT;
 }
