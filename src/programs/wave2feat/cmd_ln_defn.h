@@ -71,7 +71,7 @@ This example creates a cepstral file named \"output.mfc\" from an input audio fi
 \n\
 wave2feat -i  input.raw \n\
         -o   output.mfc \n\
-        -raw no \n\
+        -raw yes \n\
         -input_endian little \n\
         -samprate  16000 \n\
         -lowerf    130 \n\
@@ -282,11 +282,14 @@ static arg_def_t defn[] = {
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2004/11/23  04:14:06  egouvea
+ * Revision 1.3  2005/05/19  21:21:55  egouvea
+ * Bug #1176394: example bug
+ * 
+ * Revision 1.2  2004/11/23 04:14:06  egouvea
  * Fixed bug in cmd_ln.c in which a wrong boolean argument led into an
  * infinite loop, and fixed the help and example strings, getting rid of
  * spaces, so that the appearance is better.
- * 
+ *
  * Revision 1.1  2004/09/09 17:59:30  egouvea
  * Adding missing files to wave2feat
  *
