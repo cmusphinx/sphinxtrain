@@ -56,6 +56,31 @@ require $cfg_file;
 $ret_value = 0;
 
 $| = 1;				# Turn on autoflushing
+
+# My test files for OS case sensitivity
+$lowercase_file = "tmp_case_sensitive_test";
+$uppercase_file = "TMP_CASE_SENSITIVE_TEST";
+# Clean up both cases
+unlink $uppercase_file;
+unlink $lowercase_file;
+# Create file with lowercase name
+open (TEST, ">$lowercase_file");
+close(TEST);
+# Now, try to open with uppercase name
+if (open(TEST, "<$uppercase_file")) {
+# If successful, the OS is case insensitive, and we have to check for
+# phones in a case insensitive manner
+    $is_case_sensitive = 0;
+    close(TEST);
+} else {
+# If unsuccessful, the OS is case sensitive, and we have to check for
+# phones in a case sensitive manner
+    $is_case_sensitive = 1;
+}
+# Clean up the mess
+unlink $lowercase_file;
+unlink $uppercase_file;
+
 &ST_Log ("MODULE: 00 verify training files\n");
 
 # PHASE 1: Check to see if the phones in the dictionary are listed in the phonelist file
@@ -80,7 +105,11 @@ $| = 1;				# Turn on autoflushing
 	    # in @phone
 	    @phones = ($phonetic =~ m/(\S+)/g);
 	    for $phone (@phones) {
+	      if ($is_case_sensitive) {
+		$dict_phone_hash{$phone}++;
+	      } else {
 		$dict_phone_hash{uc($phone)}++;
+	      }
 	    }
 	}
 	$counter++;
@@ -94,7 +123,11 @@ $| = 1;				# Turn on autoflushing
 	    $phonetic = $2;
 	    @phones = ($phonetic =~ m/(\S+)/g);
 	    for $phone (@phones) {
+	      if ($is_case_sensitive) {
+		$dict_phone_hash{$phone}++;
+	      } else {
 		$dict_phone_hash{uc($phone)}++;
+	      }
 	    }
 	}
 	$counter++;
@@ -106,7 +139,11 @@ $| = 1;				# Turn on autoflushing
     open PHONE,"$CFG_RAWPHONEFILE" or die "Can not open phone list ($CFG_RAWPHONEFILE)\n";
     while (<PHONE>) {
 	chomp;
-	$phonelist_hash{uc($_)} = 0;
+	if ($is_case_sensitive) {
+	  $phonelist_hash{$_} = 0;
+	} else {
+	  $phonelist_hash{uc($_)} = 0;
+	}
     }
     close PHONE;
     
