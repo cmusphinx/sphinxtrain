@@ -1,5 +1,5 @@
 # ====================================================================
-# Copyright (c) 1995-2004 Carnegie Mellon University.  All rights reserved.
+# Copyright (c) 2005 Carnegie Mellon University.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -18,7 +18,7 @@
 #    prior written permission. To obtain permission, contact 
 #    sphinx@cs.cmu.edu.
 #
-# 4. Redistributions of any form whatsoever must retain the following
+# 54 Redistributions of any form whatsoever must retain the following
 #    acknowledgment:
 #    "This product includes software developed by Carnegie
 #    Mellon University (http://www.speech.cs.cmu.edu/)."
@@ -37,51 +37,24 @@
 #
 # ====================================================================
 #
-#  C programs
+#  Programs: map_adapt
 #
 # ====================================================================
-TOP=../..
-DIRNAME=src/programs
-BUILD_DIRS = agg_seg \
-	bldtree \
-	bw \
-	count_3phone \
-	cp_parm \
-	delint \
-	dict2tri \
-	inc_comp \
-	init_gau \
-	init_mixw \
-	kmeans_init \
-	make_quests \
-	map_adapt \
-	mixw_interp \
-	mk_flat \
-	mk_mdef_gen \
-	mk_mllr_class \
-	mk_model_def \
-	mk_s2cb \
-	mk_s2hmm \
-	mk_s2sendump \
-	mk_s2phone \
-	mk_s2phonemap \
-	mk_s3gau \
-	mk_s3mixw \
-	mk_s3tmat \
-	mk_ts2cb \
-	mllr_transform \
-	norm \
-	mllr_solve \
-	param_cnt \
-	printp \
-	prunetree \
-	tiestate \
-	wave2feat
+TOP=../../..
+DIRNAME=src/programs/map_adapt
+BUILD_DIRS = 
+ALL_DIRS= $(BUILD_DIRS)
+SRCS = \
+  cmd_ln.c \
+  main.c
+H = \
+  parse_cmd_ln.h \
+  cmd_ln_defn.h
 
-ALL_DIRS= $(BUILD_DIRS) 
-FILES = Makefile README
 
-ALL = 
+FILES = Makefile $(SRCS) $(H)
+TARGET = map_adapt
+
+ALL = $(BINDIR)/$(TARGET)
 
 include $(TOP)/config/common_make_rules
-
