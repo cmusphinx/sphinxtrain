@@ -97,7 +97,7 @@ const char examplestr[] =
           CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
           CMD_LN_NO_DEFAULT,
-          "The ML total observation count (output of `norm -gaudnom') file"},
+          "The ML total observation count (output of `norm -dcountfn') file"},
 
         { "-dnom_weight",
           CMD_LN_FLOAT32,
@@ -116,8 +116,11 @@ const char examplestr[] =
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2005/06/01  16:37:46  dhdfu
- * add basic MAP adaptation support (means only)
+ * Revision 1.2  2005/06/01  16:50:40  dhdfu
+ * fix help
  * 
+ * Revision 1.1  2005/06/01 16:37:46  dhdfu
+ * add basic MAP adaptation support (means only)
+ *
  *
  */
