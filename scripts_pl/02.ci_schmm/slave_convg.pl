@@ -193,6 +193,7 @@ sub FlatInitialize ()
     $NUM_PHONES = 0;
     while ( $line = <PHONELIST> ) {
       chomp($line);
+      next if $line =~ m/^\s*$/;
       $line =~ s/$/ - - - /;
       print PHONEFILE $line . "\n";
       $NUM_PHONES++;
