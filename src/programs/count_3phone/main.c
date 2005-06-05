@@ -37,16 +37,19 @@
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2005/06/05  22:00:33  arthchan2003
+ * Revision 1.6  2005/06/05  23:15:41  arthchan2003
+ * Some ansification to make count_3phone to be compiled in VC6. dsw file is not yet fixed. Sounds like map_adapt need to be updated too.
+ * 
+ * Revision 1.5  2005/06/05 22:00:33  arthchan2003
  * Log. Rewriting QUICK_COUNT using SphinxTrain command line functions. Several changes.
  * 1, Removal of -B -t because they were actually not implemented.
  * 2, Add SphinxTrain's style command line, help string and example string.
  * 3, Safe-guarding a, invalid file names, b, user didn't specify SIL in the phone list.
  * 4, Change all quit to E_INFO, also delete obsolete quit.c.  Will change the windows setup respectively.
  * 5, Fix bug 1151880.  That was caused by the use of magic phrase symbol &, the loop will read stuff out of memoery boundary  when & occurs at the end of the word.  This was fixed by specifically checking this particular condition in quick_phone.c.
- * 
+ *
  * Windows setup is not yet checked in. Will do right after the linux check-in.
- * 
+ *
  * Major revamped by Arthur Chan at 2005 Jun 5
  *
  */
@@ -78,6 +81,8 @@ int Single_Path = 0;
 int Find_Example = 0;
 char wsj1 = 0;
 
+float elapsed_user_time(float t);
+
 int main (int argc, char* argv[])
 {
   /*  char sw;*/
@@ -87,9 +92,8 @@ int main (int argc, char* argv[])
   char* log_file;
   char** sentdirs;
 
+  float time;
   base_file = phone_file = in_ctl_file = log_file = NULL;
-
-  float elapsed_user_time(), time;
 
   parse_cmd_ln(argc,argv);
 
