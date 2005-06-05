@@ -60,6 +60,7 @@ int quit (int status, char *fmt, ...);
 #define MAX_PHONES_PER_WORD	30
 #define MAX_PHONE_STRING	60
 
+#define MAGIC_PHASE_SYMBOL -100
 
 
 struct phone_segment

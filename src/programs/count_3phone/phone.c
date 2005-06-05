@@ -54,7 +54,7 @@
 static char *typestr[] = {"", "b", "e", "s"};
 
 extern char wsj1;
-extern int Num_Phones, Num_New_Phones, Sil_Index, Min_Freq, Verbose;
+extern int Num_Phones, Num_New_Phones, Sil_Index, Verbose;
 extern struct phone *Phone, *New_Phone;
 extern char *Sent_Dir[512];
 extern int Num_Words, Num_Sent_Dir;

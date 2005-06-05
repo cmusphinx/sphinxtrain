@@ -33,6 +33,25 @@
  * ====================================================================
  *
  */
+
+/*
+ * Log record.  Maintained by RCS.
+ *
+ * $Log$
+ * Revision 1.7  2005/06/05  22:00:34  arthchan2003
+ * Log. Rewriting QUICK_COUNT using SphinxTrain command line functions. Several changes.
+ * 1, Removal of -B -t because they were actually not implemented.
+ * 2, Add SphinxTrain's style command line, help string and example string.
+ * 3, Safe-guarding a, invalid file names, b, user didn't specify SIL in the phone list.
+ * 4, Change all quit to E_INFO, also delete obsolete quit.c.  Will change the windows setup respectively.
+ * 5, Fix bug 1151880.  That was caused by the use of magic phrase symbol &, the loop will read stuff out of memoery boundary  when & occurs at the end of the word.  This was fixed by specifically checking this particular condition in quick_phone.c.
+ * 
+ * Windows setup is not yet checked in. Will do right after the linux check-in.
+ * 
+ * Major revamped by Arthur Chan at 2005 Jun 5
+ *
+ */
+
 /* Functions for IO & access of phones and words.
    The following functions are used by SPHINX for training/recognition
    	(other functions are experimental):
@@ -49,6 +68,8 @@
 #include <string.h>
 #include <ctype.h>
 #include "count.h"
+#include <s3/err.h>
+
 
 int new_read_base (char *base_file, struct word **words_ref, int ignore_error);
 int find_word_phone_index (char *phone);
@@ -95,13 +116,13 @@ int new_read_base (char *base_file, struct word **words_ref, int ignore_error)
   char            buff[MAX_LINE];
 
   if (!(fp = fopen (base_file, "r")))
-    quit (1, "read_base: %s: can't open\n", base_file);
+    E_FATAL ("read_base: can't open dictionary file: %s\n", base_file);
   num_words = 0;
   while (fgets (buff, MAX_LINE - 1, fp))
     num_words++;
   if (!(words = (struct word *)
 	malloc (num_words * (unsigned) sizeof (struct word))))
-    quit (1, "read_base: %s: can't alloc words\n", base_file);
+    E_FATAL ( "read_base: %s: can't alloc words\n", base_file);
   Num_Words = num_words;
   printf ("Total no. of words = %d\n", Num_Words);
   fflush(stdout);
@@ -118,7 +139,7 @@ int new_read_base (char *base_file, struct word **words_ref, int ignore_error)
     for (i = 0; !isspace ((int)buff[i]); i++)
       ;
     if (!(word->word = (char *) malloc ((i + 1) * (unsigned) sizeof (char))))
-      quit (1, "read_base: %s: can't alloc words[%d]\n", base_file, word_num);
+      E_FATAL ( "read_base: %s: can't alloc words[%d]\n", base_file, word_num);
     strncpy (word->word, buff, i);
     word->word[i] = '\0';
     while (isspace ((int)buff[i]))
@@ -136,7 +157,7 @@ int new_read_base (char *base_file, struct word **words_ref, int ignore_error)
      if (strcmp(phone_name, "&") == 0) {
 	printf("Phrase %s\n", buff);
 	fflush(stdout);
-	phones[num_phones] = -100;
+	phones[num_phones] = MAGIC_PHASE_SYMBOL;
      } else {
 	phones[num_phones] = find_word_phone_index (phone_name);
 	if (phones[num_phones] < 0)
@@ -152,15 +173,15 @@ int new_read_base (char *base_file, struct word **words_ref, int ignore_error)
 	      phone_name[j] = '\0';
 	      phones[num_phones] = find_word_phone_index (phone_name);
 	      if (phones[num_phones] < 0)
-	        quit (1, "read_base: %s: can't even find ci-phone `%s' in word `%s'(%d)\n",
+	        E_FATAL ( "read_base: %s: can't even find ci-phone `%s' in word `%s'(%d)\n",
 		base_file, phone_name, word->word, word_num);
 	    }
 	    else
-	      quit (1, "read_base: %s: can't find phone `%s' in word `%s'(%d)\n",
+	      E_FATAL ( "read_base: %s: can't find phone `%s' in word `%s'(%d)\n",
 		base_file, phone_name, word->word, word_num);
 	  }
 	  else
-	    quit (1, "read_base: %s: can't find phone `%s' in word `%s'(%d)\n",
+	    E_FATAL ( "read_base: %s: can't find phone `%s' in word `%s'(%d)\n",
 		base_file, phone_name, word->word, word_num);
 	}
      }
@@ -172,7 +193,7 @@ int new_read_base (char *base_file, struct word **words_ref, int ignore_error)
       }
     if (num_phones && !(word->phone = (short *) malloc (num_phones *
 					  (unsigned) sizeof (short))))
-      quit (1, "read_base: %s: can't alloc word->phone\n", base_file);
+      E_FATAL ( "read_base: %s: can't alloc word->phone\n", base_file);
     word->num_phones = num_phones;
     for (i = 0; i < word->num_phones; i++)
       word->phone[i] = phones[i];
@@ -221,16 +242,16 @@ void read_phone (char *file)
   char            buff[512];
 
   if (!(fp = fopen (file, "r")))
-    quit (1, "read_phone: %s: can't open\n", file);
+    E_FATAL ( "read_phone: can't open phone list file %s\n", file);
 
   for (i = 0; fgets (buff, 79, fp) != NULL; i++);
   Num_Phones = i;
   if (!(Phone = (struct phone *) malloc (Num_Phones *
 			 (unsigned) sizeof (struct phone))))
-    quit (1, "read_phone: %s: can't alloc %d phones\n", file, Num_Phones);
+    E_FATAL ( "read_phone: %s: can't alloc %d phones\n", file, Num_Phones);
   if (!(Sorted_Phone = (struct sorted_phone *) malloc (Num_Phones *
 			 (unsigned) sizeof (struct sorted_phone))))
-    quit (1, "read_phone: %s: can't alloc %d sorted_phones\n", 
+    E_FATAL( "read_phone: %s: can't alloc %d sorted_phones\n", 
 		file, Num_Phones);
   rewind (fp);
   for (i = 0;
@@ -240,7 +261,7 @@ void read_phone (char *file)
        i++)
   {
     if (items != 5)
-      quit (1, "read_phone: %s: read %d items, should be 5\n", file, items);
+      E_FATAL ("read_phone: %s: read %d items, should be 5\n", (char*)file, items);
     Sorted_Phone[i].phone_index = i;
     Sorted_Phone[i].name = Phone[i].name;
   }
@@ -269,6 +290,8 @@ int find_word_phone_index (char *phone)
   return -1;
 }
 
+
+#if 0
 /* OLD STUFF
 
 find_cont_phone_index (phone)
@@ -318,7 +341,6 @@ find_cont_phone_index (phone)
   return -1;
 }
 
-
 find_bob_phone_index (phone)
   char           *phone;
 {
@@ -365,3 +387,4 @@ find_bob_phone_index (phone)
 }
 
 */
+#endif

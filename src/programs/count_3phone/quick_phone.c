@@ -33,6 +33,23 @@
  * ====================================================================
  *
  */
+/*
+ * Log record.  Maintained by RCS.
+ *
+ * $Log$
+ * Revision 1.7  2005/06/05  22:00:34  arthchan2003
+ * Log. Rewriting QUICK_COUNT using SphinxTrain command line functions. Several changes.
+ * 1, Removal of -B -t because they were actually not implemented.
+ * 2, Add SphinxTrain's style command line, help string and example string.
+ * 3, Safe-guarding a, invalid file names, b, user didn't specify SIL in the phone list.
+ * 4, Change all quit to E_INFO, also delete obsolete quit.c.  Will change the windows setup respectively.
+ * 5, Fix bug 1151880.  That was caused by the use of magic phrase symbol &, the loop will read stuff out of memoery boundary  when & occurs at the end of the word.  This was fixed by specifically checking this particular condition in quick_phone.c.
+ * 
+ * Windows setup is not yet checked in. Will do right after the linux check-in.
+ * 
+ * Major revamped by Arthur Chan at 2005 Jun 5
+ *
+ */
 /* The io routines for the HMM program.
 
    Kai-Fu Lee
@@ -43,6 +60,7 @@
 #include <string.h>
 #include "wrec.h"
 #include "count.h"
+#include <s3/err.h>
 #define MAXPHONES          500000
 #define PREV	1
 #define MAX_WORDS_PER_SENTENCE 4098
@@ -53,12 +71,14 @@
 #define BEGINNING	1
 #define ENDING	2
 #define SINGLE	3
+
+
 static char *typestr[] = {"", "b", "e", "s"};
 
 void add_one_phone (int this,int prev,int next,int type);
 
 extern char wsj1;
-extern int Num_Phones, Num_New_Phones, Sil_Index, Min_Freq, Verbose;
+extern int Num_Phones, Num_New_Phones, Sil_Index, Verbose;
 extern struct phone *Phone, *New_Phone;
 extern char *Sent_Dir[512];
 extern int Num_Words, Num_Sent_Dir;
@@ -78,18 +98,18 @@ void make_triphone (char *in_ctl_file)
 
 
   if (!(fp = fopen(in_ctl_file, "r")))
-    quit(-1, "Cannot open %s.\n", in_ctl_file);
+    E_FATAL("Cannot open %s.\n", in_ctl_file);
   if ((Sil_Word = find_word_index ("SIL", Word, Num_Words)) < 0)
-    quit(1, "cannot find word SIL\n");
+    E_FATAL("cannot find word SIL\n");
   printf ("Sil_Word = %d\n", Sil_Word);
   fflush (stdout);
   New_Phone = (struct phone *) malloc (MAXPHONES * sizeof (struct phone));
   if (New_Phone == NULL)
-    quit (-1, "cannot allocate New_Phone");
+    E_FATAL("cannot allocate New_Phone");
   for (i = 0; i < Num_Phones; i++)
     New_Phone[i] = Phone[i];
 
-  if (i > CXT_INDEP) quit(1, "occurred[] too samll\n");
+  if (i > CXT_INDEP) E_FATAL("occurred[] too samll\n");
   Num_New_Phones = i;
   printf ("#. of cxt-indep phones = %d\n", i);
   fflush(stdout);
@@ -102,7 +122,7 @@ void make_triphone (char *in_ctl_file)
   while (fscanf(fp, "%s", file_head) != EOF)
   { 
     if (!(slash_ptr = strrchr(file_head, '/')))
-      quit(1, "read_sent(): no slash in %s\n", file_head);
+      E_FATAL("read_sent(): no slash in %s\n", file_head);
     if (wsj1) while (*(--slash_ptr) != '/');
     strcpy (sent_name, slash_ptr + 1);
     len = strlen (sent_name);
@@ -258,13 +278,13 @@ void find_example (char *in_ctl_file)
     if (Phone[first_context_phone].real_phone != first_context_phone)
 	 break;
   if (first_context_phone == Num_Phones)
-	quit(-1, "no cd phones in the phone file\n");
-  if (first_context_phone > CXT_INDEP) quit(1, "occurred[] too samll\n");
+	E_FATAL( "no cd phones in the phone file\n");
+  if (first_context_phone > CXT_INDEP) E_FATAL("occurred[] too samll\n");
 
   if (!(fp = fopen(in_ctl_file, "r")))
-    quit(-1, "Cannot open %s.\n", in_ctl_file);
+    E_FATAL("Cannot open %s.\n", in_ctl_file);
   if ((Sil_Word = find_word_index ("SIL", Word, Num_Words)) < 0)
-    quit(1, "cannot find word SIL\n");
+    E_FATAL("cannot find word SIL\n");
   printf ("Sil_Word = %d\n", Sil_Word);
   fflush (stdout);
 
@@ -282,26 +302,26 @@ void find_example (char *in_ctl_file)
       thisw[j] = *ptr1;
     thisw[j] = '\0';
     if ( (j=find_word_phone_index(thisw)) < 0)
-	quit(-1, "cannot find component 1 in %s\n", Phone[i].name);
+	E_FATAL( "cannot find component 1 in %s\n", Phone[i].name);
 
     for (g=0, ptr1++;  *ptr1 != ',';  ptr1++, g++)
       thisw[g] = *ptr1;
     thisw[g] = '\0';
     if ( (g=find_word_phone_index(thisw)) < 0)
-        quit(-1, "cannot find component 2 in %s\n", Phone[i].name);
+        E_FATAL( "cannot find component 2 in %s\n", Phone[i].name);
 
     for (h=0, ptr1++;  *ptr1 != ')'; ptr1++, h++)
       thisw[h] = *ptr1;
     thisw[h] = '\0';
     if ( (h=find_word_phone_index(thisw)) < 0)
-        quit(-1, "cannot find component 3 in %s\n", Phone[i].name);
+        E_FATAL( "cannot find component 3 in %s\n", Phone[i].name);
 
     ptr1++;
     if (*ptr1 == '\0') new = WITHIN;
     else if (*ptr1 == 'b') new = BEGINNING;
     else if (*ptr1 == 'e') new = ENDING;
     else if (*ptr1 == 's') new = SINGLE;
-    else quit(-1, "unknow type %s\n", Phone[i].name);
+    else E_FATAL( "unknow type %s\n", Phone[i].name);
 
     occurred[j][g][h][new] = 1;
   }
@@ -335,7 +355,7 @@ void find_example (char *in_ctl_file)
   while (fscanf(fp, "%s", file_head) != EOF)
   { 
     if (!(slash_ptr = strrchr(file_head, '/')))
-      quit(1, "read_sent(): no slash in %s\n", file_head);
+      E_FATAL( "read_sent(): no slash in %s\n", file_head);
     strcpy (sent_name, slash_ptr + 1);
     len = strlen (sent_name);
     if (sent_name[len - 1] == 'b' && sent_name[len - 2] == '-')
@@ -484,11 +504,11 @@ void make_bi_triphone (char *bi_file)
 
   New_Phone = (struct phone *) malloc (MAXPHONES * sizeof (struct phone));
   if (New_Phone == NULL)
-    quit (-1, "cannot allocate New_Phone");
+    E_FATAL ( "cannot allocate New_Phone");
   for (w1 = 0; w1 < Num_Phones; w1++)
     New_Phone[w1] = Phone[w1];
 
-  if (w1 > CXT_INDEP) quit(1, "occurred[] too samll\n");
+  if (w1 > CXT_INDEP) E_FATAL( "occurred[] too samll\n");
   Num_New_Phones = w1;
   printf ("#. of cxt-indep phones = %d\n", w1);
   fflush(stdout);
@@ -507,15 +527,15 @@ void make_bi_triphone (char *bi_file)
     for (tt=1; tt < Word[w1].num_phones-1; tt++)
     {
       new = this_phones[tt];
-      if (new == -100 || new == Sil_Index) continue;  /* & */
+      if (new == MAGIC_PHASE_SYMBOL || new == Sil_Index) continue;  /* & */
 
       type = WITHIN;
 
       g = this_phones[tt-1];
-      if (g == -100){ g = this_phones[tt-2]; type = BEGINNING;}
+      if (g == MAGIC_PHASE_SYMBOL){ g = this_phones[tt-2]; type = BEGINNING;}
 
       h = this_phones[tt+1];
-      if (h == -100) { h = this_phones[tt+2]; 
+      if (h == MAGIC_PHASE_SYMBOL) { h = this_phones[tt+2]; 
 		       if (type == BEGINNING) type = SINGLE;
 		       else type = ENDING;
 		      }
@@ -528,16 +548,16 @@ void make_bi_triphone (char *bi_file)
   fflush(stdout);
 
   if ( (Sil_Word = find_word_index ("SIL", Word, Num_Words)) < 0)
-	quit(1, "cannot find SIL in dic\n");
+	E_FATAL( "cannot find SIL in dic\n");
   printf("Sil_Word = %d\n", Sil_Word);
 
   /* btw triphones according to the bigram file */
   if ( (word_connect = (char **) malloc(Num_Words * sizeof(char *))) == NULL)
-	quit(-1, "cannot allocate word_connect\n");
+	E_FATAL( "cannot allocate word_connect\n");
 
   for (h=0; h < Num_Words; h++) {
     if ( (word_connect[h] = (char *) malloc(Num_Words)) == NULL)
-	quit(1, "cannot allocate word_connect[%d]\n", h);
+	E_FATAL( "cannot allocate word_connect[%d]\n", h);
 
     if (h == Sil_Word) type = 1;
     else type = 0;
@@ -549,7 +569,7 @@ void make_bi_triphone (char *bi_file)
   }
 
   if ( (fp=fopen(bi_file, "r")) == NULL)
-	quit(1, "cannot open %s\n", bi_file);
+	E_FATAL( "cannot open %s\n", bi_file);
 
   h = 0;
   while (fgets(line, sizeof(line)-1, fp) != NULL)
@@ -557,7 +577,7 @@ void make_bi_triphone (char *bi_file)
     sscanf(line, "%s ", word);
     if (strcmp(word, "\\2-grams:") == 0) {h = 1; break;}
   }
-  if (! h) quit(1, "cannot find \\2-grams: in %s\n", bi_file);
+  if (! h) E_FATAL( "cannot find \\2-grams: in %s\n", bi_file);
 
   h = 0;
   while (fgets(line, sizeof(line)-1, fp) != NULL)
@@ -575,9 +595,9 @@ void make_bi_triphone (char *bi_file)
     }
 
     if ( (w1=find_word_index(str1, Word, Num_Words)) < 0)
-	quit(1, "cannot find str1 %s in %s\n", str1, line);
+	E_FATAL( "cannot find str1 %s in %s\n", str1, line);
     if ( (w2=find_word_index(str2, Word, Num_Words)) < 0)
-	quit(1, "cannot find str2 %s in %s\n", str2, line);
+	E_FATAL( "cannot find str2 %s in %s\n", str2, line);
     word_connect[w1][w2] = 1;
   }
   if (! h) printf("warning: \\end\\ not found in %s\n", bi_file);
@@ -612,7 +632,7 @@ void make_bi_triphone (char *bi_file)
     /* beginning phones */
     new = this_phones[0];
     h = this_phones[1];
-    if (h == -100) { type = SINGLE; h = this_phones[2];}
+    if (h == MAGIC_PHASE_SYMBOL) { type = SINGLE; h = this_phones[2];}
     else type = BEGINNING;
 
     for (w2=0; w2 < Num_Words; w2++)
@@ -626,7 +646,7 @@ void make_bi_triphone (char *bi_file)
     /* ending phones */
     new = this_phones[tt-1];
     g = this_phones[tt-2];
-    if (g == -100) { type = SINGLE; g = this_phones[tt-3];}
+    if (g == MAGIC_PHASE_SYMBOL) { type = SINGLE; g = this_phones[tt-3];}
     else type = ENDING;
 
     for (w2=0; w2 < Num_Words; w2++)
@@ -661,7 +681,7 @@ void write_phone (char *file)
 
   fp = fopen (file, "w");
   if (fp == NULL)
-    quit (-1, "Cannot open file <%s> to write.\n", file);
+    E_FATAL("Cannot open file <%s> to write.\n", file);
 
   qsort (&New_Phone[Num_Phones], Num_New_Phones - Num_Phones, 
 	 sizeof (struct phone), phn_cmp);
@@ -690,11 +710,11 @@ void all_word_pairs()
 
   New_Phone = (struct phone *) malloc (MAXPHONES * sizeof (struct phone));
   if (New_Phone == NULL)
-    quit (-1, "cannot allocate New_Phone");
+    E_FATAL("cannot allocate New_Phone");
   for (w1 = 0; w1 < Num_Phones; w1++)
     New_Phone[w1] = Phone[w1];
 
-  if (w1 > CXT_INDEP) quit(1, "occurred[] too samll\n");
+  if (w1 > CXT_INDEP) E_FATAL( "occurred[] too samll\n");
   Num_New_Phones = w1;
   printf ("#. of cxt-indep phones = %d\n", w1);
   fflush(stdout);
@@ -713,15 +733,24 @@ void all_word_pairs()
     for (tt=1; tt < Word[w1].num_phones-1; tt++)
     {
       new = this_phones[tt];
-      if (new == -100 || new == Sil_Index) continue;  /* & */
+#if 0
+      E_INFO("phone idx: %d at tt %d: phone_idx %d at tt+1 %d. \n", new, this_phones[tt+1], tt, tt+1);
+#endif
+      if (new == MAGIC_PHASE_SYMBOL || new == Sil_Index) continue;  /* & */
 
       type = WITHIN;
 
       g = this_phones[tt-1];
-      if (g == -100){ g = this_phones[tt-2]; type = BEGINNING;}
+      if (g == MAGIC_PHASE_SYMBOL){ g = this_phones[tt-2]; type = BEGINNING;}
 
       h = this_phones[tt+1];
-      if (h == -100) { h = this_phones[tt+2]; 
+
+      if (h == MAGIC_PHASE_SYMBOL && tt+2 > Word[w1].num_phones-1){
+	E_INFO("Phrase magic symbol '&' appears at the end of a word, ignored\n");
+	Word[w1].num_phones-=1;
+	continue;
+      }
+      if (h == MAGIC_PHASE_SYMBOL) { h = this_phones[tt+2]; 
 		       if (type == BEGINNING) type = SINGLE;
 		       else type = ENDING;
 		      }
@@ -789,7 +818,7 @@ void all_word_pairs()
     type = ENDING;
     new = this_phones[Word[w1].num_phones-1];
     h = this_phones[Word[w1].num_phones-2];
-    if (h == -100) { h = this_phones[Word[w1].num_phones-3];
+    if (h == MAGIC_PHASE_SYMBOL) { h = this_phones[Word[w1].num_phones-3];
 		     type = SINGLE;
 		   }
     for (g=0; g < Num_Phones; g++)
@@ -803,7 +832,7 @@ void all_word_pairs()
     type = BEGINNING;
     new = this_phones[0];
     h = this_phones[1];
-    if (h == -100) { h = this_phones[2];
+    if (h == MAGIC_PHASE_SYMBOL) { h = this_phones[2];
 		     type = SINGLE;
 		   }
     for (g = 0; g < Num_Phones; g++)
@@ -833,7 +862,7 @@ void add_one_phone (int this,int prev,int next,int type)
   New_Phone[g].real_phone = this;
   New_Phone[g].output_phone = type;
   if (g >= MAXPHONES)
-    quit(1, "make_triphone(): Num_New_Phones = %d is too big",
+    E_FATAL( "make_triphone(): Num_New_Phones = %d is too big",
                      Num_New_Phones);
   if (Verbose && (Num_New_Phones % 1000 == 0))
   {
@@ -855,18 +884,18 @@ void s_make_triphone (char *in_ctl_file)
 
 
   if (!(fp = fopen(in_ctl_file, "r")))
-    quit(-1, "Cannot open %s.\n", in_ctl_file);
+    E_FATAL( "Cannot open %s.\n", in_ctl_file);
   if ((Sil_Word = find_word_index ("SIL", Word, Num_Words)) < 0)
-    quit(1, "cannot find word SIL\n");
+    E_FATAL( "cannot find word SIL\n");
   printf ("Sil_Word = %d\n", Sil_Word);
   fflush (stdout);
   New_Phone = (struct phone *) malloc (MAXPHONES * sizeof (struct phone));
   if (New_Phone == NULL)
-    quit (-1, "cannot allocate New_Phone");
+    E_FATAL ( "cannot allocate New_Phone");
   for (i = 0; i < Num_Phones; i++)
     New_Phone[i] = Phone[i];
 
-  if (i > CXT_INDEP) quit(1, "occurred[] too samll\n");
+  if (i > CXT_INDEP) E_FATAL( "occurred[] too samll\n");
   Num_New_Phones = i;
   printf ("#. of cxt-indep phones = %d\n", i);
   fflush(stdout);
@@ -879,31 +908,31 @@ void s_make_triphone (char *in_ctl_file)
   while (fscanf(fp, "%s", file_head) != EOF)
   { 
     if (!(slash_ptr = strrchr(file_head, '/')))
-      quit(1, "read_sent(): no slash in %s\n", file_head);
+      E_FATAL( "read_sent(): no slash in %s\n", file_head);
     strcpy (sent_name, slash_ptr + 1);
     len = strlen (sent_name);
     if (sent_name[len - 1] == 'b' && sent_name[len - 2] == '-')
       sent_name[len - 2] = '\0';
-for (tt=0; tt < Num_Sent_Dir; tt++)
-{
-    sprintf(sent_file, "%s/%s.sent", Sent_Dir[tt], sent_name);
-    if ((sent_fp = fopen(sent_file, "r")) != NULL) break;
-}
-if (tt >= Num_Sent_Dir)
-      quit(1, "read_sent(): cannot open %s\n", sent_file);
+    for (tt=0; tt < Num_Sent_Dir; tt++)
+      {
+	sprintf(sent_file, "%s/%s.sent", Sent_Dir[tt], sent_name);
+	if ((sent_fp = fopen(sent_file, "r")) != NULL) break;
+      }
+    if (tt >= Num_Sent_Dir)
+      E_FATAL( "read_sent(): cannot open %s\n", sent_file);
 
     for (i = 0; fscanf (sent_fp, "%s", thisw) != EOF; i++)
     {
       if ((wd[i] = find_word_index (thisw, Word, Num_Words)) < 0)
-        quit (-1, "cannot find word %s in sent %s", thisw,  sent_file);
+        E_FATAL("cannot find word %s in sent %s", thisw,  sent_file);
       if (NOISE_WORD (thisw))
 	wd[i] = Sil_Word;
     } 
     fclose (sent_fp);
     if (wd[0] != Sil_Word)
-      quit(-1, "%s not begin with SIL\n", file_head);
+      E_FATAL( "%s not begin with SIL\n", file_head);
     if (wd[i-1] != Sil_Word)
-      quit(-1, "%s not end with SIL\n", file_head);
+      E_FATAL( "%s not end with SIL\n", file_head);
 
     no = i;
     for (ii = 1; ii < no; ii++)

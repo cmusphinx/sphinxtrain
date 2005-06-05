@@ -47,14 +47,16 @@ ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
   main.c \
   phone_word_io.c \
-  quit.c \
   time.c \
   unlimit.c \
-  quick_phone.c
+  quick_phone.c \
+  parse_cmd_ln.c 
+
 H = \
   wrec.h \
   count.h \
-  phrec.h 
+  phrec.h \
+  parse_cmd_ln.h 
 
 FILES = Makefile $(SRCS) $(H) phone.c
 

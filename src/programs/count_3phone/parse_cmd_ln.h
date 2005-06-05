@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1990-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 2004 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,56 +33,63 @@
  * ====================================================================
  *
  */
-/*
- *  quit  --  print message and exit
+/*********************************************************************
  *
- *  Usage:  quit (status,format [,arg]...);
- *	int status;
- *	(... format and arg[s] make up a printf-arglist)
- *
- *  Quit is a way to easily print an arbitrary message and exit.
- *  It is most useful for error exits from a program:
- *	if (open (...) < 0) then quit (1,"Can't open...",file);
- *
- **********************************************************************
- * HISTORY
- * $Log$
- * Revision 1.5  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * File: parse_cmd_ln.h
  * 
- * Revision 1.4  2003/11/30 05:50:31  egouvea
- * Replaced obsolete varargs.h with stdargs.h
+ * Description: 
+ * 
+ * Author: 
+ * 
+ *********************************************************************/
+
+#ifndef PARSE_CMD_LN_H
+
+int
+parse_cmd_ln(int argc, char *argv[]);
+
+#define PARSE_CMD_LN_H
+
+
+
+
+#endif /* PARSE_CMD_LN_H */ 
+
+
+/*
+ * Log record.  Maintained by RCS.
+ *
+ * $Log$
+ * Revision 1.1  2005/06/05  22:00:34  arthchan2003
+ * Log. Rewriting QUICK_COUNT using SphinxTrain command line functions. Several changes.
+ * 1, Removal of -B -t because they were actually not implemented.
+ * 2, Add SphinxTrain's style command line, help string and example string.
+ * 3, Safe-guarding a, invalid file names, b, user didn't specify SIL in the phone list.
+ * 4, Change all quit to E_INFO, also delete obsolete quit.c.  Will change the windows setup respectively.
+ * 5, Fix bug 1151880.  That was caused by the use of magic phrase symbol &, the loop will read stuff out of memoery boundary  when & occurs at the end of the word.  This was fixed by specifically checking this particular condition in quick_phone.c.
+ * 
+ * Windows setup is not yet checked in. Will do right after the linux check-in.
+ * 
+ * Revision 1.2  2004/11/29 01:11:34  egouvea
+ * Fixed license terms in some new files.
+ *
+ * Revision 1.1  2004/06/17 19:39:48  arthchan2003
+ * add back all command line information into the code
  *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
- * Revision 1.2  2001/02/20 00:28:35  awb
+ * Revision 1.2  2000/09/29 22:35:14  awb
  * *** empty log message ***
  *
- * Revision 1.1  2000/11/17 15:34:51  awb
+ * Revision 1.1  2000/09/24 21:38:31  awb
  * *** empty log message ***
  *
- * Revision 1.3  90/12/11  17:58:02  mja
- * 	Add copyright/disclaimer for distribution.
+ * Revision 1.1  97/07/16  11:38:16  eht
+ * Initial revision
  * 
- * Revision 1.2  88/12/13  13:52:41  gm0w
- * 	Rewritten to use varargs.
- * 	[88/12/13            gm0w]
- * 
- **********************************************************************
+ * Revision 1.1  1995/12/15  18:38:27  eht
+ * Initial revision
+ *
+ *
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-
-int quit ( int status, char *fmt, ... )
-{
-	va_list args;
-
-	fflush(stdout);
-	va_start(args, fmt);
-	(void) vfprintf(stderr, fmt, args);
-	va_end(args);
-	exit(status);
-}
