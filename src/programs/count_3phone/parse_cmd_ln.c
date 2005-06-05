@@ -43,16 +43,19 @@
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2005/06/05  22:00:33  arthchan2003
+ * Revision 1.2  2005/06/05  22:03:38  arthchan2003
+ * Fix warning of parse_cmd_ln.c.
+ * 
+ * Revision 1.1  2005/06/05 22:00:33  arthchan2003
  * Log. Rewriting QUICK_COUNT using SphinxTrain command line functions. Several changes.
  * 1, Removal of -B -t because they were actually not implemented.
  * 2, Add SphinxTrain's style command line, help string and example string.
  * 3, Safe-guarding a, invalid file names, b, user didn't specify SIL in the phone list.
  * 4, Change all quit to E_INFO, also delete obsolete quit.c.  Will change the windows setup respectively.
  * 5, Fix bug 1151880.  That was caused by the use of magic phrase symbol &, the loop will read stuff out of memoery boundary  when & occurs at the end of the word.  This was fixed by specifically checking this particular condition in quick_phone.c.
- * 
+ *
  * Windows setup is not yet checked in. Will do right after the linux check-in.
- * 
+ *
  * Major revamped by Arthur Chan at 2005 Jun 5
  *
  */
@@ -63,6 +66,8 @@
 #include <s3/err.h>
 
 #include <sys_compat/misc.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 int
 parse_cmd_ln(int argc, char *argv[])
