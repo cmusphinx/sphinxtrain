@@ -62,9 +62,13 @@ parse_cmd_ln(int argc, char *argv[])
 "Description: \n\
 \n\
 Increase the number of mixture of a continuous HMM.  Notice that option \n\
--ninc actually means the finally number of mixture one wants to \n\
-obtain.  Usually, it is the power of two.  You are also recommended to \n\
-split the number of mixture from 1 -> 2 -> 4 -> 8 -> and so on. \n\
+-ninc actually means the number of mixture one wants to split from the \n\
+ original models. For example, if you have already 8 mixture and you \n\
+ want to go to 16, then 8 should be specified.  \n\
+\n\
+Usually, the number of mixture is a power of two.  You are also \n\
+recommended to split the number of mixture from 1 -> 2 -> 4 -> 8 \n\
+-> and so on. \n\
 ";
 
 
@@ -199,9 +203,12 @@ inc_comp \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.8  2004/11/29  01:43:45  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ * Revision 1.9  2005/06/05  22:12:03  arthchan2003
+ * Bug no. 1160673, fix the help string of inc_comp.
  * 
+ * Revision 1.8  2004/11/29 01:43:45  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ *
  * Revision 1.7  2004/11/29 00:49:20  egouvea
  * Added missing include files to prevent warnings about printf not being defined
  *
