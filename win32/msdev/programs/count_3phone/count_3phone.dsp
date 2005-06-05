@@ -97,7 +97,7 @@ SOURCE=..\..\..\..\src\programs\count_3phone\quick_phone.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\count_3phone\quit.c
+SOURCE=..\..\..\..\src\programs\count_3phone\parse_cmd_ln.c
 # End Source File
 # Begin Source File
 
@@ -118,6 +118,10 @@ SOURCE=..\..\..\..\src\programs\count_3phone\count.h
 # Begin Source File
 
 SOURCE=..\..\..\..\src\programs\count_3phone\phrec.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\count_3phone\parse_cmd_ln.h
 # End Source File
 # Begin Source File
 
