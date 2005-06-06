@@ -160,7 +160,10 @@ int32 fe_convert_files(param_t *P)
 		    }
 		    if (frames_proc>0)
 			fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
-		    ckd_free_2d((void **)cep);
+		    if (cep != NULL) {
+		      ckd_free_2d((void **)cep);
+		      cep = NULL;
+		    }
 		    curr_block++;
 		    total_frames += frames_proc;
 		    if (spdata!=NULL) { 
@@ -171,6 +174,7 @@ int32 fe_convert_files(param_t *P)
 		/* process last (or only) block */
 		if (spdata!=NULL) {
 		  free(spdata);
+		  spdata = NULL;
 		}
 		splen=last_blocksize;
 		
@@ -193,7 +197,10 @@ int32 fe_convert_files(param_t *P)
 		}
 		if (frames_proc>0)
 		    fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
-		ckd_free_2d((void **)cep);
+		if (cep != NULL) {
+		  ckd_free_2d((void **)cep);
+		  cep = NULL;
+		}
 		curr_block++;
 		if (P->logspec != ON)
 		    last_frame_cep = (float32 **)ckd_calloc_2d(1,FE->NUM_CEPSTRA,sizeof(float32));
@@ -212,10 +219,15 @@ int32 fe_convert_files(param_t *P)
 		}
 		total_frames += frames_proc;
 		
-		fe_closefiles(fp_in,fp_out);		
-		free(spdata); spdata = 0;
-		ckd_free_2d((void **)last_frame_cep);
-		
+		fe_closefiles(fp_in,fp_out);
+		if (spdata != NULL) {
+		  free(spdata);
+		  spdata = NULL;
+		}
+		if (last_frame_cep != NULL) {
+		  ckd_free_2d((void **)last_frame_cep);
+		  last_frame_cep = NULL;
+		}		
 	    }
 	    else{
 		E_ERROR("fe_start_utt() failed\n");
@@ -266,7 +278,10 @@ int32 fe_convert_files(param_t *P)
 		}
 		if (frames_proc>0)
 		    fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
-		ckd_free_2d((void **)cep);
+		if (cep != NULL) {
+		  ckd_free_2d((void **)cep);
+		  cep = NULL;
+		}
 		curr_block++;
 		total_frames += frames_proc;
 		if (spdata!=NULL) { 
@@ -275,7 +290,10 @@ int32 fe_convert_files(param_t *P)
 		}		
 	    }
 	    /* process last (or only) block */
-	    if (spdata!=NULL) {free(spdata);}
+	    if (spdata!=NULL) {
+	      free(spdata);
+	      spdata = NULL;
+	    }
 	    splen =last_blocksize;
 	    if ((spdata = (int16 *)calloc(splen,sizeof(int16)))==NULL){
 		E_ERROR("Unable to allocate memory block of %d shorts for input speech\n",splen);
@@ -293,8 +311,11 @@ int32 fe_convert_files(param_t *P)
 	      assert(process_utt_return_value == FE_SUCCESS);
 	    }
 	    if (frames_proc>0)
-		fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
-	    ckd_free_2d((void **)cep);
+	      fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
+	    if (cep != NULL) {
+	      ckd_free_2d((void **)cep);
+	      cep = NULL;
+	    }
 
 	    curr_block++;
 	    if (P->logspec != ON)
@@ -315,9 +336,14 @@ int32 fe_convert_files(param_t *P)
 	    total_frames += frames_proc;
 	    	    
 	    fe_closefiles(fp_in,fp_out);
-	    
-	    free(spdata);
-	    ckd_free_2d((void **)last_frame_cep);
+	    if (cep != NULL) {
+	      free(spdata);
+	      spdata = NULL;
+	    }
+	    if (last_frame_cep != NULL) {
+	      ckd_free_2d((void **)last_frame_cep);
+	      last_frame_cep = NULL;
+	    }
 	}
 	else{
 	    E_ERROR("fe_start_utt() failed\n");
