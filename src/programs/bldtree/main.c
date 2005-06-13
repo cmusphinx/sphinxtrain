@@ -99,6 +99,53 @@ mk_stwt(float32 *ostwt, float32 *stwt, uint32 t_s, uint32 n_stwt)
 
 
 static int
+find_triphones(model_def_t *mdef, const char *phn, uint32 *p_s, uint32 *p_e)
+{
+    uint32 targ_base, p, b;
+
+    targ_base = acmod_set_name2id(mdef->acmod_set, phn);
+    *p_s = *p_e = NO_ID;
+
+    if (targ_base == NO_ACMOD)
+	return -1;
+    if (targ_base >= acmod_set_n_ci(mdef->acmod_set)) {
+	*p_s = *p_e = targ_base;
+	return 0;
+    }
+
+    /* Scan for first, p_s, and last phone, p_e,
+	 * which have the target base phone */
+    for (p = acmod_set_n_ci(mdef->acmod_set);
+	 p < acmod_set_n_acmod(mdef->acmod_set); p++) {
+	b = acmod_set_base_phone(mdef->acmod_set, p);
+	if ((b == targ_base) && (*p_s == NO_ID)) {
+	    *p_s = p;
+	}
+	else if ((b == targ_base) && (*p_s != NO_ID) && (*p_e != NO_ID)) {
+	    E_FATAL("n-phones with base phone %s occur non-consecutively in the mdef file\n",
+		    phn);
+	}
+	else if ((b != targ_base) && (*p_s != NO_ID) && (*p_e == NO_ID)) {
+	    *p_e = p-1;
+	}
+    }
+
+    /* If we've reached the end of the list,
+	 * then the last phone in the list is the last
+	 * target phone */
+    if ((p == acmod_set_n_acmod(mdef->acmod_set)) &&
+	(*p_e == NO_ID)) {
+	*p_e = p-1;
+    }
+
+    if (*p_s == NO_ID) {
+	E_WARN("No triphones involving %s\n", phn);
+	return -1;
+    }
+    return 0;
+}
+
+static int
 init(model_def_t **out_mdef,
      const char *phn,
      uint32 state,
@@ -125,7 +172,8 @@ init(model_def_t **out_mdef,
     const char *mixwfn;
     const char *psetfn;
     model_def_t *mdef;
-    uint32 p, p_s = NO_ID, p_e = NO_ID, targ_base, s, m;
+    uint32 p, p_s = NO_ID, p_e = NO_ID, s, m;
+    int allphones;
     uint32 mixw_s, mixw_e;
     uint32 **dfeat;
     pset_t *pset;
@@ -180,36 +228,17 @@ init(model_def_t **out_mdef,
 
     *out_mdef = mdef;
 
-    targ_base = acmod_set_name2id(mdef->acmod_set, phn);
-
-    /* Scan for first, p_s, and last phone, p_e,
-     * which have the target base phone */
-    for (p = acmod_set_n_ci(mdef->acmod_set);
-	 p < acmod_set_n_acmod(mdef->acmod_set); p++) {
-	b = acmod_set_base_phone(mdef->acmod_set, p);
-	if ((b == targ_base) && (p_s == NO_ID)) {
-	    p_s = p;
-	}
-	else if ((b == targ_base) && (p_s != NO_ID) && (p_e != NO_ID)) {
-	    E_FATAL("n-phones with base phone %s occur non-consecutively in the mdef file\n", phn);
-	}
-	else if ((b != targ_base) && (p_s != NO_ID) && (p_e == NO_ID)) {
-	    p_e = p-1;
-	}
+    allphones = cmd_ln_int32("-allphones");
+    if (allphones) {
+      p_s = acmod_set_n_ci(mdef->acmod_set);
+      p_e = acmod_set_n_acmod(mdef->acmod_set)-1;
     }
-
-    /* If we've reached the end of the list,
-     * then the last phone in the list is the last
-     * target phone */
-    if ((p == acmod_set_n_acmod(mdef->acmod_set)) &&
-	(p_e == NO_ID)) {
-	p_e = p-1;
+    else if (phn) {
+	if (find_triphones(mdef, phn, &p_s, &p_e) == -1)
+	  return S3_ERROR;
     }
-
-    if (p_s == NO_ID) {
-	E_WARN("No triphones involving %s\n", phn);
-
-	return S3_SUCCESS;
+    else {
+      E_FATAL("No -phone, -start_phone, or -end_phone specified!\n");
     }
 
     E_INFO("Building trees for [%s]", acmod_set_id2name(mdef->acmod_set, p_s));
@@ -316,7 +345,6 @@ init(model_def_t **out_mdef,
 	istwt[i] *= norm;
 
     mk_stwt(stwt, istwt, state, n_state);
-
     ckd_free((void *)istwt);
 
     /*
@@ -540,14 +568,20 @@ init(model_def_t **out_mdef,
                 n_phone_q++;
                 n_r_q++;
             }
-            else n_phone_q += 2;
+            else if (allphones)
+	      n_phone_q += 3;
+	    else
+	      n_phone_q += 2;
         }
 	else
 	    n_wdbndry++;
     }
 
     /* Compute the total number of simple questions */
-    n_all_q = 2 * n_phone_q + 2 * n_wdbndry;
+    if (allphones) /* Ask questions about the phone itself */
+	n_all_q = 2 * n_phone_q + 2 * n_wdbndry;
+    else
+	n_all_q = 2 * n_phone_q + 2 * n_wdbndry;
     *out_n_all_q = n_all_q;
 
     /* Allocate an array to hold all the simple questions */
@@ -587,6 +621,15 @@ init(model_def_t **out_mdef,
 	        all_q[l].ctxt = 1;    /* one phone to the right of base phone */
 	        l++;
             }
+	    if (allphones
+		&& strstr(pset[i].name,"_R") == NULL
+		&& strstr(pset[i].name,"_L") == NULL) {
+		all_q[l].pset = i;
+		all_q[l].member = pset[i].member;
+		all_q[l].neg = FALSE;
+		all_q[l].ctxt = 0; /* the base phone itself */
+		l++;
+	    }
 
 	    /* The negations of the above questions */
             if (strstr(pset[i].name,"_L") != NULL ||
@@ -607,8 +650,17 @@ init(model_def_t **out_mdef,
 	        all_q[l].ctxt = 1;
 	        l++;
             }
+	    if (allphones
+		&& strstr(pset[i].name,"_R") == NULL
+		&& strstr(pset[i].name,"_L") == NULL) {
+		all_q[l].pset = i;
+		all_q[l].member = pset[i].member;
+		all_q[l].neg = TRUE;
+		all_q[l].ctxt = 0;
+		l++;
+	    }
 	}
-	else {
+	else if (pset[i].posn) {
 	    /* Word position question */
 	    all_q[l].pset = i;
 	    all_q[l].posn = pset[i].posn;
@@ -621,6 +673,9 @@ init(model_def_t **out_mdef,
 	    all_q[l].neg = TRUE;
 	    l++;
 	}
+	else
+	  E_ERROR("Invalid phoneme set %s\n", pset[i].name);
+
     }
 /* END MODIFICATION FOR CONTEXT CHECK */
 
@@ -698,7 +753,7 @@ int main(int argc, char *argv[])
     }
 
     /* Build the composite tree.  Recursively generates
-o    * the composite decision tree.  See dtree.c in libcommon */
+    * the composite decision tree.  See dtree.c in libcommon */
 /* MODIFICATION FOR CONTINUOUS_TREES - PASS THE MEAN, VAR etc. TOO */
     tr = mk_tree_comp(mixw_occ, means, vars, veclen, n_model, n_state, 
                       n_stream, n_density, stwt,
@@ -731,9 +786,12 @@ o    * the composite decision tree.  See dtree.c in libcommon */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/21  18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.6  2005/06/13  22:18:22  dhdfu
+ * Add -allphones arguments to decision tree and state tying code.  Allows senones to be shared across multiple base phones (though they are currently still restricted to the same state).  This can improve implicit pronunciation modeling in some cases, such as grapheme-based models, though it usually has little effect.  Building the big trees can take a very long time.
  * 
+ * Revision 1.5  2004/07/21 18:30:32  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.4  2004/06/17 19:17:13  arthchan2003
  * Code Update for silence deletion and standardize the name for command -line arguments
  *

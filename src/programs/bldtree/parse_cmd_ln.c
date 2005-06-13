@@ -148,6 +148,12 @@ var -psetfn questions -stwt 1.0 0.05 0.01 -state 0 -ssplitmin 1 \n\
 	  CMD_LN_NO_DEFAULT,
 	  "Build trees over n-phones having this base phone"},
 
+	{ "-allphones",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Build trees over all n-phones"},
+
 	{ "-state",
 	  CMD_LN_INT32,
 	  CMD_LN_NO_VALIDATION,
@@ -245,9 +251,12 @@ var -psetfn questions -stwt 1.0 0.05 0.01 -state 0 -ssplitmin 1 \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/11/29  01:43:44  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ * Revision 1.7  2005/06/13  22:18:22  dhdfu
+ * Add -allphones arguments to decision tree and state tying code.  Allows senones to be shared across multiple base phones (though they are currently still restricted to the same state).  This can improve implicit pronunciation modeling in some cases, such as grapheme-based models, though it usually has little effect.  Building the big trees can take a very long time.
  * 
+ * Revision 1.6  2004/11/29 01:43:44  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ *
  * Revision 1.5  2004/11/29 01:11:18  egouvea
  * Fixed license terms in some new files.
  *

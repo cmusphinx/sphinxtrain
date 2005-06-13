@@ -105,6 +105,12 @@ parse_cmd_ln(int argc, char *argv[])
 	  CMD_LN_NO_DEFAULT,
 	  "Phone set definiton file" },
 
+	{ "-allphones",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Use a single tree for each state of all phones"},
+	  
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 
@@ -148,9 +154,12 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2005/04/07  21:23:40  egouvea
- * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
+ * Revision 1.7  2005/06/13  22:18:23  dhdfu
+ * Add -allphones arguments to decision tree and state tying code.  Allows senones to be shared across multiple base phones (though they are currently still restricted to the same state).  This can improve implicit pronunciation modeling in some cases, such as grapheme-based models, though it usually has little effect.  Building the big trees can take a very long time.
  * 
+ * Revision 1.6  2005/04/07 21:23:40  egouvea
+ * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
+ *
  * Revision 1.5  2004/11/29 01:43:52  egouvea
  * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  *

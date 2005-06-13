@@ -78,6 +78,7 @@ init(model_def_t **out_imdef,
     uint32 n_seno;
     const char *treedir;
     uint32 ts_id;
+    int allphones;
 
     a_fn = (const char *)cmd_ln_access("-imoddeffn");
     if (a_fn == NULL)
@@ -92,7 +93,11 @@ init(model_def_t **out_imdef,
     *out_pset = pset = read_pset_file(a_fn, imdef->acmod_set, &n_pset);
     *out_n_pset = n_pset;
 
-    n_ci = acmod_set_n_ci(imdef->acmod_set);
+    allphones = cmd_ln_int32("-allphones");
+    if (allphones)
+      n_ci = 1;
+    else
+      n_ci = acmod_set_n_ci(imdef->acmod_set);
 
     treedir = (const char *)cmd_ln_access("-treedir");
     tree = (dtree_t ***)ckd_calloc(n_ci, sizeof(dtree_t **));
@@ -100,17 +105,25 @@ init(model_def_t **out_imdef,
 
     ts_id = imdef->n_tied_ci_state;
     for (p = 0, n_seno = 0; p < n_ci; p++) {
-	if (!acmod_set_has_attrib(imdef->acmod_set, p, "filler")) {
-	    n_state = imdef->defn[p].n_state;
+	if (allphones || !acmod_set_has_attrib(imdef->acmod_set, p, "filler")) {
+	    const char *pname;
 
+	    if (allphones) {
+		n_state = imdef->defn[acmod_set_n_ci(imdef->acmod_set)].n_state;
+		pname = "ALLPHONES";
+	    }
+	    else {
+		n_state = imdef->defn[p].n_state;
+		pname = acmod_set_id2name(imdef->acmod_set, p);
+	    }
 	    tree[p] = (dtree_t **)ckd_calloc(n_state, sizeof(dtree_t *));
 
 	    for (s = 0; s < n_state-1; s++) {
 		E_INFO("%s-%u: offset %u\n",
-		       acmod_set_id2name(imdef->acmod_set, p), s, ts_id);
+		       pname, s, ts_id);
 
 		sprintf(fn, "%s/%s-%u.dtree",
-			treedir, acmod_set_id2name(imdef->acmod_set, p), s);
+			treedir, pname, s);
 		fp = fopen(fn, "r");
 		if (fp == NULL) {
 		    E_FATAL_SYSTEM("Unable to open %s for reading", fn);
@@ -151,7 +164,8 @@ main(int argc, char *argv[])
     model_def_entry_t *idefn, *odefn;
     acmod_id_t b, l, r;
     word_posn_t wp;
-    
+    int allphones;
+
     parse_cmd_ln(argc, argv);
 
     if (init(&imdef, &pset, &n_pset, &tree, &n_seno) != S3_SUCCESS)
@@ -197,6 +211,7 @@ main(int argc, char *argv[])
     /*
      * Define the rest of the models
      */
+    allphones = cmd_ln_int32("-allphones");
     n_acmod = acmod_set_n_acmod(omdef->acmod_set);
     for (; p < n_acmod; p++) {
 	b = acmod_set_base_phone(omdef->acmod_set, p);
@@ -216,6 +231,8 @@ main(int argc, char *argv[])
 		/* Non-emitting state */
 		odefn->state[s] = NO_ID;
 	    else {
+		uint32 bb;
+
 		/* emitting state: find the tied state */
 		acmod_set_id2tri(omdef->acmod_set,
 				 &b, &l, &r, &wp,
@@ -223,7 +240,8 @@ main(int argc, char *argv[])
 		fprintf(stderr, "%s %u ",
 			acmod_set_id2name(omdef->acmod_set, p), s);
 
-		odefn->state[s] = tied_state(&tree[b][s]->node[0],
+		bb = allphones ? 0 : b;
+		odefn->state[s] = tied_state(&tree[bb][s]->node[0],
 					     b, l, r, wp,
 					     pset);
 
@@ -245,9 +263,12 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/21  19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.6  2005/06/13  22:18:23  dhdfu
+ * Add -allphones arguments to decision tree and state tying code.  Allows senones to be shared across multiple base phones (though they are currently still restricted to the same state).  This can improve implicit pronunciation modeling in some cases, such as grapheme-based models, though it usually has little effect.  Building the big trees can take a very long time.
  * 
+ * Revision 1.5  2004/07/21 19:17:26  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.4  2004/06/17 19:17:24  arthchan2003
  * Code Update for silence deletion and standardize the name for command -line arguments
  *

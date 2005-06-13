@@ -139,6 +139,60 @@ heap_ok(uint32 *hkey,
 }
 
 static int
+read_phone_trees(model_def_t *mdef,
+		 const char *itreedir,
+		 const char *pname,
+		 uint32 p,
+		 uint32 n_state,
+		 pset_t *pset,
+		 uint32 n_pset,
+		 dtree_t ***out_tree,
+		 uint32 *out_n_seno,
+		 uint32 *out_n_twig,
+		 uint32 *out_n_node)
+{
+    uint32 s;
+
+    out_tree[p] = (dtree_t **)ckd_calloc(n_state, sizeof(dtree_t *));
+    for (s = 0; s < n_state; s++) {
+	char fn[MAXPATHLEN+1];
+	dtree_t *tr;
+	FILE *fp;
+
+	sprintf(fn, "%s/%s-%u.dtree",
+		itreedir, pname, s);
+
+	fp = fopen(fn, "r");
+	if (fp == NULL) {
+	    E_FATAL_SYSTEM("Unable to open %s for reading",fn);
+	}
+
+	out_tree[p][s] = tr = read_final_tree(fp, pset, n_pset);
+
+	if (tr == NULL) {
+	    E_ERROR("Error(s) while reading tree\n");
+	    return -1;
+	}
+	else {
+	    uint32 n, lt_minocc;
+
+	    lt_minocc = prune_lowcnt(&tr->node[0], *(float32 *)cmd_ln_access("-minocc"));
+	    n = 0;
+	    reindex(&tr->node[0], &n);
+	    *out_n_seno += n = cnt_leaf(&tr->node[0]);
+	    E_INFO("%s-%u\t%u [%u < %e]\n",
+		   pname, s, n, lt_minocc,
+		   *(float32 *)cmd_ln_access("-minocc"));
+	    *out_n_twig += cnt_twig(&tr->node[0]);
+	    *out_n_node += cnt_node(&tr->node[0]);
+	}
+
+	fclose(fp);
+    }
+    return 0;
+}
+
+static int
 prune_tree(model_def_t *mdef,
 	   pset_t *pset,
 	   uint32 n_pset)
@@ -159,10 +213,8 @@ prune_tree(model_def_t *mdef,
     uint32 free_key;	/* Next unused heap key */
     uint32 free_idx;	/* Next unused node index */
     uint32 n_ci, p, s, n;
-    uint32 n_state;
     uint32 *n_state_ci;	/* # of state of models in the same base phone class */
     uint32 n_seno;
-    uint32 lt_minocc;
     uint32 n_seno_wanted;
     uint32 n_twig;
     uint32 n_node;
@@ -170,53 +222,42 @@ prune_tree(model_def_t *mdef,
     uint32 key;
     uint32 sz;
     uint32 i;
+    int allphones;
     int err;
 
     itreedir = cmd_ln_access("-itreedir");
-
+    allphones = cmd_ln_int32("-allphones");
     n_ci = acmod_set_n_ci(mdef->acmod_set);
 
     tree = (dtree_t ***)ckd_calloc(n_ci, sizeof(dtree_t **));
     n_state_ci = (uint32 *)ckd_calloc(n_ci, sizeof(uint32));
 
-    for (p = 0, err = FALSE, n_seno = 0, n_twig = 0; p < n_ci; p++) {
-	if (!acmod_set_has_attrib(mdef->acmod_set, (acmod_id_t)p, "filler")) {
+    err = FALSE;
+    if (allphones) {
+	uint32 n_state;
 
-	    n_state = mdef->defn[p].n_state-1;
+	n_state = mdef->defn[n_ci].n_state-1;
+	n_state_ci[0] = n_state;
+	n_ci = 1;
+	n_seno = 0;
+	n_twig = 0;
+	if (read_phone_trees(mdef, itreedir, "ALLPHONES", 0, n_state,
+			     pset, n_pset, tree, &n_seno, &n_twig, &n_node) < 0)
+	    err = TRUE;
+    }
+    else {
+	for (p = 0, err = FALSE, n_seno = 0, n_twig = 0; p < n_ci; p++) {
+	    if (!acmod_set_has_attrib(mdef->acmod_set, (acmod_id_t)p, "filler")) {
+		const char *pname;
+		uint32 n_state;
 
-	    n_state_ci[p] = n_state;
- 
-	    tree[p] = (dtree_t **)ckd_calloc(n_state, sizeof(dtree_t *));
-
-	    for (s = 0; s < n_state; s++) {
-		sprintf(fn, "%s/%s-%u.dtree",
-			itreedir, acmod_set_id2name(mdef->acmod_set, (acmod_id_t)p), s);
-
-		fp = fopen(fn, "r");
-		if (fp == NULL) {
-		    E_FATAL_SYSTEM("Unable to open %s for reading",fn);
-		}
-
-		tree[p][s] = tr = read_final_tree(fp, pset, n_pset);
-
-		if (tr == NULL) {
-		    E_ERROR("Error(s) while reading tree\n");
+		pname = acmod_set_id2name(mdef->acmod_set, (acmod_id_t)p);
+		n_state = mdef->defn[p].n_state-1;
+		n_state_ci[p] = n_state;
+		if (read_phone_trees(mdef, itreedir, pname, p, n_state,
+				     pset, n_pset, tree,
+				     &n_seno, &n_twig, &n_node) < 0)
 		    err = TRUE;
-		}
-
-		if (!err) {
-		    lt_minocc = prune_lowcnt(&tr->node[0], *(float32 *)cmd_ln_access("-minocc"));
-		    n = 0;
-		    reindex(&tr->node[0], &n);
-		    n_seno += n = cnt_leaf(&tr->node[0]);
-		    E_INFO("%s-%u\t%u [%u < %e]\n",
-			   acmod_set_id2name(mdef->acmod_set, (acmod_id_t)p), s, n, lt_minocc,
-			   *(float32 *)cmd_ln_access("-minocc"));
-		    n_twig += cnt_twig(&tr->node[0]);
-		    n_node += cnt_node(&tr->node[0]);
-		}
-
-		fclose(fp);
 	    }
 	}
     }
@@ -248,7 +289,8 @@ prune_tree(model_def_t *mdef,
 	/* Insert all twig questions over all trees into the heap */
 	for (p = 0, free_key = 0; p < n_ci; p++) {
 	    for (s = 0; s < n_state_ci[p]; s++) {
-		if (!acmod_set_has_attrib(mdef->acmod_set, (acmod_id_t)p, "filler")) {
+		if (allphones
+		    || !acmod_set_has_attrib(mdef->acmod_set, (acmod_id_t)p, "filler")) {
 		    tr = tree[p][s];
 
 		    ins_twigs(&tr->node[0],
@@ -326,18 +368,24 @@ prune_tree(model_def_t *mdef,
 
     otreedir = cmd_ln_access("-otreedir");
     for (p = 0, n_node = 0; p < n_ci; p++) {
+	const char *pname;
+
+	if (allphones)
+	    pname = "ALLPHONES";
+	else
+	    pname = acmod_set_id2name(mdef->acmod_set, (acmod_id_t)p);
+
 	for (s = 0; s < n_state_ci[p]; s++) {
-	    if (!acmod_set_has_attrib(mdef->acmod_set, (acmod_id_t)p, "filler")) {
+	    if (allphones
+		|| !acmod_set_has_attrib(mdef->acmod_set, (acmod_id_t)p, "filler")) {
 		tr = tree[p][s];
 
 		free_idx = 0;
 		n_node += n = reindex(&tr->node[0], &free_idx);
 
-		E_INFO("%s-%u\t%u\n",
-		       acmod_set_id2name(mdef->acmod_set, (acmod_id_t)p), s, n);
+		E_INFO("%s-%u\t%u\n", pname, s, n);
 
-		sprintf(fn, "%s/%s-%u.dtree",
-			otreedir, acmod_set_id2name(mdef->acmod_set, (acmod_id_t)p), s);
+		sprintf(fn, "%s/%s-%u.dtree", otreedir, pname, s);
 		
 		fp = fopen(fn, "w");
 		if (fp == NULL) {
@@ -376,9 +424,12 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/07/21  19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.7  2005/06/13  22:18:22  dhdfu
+ * Add -allphones arguments to decision tree and state tying code.  Allows senones to be shared across multiple base phones (though they are currently still restricted to the same state).  This can improve implicit pronunciation modeling in some cases, such as grapheme-based models, though it usually has little effect.  Building the big trees can take a very long time.
  * 
+ * Revision 1.6  2004/07/21 19:17:26  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.5  2004/06/17 19:17:24  arthchan2003
  * Code Update for silence deletion and standardize the name for command -line arguments
  *
