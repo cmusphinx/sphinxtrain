@@ -87,7 +87,7 @@ be grouped into two sets. DI cannot be performed if you train using\n\
 only one buffer. At least in the final iteration of the training, you\n\
 must perform the training in (at least) two parts. You could also do\n\
 this serially as one final iteration of training AFTER BW has\n\
-converegd, on a non-lsf setup.\n\
+converged, on a non-lsf setup.\n\
 \n\
 Note here that the norm executable used at the end of every Baum-Welch \n\
 iteration also computes models from the buffers, but it does not\n\
@@ -197,9 +197,12 @@ terms, and then does the division. ";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/11/29  01:43:45  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ * Revision 1.7  2005/06/13  20:18:55  arthchan2003
+ * Spelling "correspondance" to "correspondence"
  * 
+ * Revision 1.6  2004/11/29 01:43:45  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ *
  * Revision 1.5  2004/08/08 03:49:56  arthchan2003
  * delint help and example string
  *
