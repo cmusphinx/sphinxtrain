@@ -25,7 +25,7 @@
 Given a set of mean accumulator, mllr_solve can compute the transform \n\
 matrix based on the maximum likelihood criteria. \n\
 \n\
-The mean vand variance are required to be input in arguements -meanfn and -varfn \n\
+The mean vand variance are required to be input in arguments -meanfn and -varfn \n\
 For linear regression equation y=Ax+b, \n\
 If you specific only -mllrmult, then only A will be estimated. \n\
 If you specific only -mllradd, then only b will be estimated. ";
@@ -128,9 +128,12 @@ If you specific only -mllradd, then only b will be estimated. ";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2004/08/07  20:31:49  arthchan2003
- * fix small problem in command line info mllr_mult -> mllrmult
+ * Revision 1.4  2005/06/13  20:05:39  arthchan2003
+ * spelling mistakes: arguements to arguments
  * 
+ * Revision 1.3  2004/08/07 20:31:49  arthchan2003
+ * fix small problem in command line info mllr_mult -> mllrmult
+ *
  * Revision 1.1  2004/07/27 12:09:26  arthchan2003
  * Missing the whole directory of mllr_solve
  *
