@@ -72,7 +72,7 @@ my $cilambda = 0.9;
 # up to 99 buffers
 my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_"."$CFG_N_TIED_STATES";
 $bwaccumdir 	     = "";
-for (<"${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*">) {
+for (glob("${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*")) {
     $bwaccumdir .= " \"$_\"";
 }
 
