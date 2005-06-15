@@ -89,7 +89,7 @@ nothing:
 ifneq (,$(BUILD_DIRS))
 	@ for i in $(BUILD_DIRS) ; \
 	do \
-	   $(MAKE) --no-print-directory -C $$i || exit ; \
+	   $(MAKE) --print-directory -C $$i || exit ; \
 	done
 endif
 
@@ -157,7 +157,7 @@ $(DEPEND): $(SRCS)
 	@ for i in $(SRCS) ; \
 	  do \
             echo "# $$i" ; \
-	    $(MAKE_DEPEND) $$i ; \
+	    $(MAKE_DEPEND) $$i | sed -e 's,^\([^:]*.o\):,$(OBJDIR)/\1:,' ; \
 	    echo ; \
           done > $(DEPEND)
 file-list:
