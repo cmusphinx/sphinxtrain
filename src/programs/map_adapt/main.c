@@ -1,3 +1,4 @@
+/* -*- c-file-style: "bsd"; c-basic-offset: 4 -*- */
 /*********************************************************************
  *
  * $Header$
@@ -6,10 +7,20 @@
  *
  * Copyright (c) 1996-2005 Carnegie Mellon University.
  * All rights reserved.
+ *********************************************************************
  *
- * Author:
- * 	Sam-Joo Doh (sjdoh@cs.cmu.edu)
- * 	David Huggins-Daines (dhuggins@cs.cmu.edu)
+ * File: src/programs/map_adapt/main.c
+ * 
+ * Description: 
+ *	Do one pass of MAP re-estimation (adaptation).
+ *
+ *      See "Speaker Adaptation Based on MAP Estimation of HMM
+ *      Parameters", Chin-Hui Lee and Jean-Luc Gauvain, Proceedings
+ *      of ICASSP 1993, p. II-558 for the details of prior density
+ *      estimation and forward-backward MAP.
+ * 
+ * Author: 
+ *	David Huggins-Daines <dhuggins@cs.cmu.edu>
  *
  *********************************************************************/
 
@@ -17,14 +28,14 @@
 #include <stdio.h>
 #include <s3/common.h>
 
-#include <s3/model_inventory.h>
-#include <s3/s3gau_io.h>
 #include <sys_compat/file.h>
+#include <s3/model_inventory.h>
 #include <s3/model_def_io.h>
-#include <s3/s3ts2cb_io.h>
-#include <s3/ts2cb.h>
-#include <s3/s3cb2mllr_io.h>
-#include <s3/mllr_io.h>
+#include <s3/s3gau_io.h>
+#include <s3/s3mixw_io.h>
+#include <s3/s3tmat_io.h>
+#include <s3/s3acc_io.h>
+#include <s3/matrix.h>
 
 /* Some SPHINX-II compatibility definitions */
 #include <s3/s2_param.h>
@@ -36,214 +47,302 @@
 #include <assert.h>
 #include <string.h>
 
-#define  ABS(x)         ((x)<0. ? -(x):(x))
-
 #include "parse_cmd_ln.h"
 
-static int
-initialize(int argc,
-	   char *argv[])
+static void
+check_consistency(const char *filename,
+		  uint32 n_mgau, uint32 n_mgau_rd,
+		  uint32 n_stream, uint32 n_stream_rd,
+		  uint32 n_density, uint32 n_density_rd,
+		  const uint32 *veclen, 
+		  const uint32 *veclen_rd)
 {
-    /* define, parse and (partially) validate the command line */
-    parse_cmd_ln(argc, argv);
-    
-    return S3_SUCCESS;
+    uint32 s;
+
+    if (n_mgau != n_mgau_rd)
+	E_FATAL("Number of codebooks is mismatched in %s\n",filename);
+    if (n_stream != n_stream_rd)
+	E_FATAL("Number of streams is mismatched in %s\n",filename);
+    if (n_density != n_density_rd)
+	E_FATAL("Number of gaussians is mismatched in %s\n",filename);
+    for (s = 0; s < n_stream; ++s)
+	if (veclen[s] != veclen_rd[s])
+	    E_FATAL("Vector length of stream %u mismatched in %s\n",
+		    s, filename);
 }
 
 static int
-map_adapt(const char *mapmeanfn,
-	  const char *mapvarfn,
-	  const char *mlmeanfn,
-	  const char *mlvarfn,
-	  const char *mlcntfn,
-	  const char *simeanfn,
-	  const char *sivarfn)
+map_update(void)
 {
-    vector_t 	  ***mapmean;	/* output */
-    /* vector_t 	  ***mapvar;	*/ /*output - currently unused */
-    vector_t 	  ***simean;
-    vector_t 	  ***sivar;
-    vector_t 	  ***mlmean;
-    vector_t 	  ***mlvar;
-    float32  	  ***dnom;	/* use this instead of mlcnt */
-    float32  	  dnom_weight;
+    float32 ***si_mixw = NULL;
+    vector_t ***si_mean = NULL;
+    vector_t ***si_var = NULL;
 
-    uint32 	  n_cb,      n_cb_rd;
-    uint32 	  n_feat,    n_feat_rd;
-    uint32 	  n_density, n_density_rd;
-    const uint32  *veclen,   *veclen_rd;
-    uint32 	  i, j, k, m;
+    vector_t ***wt_mean = NULL;
+    vector_t ***wt_var = NULL;
+    float32 ***wt_mixw = NULL;
+    float32 ***wt_dcount = NULL;
+    int32 pass2var;
 
-    /*************************************/
-    if (s3gau_read(simeanfn,
-		   &simean,
-		   &n_cb,
-		   &n_feat,
-		   &n_density,
-		   &veclen) != S3_SUCCESS){
-	E_FATAL("Unable to read %s\n",simeanfn);
-    }
-    E_INFO("Reading %s : n_cb = %d, n_feat = %d, n_density = %d\n",
-	   simeanfn, n_cb, n_feat, n_density);
+    float32 ***map_mixw = NULL;
+    vector_t ***map_mean = NULL;
+    vector_t ***map_var = NULL;
+    float32 ***map_tau = NULL;
+    float32 fixed_tau = 0.0f;
 
+    uint32 n_mixw, n_mixw_rd;
+    uint32 n_cb, n_cb_rd;
+    uint32 n_stream, n_stream_rd;
+    uint32 n_density, n_density_rd;
+    const uint32 *veclen = NULL;
+    const uint32 *veclen_rd = NULL;
 
-    /*************************************/
-    if (s3gau_read(sivarfn,
-		   &sivar,
-		   &n_cb_rd,
-		   &n_feat_rd,
-		   &n_density_rd,
-		   &veclen_rd) != S3_SUCCESS){
-	E_FATAL("Unable to read %s\n",sivarfn);
-    }
-    E_INFO("Reading %s\n", sivarfn);
+    const char **accum_dir;
+    const char *si_mixw_fn;
+    const char *map_mixw_fn;
+/*      const char *si_tmat_fn; */
+/*      const char *map_tmat_fn; */
+    const char *si_mean_fn;
+    const char *map_mean_fn;
+    const char *si_var_fn;
+    const char *map_var_fn;
 
-    if (n_cb_rd != n_cb) {
-        E_FATAL("# of cb are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_cb, sivarfn, n_cb_rd);
-    }
-    if (n_feat_rd != n_feat) {
-        E_FATAL("# of feat are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_feat, sivarfn, n_feat_rd);
-    }
-    if (n_density_rd != n_density) {
-        E_FATAL("# of density are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_density, sivarfn, n_density_rd);
-    }
-    for (i=0;i<n_feat;++i) {
-        if (veclen[i] != veclen_rd[i]) {
-            E_FATAL("veclen (%u element) are inconsistent.   %s : %u,   %s : %u\n",
-                    i, simeanfn, veclen[i], sivarfn, veclen_rd[i]);
-        }
-    }
+    uint32 i, j, k, m;
+
+    accum_dir = (const char **)cmd_ln_access("-accumdir");
+    si_mean_fn = (const char *)cmd_ln_access("-meanfn");
+    si_var_fn = (const char *)cmd_ln_access("-varfn");
+/*      si_tmat_fn = (const char *)cmd_ln_access("-tmatfn"); */
+    si_mixw_fn = (const char *)cmd_ln_access("-mixwfn");
+    map_mean_fn = (const char *)cmd_ln_access("-mapmeanfn");
+    map_var_fn = (const char *)cmd_ln_access("-mapvarfn");
+/*      map_tmat_fn = (const char *)cmd_ln_access("-maptmatfn"); */
+    map_mixw_fn = (const char *)cmd_ln_access("-mapmixwfn");
+
+    /* Must be at least one accum dir. */
+    if (accum_dir[0] == NULL)
+	E_FATAL("Must specify at least one -accumdir\n");
+
+    /* Must have means and variances. */
+    if (si_mean_fn == NULL || si_var_fn == NULL)
+	E_FATAL("Must specify baseline means and variances\n");
+    if (map_mixw_fn && si_mixw_fn == NULL)
+	E_FATAL("Must specify baseline mixture weights for updating\n");
+/*      if (map_tmat_fn && si_tmat_fn == NULL) */
+/*  	E_FATAL("Must specify baseline mixture weights for updating\n"); */
+
+    /* Read SI model parameters. */
+    if (s3gau_read(si_mean_fn, &si_mean,
+		   &n_cb, &n_stream, &n_density, &veclen) != S3_SUCCESS)
+	E_FATAL("Couldn't read %s\n", si_mean_fn);
+    if (s3gau_read(si_var_fn, &si_var,
+		   &n_cb_rd, &n_stream_rd, &n_density_rd, &veclen_rd) != S3_SUCCESS)
+	E_FATAL("Couldn't read %s\n", si_var_fn);
+    check_consistency(si_var_fn, n_cb, n_cb_rd, n_stream, n_stream_rd,
+		      n_density, n_density_rd, veclen, veclen_rd);
     ckd_free((void *)veclen_rd);
 
-    /*************************************/
-    if (s3gau_read(mlmeanfn,
-		   &mlmean,
-		   &n_cb_rd,
-		   &n_feat_rd,
-		   &n_density_rd,
-		   &veclen_rd) != S3_SUCCESS){
-	E_FATAL("Unable to read %s\n",mlmeanfn);
-    }
-    E_INFO("Reading %s\n", mlmeanfn);
-
-    if (n_cb_rd != n_cb) {
-        E_FATAL("# of cb are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_cb, mlmeanfn, n_cb_rd);
-    }
-    if (n_feat_rd != n_feat) {
-        E_FATAL("# of feat are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_feat, mlmeanfn, n_feat_rd);
-    }
-    if (n_density_rd != n_density) {
-        E_FATAL("# of density are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_density, mlmeanfn, n_density_rd);
-    }
-    for (i=0;i<n_feat;++i) {
-        if (veclen[i] != veclen_rd[i]) {
-            E_FATAL("veclen (%u element) are inconsistent.   %s : %u,   %s : %u\n",
-                    i, simeanfn, veclen[i], mlmeanfn, veclen_rd[i]);
-        }
-    }
-    ckd_free((void *)veclen_rd);
-
-    if (s3gau_read(mlvarfn,
-		   &mlvar,
-		   &n_cb_rd,
-		   &n_feat_rd,
-		   &n_density_rd,
-		   &veclen_rd) != S3_SUCCESS){
-	E_FATAL("Unable to read %s\n",mlvarfn);
-    }
-    E_INFO("Reading %s\n", mlvarfn);
-
-    if (n_cb_rd != n_cb) {
-        E_FATAL("# of cb are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_cb, mlvarfn, n_cb_rd);
-    }
-    if (n_feat_rd != n_feat) {
-        E_FATAL("# of feat are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_feat, mlvarfn, n_feat_rd);
-    }
-    if (n_density_rd != n_density) {
-        E_FATAL("# of density are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_density, mlvarfn, n_density_rd);
-    }
-    for (i=0;i<n_feat;++i) {
-        if (veclen[i] != veclen_rd[i]) {
-            E_FATAL("veclen (%u element) are inconsistent.   %s : %u,   %s : %u\n",
-                    i, simeanfn, veclen[i], mlvarfn, veclen_rd[i]);
-        }
-    }
-    ckd_free((void *)veclen_rd);
-
-
-    /*************************************/
-    if (s3gaudnom_read(mlcntfn,
-                       &dnom,
-                       &n_cb_rd,
-                       &n_feat_rd,
-                       &n_density_rd) != S3_SUCCESS) {
-        exit(1);
-    }
-    E_INFO("Reading %s\n", mlcntfn);
-
-    if (n_cb_rd != n_cb) {
-        E_FATAL("# of cb are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_cb, mlcntfn, n_cb_rd);
-    }
-    if (n_feat_rd != n_feat) {
-        E_FATAL("# of feat are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_feat, mlcntfn, n_feat_rd);
-    }
-    if (n_density_rd != n_density) {
-        E_FATAL("# of density are inconsistent.   %s : %u,   %s : %u\n",
-                simeanfn, n_density, mlcntfn, n_density_rd);
-    }
-
-    /**********  Now calculate new MAP mean  **********************/
-    mapmean  = gauden_alloc_param(n_cb, n_feat, n_density, veclen);
-
-    dnom_weight = *(float32 *)cmd_ln_access("-dnom_weight");
-
-    for (i = 0; i < n_cb; i++) {
-      for (j = 0; j < n_feat; j++) {
-
-        for (k = 0; k < n_density; k++) {
-	  for (m = 0; m < veclen[j]; m++) {
-
-	    if ((ABS(sivar[i][j][k][m]) < 1.0e-10)
-		|| (ABS(mlvar[i][j][k][m]) < 1.0e-4)
-		|| (ABS(dnom[i][j][k]) < 1.0e-4))
-	      mapmean[i][j][k][m] = simean[i][j][k][m];
-	    else
-	      mapmean[i][j][k][m] =
-	        (float)( dnom_weight * dnom[i][j][k] * sivar[i][j][k][m] * mlmean[i][j][k][m]
-	               + mlvar[i][j][k][m] * simean[i][j][k][m])
-	      / (float)(dnom_weight * dnom[i][j][k] * sivar[i][j][k][m] + mlvar[i][j][k][m]);
-	  }
+    /* Read and normalize SI mixture weights. */
+    if (s3mixw_read(si_mixw_fn, &si_mixw, &n_mixw, &n_stream_rd, &n_density_rd)
+	!= S3_SUCCESS)
+	E_FATAL("Couldn't read %s\n", si_mixw_fn);
+    for (i = 0; i < n_mixw; ++i) {
+	for (j = 0; j < n_stream; ++j) {
+	    float32 sum_si_mixw = 0.0f;
+	    for (k = 0; k < n_density; ++k)
+		sum_si_mixw += si_mixw[i][j][k];
+	    for (k = 0; k < n_density; ++k)
+		si_mixw[i][j][k] /= sum_si_mixw;
 	}
-      }
     }
 
+    /* Read observation counts. */
+    for (i = 0; accum_dir[i]; ++i) {
+	E_INFO("Reading and accumulating observation counts from %s\n",
+	       accum_dir[i]);
+        if (rdacc_den(accum_dir[i],
+                      &wt_mean,
+                      &wt_var,          
+                      &pass2var,        
+                      &wt_dcount,
+                      &n_cb_rd,
+                      &n_stream_rd,
+                      &n_density_rd,
+                      &veclen_rd) != S3_SUCCESS)
+            E_FATAL("Error in reading densities from %s\n", accum_dir[i]);
+	check_consistency(accum_dir[i],
+			  n_cb, n_cb_rd, n_stream, n_stream_rd,
+			  n_density, n_density_rd, veclen, veclen_rd);
+	if (rdacc_mixw(accum_dir[i],
+		       &wt_mixw,
+		       &n_mixw_rd, &n_stream_rd, &n_density_rd) != S3_SUCCESS)
+            E_FATAL("Error in reading mixture weights from %s\n", accum_dir[i]);
+	check_consistency(accum_dir[i],
+			  n_mixw, n_mixw_rd, n_stream, n_stream_rd,
+			  n_density, n_density_rd, veclen, veclen_rd);
+	ckd_free((void *)veclen_rd);
+    }
 
-    if (s3gau_write(mapmeanfn,
-		    (const vector_t ***)mapmean,
-		    n_cb,
-		    n_feat,
-		    n_density,
-		    veclen) != S3_SUCCESS)
-	E_FATAL("Unable to write prior mean to %s\n",mapmeanfn);
+    /* Allocate MAP parameters */
+    map_mean  = gauden_alloc_param(n_cb, n_stream, n_density, veclen);
+    map_var = gauden_alloc_param(n_cb, n_stream, n_density, veclen);
+    map_mixw = (float32 ***)ckd_calloc_3d(n_mixw, n_stream, n_density, sizeof(float32));
 
-    gauden_free_param(mapmean);
-    gauden_free_param(simean);
-    gauden_free_param(sivar);
-    gauden_free_param(mlmean);
-    gauden_free_param(mlvar);
-    ckd_free_3d((void *)dnom);
+    /* Optionally estimate prior tau hyperparameter for each Gaussian
+     * (all other prior parameters can be derived from it). */
+    if (cmd_ln_int32("-fixedtau"))
+	fixed_tau = cmd_ln_float32("-tau");
+    else {
+	map_tau = (float32 ***)ckd_calloc_3d(n_cb, n_stream, n_density, sizeof(float32));
+	for (i = 0; i < n_cb; ++i) {
+	    for (j = 0; j < n_stream; ++j) {
+		for (k = 0; k < n_density; ++k) {
+		    float32 tau_nom, tau_dnom;
+
+		    tau_nom = veclen[j] * wt_dcount[i][j][k];
+		    tau_dnom = 0.0f;
+		    for (m = 0; m < veclen[j]; ++m) {
+			float32 ydiff, wprec;
+
+			if (wt_dcount[i][j][k])
+			    ydiff = (wt_mean[i][j][k][m] / wt_dcount[i][j][k]
+				     - si_mean[i][j][k][m]);
+			else
+			    ydiff = 0;
+
+			wprec = si_mixw[i][j][k] * si_var[i][j][k][m];
+			tau_dnom += wt_dcount[i][j][k] * ydiff * wprec * ydiff;
+		    }
+		    if (tau_dnom > 0)
+			map_tau[i][j][k] = tau_nom / tau_dnom;
+		    else
+			map_tau[i][j][k] = 1000.0f; /* FIXME: Something big, I guess. */
+/*    		    E_INFO("map_tau[%d][%d][%d] = %f / %f = %f\n", */
+/*    			   i, j, k, tau_nom, tau_dnom, map_tau[i][j][k]); */
+		}
+	    }
+	}
+    }
+
+    /* Calculate forward-backward MAP parameters from SI models, prior
+     * hyperparameters and observation counts. */
+    for (i = 0; i < n_cb; ++i) {
+	for (j = 0; j < n_stream; ++j) {
+	    float32 sum_tau, sum_nu, sum_wt_mixw;
+
+	    sum_tau = sum_nu = sum_wt_mixw = 0.0f;
+	    for (k = 0; k < n_density; ++k)
+		sum_tau += (map_tau != NULL) ? map_tau[i][j][k] : fixed_tau;
+	    for (k = 0; k < n_density; ++k) {
+		float32 nu;
+
+		nu = si_mixw[i][j][k] * sum_tau;
+		sum_nu += nu;
+		sum_wt_mixw += wt_mixw[i][j][k];
+	    }
+
+	    for (k = 0; k < n_density; ++k) {
+		float32 tau, alpha, nu;
+
+		tau = (map_tau != NULL) ? map_tau[i][j][k] : fixed_tau;
+		nu = si_mixw[i][j][k] * sum_tau;
+
+		map_mixw[i][j][k] = (nu - 1 + wt_mixw[i][j][k])
+		    / (sum_nu - n_density + sum_wt_mixw);
+		for (m = 0; m < veclen[j]; ++m) {
+		    float32 beta;
+
+		    if (cmd_ln_int32("-bayesmean")) {
+			/* Textbook MAP estimator for single Gaussian.
+			   This works better. */
+			if (wt_dcount[i][j][k]) {
+			    float32 mlmean, mlvar;
+
+			    mlmean = wt_mean[i][j][k][m] / wt_dcount[i][j][k];
+			    if (pass2var)
+				mlvar = wt_var[i][j][k][m] / wt_dcount[i][j][k];
+			    else
+				mlvar = (wt_var[i][j][k][m] / wt_dcount[i][j][k]
+					 - mlmean * mlmean);
+			    if (mlvar < 0.0f) {/* Shouldn't happen, though. */
+				E_INFO("mlvar[%d][%d][%d][%d] < 0 (%f)\n", i,j,k,m,mlvar);
+				mlvar = 0.0f;
+			    }
+			    map_mean[i][j][k][m] =
+				(wt_dcount[i][j][k] * si_var[i][j][k][m] * mlmean
+				 + mlvar * si_mean[i][j][k][m])
+				/ (wt_dcount[i][j][k] * si_var[i][j][k][m] + mlvar);
+			}
+			else
+			    map_mean[i][j][k][m] = si_mean[i][j][k][m];
+		    }
+		    else {
+			/* CH Lee mean update equation.  Use this if
+                           you want to experiment with values of tau. */
+			if (wt_dcount[i][j][k])
+			    map_mean[i][j][k][m] =
+				(tau * si_mean[i][j][k][m] + wt_mean[i][j][k][m])
+				/ (tau + wt_dcount[i][j][k]);
+			else
+			    map_mean[i][j][k][m] = si_mean[i][j][k][m];
+		    }
+
+		    /* FIXME: This is wrong!  Don't use it yet.
+                       Instead of using wt_var we should be using
+                       wt_var calculated from the MAP updated means,
+                       and I haven't worked out the map to make that
+                       work yet. */
+		    alpha = (tau + 1) / 2;
+		    if (alpha < veclen[j] - 1)
+			alpha = veclen[j] + tau;
+		    beta = (tau / 2) * si_var[i][j][k][m];
+		    map_var[i][j][k][m] = (beta
+					   + tau * wt_var[i][j][k][m]
+					   + wt_mixw[i][j][k] * wt_var[i][j][k][m])
+			/ (alpha - veclen[j] + wt_mixw[i][j][k]);
+		}
+	    }
+	}
+    }
+
+    if (map_mean_fn)
+	if (s3gau_write(map_mean_fn,
+			(const vector_t ***)map_mean,
+			n_cb,
+			n_stream,
+			n_density,
+			veclen) != S3_SUCCESS)
+	    E_FATAL("Unable to write prior mean to %s\n",map_mean_fn);
+
+    if (map_var_fn)
+	if (s3gau_write(map_var_fn,
+			(const vector_t ***)map_var,
+			n_cb,
+			n_stream,
+			n_density,
+			veclen) != S3_SUCCESS)
+	    E_FATAL("Unable to write prior mean to %s\n",map_var_fn);
+
+    if (map_mixw_fn)
+	if (s3mixw_write(map_mixw_fn,
+			 map_mixw,
+			 n_mixw,
+			 n_stream,
+			 n_density)!= S3_SUCCESS)
+	    E_FATAL("Unable to write prior mean to %s\n",map_mixw_fn);
+
     ckd_free((void *)veclen);
+    gauden_free_param(si_mean);
+    gauden_free_param(si_var);
+    gauden_free_param(wt_mean);
+    gauden_free_param(wt_var);
+    ckd_free_3d((void *)wt_dcount);
+    ckd_free_3d((void *)si_mixw);
+    gauden_free_param(map_mean);
+    gauden_free_param(map_var);
+    if (map_tau)
+	ckd_free_3d((void *)map_tau);
+    ckd_free_3d((void *)map_mixw);
     
     return S3_SUCCESS;
 }
@@ -251,40 +350,12 @@ map_adapt(const char *mapmeanfn,
 int
 main(int argc, char *argv[])
 {
-    const char *mapmeanfn;
-    const char *mlcntfn;
-    const char *mlmeanfn;
-    const char *mlvarfn;
-    const char *simeanfn;
-    const char *sivarfn;
+    /* define, parse and (partially) validate the command line */
+    parse_cmd_ln(argc, argv);
 
-    if (initialize(argc, argv) != S3_SUCCESS) {
-	E_ERROR("Errors initializing.\n");
+    if (map_update() != S3_SUCCESS) {
 	exit(1);
     }
-
-    mlmeanfn = (const char *)cmd_ln_access("-mlmeanfn");
-    if (mlmeanfn == NULL)
-	E_FATAL("You must specify -mlmeanfn\n");
-    mlvarfn = (const char *)cmd_ln_access("-mlvarfn");
-    if (mlvarfn == NULL)
-	E_FATAL("You must specify -mlvarfn\n");
-    mlcntfn = (const char *)cmd_ln_access("-mlcntfn");
-    if (mlcntfn == NULL)
-	E_FATAL("You must specify -mlcntfn\n");
-    simeanfn = (const char *)cmd_ln_access("-simeanfn");
-    if (simeanfn == NULL)
-	E_FATAL("You must specify -simeanfn\n");
-    sivarfn = (const char *)cmd_ln_access("-sivarfn");
-    if (sivarfn == NULL)
-	E_FATAL("You must specify -sivarfn\n");
-    mapmeanfn = (const char *)cmd_ln_access("-mapmeanfn");
-    if (mapmeanfn == NULL)
-	E_FATAL("You must specify -mapmeanfn\n");
-
-    if (map_adapt(mapmeanfn, NULL, mlmeanfn, mlvarfn, mlcntfn, simeanfn, sivarfn)
-	!= S3_SUCCESS)
-	E_FATAL("MAP adaptation failed\n");
 
     exit(0);
 }

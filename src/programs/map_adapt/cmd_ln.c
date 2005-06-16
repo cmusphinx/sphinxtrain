@@ -4,7 +4,7 @@
  *
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1994 Carnegie Mellon University.
+ * Copyright (c) 1994-2005 Carnegie Mellon University.
  * All rights reserved.
  *
  *********************************************************************
@@ -14,9 +14,9 @@
  * Description: 
  * 
  * Author: 
- * 	Eric H. Thayer (eht@cs.cmu.edu)
+ * 	Sam-Joo Doh <sjdoh@cs.cmu.edu>
+ *	David Huggins-Daines <dhuggins@cs.cmu.edu>
  *********************************************************************/
-
 
 #include "parse_cmd_ln.h"
 
@@ -50,12 +50,12 @@ parse_cmd_ln(int argc, char *argv[])
 
     cmd_ln_parse(argc, argv);
 
-    if(*(uint32 *) cmd_ln_access("-help")){
+    if(cmd_ln_int32("-help")){
       printf("%s\n\n",helpstr);
       exit(1);
     }
 
-    if(*(uint32 *) cmd_ln_access("-example")){
+    if(cmd_ln_int32("-example")){
       printf("%s\n\n",examplestr);
       exit(1);
     }
@@ -70,37 +70,20 @@ parse_cmd_ln(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2005/06/01  16:37:46  dhdfu
- * add basic MAP adaptation support (means only)
+ * Revision 1.2  2005/06/16  04:31:28  dhdfu
+ * Replace this program with my own "map_update" code.  This implements
+ * the MAP update equations from Chin-Hui Lee and Jean-Juc Gauvain's
+ * papers in addition to the (actually superior) simple interpolation
+ * from Sam-Joo's code (which is still the default).  There is no longer
+ * any need to run norm to generate an ML estimate, we do that
+ * internally.  Also we can now adapt mixture weights, which may or may
+ * not improve accuracy slightly versus only updating the means.
  * 
- * Revision 1.14  97/07/16  11:36:22  eht
- * *** empty log message ***
+ * Currently this is BROKEN for semi-continuous models (the old map_adapt
+ * worked fine for them but didn't do a whole lot since it couldn't
+ * update mixture weights).  But it shouldn't be hard to fix it.  Also,
+ * variance updating doesn't work, and transition matrix updating isn't
+ * implemented.  These might require some changes to bw.
  * 
- * Revision 1.13  1996/08/06  14:03:47  eht
- * -sildelfn argument to specify silence deletion list
- *
- * Revision 1.12  1996/07/29  16:18:48  eht
- * Make -accumdir optional so that it may be omitted for
- * debugging purposes
- * MLLR command line options
- * -veclen to -ceplen
- * -minvar to -varfloor (now named consistently w/ the other floors)
- * added -2passvar switch to allow reestimation based on prior means
- *
- * Revision 1.11  1996/03/26  14:03:24  eht
- * - Added '-timing' argument
- * - changed doc strings for some arguments
- *
- * Revision 1.10  1996/02/02  17:41:47  eht
- * Add alpha and beta beams
- *
- * Revision 1.9  1996/01/26  18:23:49  eht
- * Reformatted argument specifications
- *
- * Revision 1.8  1995/11/30  20:42:07  eht
- * Add argument for transition matrix reestimation
- * Add argument for state parameter definition file
- *
- *
  */
 
