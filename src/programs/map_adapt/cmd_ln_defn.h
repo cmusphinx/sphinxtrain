@@ -98,6 +98,12 @@ const char examplestr[] =
 	  "2.0",
 	  "The uniform value for the tau (prior weight) hyperparameter"},
 
+	{ "-mwfloor",
+	  CMD_LN_FLOAT32,
+	  CMD_LN_NO_VALIDATION,
+	  "0.00001",
+	  "Mixing weight smoothing floor" },
+
         { "-mapmeanfn",
           CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -135,7 +141,10 @@ const char examplestr[] =
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2005/06/16  04:31:28  dhdfu
+ * Revision 1.4  2005/06/17  18:32:22  dhdfu
+ * Make this work again for SCHMM.  Some steps towards fixing variance updates (it kind of works without -2passvar) but I fear we have to do it in two passes as there is no "shortcut" unlike for ML variance estimation
+ * 
+ * Revision 1.3  2005/06/16 04:31:28  dhdfu
  * Replace this program with my own "map_update" code.  This implements
  * the MAP update equations from Chin-Hui Lee and Jean-Juc Gauvain's
  * papers in addition to the (actually superior) simple interpolation
@@ -143,12 +152,12 @@ const char examplestr[] =
  * any need to run norm to generate an ML estimate, we do that
  * internally.  Also we can now adapt mixture weights, which may or may
  * not improve accuracy slightly versus only updating the means.
- * 
+ *
  * Currently this is BROKEN for semi-continuous models (the old map_adapt
  * worked fine for them but didn't do a whole lot since it couldn't
  * update mixture weights).  But it shouldn't be hard to fix it.  Also,
  * variance updating doesn't work, and transition matrix updating isn't
  * implemented.  These might require some changes to bw.
- * 
+ *
  *
  */

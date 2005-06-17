@@ -88,7 +88,8 @@ map_update(void)
     vector_t ***map_mean = NULL;
     vector_t ***map_var = NULL;
     float32 ***map_tau = NULL;
-    float32 fixed_tau = 0.0f;
+    float32 fixed_tau = 2.0f;
+    float32 mwfloor = 1e-5f;
 
     uint32 n_mixw, n_mixw_rd;
     uint32 n_cb, n_cb_rd;
@@ -120,16 +121,12 @@ map_update(void)
     map_mixw_fn = (const char *)cmd_ln_access("-mapmixwfn");
 
     /* Must be at least one accum dir. */
-    if (accum_dir[0] == NULL)
+    if (accum_dir == NULL)
 	E_FATAL("Must specify at least one -accumdir\n");
 
     /* Must have means and variances. */
-    if (si_mean_fn == NULL || si_var_fn == NULL)
-	E_FATAL("Must specify baseline means and variances\n");
-    if (map_mixw_fn && si_mixw_fn == NULL)
-	E_FATAL("Must specify baseline mixture weights for updating\n");
-/*      if (map_tmat_fn && si_tmat_fn == NULL) */
-/*  	E_FATAL("Must specify baseline mixture weights for updating\n"); */
+    if (si_mean_fn == NULL || si_var_fn == NULL || si_mixw_fn == NULL)
+	E_FATAL("Must specify baseline means, variances, and mixture weights\n");
 
     /* Read SI model parameters. */
     if (s3gau_read(si_mean_fn, &si_mean,
@@ -143,6 +140,7 @@ map_update(void)
     ckd_free((void *)veclen_rd);
 
     /* Read and normalize SI mixture weights. */
+    mwfloor = cmd_ln_float32("-mwfloor");
     if (s3mixw_read(si_mixw_fn, &si_mixw, &n_mixw, &n_stream_rd, &n_density_rd)
 	!= S3_SUCCESS)
 	E_FATAL("Couldn't read %s\n", si_mixw_fn);
@@ -188,45 +186,54 @@ map_update(void)
     map_var = gauden_alloc_param(n_cb, n_stream, n_density, veclen);
     map_mixw = (float32 ***)ckd_calloc_3d(n_mixw, n_stream, n_density, sizeof(float32));
 
-    /* Optionally estimate prior tau hyperparameter for each Gaussian
+    /* Optionally estimate prior tau hyperparameter for each HMM
      * (all other prior parameters can be derived from it). */
     if (cmd_ln_int32("-fixedtau"))
 	fixed_tau = cmd_ln_float32("-tau");
     else {
-	map_tau = (float32 ***)ckd_calloc_3d(n_cb, n_stream, n_density, sizeof(float32));
-	for (i = 0; i < n_cb; ++i) {
+	map_tau = (float32 ***)ckd_calloc_3d(n_mixw, n_stream, n_density, sizeof(float32));
+	for (i = 0; i < n_mixw; ++i) {
 	    for (j = 0; j < n_stream; ++j) {
 		for (k = 0; k < n_density; ++k) {
 		    float32 tau_nom, tau_dnom;
 
-		    tau_nom = veclen[j] * wt_dcount[i][j][k];
+		    tau_nom = veclen[j] * wt_mixw[i][j][k];
 		    tau_dnom = 0.0f;
 		    for (m = 0; m < veclen[j]; ++m) {
-			float32 ydiff, wprec;
+			float32 ydiff, wprec, dnom, ml_mu, si_mu, si_sigma;
 
-			if (wt_dcount[i][j][k])
-			    ydiff = (wt_mean[i][j][k][m] / wt_dcount[i][j][k]
-				     - si_mean[i][j][k][m]);
-			else
-			    ydiff = 0;
+			if (n_mixw != n_cb && n_cb == 1) {/* Semi-continuous. */
+			    dnom = wt_dcount[0][j][k];
+			    si_mu = si_mean[0][j][k][m];
+			    si_sigma = si_var[0][j][k][m];
+			    ml_mu = dnom ? wt_mean[0][j][k][m] / dnom : si_mu;
+			}
+			else { /* Continuous. */
+			    dnom = wt_dcount[i][j][k];
+			    si_mu = si_mean[i][j][k][m];
+			    si_sigma = si_var[i][j][k][m];
+			    ml_mu = dnom ? wt_mean[i][j][k][m] / dnom : si_mu;
+			}
 
-			wprec = si_mixw[i][j][k] * si_var[i][j][k][m];
-			tau_dnom += wt_dcount[i][j][k] * ydiff * wprec * ydiff;
+			ydiff = ml_mu - si_mu;
+			wprec = si_mixw[i][j][k] * si_sigma;
+			tau_dnom += dnom * ydiff * wprec * ydiff;
 		    }
-		    if (tau_dnom > 0)
+		    if (tau_dnom > 1e-5 && tau_nom > 1e-5)
 			map_tau[i][j][k] = tau_nom / tau_dnom;
 		    else
 			map_tau[i][j][k] = 1000.0f; /* FIXME: Something big, I guess. */
-/*    		    E_INFO("map_tau[%d][%d][%d] = %f / %f = %f\n", */
-/*    			   i, j, k, tau_nom, tau_dnom, map_tau[i][j][k]); */
+#if 0
+      		    E_INFO("map_tau[%d][%d][%d] = %f / %f = %f\n",
+      			   i, j, k, tau_nom, tau_dnom, map_tau[i][j][k]);
+#endif
 		}
 	    }
 	}
     }
 
-    /* Calculate forward-backward MAP parameters from SI models, prior
-     * hyperparameters and observation counts. */
-    for (i = 0; i < n_cb; ++i) {
+    /* Re-estimate mixture weights separately for SCHMMs */
+    for (i = 0; i < n_mixw; ++i) {
 	for (j = 0; j < n_stream; ++j) {
 	    float32 sum_tau, sum_nu, sum_wt_mixw;
 
@@ -242,16 +249,56 @@ map_update(void)
 	    }
 
 	    for (k = 0; k < n_density; ++k) {
-		float32 tau, alpha, nu;
+		float32 tau, nu;
 
 		tau = (map_tau != NULL) ? map_tau[i][j][k] : fixed_tau;
 		nu = si_mixw[i][j][k] * sum_tau;
 
 		map_mixw[i][j][k] = (nu - 1 + wt_mixw[i][j][k])
 		    / (sum_nu - n_density + sum_wt_mixw);
-		for (m = 0; m < veclen[j]; ++m) {
-		    float32 beta;
+		/* Floor mixture weights - otherwise they will be
+                   negative in cases where si_mixw is very small.
+                   FIXME: This might be an error in my implementation?  */
+		if (map_mixw[i][j][k] < mwfloor)
+		    map_mixw[i][j][k] = mwfloor;
+#if 0
+		printf("%d %d %d tau %f map_mixw %f =\n"
+		       "      nu %f - 1     +     wt_mixw %f\n"
+		       "/ sum_nu %f  - %d   + sum_wt_mixw %f\n",
+		       i, j, k, tau, 
+		       map_mixw[i][j][k], nu, wt_mixw[i][j][k],
+		       sum_nu, n_density, sum_wt_mixw);
+#endif
+	    }
+	}
+    }
 
+    /* Re-estimate means, variances, transition matrices (possibly) */
+    for (i = 0; i < n_cb; ++i) {
+	for (j = 0; j < n_stream; ++j) {
+	    for (k = 0; k < n_density; ++k) {
+		float32 tau, alpha;
+
+		if (map_tau == NULL)
+		    tau = fixed_tau;
+		else {
+		    if (n_mixw != n_cb && n_cb == 1) {/* Semi-continuous. */
+			int m;
+
+			for (m = 0; m < n_mixw; ++m)
+			    tau += map_tau[m][j][k];
+			tau /= n_mixw;
+#if 0
+			printf("SC tau[%d][%d] = %f\n", j, k, tau);
+#endif
+		    }
+		    else /* Continuous. */
+			tau = map_tau[i][j][k];
+		}
+		for (m = 0; m < veclen[j]; ++m) {
+		    float32 beta, mdiff, wt_vdiff;
+
+		    /* Means re-estimation. */
 		    if (cmd_ln_int32("-bayesmean")) {
 			/* Textbook MAP estimator for single Gaussian.
 			   This works better. */
@@ -287,19 +334,28 @@ map_update(void)
 			    map_mean[i][j][k][m] = si_mean[i][j][k][m];
 		    }
 
-		    /* FIXME: This is wrong!  Don't use it yet.
-                       Instead of using wt_var we should be using
-                       wt_var calculated from the MAP updated means,
-                       and I haven't worked out the map to make that
-                       work yet. */
+		    /* Variance re-estimation. */
 		    alpha = (tau + 1) / 2;
 		    if (alpha < veclen[j] - 1)
 			alpha = veclen[j] + tau;
 		    beta = (tau / 2) * si_var[i][j][k][m];
-		    map_var[i][j][k][m] = (beta
-					   + tau * wt_var[i][j][k][m]
-					   + wt_mixw[i][j][k] * wt_var[i][j][k][m])
-			/ (alpha - veclen[j] + wt_mixw[i][j][k]);
+		    mdiff = map_mean[i][j][k][m] - si_mean[i][j][k][m];
+		    /* FIXME: These calculations are still quite
+                       wrong.  I fear that we need two passes to
+                       estimate MAP variances. */
+		    if (pass2var) /* sort of wrong */
+			wt_vdiff = wt_var[i][j][k][m]
+			    - map_mean[i][j][k][m] * map_mean[i][j][k][m] * wt_dcount[i][j][k];
+		    else /* really wrong */
+			wt_vdiff = wt_var[i][j][k][m] / wt_dcount[i][j][k];
+		    map_var[i][j][k][m] = (2 * beta
+					   + tau * mdiff * mdiff
+					   + wt_vdiff)
+			/ (2 * alpha - veclen[j] + wt_dcount[i][j][k]);
+		    if (map_var[i][j][k][m] < 0.0f) {
+/*  			E_INFO("mapvar[%d][%d][%d][%d] < 0 (%f)\n", i,j,k,m, map_var[i][j][k][m]); */
+			map_var[i][j][k][m] = 0.0f;
+		    }
 		}
 	    }
 	}
