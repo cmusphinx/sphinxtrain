@@ -52,7 +52,13 @@ Create the following files:
            <sil> SIL
            /NOISE/ +NOISE+
 
-Create a dictionary with (only works for US English)
+You will need a dictionary. You can either download one from
+http://www.speech.cs.cmu.edu/sphinx/models/hub4opensrc_jan2002/cmudict.06d,
+or you can create your own. If you decide to create your own, you will
+also need to install Festival (http://festvox.org).
+
+If you decide to create your own dictionary, create it with (only
+works for US English)
 
    bin/make_dict etc/time.transcription
 
@@ -96,6 +102,7 @@ Example:
    perl ./scripts_pl/05.buildtrees/slave.treebuilder.pl
    perl ./scripts_pl/06.prunetree/slave.state-tie-er.pl
    perl ./scripts_pl/07.cd-schmm/slave_convg.pl
+# Needed only if you're creating sphinx2 models
    perl ./scripts_pl/08.deleted-interpolation/deleted_interpolation.pl
    perl ./scripts_pl/09.make_s2_models/make_s2_models.pl
      
@@ -142,6 +149,7 @@ gaussian splitting.. |                                |
                 |         |                    deleted interpolation
           decode with   ADAPT                         |
           sphinx3                                     |---ADAPT
+          or sphinx4                                  |     |
           decoder                                     |     |
                                                 ----------------
                           make cd tied mdef ... | .............|
