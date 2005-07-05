@@ -79,6 +79,7 @@ estimate_tau(vector_t ***si_mean, vector_t ***si_var, float32 ***si_mixw,
     float32 ***map_tau;
     uint32 i, j, k, m;
 
+    E_INFO("Estimating tau hyperparameter from variances and observations\n");
     map_tau = (float32 ***)ckd_calloc_3d(n_mixw, n_stream, n_density, sizeof(float32));
     for (i = 0; i < n_mixw; ++i) {
 	for (j = 0; j < n_stream; ++j) {
@@ -140,6 +141,7 @@ map_mixw_reest(float32 ***map_tau, float32 fixed_tau,
 {
     uint32 i, j, k;
 
+    E_INFO("Re-estimating mixture weights using MAP\n");
     /* TODO: Try to use the un-normalized SI mixture counts as nu
      * instead of deriving it using tau. */
     for (i = 0; i < n_mixw; ++i) {
@@ -191,6 +193,7 @@ map_tmat_reest(float32 ***si_tmat, float32 ***wt_tmat,
 {
     uint32 t, i, j;
 
+    E_INFO("Re-estimating transition probabilities using MAP\n");
     for (t = 0; t < n_tmat; ++t) {
 	for (i = 0; i < n_state-1; ++i) {
 	    float32 sum_si_tmat = 0.0f, sum_wt_tmat = 0.0f;
@@ -219,6 +222,8 @@ map_tmat_reest(float32 ***si_tmat, float32 ***wt_tmat,
 	    }
 	}
     }
+
+    return S3_SUCCESS;
 }
 
 static int32
@@ -474,8 +479,10 @@ map_update(void)
 
     /* Optionally estimate prior tau hyperparameter for each HMM
      * (all other prior parameters can be derived from it). */
-    if (cmd_ln_int32("-fixedtau"))
+    if (cmd_ln_int32("-fixedtau")) {
 	fixed_tau = cmd_ln_float32("-tau");
+	E_INFO("tau hyperparameter fixed at %f\n", fixed_tau);
+    }
     else
 	map_tau = estimate_tau(si_mean, si_var, si_mixw,
 			       n_cb, n_stream, n_density, n_mixw, veclen,
@@ -493,6 +500,15 @@ map_update(void)
 		       n_tmat, n_state);
 
     /* Re-estimate means and variances */
+    if (cmd_ln_int32("-bayesmean"))
+	E_INFO("Re-estimating means using Bayesian interpolation\n");
+    else
+	E_INFO("Re-estimating means using MAP\n");
+    if (n_mixw != n_cb && n_cb == 1)
+	E_INFO("Interpolating tau hyperparameter for semi-continuous models\n");
+    if (map_var)
+	E_INFO("Re-estimating variances using MAP\n");
+
     for (i = 0; i < n_cb; ++i) {
 	for (j = 0; j < n_stream; ++j) {
 	    for (k = 0; k < n_density; ++k) {
