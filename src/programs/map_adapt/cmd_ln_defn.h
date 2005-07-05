@@ -149,11 +149,14 @@ const char examplestr[] =
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2005/07/05  16:21:01  dhdfu
- * Make variance re-estimation work (requires -2passvar to be on).
+ * Revision 1.6  2005/07/05  17:06:40  dhdfu
+ * Requires -2passvar to be OFF!  (doh)
+ * 
+ * Revision 1.5  2005/07/05 16:21:01  dhdfu
+ * Make variance re-estimation work (requires -2passvar to be off).
  * Implement and enable transition matrix re-estimation (does basically nothing, of course).
  * Refactor the code into a bunch of smaller functions to make it less unweildy.
- * 
+ *
  * Revision 1.4  2005/06/17 18:32:22  dhdfu
  * Make this work again for SCHMM.  Some steps towards fixing variance updates (it kind of works without -2passvar) but I fear we have to do it in two passes as there is no "shortcut" unlike for ML variance estimation
  *
