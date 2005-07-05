@@ -60,13 +60,11 @@ const char examplestr[] =
 	  CMD_LN_NO_DEFAULT,
 	  "Baseline (speaker-independent) Gaussian density variance file"},
 
-#if 0
 	{ "-tmatfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
 	  "Baseline (speaker-independent) transition matrix parameter file name"},
-#endif
 
 	{ "-mixwfn",
 	  CMD_LN_STRING,
@@ -95,7 +93,7 @@ const char examplestr[] =
 	{ "-tau",
 	  CMD_LN_FLOAT32,
 	  CMD_LN_NO_VALIDATION,
-	  "2.0",
+	  "10.0",
 	  "The uniform value for the tau (prior weight) hyperparameter"},
 
 	{ "-mwfloor",
@@ -103,6 +101,18 @@ const char examplestr[] =
 	  CMD_LN_NO_VALIDATION,
 	  "0.00001",
 	  "Mixing weight smoothing floor" },
+
+	{ "-varfloor",
+	  CMD_LN_FLOAT32,
+	  CMD_LN_NO_VALIDATION,
+	  "0.00001",
+	  "Variance smoothing floor" },
+
+	{ "-tpfloor",
+	  CMD_LN_FLOAT32,
+	  CMD_LN_NO_VALIDATION,
+	  "0.0001",
+	  "Transition probability smoothing floor" },
 
         { "-mapmeanfn",
           CMD_LN_STRING,
@@ -122,13 +132,11 @@ const char examplestr[] =
           CMD_LN_NO_DEFAULT,
           "The output MAP mixture weight file"},
 
-#if 0
         { "-maptmatfn",
           CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
           CMD_LN_NO_DEFAULT,
           "The output MAP transition matrix file"},
-#endif
 
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
@@ -141,9 +149,14 @@ const char examplestr[] =
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2005/06/17  18:32:22  dhdfu
- * Make this work again for SCHMM.  Some steps towards fixing variance updates (it kind of works without -2passvar) but I fear we have to do it in two passes as there is no "shortcut" unlike for ML variance estimation
+ * Revision 1.5  2005/07/05  16:21:01  dhdfu
+ * Make variance re-estimation work (requires -2passvar to be on).
+ * Implement and enable transition matrix re-estimation (does basically nothing, of course).
+ * Refactor the code into a bunch of smaller functions to make it less unweildy.
  * 
+ * Revision 1.4  2005/06/17 18:32:22  dhdfu
+ * Make this work again for SCHMM.  Some steps towards fixing variance updates (it kind of works without -2passvar) but I fear we have to do it in two passes as there is no "shortcut" unlike for ML variance estimation
+ *
  * Revision 1.3  2005/06/16 04:31:28  dhdfu
  * Replace this program with my own "map_update" code.  This implements
  * the MAP update equations from Chin-Hui Lee and Jean-Juc Gauvain's
