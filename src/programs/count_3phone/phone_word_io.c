@@ -38,9 +38,12 @@
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.8  2005/06/05  23:15:41  arthchan2003
- * Some ansification to make count_3phone to be compiled in VC6. dsw file is not yet fixed. Sounds like map_adapt need to be updated too.
+ * Revision 1.9  2005/07/05  14:33:23  dhdfu
+ * Make this use ckd_calloc().  The forward declaration of malloc() was rather bogus anyway.
  * 
+ * Revision 1.8  2005/06/05 23:15:41  arthchan2003
+ * Some ansification to make count_3phone to be compiled in VC6. dsw file is not yet fixed. Sounds like map_adapt need to be updated too.
+ *
  * Revision 1.7  2005/06/05 22:00:34  arthchan2003
  * Log. Rewriting QUICK_COUNT using SphinxTrain command line functions. Several changes.
  * 1, Removal of -B -t because they were actually not implemented.
@@ -72,6 +75,7 @@
 #include <ctype.h>
 #include "count.h"
 #include <s3/err.h>
+#include <s3/ckd_alloc.h>
 
 
 int new_read_base (char *base_file, struct word **words_ref, int ignore_error);
@@ -85,12 +89,6 @@ struct sorted_phone
   char *name;
 };
 struct sorted_phone *Sorted_Phone;
-
-#if (defined(__alpha) || defined(WIN32))
-void *malloc();
-#else
-char *malloc();
-#endif
 
 extern int      Num_Phones, Num_Words;
 extern struct phone *Phone;
@@ -123,9 +121,7 @@ int new_read_base (char *base_file, struct word **words_ref, int ignore_error)
   num_words = 0;
   while (fgets (buff, MAX_LINE - 1, fp))
     num_words++;
-  if (!(words = (struct word *)
-	malloc (num_words * (unsigned) sizeof (struct word))))
-    E_FATAL ( "read_base: %s: can't alloc words\n", base_file);
+  words = ckd_calloc(num_words, sizeof(struct word));
   Num_Words = num_words;
   printf ("Total no. of words = %d\n", Num_Words);
   fflush(stdout);
@@ -141,8 +137,7 @@ int new_read_base (char *base_file, struct word **words_ref, int ignore_error)
 
     for (i = 0; !isspace ((int)buff[i]); i++)
       ;
-    if (!(word->word = (char *) malloc ((i + 1) * (unsigned) sizeof (char))))
-      E_FATAL ( "read_base: %s: can't alloc words[%d]\n", base_file, word_num);
+    word->word = ckd_calloc(i+1, sizeof(char));
     strncpy (word->word, buff, i);
     word->word[i] = '\0';
     while (isspace ((int)buff[i]))
@@ -194,9 +189,8 @@ int new_read_base (char *base_file, struct word **words_ref, int ignore_error)
 	last = i;
 	num_phones++;
       }
-    if (num_phones && !(word->phone = (short *) malloc (num_phones *
-					  (unsigned) sizeof (short))))
-      E_FATAL ( "read_base: %s: can't alloc word->phone\n", base_file);
+    if (num_phones)
+      word->phone = ckd_calloc(num_phones, sizeof(short));
     word->num_phones = num_phones;
     for (i = 0; i < word->num_phones; i++)
       word->phone[i] = phones[i];
@@ -249,13 +243,8 @@ void read_phone (char *file)
 
   for (i = 0; fgets (buff, 79, fp) != NULL; i++);
   Num_Phones = i;
-  if (!(Phone = (struct phone *) malloc (Num_Phones *
-			 (unsigned) sizeof (struct phone))))
-    E_FATAL ( "read_phone: %s: can't alloc %d phones\n", file, Num_Phones);
-  if (!(Sorted_Phone = (struct sorted_phone *) malloc (Num_Phones *
-			 (unsigned) sizeof (struct sorted_phone))))
-    E_FATAL( "read_phone: %s: can't alloc %d sorted_phones\n", 
-		file, Num_Phones);
+  Phone = ckd_calloc(Num_Phones, sizeof(struct phone));
+  Sorted_Phone = ckd_calloc(Num_Phones, sizeof(struct sorted_phone));
   rewind (fp);
   for (i = 0;
        (items = fscanf (fp, "%s%hd%hd%hd%hd\n", Phone[i].name,
