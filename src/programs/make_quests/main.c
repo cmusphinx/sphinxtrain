@@ -41,10 +41,15 @@
  * Author: Rita Singh
  *********************************************************************/
 
-/* $Log$
- * Revision 1.10  2005/07/09  03:09:47  arthchan2003
- * Fixed typos in error message, added initialization for the variable continuous such that gcc is happy.
+/*
  * 
+ * $Log$
+ * Revision 1.11  2005/07/09  03:13:03  arthchan2003
+ * Fix keyword expansion probelm
+ * 
+ * Revision 1.10  2005/07/09 03:09:47  arthchan2003
+ * Fixed typos in error message, added initialization for the variable continuous such that gcc is happy.
+ *
  * Revision 1.9  2005/07/09 03:02:10  arthchan2003
  * 1, Remove tempfn and anything the used tempfn. It is never used in
  * the entire SphinxTrain codebase.  2, change the example such that

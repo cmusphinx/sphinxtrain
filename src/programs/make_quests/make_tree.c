@@ -34,10 +34,14 @@
  *
  */
 
-/* $Log$
- * Revision 1.5  2005/07/09  02:31:47  arthchan2003
- * 1, When user forgot to specify -type, make_quest.c failed to check whether type is valid, when passed as an argument to strcpy, strcpy will cause seg core.  Resolved it by explicitly adding a checking and prompting user to specify it correctly.  2, Also added  keyword for all .c files.
+/* 
+ * $Log$
+ * Revision 1.6  2005/07/09  03:13:03  arthchan2003
+ * Fix keyword expansion probelm
  * 
+ *  Revision 1.5  2005/07/09 02:31:47  arthchan2003
+ * 1, When user forgot to specify -type, make_quest.c failed to check whether type is valid, when passed as an argument to strcpy, strcpy will cause seg core.  Resolved it by explicitly adding a checking and prompting user to specify it correctly.  2, Also added  keyword for all .c files.
+ *
  */
 
 #include <math.h>
