@@ -58,7 +58,7 @@ my $meanfn   = "$hmm_dir/means";
 my $varfn    = "$hmm_dir/variances";
 my $mixwfn   = "$hmm_dir/mixture_weights";
 my $tmp_str = time();
-my $tempfn   = "${CFG_BASE_DIR}/tmp/questions.$tmp_str";
+#my $tempfn   = "${CFG_BASE_DIR}/tmp/questions.$tmp_str";
 #my $questfn  = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.tree_questions";
 my $questfn = ${CFG_QUESTION_SET};
 
@@ -74,7 +74,8 @@ $| = 1; # Turn on autoflushing
 &ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
 $|=1;
-if (open PIPE, "\"$MAKE_QUEST\" -moddeffn \"$mdeffn\" -meanfn \"$meanfn\" -varfn \"$varfn\" -mixwfn \"$mixwfn\" -npermute 8 -niter 1 -qstperstt 20 -tempfn \"$tempfn\" -questfn \"$questfn\" -type ${CFG_HMM_TYPE} 2>&1 |") {
+
+if (open PIPE, "\"$MAKE_QUEST\" -moddeffn \"$mdeffn\" -meanfn \"$meanfn\" -varfn \"$varfn\" -mixwfn \"$mixwfn\" -npermute 8 -niter 1 -qstperstt 20  -questfn \"$questfn\" -type ${CFG_HMM_TYPE} 2>&1 |") {
 
   open LOG,">$logfile";
   while (<PIPE>) {

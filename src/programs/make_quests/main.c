@@ -42,9 +42,12 @@
  *********************************************************************/
 
 /* $Log$
- * Revision 1.8  2005/07/09  02:31:47  arthchan2003
- * 1, When user forgot to specify -type, make_quest.c failed to check whether type is valid, when passed as an argument to strcpy, strcpy will cause seg core.  Resolved it by explicitly adding a checking and prompting user to specify it correctly.  2, Also added  keyword for all .c files.
+ * Revision 1.9  2005/07/09  03:02:10  arthchan2003
+ * 1, Remove tempfn and anything the used tempfn. It is never used in the entire SphinxTrain codebase.  2, change the example such that -tempfn is removed but -type .cont. is added. 3, Did **not** removed -tempfn because some users might just update the code but not the perl script.  This keep backward compatibility (but it is definitely stupid). 4, Change the perl script as well. People who update the code and script will then learn the correct usage. 5, Check type such that if it is not .cont. or .semi., nothing stupid will happen. (Well, in general, it is a sin for us to release this program. *sigh*)
  * 
+   Revision 1.8  2005/07/09 02:31:47  arthchan2003
+   1, When user forgot to specify -type, make_quest.c failed to check whether type is valid, when passed as an argument to strcpy, strcpy will cause seg core.  Resolved it by explicitly adding a checking and prompting user to specify it correctly.  2, Also added  keyword for all .c files.
+
  */
 
 #include <math.h>
@@ -991,7 +994,7 @@ main(int argc, char *argv[])
     int32 i,j,k,continuous, **questarr, *nquestphone, nquests=0;
     int32  *phoneids,nphones;
     char   **phone_list;
-    char   *tempfile,*outfile;
+    char   *outfile;
     node   *root;
     FILE   *fp;
 
@@ -1000,15 +1003,18 @@ main(int argc, char *argv[])
     type = (char *)cmd_ln_access("-type");
 
     if(type==NULL){
-      E_FATAL("Please specify -type, either \".cont\" or \".semi\"\n");
+      E_FATAL("-type is empty. Please specify -type correctly, either \".cont\" or \".semi\"\n");
     }
     if (strcmp(type,".cont.") == 0) 
         continuous = 1;
-    else
+    else if (strcmp(type,".semi.") == 0) 
         continuous = 0;
+    else{
+      E_FATAL("Unknown type %s, either \".cont\" or \".semi\"\n", type);
+    }
+      
 
     outfile = (char *) cmd_ln_access("-questfn");
-    tempfile = (char *) cmd_ln_access("-tempfn");
     npermute = *(int32 *) cmd_ln_access("-npermute");
     nquests_per_state = *(int32 *) cmd_ln_access("-qstperstt");
 

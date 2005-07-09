@@ -71,8 +71,8 @@ parse_cmd_ln(int argc, char *argv[])
     const char examplestr[] =
 "Example: \n\
 make_quest -moddeffn mdef -meanfn mean -varfn var -mixwfn \n\
-mixwfn -npermute 8 -niter 1 -qstperstt 20 -tempfn temp -questfn \n\
-questions";
+mixwfn -npermute 8 -niter 1 -qstperstt 20 -questfn \n\
+questions -type .cont.";
 
 
     static arg_def_t defn[] = {
@@ -140,7 +140,7 @@ questions";
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
 	  "/tmp/TEMP.QUESTS",
-	  "File to write temprorary results to (important)" },
+	  "(Obsolete) File to write temprorary results to " },
 
 	{ "-questfn",
 	  CMD_LN_STRING,
@@ -196,9 +196,12 @@ questions";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/11/29  01:43:46  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ * Revision 1.7  2005/07/09  03:02:10  arthchan2003
+ * 1, Remove tempfn and anything the used tempfn. It is never used in the entire SphinxTrain codebase.  2, change the example such that -tempfn is removed but -type .cont. is added. 3, Did **not** removed -tempfn because some users might just update the code but not the perl script.  This keep backward compatibility (but it is definitely stupid). 4, Change the perl script as well. People who update the code and script will then learn the correct usage. 5, Check type such that if it is not .cont. or .semi., nothing stupid will happen. (Well, in general, it is a sin for us to release this program. *sigh*)
  * 
+ * Revision 1.6  2004/11/29 01:43:46  egouvea
+ * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
+ *
  * Revision 1.5  2004/11/29 01:11:34  egouvea
  * Fixed license terms in some new files.
  *
