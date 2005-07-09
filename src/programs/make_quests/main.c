@@ -41,6 +41,12 @@
  * Author: Rita Singh
  *********************************************************************/
 
+/* $Log$
+ * Revision 1.8  2005/07/09  02:31:47  arthchan2003
+ * 1, When user forgot to specify -type, make_quest.c failed to check whether type is valid, when passed as an argument to strcpy, strcpy will cause seg core.  Resolved it by explicitly adding a checking and prompting user to specify it correctly.  2, Also added  keyword for all .c files.
+ * 
+ */
+
 #include <math.h>
 #include "parse_cmd_ln.h"
 
@@ -992,6 +998,10 @@ main(int argc, char *argv[])
     parse_cmd_ln(argc, argv);
 
     type = (char *)cmd_ln_access("-type");
+
+    if(type==NULL){
+      E_FATAL("Please specify -type, either \".cont\" or \".semi\"\n");
+    }
     if (strcmp(type,".cont.") == 0) 
         continuous = 1;
     else
