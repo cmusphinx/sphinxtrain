@@ -458,6 +458,9 @@ prune_leaves(dtree_node_t *node,
     dtree_node_t *y, *n;
     uint32 y_clust, n_clust;
 
+    if (IS_LEAF(node))
+	return NO_CLUST;
+
     y = node->y;
     n = node->n;
     
@@ -1802,9 +1805,14 @@ ins_twigs(dtree_node_t *node,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:05:39  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2005/07/14  13:41:07  dhdfu
+ * Bug 633610 (Carl Quillen): If the data set is very small, we may call
+ * prune_leaves() with a leaf node.  Don't try to descend into subnodes
+ * in that case!
  * 
+ * Revision 1.4  2004/07/21 18:05:39  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *
