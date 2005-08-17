@@ -448,7 +448,7 @@ map_update(void)
 			  n_density, n_density_rd, veclen, veclen_rd);
 	if (pass2var && map_var_fn)
 	    E_FATAL("Variance re-estimation requested, but -2passvar was specified in bw.");
-	if (map_mixw_fn) {
+	if (map_mixw_fn || !cmd_ln_int32("-fixedtau")) {
 	    if (rdacc_mixw(accum_dir[i],
 			   &wt_mixw,
 			   &n_mixw_rd, &n_stream_rd, &n_density_rd) != S3_SUCCESS)
