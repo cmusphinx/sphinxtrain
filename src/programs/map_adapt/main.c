@@ -385,7 +385,7 @@ map_update(void)
 
     /* Must have means and variances. */
     if (si_mean_fn == NULL || si_var_fn == NULL || si_mixw_fn == NULL)
-	E_FATAL("Must specify baseline means and variances\n");
+	E_FATAL("Must specify baseline means, variances, and mixture weights\n");
 
     /* Must specify output means. */
     if (map_mean_fn == NULL)
