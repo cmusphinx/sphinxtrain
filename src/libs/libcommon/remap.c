@@ -77,7 +77,7 @@ next_prime(uint32 n)
 	    break;
 	if (l == n)
 	{
-	    fprintf(stderr,"next_prime: failed to find next primt for %d\n",
+	    fprintf(stderr,"next_prime: failed to find next prime for %d\n",
 		    n);
 	    break;
 	}
@@ -192,9 +192,12 @@ remap_free(map_t *m)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.6  2005/08/26  20:34:15  egouvea
+ * Removed unused variables from the scripts
  * 
+ * Revision 1.5  2004/07/21 18:05:40  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.4  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *

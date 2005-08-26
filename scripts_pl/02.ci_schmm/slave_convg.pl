@@ -170,7 +170,6 @@ sub FlatInitialize ()
     # segmentation files for the whole training database.
     #**************************************************************************
     
-    $gender              = $CFG_GENDER;
     $logdir              = "$CFG_LOG_DIR/02.ci_schmm";
     $modarchdir          = "$CFG_BASE_DIR/model_architecture";
     $hmmdir              = "$CFG_BASE_DIR/model_parameters";
