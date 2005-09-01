@@ -49,7 +49,7 @@ if (lc($ARGV[0]) eq '-cfg') {
 }
 
 if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
+    print "Unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n";
     exit -3;
 }
 require $cfg_file;
@@ -60,18 +60,24 @@ require $cfg_file;
 # script.
 # ***************************************************************************
 
-my $n_split = $CFG_FINAL_NUM_DENSITIES;
-
 # If the number of parts is given as command line argument, overwrite
 # the number coming from the config file
-if (($#ARGV >= ($index))) {
-   $n_split= $ARGV[$index];
+if (($#ARGV < ($index + 1))) {
+  print "Arguments missing. \n" .
+    "Usage: $0 [-cfg <config file>] <current n_gaussians> <increase>\n";
+  exit -3;
+}
+my $n_current = $ARGV[$index];
+my $n_inc = $ARGV[$index + 1];
+if ($n_current + $n_inc > $CFG_FINAL_NUM_DENSITIES) {
+  $ST_Log("Increase in number of Gaussians beyond the desired total\n" .
+	  "Current: $n_current, increase by: $n_inc, desired total: $CFG_FINAL_NUM_DENSITIES\n";);
+  exit -3;
 }
 
 # With semi continuous models, we already start with the right number
 # of components
 if ($CFG_HMM_TYPE eq ".semi.") {
-  print LOG "Split Gaussian not performed for semi continuous\n";
   &ST_Log ("Split Gaussian not performed for semi continuous\n");
   exit 0;
 }
@@ -84,7 +90,7 @@ mkdir ("$logdir",0777) unless -d $logdir;
 my $modeldir  = "$CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777) unless -d $modeldir;
 
-&ST_Log ("    Split Gaussians, increase by $n_split\n");
+&ST_Log ("    Split Gaussians, increase by $n_inc\n");
     
 #**************************************************************************
 # this script copies the mixw/mean/var/tmat from a cd (continuous)
@@ -112,7 +118,7 @@ my $dest_meanfn = "$dest_hmmdir/means";
 my $dest_varfn = "$dest_hmmdir/variances";
 my $dest_tmatfn = "$dest_hmmdir/transition_matrices";
 
-my $backup_hmmdir =  "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}_${n_split}";
+my $backup_hmmdir =  "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}_${n_current}";
 mkdir ($backup_hmmdir,0777) unless -d $backup_hmmdir;
 
 my $backup_mixwfn = "$backup_hmmdir/mixture_weights";
@@ -129,6 +135,11 @@ copy "$src_tmatfn", "$backup_tmatfn";
 # The transition file won't change, so just copy it
 copy "$src_tmatfn", "$dest_tmatfn";
 
+# If $n_inc isn't at least 1, there's nothing else to do
+if ($n_inc <= 0) {
+  exit 0;
+}
+
 my $logdir = "$CFG_BASE_DIR/logdir/07.cd-schmm";
 mkdir ($logdir,0777) unless -d $logdir;
 my $logfile = "$logdir/$CFG_EXPTNAME.copy.ci.2.cd.log";
@@ -138,7 +149,7 @@ my $SPLIT = "$CFG_BIN_DIR/inc_comp";
 open LOG,"> $logfile";
 
 my $split_cmd = "\"$SPLIT\" " .
-  "-ninc $n_split " .
+  "-ninc $n_inc " .
   "-dcountfn \"$src_mixwfn\" " .
   "-inmixwfn  \"$src_mixwfn\" " .
   "-outmixwfn \"$dest_mixwfn\" " .

@@ -204,13 +204,13 @@ sub Launch_SplitGaussian() {
         } else {
 	    $n_split = $CFG_FINAL_NUM_DENSITIES - $n_gau;
         }
-        system ("perl \"$scriptdir/split_gaussians.pl\" $n_split");
+        system ("perl \"$scriptdir/split_gaussians.pl\" $n_gau $n_split");
 
 # Launch_BW exits
 	$iter = 0;
 	$n_gau = $n_gau + $n_split;
         &Launch_BW();
       } elsif ($n_gau == $CFG_FINAL_NUM_DENSITIES) {
-	system("perl \"$scriptdir/split_gaussians.pl\" $CFG_FINAL_NUM_DENSITIES");
+	system("perl \"$scriptdir/split_gaussians.pl\" $CFG_FINAL_NUM_DENSITIES 0");
       }
 }
