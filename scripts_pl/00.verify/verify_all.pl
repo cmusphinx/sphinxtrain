@@ -60,7 +60,7 @@ $| = 1;				# Turn on autoflushing
 # My test files for OS case sensitivity
 $lowercase_file = "tmp_case_sensitive_test";
 $uppercase_file = "TMP_CASE_SENSITIVE_TEST";
-# Clean up both cases
+# Just in case, clean up both cases
 unlink $uppercase_file;
 unlink $lowercase_file;
 # Create file with lowercase name
@@ -209,6 +209,7 @@ unlink $uppercase_file;
     $status = 'passed';
     $estimated_training_data = 0;
     for $ctl_line (@ctl_lines) {
+        chomp($ctl_line);
 	# Accept: filename int int possible_comment
 	if ($ctl_line =~ m/(.+)\s(\d+)\s(\d+).*/) {
 	    $file = $1;
@@ -229,7 +230,7 @@ unlink $uppercase_file;
 	    }
 	} else {
 	    # Accepts only the file name and possible comment on line by itself..no start/send markers
-	    if ($ctl_line =~ m/([^\s]+)\s.*/) {
+	    if ($ctl_line =~ m/^(\S+)(\s.*)?$/) {
 		$file = $1;
 		$size = -s "$CFG_FEATFILES_DIR/$file.$CFG_FEATFILE_EXTENSION";
 		# 1 frame = 13 floating point numbers = 13*4bytes = 52 bytes (only valid for MFC files)

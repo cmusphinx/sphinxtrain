@@ -74,7 +74,7 @@ my $logfile = "$logdir/$CFG_EXPTNAME.prunetree.$n_tied_states.log";
 
 $| = 1; # Turn on autoflushing
 &ST_Log ("    Prune trees\n");
-&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
+&ST_HTML_Print ("\t\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
 $status = system ("\"$PRUNETREE\" -itreedir \"$unprunedtreedir\" -nseno $n_tied_states -otreedir \"$prunedtreedir\" -moddeffn \"$mdef_file\" -psetfn \"$CFG_QUESTION_SET\" -minocc $occurance_threshold > \"$logfile\" 2>&1");
 
