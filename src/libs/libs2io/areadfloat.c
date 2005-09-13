@@ -147,6 +147,7 @@ areadfloat_part (char *file,
     float *r_buf;
     int i;
 
+    assert(s_coeff <= e_coeff);
     if (strcmp(file, p_file) != 0) {
 	if (fp) {
 	    fclose(fp);
