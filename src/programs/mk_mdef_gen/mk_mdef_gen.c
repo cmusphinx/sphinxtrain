@@ -499,6 +499,7 @@ int32  count_triphones (char *transfile,
 		basephone = wordarr[i]->phones[0];
 		phnptr = phninstall(basephone,lphnhash);
 		phnptr->count++;
+		if (IS_FILLER(basephone)) continue;
                 if (!IS_FILLER(basephone)){
 		    if (wordarr[i-1] != NULL){
 		        lctxt = wordarr[i-1]->phones[wordarr[i-1]->nphns - 1];
