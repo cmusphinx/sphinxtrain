@@ -116,10 +116,10 @@ int lts_apply(const char *in_word,const char *feats,
 	hash = '#';
     }
 
-    /* Do the prediction backwards so we don't need to reverse the answer */
-    for (pos = r->context_window_size + strlen(word) - 1;
+    /* Do the prediction forwards (begone, foul LISP!) */
+    for (pos = r->context_window_size;
 	 full_buff[pos] != hash;
-	 pos--)
+	 ++pos)
     {
 	/* Fill the features buffer for the predictor */
 	sprintf(fval_buff,"%.*s%.*s%s",
@@ -164,8 +164,6 @@ int lts_apply(const char *in_word,const char *feats,
 			       (strlen(p)-1));
 	    out_phones->phone[out_phones->phone_cnt++] = left;
 	    out_phones->phone[out_phones->phone_cnt++] = right;
-	    ckd_free(left);
-	    ckd_free(right);
 	}
 	else
 	    out_phones->phone[out_phones->phone_cnt++] =
@@ -209,3 +207,35 @@ static cst_lts_phone apply_model(cst_lts_letter *vals,cst_lts_addr start,
 
     return (cst_lts_phone)state.val;
 }
+
+#ifdef UNIT_TEST
+/* gcc -DUNIT_TEST -I../../../include ckd_alloc.c cmu6_lts_rules.c err.c lts.c */
+void
+lex_print(lex_entry_t *ent)
+{
+    int i;
+    for (i = 0; i < ent->phone_cnt; ++i) {
+	printf("%s ", ent->phone[i]);
+    }
+    printf("\n");
+}
+
+int
+main(int argc, char *argv[])
+{
+    lex_entry_t out;
+    int i;
+
+    lts_apply("HELLO", "", &cmu6_lts_rules, &out);
+    lex_print(&out);
+    ckd_free(out.phone);
+    ckd_free(out.ci_acmod_id);
+
+    lts_apply("EXCELLENT", "", &cmu6_lts_rules, &out);
+    lex_print(&out);
+    ckd_free(out.phone);
+    ckd_free(out.ci_acmod_id);
+
+    return 0;
+}
+#endif
