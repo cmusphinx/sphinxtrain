@@ -53,7 +53,11 @@
 
 typedef struct {
     uint32 n_feat;
+#ifdef SWIG /* A bug in SWIG - it thinks "const" means "static const" inside a struct. */
+    uint32 *veclen;
+#else
     const uint32 *veclen;
+#endif
 
     uint32 n_mgau;
     uint32 n_density;
@@ -71,7 +75,7 @@ typedef struct {
     vector_t ***l_vacc;
     float32  ***l_dnom;
 
-    uint32 *mllr_idx;		/* MLLR class for each mixture Gaussian */
+    int32 *mllr_idx;		/* MLLR class for each mixture Gaussian */
     uint32 n_mllr_class;	/* Total # of MLLR classes */
 
     float32  ****l_regr_acc;
@@ -316,9 +320,12 @@ gauden_massage_var(vector_t ***var,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2005/09/15  19:31:27  dhdfu
+ * Correct signedness (also sneak in a secret change for a secret project)
  * 
+ * Revision 1.4  2004/07/21 17:46:09  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *
