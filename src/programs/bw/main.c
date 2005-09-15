@@ -251,7 +251,7 @@ main_initialize(int argc,
     fn = cmd_ln_access("-cb2mllrfn");
     if (fn != NULL) {
 	if (strcmp(fn, ".1cls.") == 0) {
-	    inv->gauden->mllr_idx = ckd_calloc(inv->gauden->n_mgau, sizeof(uint32));
+	    inv->gauden->mllr_idx = ckd_calloc(inv->gauden->n_mgau, sizeof(int32));
 	    n_mllr = 1;
 	    n_map = inv->gauden->n_mgau;
 	}
@@ -978,9 +978,12 @@ int main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.9  2004/11/17  01:46:58  arthchan2003
- * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
+ * Revision 1.10  2005/09/15  19:32:36  dhdfu
+ * Another (meaningless) signedness fix
  * 
+ * Revision 1.9  2004/11/17 01:46:58  arthchan2003
+ * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
+ *
  * Revision 1.8  2004/07/22 00:08:39  egouvea
  * Fixed some compilation warnings.
  *
