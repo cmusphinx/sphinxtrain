@@ -319,6 +319,8 @@ main_initialize(int argc,
 		       mdef->acmod_set);
     if (lex == NULL)
 	return S3_ERROR;
+    if (cmd_ln_int32("-ltsoov"))
+	lex->lts_rules = (lts_t *)&cmu6_lts_rules;
     
     filler_dict = cmd_ln_access("-fdictfn");
     if (filler_dict) {
@@ -978,9 +980,15 @@ int main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.10  2005/09/15  19:32:36  dhdfu
- * Another (meaningless) signedness fix
+ * Revision 1.11  2005/09/15  19:36:00  dhdfu
+ * Add (as yet untested) support for letter-to-sound rules (from CMU
+ * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only
+ * rules for CMUdict exist.  Of course this is not a substitute for
+ * actually checking pronunciations...
  * 
+ * Revision 1.10  2005/09/15 19:32:36  dhdfu
+ * Another (meaningless) signedness fix
+ *
  * Revision 1.9  2004/11/17 01:46:58  arthchan2003
  * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
  *

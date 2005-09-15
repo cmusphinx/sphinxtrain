@@ -385,6 +385,12 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_DEFAULT,
 	  "The filler word dictionary (e.g. SIL, SILb, ++COUGH++)" },
 
+	{ "-ltsoov",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Use CMUDict letter-to-sound rules to generate pronunciations for out-of-vocabulary words" },
+
 	{ "-ctlfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -664,9 +670,15 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.11  2005/04/07  21:23:39  egouvea
- * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
+ * Revision 1.12  2005/09/15  19:36:00  dhdfu
+ * Add (as yet untested) support for letter-to-sound rules (from CMU
+ * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only
+ * rules for CMUdict exist.  Of course this is not a substitute for
+ * actually checking pronunciations...
  * 
+ * Revision 1.11  2005/04/07 21:23:39  egouvea
+ * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
+ *
  * Revision 1.10  2004/11/29 01:43:44  egouvea
  * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  *

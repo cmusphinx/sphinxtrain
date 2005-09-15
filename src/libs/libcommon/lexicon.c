@@ -171,6 +171,8 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 	lex = prior_lex;
     else
 	lex = lexicon_new();
+    if (lex->phone_set == NULL)
+	lex->phone_set = acmod_set;
     
     for (start_wid = wid = lex->entry_cnt;
 	 read_line(line, 1023, &lineno, lex_fp) != NULL;
@@ -243,6 +245,33 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
     if (hash_lookup(lex->ht, ortho, (void **)&cur) == 0) {
 	return cur;
     }
+    else if (lex->lts_rules) {
+	int i;
+
+	E_INFO("No defined pronunciation for %s, using LTS prediction\n", ortho);
+	cur = lexicon_append_entry(lex);
+	lts_apply(ortho, NULL, lex->lts_rules, cur);
+	/* Check that all the phones are in the mdef (we have real
+	 * problems if not!) */
+	for (i = 0; i < cur->phone_cnt; ++i) {
+	    cur->ci_acmod_id[i] =
+		acmod_set_name2id(lex->phone_set, cur->phone[i]);
+	    if (cur->ci_acmod_id[i] == NO_ACMOD) {
+		E_ERROR("Unknown phone %s\n", cur->phone[i]);
+		ckd_free(cur->phone);
+		cur->phone = NULL;
+		ckd_free(cur->ci_acmod_id);
+		cur->ci_acmod_id = NULL;
+		cur->phone_cnt = 0;
+		return NULL;
+	    }
+	}
+	if (add_word(ortho, lex->entry_cnt, lex, cur) != S3_SUCCESS) {
+	    E_ERROR("Failed to add LTS pronunciation to lexicon!\n");
+	    return NULL;
+	}
+	return cur;
+   }
     else
 	return NULL;
 }
@@ -251,9 +280,15 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:05:39  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2005/09/15  19:36:01  dhdfu
+ * Add (as yet untested) support for letter-to-sound rules (from CMU
+ * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only
+ * rules for CMUdict exist.  Of course this is not a substitute for
+ * actually checking pronunciations...
  * 
+ * Revision 1.4  2004/07/21 18:05:39  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *

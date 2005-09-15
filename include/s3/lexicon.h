@@ -51,8 +51,8 @@
 #include <s3/acmod_set.h>
 #include <s3/list.h>
 #include <s3/hash.h>
-
 #include <s3/prim_type.h>
+#include <s3/lts.h>
 
 typedef uint32 word_id_t;
 #define WORD_NO_ID	(0xffffffff)
@@ -67,7 +67,7 @@ typedef struct lex_entry_str {
     struct lex_entry_str *next;
 } lex_entry_t;
 
-typedef struct {
+typedef struct lexicon_s {
 /*    lex_entry_t *entry; */
 
     lex_entry_t *head;
@@ -75,6 +75,8 @@ typedef struct {
 
     uint32 entry_cnt;
     hash_t ht;
+    lts_t *lts_rules;
+    acmod_set_t *phone_set;
 } lexicon_t;
 
 lexicon_t *lexicon_new(void);
@@ -95,9 +97,15 @@ lexicon_lookup(lexicon_t *lexicon,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2005/09/15  19:36:01  dhdfu
+ * Add (as yet untested) support for letter-to-sound rules (from CMU
+ * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only
+ * rules for CMUdict exist.  Of course this is not a substitute for
+ * actually checking pronunciations...
  * 
+ * Revision 1.4  2004/07/21 17:46:09  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *

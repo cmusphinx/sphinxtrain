@@ -51,6 +51,7 @@ SRCS = \
   ck_seg.c \
   ckd_alloc.c \
   cmd_ln.c \
+  cmu6_lts_rules.c \
   cvt2triphone.c \
   dtree.c \
   enum_subset.c \
@@ -62,6 +63,7 @@ SRCS = \
   heap.c \
   itree.c \
   lexicon.c \
+  lts.c \
   matrix.c \
   mk_phone_list.c \
   mk_phone_seq.c \
@@ -81,7 +83,7 @@ SRCS = \
   two_class.c \
   vector.c \
   was_added.c
-H =
+H = cmu6_lts_rules.h
 
 FILES = Makefile $(SRCS) $(H)
 LIBNAME= common
