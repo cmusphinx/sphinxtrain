@@ -246,9 +246,10 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
 	return cur;
     }
     else if (lex->lts_rules) {
-	int i;
+        int i, wid;
 
 	E_INFO("No defined pronunciation for %s, using LTS prediction: ", ortho);
+	wid = lex->entry_cnt;
 	cur = lexicon_append_entry(lex);
 	lts_apply(ortho, "", lex->lts_rules, cur);
 	/* Check that all the phones are in the mdef (we have real
@@ -269,7 +270,10 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
 	    }
 	}
 	fprintf(stderr, "\n");
-	if (add_word(ortho, lex->entry_cnt, lex, cur) != S3_SUCCESS) {
+	/* FIXME: This doesn't seem to actually be working (i.e. the
+	   new pronunciation is being properly entered into the
+	   lexicon).  I don't know why yet. */
+	if (add_word(ortho, wid, lex, cur) != S3_SUCCESS) {
 	    E_ERROR("Failed to add LTS pronunciation to lexicon!\n");
 	    return NULL;
 	}
@@ -283,9 +287,12 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2005/09/15  19:56:42  dhdfu
- * fix small bugs, LTS support works now
+ * Revision 1.7  2005/09/15  20:05:55  dhdfu
+ * fix handling of wids, add a FIXME because for some reason the hashing is not working (though otherwise things are fine)
  * 
+ * Revision 1.6  2005/09/15 19:56:42  dhdfu
+ * fix small bugs, LTS support works now
+ *
  * Revision 1.5  2005/09/15 19:36:01  dhdfu
  * Add (as yet untested) support for letter-to-sound rules (from CMU
  * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only
