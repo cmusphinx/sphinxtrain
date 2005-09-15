@@ -129,7 +129,7 @@ copy "$CFG_GIF_DIR/green-ball.gif", "$CFG_BASE_DIR/.07.bw.$n_gau.$iter.$part.sta
 open LOG,">$logfile";
 
 $BW   = "$CFG_BIN_DIR/bw";
-if (open PIPE, "\"$BW\" -moddeffn \"$moddeffn\" -ts2cbfn \"$statepdeffn\" -mixwfn \"$mixwfn\" -mwfloor $mwfloor -tmatfn \"$tmatfn\" -meanfn \"$meanfn\" -varfn \"$varfn\" -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -ctlfn \"$CFG_LISTOFFILES\" -part $part -npart $npart -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -lsnfn \"$CFG_TRANSCRIPTFILE\" -accumdir \"$output_buffer_dir\" -varfloor $minvar -topn $topn -abeam 1e-90 -bbeam 1e-40 -agc $CFG_AGC -cmn $CFG_CMN -meanreest yes -varreest yes -2passvar $var2pass -tmatreest yes -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
+if (open PIPE, "\"$BW\" -moddeffn \"$moddeffn\" -ts2cbfn \"$statepdeffn\" -mixwfn \"$mixwfn\" -mwfloor $mwfloor -tmatfn \"$tmatfn\" -meanfn \"$meanfn\" -varfn \"$varfn\" -ltsoov $CFG_LTSOOV -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -ctlfn \"$CFG_LISTOFFILES\" -part $part -npart $npart -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -lsnfn \"$CFG_TRANSCRIPTFILE\" -accumdir \"$output_buffer_dir\" -varfloor $minvar -topn $topn -abeam 1e-90 -bbeam 1e-40 -agc $CFG_AGC -cmn $CFG_CMN -meanreest yes -varreest yes -2passvar $var2pass -tmatreest yes -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
 
     $processed_counter = 0;
     &ST_Log ("\n        Using $ctl_counter files: ");
