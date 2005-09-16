@@ -247,6 +247,7 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
     }
     else if (lex->lts_rules) {
         int i, wid;
+	char *word;
 
 	E_INFO("No defined pronunciation for %s, using LTS prediction: ", ortho);
 	wid = lex->entry_cnt;
@@ -270,10 +271,8 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
 	    }
 	}
 	fprintf(stderr, "\n");
-	/* FIXME: This doesn't seem to actually be working (i.e. the
-	   new pronunciation is being properly entered into the
-	   lexicon).  I don't know why yet. */
-	if (add_word(ortho, wid, lex, cur) != S3_SUCCESS) {
+	word = ckd_salloc(ortho);
+	if (add_word(word, wid, lex, cur) != S3_SUCCESS) {
 	    E_ERROR("Failed to add LTS pronunciation to lexicon!\n");
 	    return NULL;
 	}
@@ -287,9 +286,12 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.7  2005/09/15  20:05:55  dhdfu
- * fix handling of wids, add a FIXME because for some reason the hashing is not working (though otherwise things are fine)
+ * Revision 1.8  2005/09/16  20:08:40  dhdfu
+ * fix a memory problem - hash_enter does not copy keys
  * 
+ * Revision 1.7  2005/09/15 20:05:55  dhdfu
+ * fix handling of wids, add a FIXME because for some reason the hashing is not working (though otherwise things are fine)
+ *
  * Revision 1.6  2005/09/15 19:56:42  dhdfu
  * fix small bugs, LTS support works now
  *
