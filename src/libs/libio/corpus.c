@@ -1481,10 +1481,15 @@ corpus_get_mfcc(vector_t **mfc,
     uint32 no_retries=0;
 
     if (!requires_mfcc) {
-	/* asked for mfc data, but not set up to send it */
-	return S3_ERROR;
+      /* asked for mfc data, but not set up to send it */
+      return S3_ERROR;
     }
 
+    if(cur_ctl_sf > cur_ctl_ef){
+      E_ERROR("Start frame is later than end frame for utt %s \n", corpus_utt());
+      return S3_ERROR;
+    }
+    
     /* start prefetching the next file, if one. */
     if (strlen(next_ctl_path) > 0)
 	(void) prefetch_hint(mk_filename(DATA_TYPE_MFCC, next_ctl_path));
@@ -1981,9 +1986,12 @@ read_sildel(uint32 **out_sf,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.10  2004/11/17  01:46:57  arthchan2003
- * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
+ * Revision 1.11  2005/09/27  02:01:15  arthchan2003
+ * Return S3_ERROR when starting frame is larger than ending frame.
  * 
+ * Revision 1.10  2004/11/17 01:46:57  arthchan2003
+ * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
+ *
  * Revision 1.8  2004/07/21 18:05:40  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *
