@@ -188,6 +188,15 @@ agg_seg(lexicon_t *lex,
 
 		feat_set_in_veclen(n_coeff);
 		
+		if (n_frame < 9) {
+		  E_WARN("utt %s too short\n", corpus_utt());
+		  if (mfcc) {
+		    ckd_free(mfcc[0]);
+		    ckd_free(mfcc);
+		  }
+		  continue;
+		}
+
 		feat = feat_compute(mfcc, &n_frame);
 
 		for (s = 0; s < n_phone; s++) {
@@ -235,9 +244,12 @@ agg_seg(lexicon_t *lex,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2005/09/27  02:02:47  arthchan2003
+ * Check whether utterance is too short in init_gau, bw and agg_seg.
  * 
+ * Revision 1.4  2004/07/21 18:30:32  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

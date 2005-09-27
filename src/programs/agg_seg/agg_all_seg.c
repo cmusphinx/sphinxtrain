@@ -150,6 +150,15 @@ agg_all_seg(segdmp_type_t type,
 		feat = NULL;
 	    }
 	    
+	    if (n_frame < 9) {
+	      E_WARN("utt %s too short\n", corpus_utt());
+	      if (mfcc) {
+		ckd_free(mfcc[0]);
+		ckd_free(mfcc);
+	      }
+	      continue;
+	    }
+
 	    feat = feat_compute(mfcc, &n_frame);
 
 	    for (t = 0; t < n_frame; t++, j++) {
@@ -201,9 +210,12 @@ agg_all_seg(segdmp_type_t type,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/11/17  01:46:58  arthchan2003
- * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
+ * Revision 1.6  2005/09/27  02:02:47  arthchan2003
+ * Check whether utterance is too short in init_gau, bw and agg_seg.
  * 
+ * Revision 1.5  2004/11/17 01:46:58  arthchan2003
+ * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
+ *
  * Revision 1.4  2004/07/21 18:30:32  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

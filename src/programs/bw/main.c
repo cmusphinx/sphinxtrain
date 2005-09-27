@@ -686,7 +686,7 @@ main_reestimate(model_inventory_t *inv,
 	printf(" %4u", n_frame);
 
 	if (n_frame < 9) {
-	    E_WARN("utt too short\n");
+	    E_WARN("utt %s too short\n", corpus_utt());
 	    if (mfcc) {
 		ckd_free(mfcc[0]);
 		ckd_free(mfcc);
@@ -980,12 +980,15 @@ int main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.11  2005/09/15  19:36:00  dhdfu
+ * Revision 1.12  2005/09/27  02:02:47  arthchan2003
+ * Check whether utterance is too short in init_gau, bw and agg_seg.
+ * 
+ * Revision 1.11  2005/09/15 19:36:00  dhdfu
  * Add (as yet untested) support for letter-to-sound rules (from CMU
  * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only
  * rules for CMUdict exist.  Of course this is not a substitute for
  * actually checking pronunciations...
- * 
+ *
  * Revision 1.10  2005/09/15 19:32:36  dhdfu
  * Another (meaningless) signedness fix
  *

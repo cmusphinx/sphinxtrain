@@ -154,6 +154,7 @@ init_gau(lexicon_t *lex,
 
 	E_INFO("Computing %ux%ux1 variance estimates\n", n_ts, feat_n_stream());
 
+
 	if (s3gau_read(meanfn,
 		       &mean,
 		       &r_n_ts,
@@ -249,6 +250,7 @@ init_gau(lexicon_t *lex,
 	}
 
 
+
 /* CHANGE BY BHIKSHA; IF INPUT VECLEN != 13, THEN DO NOT USE THE
    REGULAR corpus_get_mfcc() WHICH REQUIRES INPUT DATA TO BE 13 DIMENSIONAL
    CEPSTRA. USE, INSTEAD, THE HACKED VERSION corpus_get_generic_featurevec()
@@ -277,6 +279,16 @@ init_gau(lexicon_t *lex,
 	}
 
 	feat_n_frame = n_frame;
+
+	if (n_frame < 3) {
+	    E_WARN("utt %s too short\n", corpus_utt());
+	    if (mfcc) {
+		ckd_free(mfcc[0]);
+		ckd_free(mfcc);
+	    }
+	    continue;
+	}
+
 
 	f = feat_compute(mfcc, &feat_n_frame);
 
@@ -367,9 +379,12 @@ init_gau(lexicon_t *lex,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2005/09/27  02:02:47  arthchan2003
+ * Check whether utterance is too short in init_gau, bw and agg_seg.
  * 
+ * Revision 1.4  2004/07/21 18:30:34  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
