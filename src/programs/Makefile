@@ -52,6 +52,7 @@ BUILD_DIRS = agg_seg \
 	inc_comp \
 	init_gau \
 	init_mixw \
+	kdtree \
 	kmeans_init \
 	make_quests \
 	map_adapt \

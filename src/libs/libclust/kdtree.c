@@ -49,12 +49,16 @@
 
 #include <s3/common.h>
 #include <s3/kdtree.h>
+#include <string.h>
 #include <math.h>
 
 static int build_kdtree_level(kd_tree_node_t *node, uint32 n_levels);
+static int compare_float32(const void *a, const void *b);
+
+#define KDTREE_VERSION 1
 
 kd_tree_node_t *
-build_kd_tree(vector_t *means, vector_t *variances,
+build_kd_tree(const vector_t *means, const vector_t *variances,
 	      uint32 n_density, uint32 n_comp,
 	      float32 threshold, int32 n_levels)
 {
@@ -75,7 +79,8 @@ build_kd_tree(vector_t *means, vector_t *variances,
 	for (i = 0; i < n_density; ++i)
 		for (j = 0; j < n_comp; ++j)
 			node->boxes[i][j] = sqrt(-2 * node->variances[i][j] * log(threshold));
-	node->is_root = 1;
+	node->threshold = threshold;
+	node->n_level = n_levels;
 
 	/* Initialize projection for root node. */
 	node->upper = vector_alloc(n_comp);
@@ -126,7 +131,7 @@ build_kdtree_level(kd_tree_node_t *node, uint32 n_levels)
 	printf(" (");
 	for (j = 0; j < node->n_comp; ++j)
 		printf("%.3f ", node->upper[j]);
-	printf(")\nIntersects Gaussians: ");
+
 	/* Find all gaussians that intersect the current node's projection. */
 	node->bbi = ckd_calloc(node->n_density, sizeof(*node->bbi));
 	for (k = i = 0; i < node->n_density; ++i) {
@@ -145,11 +150,10 @@ build_kdtree_level(kd_tree_node_t *node, uint32 n_levels)
 		/* Otherwise it intersects. */
 		node->bbi[i] = 1;
 		++k;
-		printf("%d ", i);
 	next_density:
 		;
 	}
-	printf("(total %d)\n", k);
+	printf("Intersects %d Gaussians\n", k);
 
 	/* Terminate the recursion. */
 	if (--n_levels == 0)
@@ -217,28 +221,32 @@ build_kdtree_level(kd_tree_node_t *node, uint32 n_levels)
 		       j, plane, split);
 		if (split < best_split) {
 			best_split = split;
-			node->split_idx = j;
+			node->split_comp = j;
 			node->split_plane = plane;
 		}
 	}
 	printf("Splitting node at component %d on plane %f\n",
-	       node->split_idx, node->split_plane);
+	       node->split_comp, node->split_plane);
 
 	node->left = ckd_calloc(1, sizeof(*node->left));
 	memcpy(node->left, node, sizeof(*node->left));
+	node->left->left = node->left->right = NULL;
+	node->left->n_level = 0; /* Mark it as non-root */
 	node->left->lower = vector_alloc(node->n_comp);
 	node->left->upper = vector_alloc(node->n_comp);
 	memcpy(node->left->lower, node->lower, sizeof(*node->left->lower) * node->n_comp);
 	memcpy(node->left->upper, node->upper, sizeof(*node->left->upper) * node->n_comp);
-	node->left->upper[node->split_idx] = node->split_plane;
+	node->left->upper[node->split_comp] = node->split_plane;
 
 	node->right = ckd_calloc(1, sizeof(*node->right));
 	memcpy(node->right, node, sizeof(*node->right));
+	node->right->left = node->right->right = NULL;
+	node->right->n_level = 0; /* Mark it as non-root */
 	node->right->lower = vector_alloc(node->n_comp);
 	node->right->upper = vector_alloc(node->n_comp);
 	memcpy(node->right->lower, node->lower, sizeof(*node->right->lower) * node->n_comp);
 	memcpy(node->right->upper, node->upper, sizeof(*node->right->upper) * node->n_comp);
-	node->right->lower[node->split_idx] = node->split_plane;
+	node->right->lower[node->split_comp] = node->split_plane;
 
 	build_kdtree_level(node->left, n_levels);
 	build_kdtree_level(node->right, n_levels);
@@ -253,10 +261,200 @@ free_kd_tree(kd_tree_node_t *tree)
 		return;
 	free_kd_tree(tree->left);
 	free_kd_tree(tree->right);
-	if (tree->is_root)
+	if (tree->n_level)
 		ckd_free(tree->boxes);
 	ckd_free(tree->bbi);
 	ckd_free(tree->lower);
 	ckd_free(tree->upper);
 	ckd_free(tree);
+}
+
+static int32
+write_kd_nodes(FILE *fp, kd_tree_node_t *node, uint32 level)
+{
+	uint32 i;
+
+	if (node == NULL)
+		return 0;
+
+	fprintf(fp, "NODE %d\n", level);
+	fprintf(fp, "split_comp %d\n", node->split_comp);
+	fprintf(fp, "split_plane %f\n", node->split_plane);
+	fprintf(fp, "bbi ");
+	for (i = 0; i < node->n_density; ++i)
+		if (node->bbi[i])
+			fprintf(fp, "%d ", i);
+	fprintf(fp, "\n\n");
+
+	write_kd_nodes(fp, node->left, level-1);
+	write_kd_nodes(fp, node->right, level-1);
+
+	return 0;
+}
+
+int32
+write_kd_trees(const char *outfile, kd_tree_node_t **trees, uint32 n_trees)
+{
+	FILE *fp;
+	uint32 i;
+
+	if ((fp = fopen(outfile, "w"))  == NULL) {
+		E_ERROR_SYSTEM("Failed to open %s", outfile);
+		return -1;
+	}
+	fprintf(fp, "KD-TREES\n");
+	fprintf(fp, "version %d\n", KDTREE_VERSION);
+	fprintf(fp, "n_trees %d\n", n_trees);
+	for (i = 0; i < n_trees; ++i) {
+		fprintf(fp, "TREE %d\n", i);
+		fprintf(fp, "n_density %d\n", trees[i]->n_density);
+		fprintf(fp, "n_comp %d\n", trees[i]->n_comp);
+		fprintf(fp, "n_level %d\n", trees[i]->n_level);
+		fprintf(fp, "threshold %f\n", trees[i]->threshold);
+		/* Output the nodes in depth-first ordering */
+		write_kd_nodes(fp, trees[i], trees[i]->n_level);
+		fprintf(fp, "\n");
+	}
+	fclose(fp);
+	return 0;
+}
+
+static int32
+read_tree_int(FILE *fp, const char *name, int32 *out)
+{
+	char line[256];
+	int n;
+
+	n = fscanf(fp, "%255s %d", line, out);
+	if (n != 2 || strcmp(line, name)) {
+		E_ERROR("%s not found: %d %s %d\n", name, n, line, out);
+		return -1;
+	}
+	return 0;
+}
+
+static int32
+read_tree_float(FILE *fp, const char *name, float32 *out)
+{
+	char line[256];
+	int n;
+
+	n = fscanf(fp, "%255s %f", line, out);
+	if (n != 2 || strcmp(line, name)) {
+		E_ERROR("%s not found: %d %s %f\n", name, n, line, out);
+		return -1;
+	}
+	return 0;
+}
+
+int32
+read_kd_nodes(FILE *fp, kd_tree_node_t *node, uint32 level)
+{
+	uint32 n;
+	int i;
+
+	if (read_tree_int(fp, "NODE", &n) < 0)
+		return -1;
+	if (n != level) {
+		E_ERROR("Levels for node don't match (%d != %d)\n", n, level);
+		return -1;
+	}
+	if (read_tree_int(fp, "split_comp", &node->split_comp) < 0)
+		return -1;
+	if (read_tree_float(fp, "split_plane", &node->split_plane) < 0)
+		return -1;
+	if (read_tree_int(fp, "bbi", &n) < 0)
+		return -1;
+	if (n >= node->n_density) {
+		E_ERROR("BBI Gaussian %d out of range! %d\n", n);
+		return -1;
+	}
+	node->bbi = ckd_calloc(node->n_density, sizeof(*node->bbi));
+	node->bbi[n] = 1;
+	while ((i = fscanf(fp, "%d", &n))) {
+		if (feof(fp))
+			break;
+		if (n >= node->n_density) {
+			E_ERROR("BBI Gaussian %d out of range! %d\n", n, i);
+			return -1;
+		}
+		node->bbi[n] = 1;
+	}
+
+	if (level == 1)
+		return 0;
+
+	node->left = ckd_calloc(1, sizeof(*node->left));
+	node->left->n_density = node->n_density;
+	node->left->n_comp = node->n_comp;
+	if (read_kd_nodes(fp, node->left, level-1) < 0)
+		return -1;
+	node->right = ckd_calloc(1, sizeof(*node->left));
+	node->right->n_density = node->n_density;
+	node->right->n_comp = node->n_comp;
+	if (read_kd_nodes(fp, node->right, level-1) < 0)
+		return -1;
+	return 0;
+}
+
+int32
+read_kd_trees(const char *infile, kd_tree_node_t ***out_trees, uint32 *out_n_trees)
+{
+	FILE *fp;
+	char line[256];
+	int n, version;
+	uint32 i;
+
+	if ((fp = fopen(infile, "r"))  == NULL) {
+		E_ERROR_SYSTEM("Failed to open %s", infile);
+		return -1;
+	}
+	n = fscanf(fp, "%256s", line);
+	if (n != 1 || strcmp(line, "KD-TREES")) {
+		E_ERROR("Doesn't appear to be a kd-tree file: %s\n");
+		return -1;
+	}
+	n = fscanf(fp, "%256s %d", line, &version);
+	if (n != 2 || strcmp(line, "version") || version > KDTREE_VERSION) {
+		E_ERROR("Unsupported kd-tree file format %s %d\n", line, version);
+		return -1;
+	}
+	if (read_tree_int(fp, "n_trees", out_n_trees) < 0)
+		return -1;
+
+	*out_trees = ckd_calloc(*out_n_trees, sizeof(kd_tree_node_t **));
+	for (i = 0; i < *out_n_trees; ++i) {
+		kd_tree_node_t *tree;
+
+		if (read_tree_int(fp, "TREE", &n) < 0)
+			goto error_out;
+		if (n != i) {
+			E_ERROR("Tree number %d out of sequence\n", n);
+			goto error_out;
+		}
+
+		(*out_trees)[i] = tree = ckd_calloc(1, sizeof(*tree));
+		if (read_tree_int(fp, "n_density", &tree->n_density) < 0)
+			goto error_out;
+		if (read_tree_int(fp, "n_comp", &tree->n_comp) < 0)
+			goto error_out;
+		if (read_tree_int(fp, "n_level", &tree->n_level) < 0)
+			goto error_out;
+		if (read_tree_float(fp, "threshold", &tree->threshold) < 0)
+			goto error_out;
+		if (read_kd_nodes(fp, tree, tree->n_level) < 0)
+			goto error_out;
+	}
+	fclose(fp);
+	return 0;
+
+error_out:
+	fclose(fp);
+	for (i = 0; i < *out_n_trees; ++i) {
+		free_kd_tree((*out_trees)[i]);
+		(*out_trees)[i] = NULL;
+	}
+	ckd_free(*out_trees);
+	*out_trees = NULL;
+	return -1;
 }

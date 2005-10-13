@@ -102,5 +102,13 @@ main(int argc, char *argv[])
 					cmd_ln_float32("-threshold"),
 					cmd_ln_int32("-depth"));
 
+	if (cmd_ln_access("-outfn"))
+		write_kd_trees(cmd_ln_access("-outfn"),
+			       root, n_feat);
+
+	for (i = 0; i < n_feat; ++i)
+		free_kd_tree(root[i]);
+	ckd_free(root);
+
 	return 0;
 }

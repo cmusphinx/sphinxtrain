@@ -52,20 +52,24 @@
 
 typedef struct kd_tree_node_s kd_tree_node_t;
 struct kd_tree_node_s {
-	vector_t *means, *variances; /* Codebook of Gaussians */
-	float32 **boxes;	     /* Gaussian boxes for codebook */
-	int is_root;		     /* Is this a root node? (for memory management) */
+	const vector_t *means, *variances; /* Codebook of Gaussians, shared by all nodes */
+	float32 **boxes;	     /* Gaussian boxes for codebook, shared by all nodes */
+	float32 threshold;           /* Threshold for Gaussian boxes */
+	uint32 n_level;	             /* Number of levels (0 for non-root) */
 	uint32 n_density, n_comp;    /* Number of densities, number of components. */
-	uint32 *bbi;		/* BBI list of intersecting Gaussians */
+	uint8 *bbi;		/* BBI vector of intersecting Gaussians */
 	vector_t lower, upper;	/* Lower and upper coordinates of projection */
-	uint32 split_idx;	/* Dimension in which split is done */
+	uint32 split_comp;	/* Dimension in which split is done */
 	float32 split_plane;	/* Hyperplane splitting this node */
 	kd_tree_node_t *left, *right; /* Child nodes */
 };
 
-kd_tree_node_t *build_kd_tree(vector_t *means, vector_t *variances,
+kd_tree_node_t *build_kd_tree(const vector_t *means, const vector_t *variances,
 			      uint32 n_density, uint32 n_comp,
 			      float32 threshold, int32 n_levels);
 void free_kd_tree(kd_tree_node_t *tree);
+
+int32 write_kd_trees(const char *outfile, kd_tree_node_t **trees, uint32 n_trees);
+int32 read_kd_trees(const char *infile, kd_tree_node_t ***out_trees, uint32 *out_n_trees);
 
 #endif /* __KDTREE_H__ */

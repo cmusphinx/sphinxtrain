@@ -89,6 +89,11 @@ kdtree \n\
 	  "no",
 	  "Shows example of how to use the tool"},
 
+	{ "-outfn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Output file for trees"},
 	{ "-meanfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -156,11 +161,14 @@ kdtree \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2005/10/13  00:35:56  dhdfu
+ * Revision 1.2  2005/10/13  13:00:57  dhdfu
+ * Complete implementation of kd-trees including file I/O
+ * 
+ * Revision 1.1  2005/10/13 00:35:56  dhdfu
  * Basic implementation of kd-trees and BBI with relative thresholding,
  * but without extra optimizations.  Doesn't actually read/write them to
  * files yet.
- * 
+ *
  * Revision 1.7  2004/11/29 01:43:51  egouvea
  * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  *
