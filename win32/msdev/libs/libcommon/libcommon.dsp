@@ -109,6 +109,10 @@ SOURCE=..\..\..\..\src\libs\libcommon\cmd_ln.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\src\libs\libcommon\cmu6_lts_rules.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\src\libs\libcommon\cvt2triphone.c
 # End Source File
 # Begin Source File
@@ -150,6 +154,10 @@ SOURCE=..\..\..\..\src\libs\libcommon\itree.c
 # Begin Source File
 
 SOURCE=..\..\..\..\src\libs\libcommon\lexicon.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\libs\libcommon\lts.c
 # End Source File
 # Begin Source File
 
@@ -231,6 +239,10 @@ SOURCE=..\..\..\..\src\libs\libcommon\was_added.c
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=..\..\..\..\src\libs\libcommon\cmu6_lts_rules.h
+# End Source File
 # End Group
 # End Target
 # End Project
