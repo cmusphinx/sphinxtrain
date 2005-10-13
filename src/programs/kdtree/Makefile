@@ -1,5 +1,5 @@
 # ====================================================================
-# Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
+# Copyright (c) 2005 Carnegie Mellon University.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -12,16 +12,6 @@
 #    notice, this list of conditions and the following disclaimer in
 #    the documentation and/or other materials provided with the
 #    distribution.
-#
-# 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
-#    endorse or promote products derived from this software without
-#    prior written permission. To obtain permission, contact 
-#    sphinx@cs.cmu.edu.
-#
-# 54 Redistributions of any form whatsoever must retain the following
-#    acknowledgment:
-#    "This product includes software developed by Carnegie
-#    Mellon University (http://www.speech.cs.cmu.edu/)."
 #
 # THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
 # ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -37,24 +27,26 @@
 #
 # ====================================================================
 #
-#  C libraries libclust
+#  Programs: kdtree
+#
+#  Author: David Huggins-Daines <dhuggins@cs.cmu.edu>
 #
 # ====================================================================
 TOP=../../..
-DIRNAME=src/libs/libclust
+DIRNAME=src/programs/kdtree
 BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
-  div.c \
-  kmeans.c \
-  merge_den.c \
-  metric.c \
-  kdtree.c
-H =
+  main.c \
+  parse_cmd_ln.c
+H = \
+  parse_cmd_ln.h
+
 
 FILES = Makefile $(SRCS) $(H)
-LIBNAME= clust
+TARGET = kdtree
 
-ALL = .build_lib
+ALL = $(BINDIR)/$(TARGET)
 
 include $(TOP)/config/common_make_rules
+
