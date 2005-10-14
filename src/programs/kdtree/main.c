@@ -96,11 +96,12 @@ main(int argc, char *argv[])
 
 	/* Build one kd-tree for each feature stream. */
 	root = ckd_calloc(n_feat, sizeof(*root));
-	for (i = 0; i < n_feat; ++i)
+	for (i = 0; i < n_feat; ++i) {
 		root[i] = build_kd_tree(means[0][i], variances[0][i],
 					n_density, veclen[i],
 					cmd_ln_float32("-threshold"),
 					cmd_ln_int32("-depth"));
+	}
 
 	if (cmd_ln_access("-outfn"))
 		write_kd_trees(cmd_ln_access("-outfn"),
