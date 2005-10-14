@@ -60,7 +60,8 @@ static int compare_float32(const void *a, const void *b);
 kd_tree_node_t *
 build_kd_tree(const vector_t *means, const vector_t *variances,
 	      uint32 n_density, uint32 n_comp,
-	      float32 threshold, int32 n_levels)
+	      float32 threshold, int32 n_levels,
+	      int32 absolute)
 {
 	kd_tree_node_t *node;
 	int i, j;
@@ -76,9 +77,23 @@ build_kd_tree(const vector_t *means, const vector_t *variances,
 
 	/* Precompute Gaussian boxes for all components */
 	node->boxes = (float32 **)ckd_calloc_2d(n_density, n_comp, sizeof(**node->boxes));
-	for (i = 0; i < n_density; ++i)
-		for (j = 0; j < n_comp; ++j)
-			node->boxes[i][j] = sqrt(-2 * node->variances[i][j] * log(threshold));
+	if (absolute) {
+		for (i = 0; i < n_density; ++i) {
+			float32 det = n_comp * log(2 * M_PI);
+
+			for (j = 0; j < n_comp; ++j)
+				det += log(node->variances[i][j]);
+			for (j = 0; j < n_comp; ++j)
+				node->boxes[i][j] = sqrt(-2 * node->variances[i][j]
+							 * (threshold + 0.5 * det));
+		}
+	}
+	else {
+		for (i = 0; i < n_density; ++i)
+			for (j = 0; j < n_comp; ++j)
+				node->boxes[i][j] = sqrt(-2 * node->variances[i][j]
+							 * log(threshold));
+	}
 	node->threshold = threshold;
 	node->n_level = n_levels;
 
@@ -320,31 +335,31 @@ write_kd_trees(const char *outfile, kd_tree_node_t **trees, uint32 n_trees)
 }
 
 static int32
-read_tree_int(FILE *fp, const char *name, int32 *out)
+read_tree_int(FILE *fp, const char *name, int32 *out, int32 optional)
 {
 	char line[256];
 	int n;
 
 	n = fscanf(fp, "%255s %d", line, out);
-	if (n != 2 || strcmp(line, name)) {
+	if ((optional == 0 && n != 2) || strcmp(line, name)) {
 		E_ERROR("%s not found: %d %s %d\n", name, n, line, out);
 		return -1;
 	}
-	return 0;
+	return n;
 }
 
 static int32
-read_tree_float(FILE *fp, const char *name, float32 *out)
+read_tree_float(FILE *fp, const char *name, float32 *out, int32 optional)
 {
 	char line[256];
 	int n;
 
 	n = fscanf(fp, "%255s %f", line, out);
-	if (n != 2 || strcmp(line, name)) {
+	if ((optional == 0 && n != 2) || strcmp(line, name)) {
 		E_ERROR("%s not found: %d %s %f\n", name, n, line, out);
 		return -1;
 	}
-	return 0;
+	return n;
 }
 
 int32
@@ -353,32 +368,34 @@ read_kd_nodes(FILE *fp, kd_tree_node_t *node, uint32 level)
 	uint32 n;
 	int i;
 
-	if (read_tree_int(fp, "NODE", &n) < 0)
+	if (read_tree_int(fp, "NODE", &n, FALSE) < 0)
 		return -1;
 	if (n != level) {
 		E_ERROR("Levels for node don't match (%d != %d)\n", n, level);
 		return -1;
 	}
-	if (read_tree_int(fp, "split_comp", &node->split_comp) < 0)
+	if (read_tree_int(fp, "split_comp", &node->split_comp, FALSE) < 0)
 		return -1;
-	if (read_tree_float(fp, "split_plane", &node->split_plane) < 0)
+	if (read_tree_float(fp, "split_plane", &node->split_plane, FALSE) < 0)
 		return -1;
-	if (read_tree_int(fp, "bbi", &n) < 0)
+	if ((i = read_tree_int(fp, "bbi", &n, TRUE)) < 0)
 		return -1;
-	if (n >= node->n_density) {
-		E_ERROR("BBI Gaussian %d out of range! %d\n", n);
-		return -1;
-	}
 	node->bbi = ckd_calloc(node->n_density, sizeof(*node->bbi));
-	node->bbi[n] = 1;
-	while ((i = fscanf(fp, "%d", &n))) {
-		if (feof(fp))
-			break;
+	if (i > 1) {
 		if (n >= node->n_density) {
-			E_ERROR("BBI Gaussian %d out of range! %d\n", n, i);
+			E_ERROR("BBI Gaussian %d out of range! %d\n", n);
 			return -1;
 		}
 		node->bbi[n] = 1;
+		while ((i = fscanf(fp, "%d", &n))) {
+			if (feof(fp))
+				break;
+			if (n >= node->n_density) {
+				E_ERROR("BBI Gaussian %d out of range! %d\n", n, i);
+				return -1;
+			}
+			node->bbi[n] = 1;
+		}
 	}
 
 	if (level == 1)
@@ -419,14 +436,14 @@ read_kd_trees(const char *infile, kd_tree_node_t ***out_trees, uint32 *out_n_tre
 		E_ERROR("Unsupported kd-tree file format %s %d\n", line, version);
 		return -1;
 	}
-	if (read_tree_int(fp, "n_trees", out_n_trees) < 0)
+	if (read_tree_int(fp, "n_trees", out_n_trees, FALSE) < 0)
 		return -1;
 
 	*out_trees = ckd_calloc(*out_n_trees, sizeof(kd_tree_node_t **));
 	for (i = 0; i < *out_n_trees; ++i) {
 		kd_tree_node_t *tree;
 
-		if (read_tree_int(fp, "TREE", &n) < 0)
+		if (read_tree_int(fp, "TREE", &n, FALSE) < 0)
 			goto error_out;
 		if (n != i) {
 			E_ERROR("Tree number %d out of sequence\n", n);
@@ -434,13 +451,13 @@ read_kd_trees(const char *infile, kd_tree_node_t ***out_trees, uint32 *out_n_tre
 		}
 
 		(*out_trees)[i] = tree = ckd_calloc(1, sizeof(*tree));
-		if (read_tree_int(fp, "n_density", &tree->n_density) < 0)
+		if (read_tree_int(fp, "n_density", &tree->n_density, FALSE) < 0)
 			goto error_out;
-		if (read_tree_int(fp, "n_comp", &tree->n_comp) < 0)
+		if (read_tree_int(fp, "n_comp", &tree->n_comp, FALSE) < 0)
 			goto error_out;
-		if (read_tree_int(fp, "n_level", &tree->n_level) < 0)
+		if (read_tree_int(fp, "n_level", &tree->n_level, FALSE) < 0)
 			goto error_out;
-		if (read_tree_float(fp, "threshold", &tree->threshold) < 0)
+		if (read_tree_float(fp, "threshold", &tree->threshold, FALSE) < 0)
 			goto error_out;
 		if (read_kd_nodes(fp, tree, tree->n_level) < 0)
 			goto error_out;

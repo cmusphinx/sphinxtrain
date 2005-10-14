@@ -66,7 +66,8 @@ struct kd_tree_node_s {
 
 kd_tree_node_t *build_kd_tree(const vector_t *means, const vector_t *variances,
 			      uint32 n_density, uint32 n_comp,
-			      float32 threshold, int32 n_levels);
+			      float32 threshold, int32 n_levels,
+			      int32 absolute);
 void free_kd_tree(kd_tree_node_t *tree);
 
 int32 write_kd_trees(const char *outfile, kd_tree_node_t **trees, uint32 n_trees);

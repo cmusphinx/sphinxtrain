@@ -108,12 +108,17 @@ kdtree \n\
 	  CMD_LN_FLOAT32,
 	  CMD_LN_NO_VALIDATION,
 	  "0.2",
-	  "Relative threshold for Gaussian boxes"},
+	  "Threshold for Gaussian boxes"},
 	{ "-depth",
 	  CMD_LN_INT32,
 	  CMD_LN_NO_VALIDATION,
 	  "6",
 	  "Depth of kd-tree to be built"},
+	{ "-absolute",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "FALSE",
+	  "Use an absolute threshold for Gaussian boxes"},
 
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
@@ -161,9 +166,12 @@ kdtree \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2005/10/13  13:00:57  dhdfu
- * Complete implementation of kd-trees including file I/O
+ * Revision 1.3  2005/10/14  21:31:23  dhdfu
+ * Allow empty trees, also add absolute thresholding (but it doesn't seem to work right)
  * 
+ * Revision 1.2  2005/10/13 13:00:57  dhdfu
+ * Complete implementation of kd-trees including file I/O
+ *
  * Revision 1.1  2005/10/13 00:35:56  dhdfu
  * Basic implementation of kd-trees and BBI with relative thresholding,
  * but without extra optimizations.  Doesn't actually read/write them to

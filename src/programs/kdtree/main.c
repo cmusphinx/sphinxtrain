@@ -100,7 +100,8 @@ main(int argc, char *argv[])
 		root[i] = build_kd_tree(means[0][i], variances[0][i],
 					n_density, veclen[i],
 					cmd_ln_float32("-threshold"),
-					cmd_ln_int32("-depth"));
+					cmd_ln_int32("-depth"),
+					cmd_ln_int32("-absolute"));
 	}
 
 	if (cmd_ln_access("-outfn"))
