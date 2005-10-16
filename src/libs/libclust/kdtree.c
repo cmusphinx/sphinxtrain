@@ -146,8 +146,9 @@ build_kdtree_level(kd_tree_node_t *node, uint32 n_levels)
 	printf(" (");
 	for (j = 0; j < node->n_comp; ++j)
 		printf("%.3f ", node->upper[j]);
+	printf(")\n");
 
-	/* Find all gaussians that intersect the current node's projection. */
+	/* Find all Gaussians that intersect the current node's projection. */
 	node->bbi = ckd_calloc(node->n_density, sizeof(*node->bbi));
 	for (k = i = 0; i < node->n_density; ++i) {
 		for (j = 0; j < node->n_comp; ++j) {
@@ -158,7 +159,6 @@ build_kdtree_level(kd_tree_node_t *node, uint32 n_levels)
 
 			/* Is it ouside the projection on some dimension? */
 			if (a > node->upper[j] || b < node->lower[j]) {
-				//printf("%d %d %f %f\n", i, j, a, b);
 				goto next_density;
 			}
 		}
@@ -168,7 +168,11 @@ build_kdtree_level(kd_tree_node_t *node, uint32 n_levels)
 	next_density:
 		;
 	}
-	printf("Intersects %d Gaussians\n", k);
+	printf("Intersects %d Gaussians: ", k);
+	for (i = 0; i < node->n_density; ++i)
+		if (node->bbi[i])
+			printf("%d ", i);
+	printf("\n");
 
 	/* Terminate the recursion. */
 	if (--n_levels == 0)
@@ -189,23 +193,11 @@ build_kdtree_level(kd_tree_node_t *node, uint32 n_levels)
 			a = node->means[i][j] - node->boxes[i][j];
 			b = node->means[i][j] + node->boxes[i][j];
 
-
-#if 0
-			printf("%d = %d (%f L)\n",
-			       k, i, a);
-			printf("%d = %d (%f R)\n",
-			       k+1, i, b);
-#endif
-
 			axis[k++] = a;
 			axis[k++] = b;
 		}
 
 		qsort(axis, k, sizeof(*axis), compare_float32);
-#if 0
-		for (i = 0; i < k; ++i) 
-			printf("%d = %f\n", i, axis[i]);
-#endif
 		/* The hyperplane with the same number of Ls to the
 		 * left as Rs to the right is just the median of all
 		 * the Ls and Rs.  To see why this is, first note that
@@ -284,11 +276,61 @@ free_kd_tree(kd_tree_node_t *tree)
 	ckd_free(tree);
 }
 
+typedef struct bbi_bucket_s bbi_bucket_t;
+struct bbi_bucket_s {
+	uint32 idx;
+	float32 box;
+};
+
+static int
+compare_boxes(const void *a, const void *b)
+{
+	if (((bbi_bucket_t *)a)->box < ((bbi_bucket_t *)b)->box)
+		return -1;
+	if (((bbi_bucket_t *)a)->box > ((bbi_bucket_t *)b)->box)
+		return 1;
+	return 0;
+}
+
+static int32
+write_bbi_list(FILE *fp, kd_tree_node_t *node)
+{
+	int i, j, k;
+	bbi_bucket_t *bbi;
+
+	bbi = ckd_calloc(node->n_density, sizeof(*bbi));
+	for (i = 0, k = 0; i < node->n_density; ++i) {
+		if (node->bbi[i]) {
+			bbi[k].idx = i;
+			bbi[k].box = 0.0f;
+			/* Sort them by the size of the Gaussian box
+			 * minus the size of its overlap with the
+			 * current node's projection. */
+			for (j = 0; j < node->n_comp; ++j) {
+				float32 a, b;
+
+				a = node->means[i][j] - node->boxes[i][j];
+				b = node->means[i][j] + node->boxes[i][j];
+				if (b >= node->upper[j])
+					bbi[k].box -= log(node->upper[j] - a);
+				else if (a <= node->lower[j])
+					bbi[k].box -= log(b - node->lower[j]);
+				else
+					bbi[k].box -= log(node->boxes[i][j] * 2);
+				bbi[k].box += log(node->boxes[i][j]);
+			}
+			++k;
+		}
+	}
+	qsort(bbi, k, sizeof(*bbi), compare_boxes);
+	for (i = 0; i < k; ++i)
+		fprintf(fp, "%d ", bbi[i].idx);
+	return 0;
+}
+
 static int32
 write_kd_nodes(FILE *fp, kd_tree_node_t *node, uint32 level)
 {
-	uint32 i;
-
 	if (node == NULL)
 		return 0;
 
@@ -296,9 +338,7 @@ write_kd_nodes(FILE *fp, kd_tree_node_t *node, uint32 level)
 	fprintf(fp, "split_comp %d\n", node->split_comp);
 	fprintf(fp, "split_plane %f\n", node->split_plane);
 	fprintf(fp, "bbi ");
-	for (i = 0; i < node->n_density; ++i)
-		if (node->bbi[i])
-			fprintf(fp, "%d ", i);
+	write_bbi_list(fp, node);
 	fprintf(fp, "\n\n");
 
 	write_kd_nodes(fp, node->left, level-1);
