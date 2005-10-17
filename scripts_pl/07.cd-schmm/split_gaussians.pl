@@ -71,7 +71,7 @@ my $n_current = $ARGV[$index];
 my $n_inc = $ARGV[$index + 1];
 if ($n_current + $n_inc > $CFG_FINAL_NUM_DENSITIES) {
   &ST_Log("Increase in number of Gaussians beyond the desired total\n" .
-	  "Current: $n_current, increase by: $n_inc, desired total: $CFG_FINAL_NUM_DENSITIES\n";);
+	  "Current: $n_current, increase by: $n_inc, desired total: $CFG_FINAL_NUM_DENSITIES\n");
   exit -3;
 }
 
