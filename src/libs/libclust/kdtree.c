@@ -301,24 +301,28 @@ write_bbi_list(FILE *fp, kd_tree_node_t *node)
 	bbi = ckd_calloc(node->n_density, sizeof(*bbi));
 	for (i = 0, k = 0; i < node->n_density; ++i) {
 		if (node->bbi[i]) {
+			float64 box, inter;
+
+			/* Sort them by the ratio of the size of the
+			 * Gaussian box to the size of its overlap
+			 * with the current node's projection. */
 			bbi[k].idx = i;
-			bbi[k].box = 0.0f;
-			/* Sort them by the size of the Gaussian box
-			 * minus the size of its overlap with the
-			 * current node's projection. */
+			box = inter = 0.0;
+			for (j = 0; j < node->n_comp; ++j)
+				box += log(node->boxes[i][j] * 2);
 			for (j = 0; j < node->n_comp; ++j) {
 				float32 a, b;
 
 				a = node->means[i][j] - node->boxes[i][j];
 				b = node->means[i][j] + node->boxes[i][j];
 				if (b >= node->upper[j])
-					bbi[k].box -= log(node->upper[j] - a);
+					inter += log(node->upper[j] - a);
 				else if (a <= node->lower[j])
-					bbi[k].box -= log(b - node->lower[j]);
+					inter += log(b - node->lower[j]);
 				else
-					bbi[k].box -= log(node->boxes[i][j] * 2);
-				bbi[k].box += log(node->boxes[i][j]);
+					inter += log(node->boxes[i][j] * 2);
 			}
+			bbi[k].box = (float32)(box - inter);
 			++k;
 		}
 	}
