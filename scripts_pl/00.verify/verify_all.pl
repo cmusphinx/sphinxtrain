@@ -72,10 +72,14 @@ if (open(TEST, "<$uppercase_file")) {
 # phones in a case insensitive manner
     $is_case_sensitive = 0;
     close(TEST);
+    &ST_Log("O.S. is case insensitive (\"A\" == \"a\").\n" .
+	    "Phones will be treated as case insensitive.\n");
 } else {
 # If unsuccessful, the OS is case sensitive, and we have to check for
 # phones in a case sensitive manner
     $is_case_sensitive = 1;
+    &ST_Log("O.S. is case sensitive (\"A\" != \"a\").\n" .
+	    "Phones will be treated as case sensitive.\n");
 }
 # Clean up the mess
 unlink $lowercase_file;
@@ -328,7 +332,11 @@ unlink $uppercase_file;
     
     for (@dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
-	$d{lc($1)} = uc($2);
+	if ($is_case_sensitive) {
+	  $d{lc($1)} = $2;
+	} else {
+	  $d{lc($1)} = uc($2);
+	}
     }
     
     open DICT,"$CFG_FILLERDICT" or die "Can not open filler dict ($CFG_FILLERDICT)\n";
@@ -338,7 +346,11 @@ unlink $uppercase_file;
     
     for (@fill_dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
-	$d{lc($1)} = uc($2);
+	if ($is_case_sensitive) {
+	  $d{lc($1)} = $2;
+	} else {
+	  $d{lc($1)} = uc($2);
+	}
     }
     
     @dict = undef;			# not needed
