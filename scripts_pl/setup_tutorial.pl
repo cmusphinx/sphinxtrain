@@ -5,13 +5,16 @@ use File::Path;
 my $SphinxTrain_dir = getcwd();
 
 my $task = "an4";
-if ($#ARGV > -1) {
+if ($#ARGV > 0) {
+  die "Usage: $0 <tutorial task name>\n";
+} elsif ($#ARGV == 0) {
   $task = $ARGV[0];
-}
+} 
 
 print "Building task $task\n";
 
 my $task_dir = "../$task";
+mkdir "$task_dir" unless (-e "$task_dir");
 chdir "$task_dir";
 
 system("perl \"$SphinxTrain_dir/scripts_pl/setup_SphinxTrain.pl\" " .
