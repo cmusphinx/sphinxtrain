@@ -248,7 +248,7 @@ Create the new directory (e.g., mkdir RM1)
 
 Go to the new directory (e.g., cd RM1)
 
-Run this script (e.g., perl $SPHINXTRAIN/scripts_pl/setup_SphinxTrain.pl RM1)
+Run this script (e.g., perl $SPHINXTRAIN/scripts_pl/setup_SphinxTrain.pl -task RM1)
 
 =item ./scripts_pl/setup_SphinxTrain.pl -help
 
