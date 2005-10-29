@@ -42,7 +42,7 @@ use Getopt::Long;
 use Pod::Usage;
 use File::stat;
 
-$| = 1;				# Turn on autoflushing
+$| = 1;                         # Turn on autoflushing
 
 if ($#ARGV == -1) {
   pod2usage(2);
@@ -61,10 +61,10 @@ my $FORCE_MODE = 2;
 my $replace_mode = $LEAVE_MODE;
 
 my $result = GetOptions('help|h' => \$help,
-			'force' => \$force,
-			'update' => \$update,
-			'cfg=s' => \$cfg_file,
-			'task=s' => \$task_name);
+                        'force' => \$force,
+                        'update' => \$update,
+                        'cfg=s' => \$cfg_file,
+                        'task=s' => \$task_name);
 
 if (($result == 0) or (defined($help)) or (!defined($task_name))) {
   pod2usage( -verbose => 1 );
@@ -123,45 +123,50 @@ $SphinxTrain_dir = $CFG_SPHINXTRAIN_DIR;
 system("perl \"$SphinxTrain_dir/scripts_pl/setup_SphinxTrain.pl\" " .
        "$replace_option -sphinxtraindir \"$SphinxTrain_dir\" " .
        "-task $task_name");
+# The original base dir is the trainer's, initially.
+my $BASE_DIR = $CFG_BASE_DIR;
 
 # Setup the decoder
-$sphinx_decoder_dir = $DEC_CFG_SPHINXDECODER_DIR;
-$sphinx_decoder_dir =~ m/.*[\\\/]([^\\\/]+)$/;
-$sphinx_decoder_version = lc($1);
+if (defined $DEC_CFG_SPHINXDECODER_DIR) {
+ $sphinx_decoder_dir = $DEC_CFG_SPHINXDECODER_DIR;
+ $sphinx_decoder_dir =~ m/.*[\\\/]([^\\\/]+)$/;
+ $sphinx_decoder_version = lc($1);
 
-$langmodel = $DEC_CFG_LANGUAGEMODEL;
-$langmodel =~ s/.*[\\\/]([^\\\/]+)$/$1/;
-$langmodel =~ s/$CFG_DB_NAME/$task_name/;
+ $langmodel = $DEC_CFG_LANGUAGEMODEL;
+ $langmodel =~ s/.*[\\\/]([^\\\/]+)$/$1/;
+ $langmodel =~ s/$CFG_DB_NAME/$task_name/;
 
-system("perl " .
-       "\"$sphinx_decoder_dir/scripts/setup_$sphinx_decoder_version.pl\" " .
-       "$replace_option " .
-       "-${sphinx_decoder_version}dir \"$sphinx_decoder_dir\" " .
-       "-task $task_name " .
-       "-langmod \"$langmodel\" " .
-       "-langwt $DEC_CFG_LANGUAGEWEIGHT " .
-       "-bw $DEC_CFG_BEAMWIDTH " .
-       "-wbeam $DEC_CFG_WORDBEAM " .
-       "-align \"$DEC_CFG_ALIGN\"");
-
+ system("perl " .
+        "\"$sphinx_decoder_dir/scripts/setup_$sphinx_decoder_version.pl\" " .
+        "$replace_option " .
+        "-${sphinx_decoder_version}dir \"$sphinx_decoder_dir\" " .
+        "-task $task_name " .
+        "-langmod \"$langmodel\" " .
+        "-langwt $DEC_CFG_LANGUAGEWEIGHT " .
+        "-bw $DEC_CFG_BEAMWIDTH " .
+        "-wbeam $DEC_CFG_WORDBEAM " .
+        "-align \"$DEC_CFG_ALIGN\"");
+ # The base dir is changed to the decoder's, if the decoder is being copied.
+ $BASE_DIR = $DEC_CFG_BASE_DIR;
+}
 
 # Copy the etc/* files, changing the task name appropriately
-opendir(DIR, "$DEC_CFG_BASE_DIR/etc") 
-  or die "Can't open directory \"$DEC_CFG_BASE_DIR/etc\"";
+opendir(DIR, "$BASE_DIR/etc") 
+  or die "Can't open directory \"$BASE_DIR/etc\"";
 my @etc_dir_list = grep /^$CFG_DB_NAME/i, readdir DIR;
 closedir(DIR);
 
 foreach my $old_task_etc_file (@etc_dir_list) {
   my $new_task_etc_file = $old_task_etc_file;
   $new_task_etc_file =~ s/$CFG_DB_NAME/$task_name/gi;
-  replace_file("$DEC_CFG_BASE_DIR/etc/$old_task_etc_file",
-	       "etc/$new_task_etc_file", 
-	       $replace_mode);
+  replace_file("$BASE_DIR/etc/$old_task_etc_file",
+               "etc/$new_task_etc_file", 
+               $replace_mode);
 }
 
-copy_dir("$DEC_CFG_BASE_DIR/wav", "wav", $replace_mode);
+copy_dir("$BASE_DIR/wav", "wav", $replace_mode);
 
-copy_dir("$DEC_CFG_BASE_DIR/feat", "feat", $replace_mode);
+copy_dir("$BASE_DIR/feat", "feat", $replace_mode);
 
 print "Set up for $task_name complete\n";
 
