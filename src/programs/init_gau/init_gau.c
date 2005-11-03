@@ -280,7 +280,8 @@ init_gau(lexicon_t *lex,
 
 	feat_n_frame = n_frame;
 
-	if (n_frame < 3) {
+	/* FIXME: This number is bogus, it ought to depend on the type of feature used. */
+	if (n_frame < 9) {
 	    E_WARN("utt %s too short\n", corpus_utt());
 	    if (mfcc) {
 		ckd_free(mfcc[0]);
@@ -379,9 +380,14 @@ init_gau(lexicon_t *lex,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2005/09/27  02:02:47  arthchan2003
- * Check whether utterance is too short in init_gau, bw and agg_seg.
+ * Revision 1.6  2005/11/03  04:17:07  dhdfu
+ * Make init_gau use the same (semi-arbitrary) lower bound on the size of
+ * an utterance as bw does, with a comment that this is arbitrary.
+ * Prevents segfaults.
  * 
+ * Revision 1.5  2005/09/27 02:02:47  arthchan2003
+ * Check whether utterance is too short in init_gau, bw and agg_seg.
+ *
  * Revision 1.4  2004/07/21 18:30:34  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *
