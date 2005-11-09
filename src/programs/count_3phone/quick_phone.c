@@ -37,16 +37,20 @@
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.7  2005/06/05  22:00:34  arthchan2003
+ * Revision 1.8  2005/11/09  20:09:24  egouvea
+ * Added quick_count to the win32 dsw file, and fixed the comparators in
+ * the count_3phone module so it compiles in Visual C++.
+ * 
+ * Revision 1.7  2005/06/05 22:00:34  arthchan2003
  * Log. Rewriting QUICK_COUNT using SphinxTrain command line functions. Several changes.
  * 1, Removal of -B -t because they were actually not implemented.
  * 2, Add SphinxTrain's style command line, help string and example string.
  * 3, Safe-guarding a, invalid file names, b, user didn't specify SIL in the phone list.
  * 4, Change all quit to E_INFO, also delete obsolete quit.c.  Will change the windows setup respectively.
  * 5, Fix bug 1151880.  That was caused by the use of magic phrase symbol &, the loop will read stuff out of memoery boundary  when & occurs at the end of the word.  This was fixed by specifically checking this particular condition in quick_phone.c.
- * 
+ *
  * Windows setup is not yet checked in. Will do right after the linux check-in.
- * 
+ *
  * Major revamped by Arthur Chan at 2005 Jun 5
  *
  */
@@ -664,13 +668,15 @@ void make_bi_triphone (char *bi_file)
 	context-dep. phones should be sorted by their real phone index,
  */
 
-int phn_cmp (ph1, ph2)
-struct phone *ph1, *ph2;
+int phn_cmp (const void *ph1, const void *ph2)
 {
-  if (ph1 -> real_phone != ph2 -> real_phone)
-    return (ph1 -> real_phone - ph2 -> real_phone);
+
+  struct phone *pph1 = (struct phone *)ph1;
+  struct phone *pph2 = (struct phone *)ph2;
+  if (pph1 -> real_phone != pph2 -> real_phone)
+    return (pph1 -> real_phone - pph2 -> real_phone);
   else
-    return (strcmp (ph1 -> name, ph2 -> name));
+    return (strcmp (pph1 -> name, pph2 -> name));
 }
 
 

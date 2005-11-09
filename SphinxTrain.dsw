@@ -111,6 +111,21 @@ Package=<4>
 
 ###############################################################################
 
+Project: "count_3phone"=.\win32\msdev\programs\count_3phone\count_3phone.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "cp_parm"=.\win32\msdev\programs\cp_parm\cp_parm.dsp - Package Owner=<4>
 
 Package=<5>

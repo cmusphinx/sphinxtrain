@@ -38,9 +38,13 @@
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.9  2005/07/05  14:33:23  dhdfu
- * Make this use ckd_calloc().  The forward declaration of malloc() was rather bogus anyway.
+ * Revision 1.10  2005/11/09  20:09:24  egouvea
+ * Added quick_count to the win32 dsw file, and fixed the comparators in
+ * the count_3phone module so it compiles in Visual C++.
  * 
+ * Revision 1.9  2005/07/05 14:33:23  dhdfu
+ * Make this use ckd_calloc().  The forward declaration of malloc() was rather bogus anyway.
+ *
  * Revision 1.8  2005/06/05 23:15:41  arthchan2003
  * Some ansification to make count_3phone to be compiled in VC6. dsw file is not yet fixed. Sounds like map_adapt need to be updated too.
  *
@@ -224,10 +228,10 @@ int find_word_index (char *word,struct word *dictionary,int num_words)
   return -1;
 }
 
-int spc (ph1, ph2)
-struct sorted_phone *ph1, *ph2;
+int spc (const void *ph1, const void *ph2)
 {
-  return (strcmp (ph1 -> name, ph2 -> name));
+  return (strcmp (((struct sorted_phone *)ph1) -> name, 
+		  ((struct sorted_phone *)ph2) -> name));
 }
 
 
