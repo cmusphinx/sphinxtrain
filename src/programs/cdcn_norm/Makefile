@@ -1,5 +1,5 @@
 # ====================================================================
-# Copyright (c) 1995-2004 Carnegie Mellon University.  All rights reserved.
+# Copyright (c) 1994-2005 Carnegie Mellon University.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -12,16 +12,6 @@
 #    notice, this list of conditions and the following disclaimer in
 #    the documentation and/or other materials provided with the
 #    distribution.
-#
-# 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
-#    endorse or promote products derived from this software without
-#    prior written permission. To obtain permission, contact 
-#    sphinx@cs.cmu.edu.
-#
-# 4. Redistributions of any form whatsoever must retain the following
-#    acknowledgment:
-#    "This product includes software developed by Carnegie
-#    Mellon University (http://www.speech.cs.cmu.edu/)."
 #
 # THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
 # ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -37,54 +27,32 @@
 #
 # ====================================================================
 #
-#  C programs
+#  Programs: cdcn_norm
 #
 # ====================================================================
-TOP=../..
-DIRNAME=src/programs
-BUILD_DIRS = agg_seg \
-	bldtree \
-	bw \
-	cdcn_train \
-	cdcn_norm \
-	count_3phone \
-	cp_parm \
-	delint \
-	dict2tri \
-	inc_comp \
-	init_gau \
-	init_mixw \
-	kdtree \
-	kmeans_init \
-	make_quests \
-	map_adapt \
-	mixw_interp \
-	mk_flat \
-	mk_mdef_gen \
-	mk_mllr_class \
-	mk_model_def \
-	mk_s2cb \
-	mk_s2hmm \
-	mk_s2sendump \
-	mk_s2phone \
-	mk_s2phonemap \
-	mk_s3gau \
-	mk_s3mixw \
-	mk_s3tmat \
-	mk_ts2cb \
-	mllr_transform \
-	norm \
-	mllr_solve \
-	param_cnt \
-	printp \
-	prunetree \
-	tiestate \
-	wave2feat
+TOP=../../..
+DIRNAME=src/programs/cdcn_norm
+BUILD_DIRS = 
+ALL_DIRS= $(BUILD_DIRS)
+SRCS = \
+	cepdist.c \
+	correction.c \
+	initialize.c \
+	main.c \
+	max_q.c \
+	mmse_x.c \
+	norm_utt.c \
+	readdistribution.c \
+	resfft.c \
+	rsfft.c \
+	two_D_ize.c \
+	write_cep.c
 
-ALL_DIRS= $(BUILD_DIRS) 
-FILES = Makefile README
+H =  header.h
 
-ALL = 
+FILES = Makefile $(SRCS) $(H)
+TARGET = cdcn_norm
+
+ALL = $(BINDIR)/$(TARGET)
 
 include $(TOP)/config/common_make_rules
-
