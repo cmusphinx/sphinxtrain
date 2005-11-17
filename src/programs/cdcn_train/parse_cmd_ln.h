@@ -49,34 +49,5 @@ int
 parse_cmd_ln(int argc, char *argv[]);
 
 #define PARSE_CMD_LN_H
-
-
-
-
 #endif /* PARSE_CMD_LN_H */ 
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.1  2005/11/17  17:18:07  dhdfu
- * Switch cdcn_train over to a SphinxTrain-standard interface and expose some more parameters (number of iterations, convergence)
- * 
- * Revision 1.4  2004/07/21 18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  1995/12/15  18:38:27  eht
- * Initial revision
- *
- *
- */

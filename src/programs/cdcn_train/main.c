@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 #include "header.h"
 #include "parse_cmd_ln.h"
 
@@ -50,7 +51,8 @@ int main(int argc, char **argv)
 	float **mean, **variance, *c;
 	float noisec, noisemean[64], noisevar[64];
 	float atemp, noise_threshold, noise_width = 1.0;
-	int numnoise, numspch, numvecs, Ndim, Nmodes, maxlength = 0;
+	int numnoise, numspch, numvecs, Ndim, Nmodes;
+	int maxframes, vector_alloc;
 	int i, j, k, length, *nbin, *bin;
 	int superiter, stride;
 
@@ -58,6 +60,10 @@ int main(int argc, char **argv)
 	Ndim = cmd_ln_int32("-ceplen");
 	Nmodes = cmd_ln_int32("-nmodes");
 	stride = cmd_ln_int32("-stride");
+	maxframes = cmd_ln_int32("-maxframes");
+	 /* FIXME: this will break when we have terabytes of memory... */
+	if (maxframes == -1)
+		maxframes = INT_MAX;
 
 	/*
 	 * by default I assume the programs is to be run from data
@@ -79,35 +85,31 @@ int main(int argc, char **argv)
 		noisevar[j] = 0;
 	}
 
-	/* Count the total number of frames. */
-	maxlength = 0;
-	E_INFO("Counting frames... ");
-	for (j = 0; corpus_next_utt(); ++j) {
-		corpus_get_generic_featurevec(NULL, &length, Ndim);
-		if ((j % stride) == 0)
-			maxlength += length;
-	}
-	E_INFOCONT("\n%d vectors in all\n", maxlength);
-	corpus_reset();
-
-	/* Now read them all in. */
-	vector = (float **) ckd_calloc_2d(maxlength, Ndim, sizeof(float));
+	/* Read in all frames (you can set a maximum to avoid dying) */
+	/* Pick a reasonable size (about 60MB) to start with. */
+	E_INFO("Allocating 100000 frames initially\n");
+	vector_alloc = 1000000;
+	vector = (vector_t *) ckd_calloc_2d(vector_alloc, Ndim, sizeof(float));
 	E_INFO("Reading frames... ");
-	for (k = 0; corpus_next_utt() && (numvecs <= maxlength); ++k) {
+	while (corpus_next_utt() && (numvecs < maxframes)) {
 		corpus_get_generic_featurevec(&buff, &length, Ndim);
-		if ((k % stride) == 0) {
-			for (i = 0; i < length; ++i) {
-				for (j = 0; j < Ndim; ++j)
-					vector[numvecs][j] = buff[i][j];
-				++numvecs;
+		for (i = 0; i < length; i += stride) {
+			if (numvecs >= vector_alloc) {
+				vector_alloc = numvecs + 1000000;
+				E_INFO(" (Reallocating to %d frames) ", vector_alloc);
+				vector = ckd_realloc(vector, sizeof(vector_t *) * vector_alloc);
+				vector[0] = ckd_realloc(vector[0],
+							Ndim*sizeof(float)*vector_alloc);
+				for (j = 1; j < vector_alloc; ++j)
+					vector[j] = vector[0] + j * Ndim;
 			}
-			free(buff[0]);
-			ckd_free(buff);
+			memcpy(vector[numvecs], buff[i], Ndim*sizeof(float));
+			++numvecs;
 		}
-		if (numvecs > maxlength)
-			E_FATAL(("**** Too many frames? Check your dimensionality!! ****\n"));
+		free(buff[0]);
+		ckd_free(buff);
 	}
-	E_INFOCONT("\n");
+	E_INFOCONT("%d vectors in all\n", numvecs);
 
 	if (numvecs == 0)
 		E_FATAL(("This is silly! You have given me only 0 vectors to compute a DISTRIBUTION!\nI am miffed! I am quitting!\n"));

@@ -106,6 +106,12 @@ cdcn_stats -cepext mfc \n\
 	  "mfc",
 	  "Extension of the cepstrum files"},
 
+	{ "-maxframes",
+	  CMD_LN_INT32,
+	  CMD_LN_NO_VALIDATION,
+	  "-1",
+	  "Maximum number of frames to read (or -1 for unlimited)"},
+
 	{ "-cbfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -199,46 +205,3 @@ cdcn_stats -cepext mfc \n\
 
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.1  2005/11/17  17:18:07  dhdfu
- * Switch cdcn_train over to a SphinxTrain-standard interface and expose some more parameters (number of iterations, convergence)
- * 
- * Revision 1.7  2004/11/29 01:43:44  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- *
- * Revision 1.6  2004/11/29 00:49:19  egouvea
- * Added missing include files to prevent warnings about printf not being defined
- *
- * Revision 1.5  2004/08/08 01:20:37  arthchan2003
- * agg_seg help and example strings
- *
- * Revision 1.4  2004/07/21 18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.4  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.3  96/03/25  15:45:23  eht
- * Development version
- * 
- * Revision 1.2  1996/03/04  16:01:06  eht
- * *** empty log message ***
- *
- * Revision 1.1  1995/12/15  18:37:07  eht
- * Initial revision
- *
- *
- */
