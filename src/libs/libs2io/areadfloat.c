@@ -211,6 +211,12 @@ areadfloat_part (char *file,
     r_len = e_coeff - s_coeff + 1;
 
     assert(s_coeff + r_len <= len);
+    /* Just get the file size if we were not given a buffer. */
+    if (data_ref == NULL) {
+	if (length_ref)
+	    *length_ref = r_len;
+	return r_len;
+    }
 
     r_buf = calloc(r_len, sizeof(float));
     if (fread(r_buf, sizeof(float), r_len, fp) != r_len) {
