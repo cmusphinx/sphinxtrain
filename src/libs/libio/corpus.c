@@ -512,7 +512,17 @@ corpus_reset()
 	rewind(sil_fp);
 
     cur_ctl_line[0] = '\0';
-    next_ctl_line[0] = '\0';
+    if (fgets_wo_nl(next_ctl_line, MAXPATHLEN, ctl_fp) == NULL) {
+	E_ERROR("Must be at least one line in the control file\n");
+
+	return S3_ERROR;
+    }
+
+    parse_ctl_line(next_ctl_line,
+		   &next_ctl_path,
+		   NULL,
+		   NULL,
+		   NULL);
 
     /* Position the control file to the
      * saved values
@@ -2013,9 +2023,12 @@ read_sildel(uint32 **out_sf,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.12  2005/11/17  16:15:36  dhdfu
- * extend the get-length-only thing to corpus_get_mfcc() and friends
+ * Revision 1.13  2005/11/17  16:28:07  dhdfu
+ * corpus_reset() not working as advertised
  * 
+ * Revision 1.12  2005/11/17 16:15:36  dhdfu
+ * extend the get-length-only thing to corpus_get_mfcc() and friends
+ *
  * Revision 1.11  2005/09/27 02:01:15  arthchan2003
  * Return S3_ERROR when starting frame is larger than ending frame.
  *
