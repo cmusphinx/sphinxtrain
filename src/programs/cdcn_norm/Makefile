@@ -45,8 +45,7 @@ SRCS = \
 	readdistribution.c \
 	resfft.c \
 	rsfft.c \
-	two_D_ize.c \
-	write_cep.c
+	two_D_ize.c
 
 H =  header.h
 

@@ -53,9 +53,6 @@
 
 #define  QUIT(x)  {printf x; fflush (stdout); exit(-1);}
 
-int write_cep(char *cepfilename, float **cep, int nframes, int numcep);
-
-
 int main(int argc, char **argv)
 {
 	float *fbuff,		/* A temporary buffer */
@@ -190,7 +187,7 @@ int main(int argc, char **argv)
 		 * holds the address of the entire x array. Look at alloc2d.c
 		 * to see what I mean
 		 */
-		write_cep(out_cepfile, &x[0], num_frames, Ndim);
+		awritefloat(out_cepfile, x[0], num_frames * Ndim);
 		ckd_free_2d((void **)z);
 		ckd_free_2d((void **)x);
 	}
