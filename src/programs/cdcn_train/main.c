@@ -176,7 +176,7 @@ int main(int argc, char **argv)
 			sprintf(filename, "%s.%s", basefile, infileext);
 		else
 			strcpy(filename, basefile);
-		if (areadfloat(filename, &buff, &length) == -1) {
+		if (areadfloat(filename, NULL, &length) == -1) {
 			/*
 			 * What happens on a datafile read error? We can either just go on to
 			 * the next cepfile, or stop the program.  Set switch in header.h.
@@ -189,7 +189,6 @@ int main(int argc, char **argv)
 #endif
 		} else {
 			maxlength += length / Ndim;
-			free(buff);
 		}
 	}
 	printf("%d vectors in all\n", maxlength);
