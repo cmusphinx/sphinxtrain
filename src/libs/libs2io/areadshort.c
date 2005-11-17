@@ -74,6 +74,8 @@ areadshort (char *file,
   /* Just get the file size if we were not given a buffer. */
   if (data_ref == NULL) {
 	  close(fd);
+	  if (length_ref)
+	    *length_ref = length;
 	  return length;
   }
 

@@ -1473,7 +1473,7 @@ corpus_get_mfcc(vector_t **mfc,
 		uint32 *veclen)
 {
     vector_t *out;
-    float32 *coeff;
+    float32 *coeff, **cptr;
     uint32 n_f;
     uint32 n_c;
     uint32 i, j;
@@ -1490,6 +1490,14 @@ corpus_get_mfcc(vector_t **mfc,
       return S3_ERROR;
     }
     
+    if (mfc)
+	cptr = &coeff;
+    else {
+	/* If mfc == NULL, just get the number of frames. */
+	coeff = NULL;
+	cptr = NULL;
+    }
+
     /* start prefetching the next file, if one. */
     if (strlen(next_ctl_path) > 0)
 	(void) prefetch_hint(mk_filename(DATA_TYPE_MFCC, next_ctl_path));
@@ -1497,13 +1505,13 @@ corpus_get_mfcc(vector_t **mfc,
     do {
 	if ((cur_ctl_sf == NO_FRAME) && (cur_ctl_ef == NO_FRAME)) {
 	    ret = areadfloat(mk_filename(DATA_TYPE_MFCC, cur_ctl_path),
-			     &coeff, (int *)&n_c);
+			     cptr, (int *)&n_c);
 	}
 	else if ((cur_ctl_sf != NO_FRAME) && (cur_ctl_ef != NO_FRAME)) {
 	    ret = areadfloat_part(mk_filename(DATA_TYPE_MFCC, cur_ctl_path),
 				  cur_ctl_sf * S2_CEP_VECLEN,
 				  (cur_ctl_ef + 1) * S2_CEP_VECLEN - 1,
-				  &coeff, (int *)&n_c);
+				  cptr, (int *)&n_c);
 	}
 	else {
 	    E_FATAL("Both start and end frame must be set in the ctl file\n");
@@ -1538,19 +1546,25 @@ corpus_get_mfcc(vector_t **mfc,
     n_f = n_c / S2_CEP_VECLEN;
 
     if (n_f == 0) {
-	*mfc = NULL;
-	*n_frame = 0;
+	if (mfc)
+	    *mfc = NULL;
+	if (n_frame)
+	    *n_frame = 0;
     }
 
-    out = (vector_t *)ckd_calloc(n_f, sizeof(vector_t));
+    if (mfc && coeff) {
+	out = (vector_t *)ckd_calloc(n_f, sizeof(vector_t));
 
-    for (i = 0, j = 0; i < n_f; i++, j += S2_CEP_VECLEN) {
-	out[i] = &coeff[j];
+	for (i = 0, j = 0; i < n_f; i++, j += S2_CEP_VECLEN) {
+	    out[i] = &coeff[j];
+	}
+
+	*mfc = out;
     }
-
-    *mfc = out;
-    *n_frame = n_f;
-    *veclen = S2_CEP_VECLEN;
+    if (n_frame)
+	*n_frame = n_f;
+    if (veclen)
+	*veclen = S2_CEP_VECLEN;
 
     return S3_SUCCESS;
 }
@@ -1566,7 +1580,7 @@ corpus_get_generic_featurevec(vector_t **mfc,
 			      uint32 veclen)
 {
     vector_t *out;
-    float32 *coeff;
+    float32 *coeff, **cptr;
     uint32 n_f;
     uint32 n_c;
     uint32 i, j;
@@ -1578,6 +1592,14 @@ corpus_get_generic_featurevec(vector_t **mfc,
 	return S3_ERROR;
     }
 
+    if (mfc)
+	cptr = &coeff;
+    else {
+	/* If mfc == NULL, just get the number of frames. */
+	coeff = NULL;
+	cptr = NULL;
+    }
+
     /* start prefetching the next file, if one. */
     if (strlen(next_ctl_path) > 0)
 	(void) prefetch_hint(mk_filename(DATA_TYPE_MFCC, next_ctl_path));
@@ -1585,13 +1607,13 @@ corpus_get_generic_featurevec(vector_t **mfc,
     do {
 	if ((cur_ctl_sf == NO_FRAME) && (cur_ctl_ef == NO_FRAME)) {
 	    ret = areadfloat(mk_filename(DATA_TYPE_MFCC, cur_ctl_path),
-			     &coeff, (int *)&n_c);
+			     cptr, (int *)&n_c);
 	}
 	else if ((cur_ctl_sf != NO_FRAME) && (cur_ctl_ef != NO_FRAME)) {
 	    ret = areadfloat_part(mk_filename(DATA_TYPE_MFCC, cur_ctl_path),
 				  cur_ctl_sf * veclen,
 				  (cur_ctl_ef + 1) * veclen - 1,
-				  &coeff, (int *)&n_c);
+				  cptr, (int *)&n_c);
 	}
 	else {
 	    E_FATAL("Both start and end frame must be set in the ctl file\n");
@@ -1613,24 +1635,29 @@ corpus_get_generic_featurevec(vector_t **mfc,
     }
 
     if ((n_c % veclen) != 0) {
-	E_FATAL("Expected mfcc vector len of %d\n", veclen);
+	E_FATAL("Expected mfcc vector len of %d, got %d (%d)\n", veclen, n_c % veclen, n_c);
     }
     
     n_f = n_c / veclen;
 
     if (n_f == 0) {
-	*mfc = NULL;
-	*n_frame = 0;
+	if (mfc)
+	    *mfc = NULL;
+	if (n_frame)
+	    *n_frame = 0;
     }
 
-    out = (vector_t *)ckd_calloc(n_f, sizeof(vector_t));
+    if (mfc && coeff) {
+	out = (vector_t *)ckd_calloc(n_f, sizeof(vector_t));
 
-    for (i = 0, j = 0; i < n_f; i++, j += veclen) {
-	out[i] = &coeff[j];
+	for (i = 0, j = 0; i < n_f; i++, j += veclen) {
+	    out[i] = &coeff[j];
+	}
+
+	*mfc = out;
     }
-
-    *mfc = out;
-    *n_frame = n_f;
+    if (n_frame)
+	*n_frame = n_f;
 
     return S3_SUCCESS;
 }
@@ -1986,9 +2013,12 @@ read_sildel(uint32 **out_sf,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.11  2005/09/27  02:01:15  arthchan2003
- * Return S3_ERROR when starting frame is larger than ending frame.
+ * Revision 1.12  2005/11/17  16:15:36  dhdfu
+ * extend the get-length-only thing to corpus_get_mfcc() and friends
  * 
+ * Revision 1.11  2005/09/27 02:01:15  arthchan2003
+ * Return S3_ERROR when starting frame is larger than ending frame.
+ *
  * Revision 1.10  2004/11/17 01:46:57  arthchan2003
  * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
  *

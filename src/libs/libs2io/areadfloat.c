@@ -112,6 +112,8 @@ areadfloat (char *file,
   /* Just get the file size if we were not given a buffer. */
   if (data_ref == NULL) {
 	  fclose(fp);
+	  if (length_ref)
+	    *length_ref = length;
 	  return length;
   }
 
