@@ -86,6 +86,8 @@ void _E__fatal_sys_error( char *fmt, ... );
 
 #define E_INFO	  _E__pr_info_header(__FILE__, __LINE__, "INFO"),_E__pr_info
 
+#define E_INFOCONT  _E__pr_info
+
 #define E_WARN	  _E__pr_header(__FILE__, __LINE__, "WARNING"),_E__pr_warn
 
 #endif /* !_ERR_H */
