@@ -109,6 +109,11 @@ areadfloat (char *file,
       fclose (fp);
       return -1;
   }
+  /* Just get the file size if we were not given a buffer. */
+  if (data_ref == NULL) {
+	  fclose(fp);
+	  return length;
+  }
 
   if ((data = (float *) calloc (length,sizeof(float))) == NULL)
   {

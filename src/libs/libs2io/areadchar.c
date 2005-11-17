@@ -66,6 +66,11 @@ areadchar (char *file,
     return -1;
   }
   SWAPL(&length);
+  /* Just get the file size if we were not given a buffer. */
+  if (data_ref == NULL) {
+	  close(fd);
+	  return length;
+  }
   if (!(data = malloc ((unsigned) length)))
   {
     fprintf (stderr, "areadchar: %s: can't alloc data\n", file);

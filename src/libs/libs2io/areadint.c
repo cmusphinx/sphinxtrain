@@ -69,6 +69,11 @@ areadint (char *file,
     return -1;
   }
   SWAPL(&length);
+  /* Just get the file size if we were not given a buffer. */
+  if (data_ref == NULL) {
+	  close(fd);
+	  return length;
+  }
   size = length * sizeof (int);
   if (!(data = malloc ((unsigned) size)))
   {
