@@ -260,14 +260,14 @@ void Update_codebook(int *bin,
 
 void vector_quantize(float **codes,
 		     int Ncodes,
-		     float **vector, int Nvecs, int Ndim, int *bin)
+		     float **vector, int Nvecs, int Ndim,
+		     int *bin,
+		     int niter, float threshold)
 {
-	float distortion, improvement, prevdist, threshold;
+	float distortion, improvement, prevdist;
 	int iter = 0;
 
 	improvement = 100;
-	threshold = 1e-06;
-
 
 	Initial_codebook(Ncodes, codes, Nvecs, vector, Ndim, bin);
 	prevdist =
@@ -276,7 +276,7 @@ void vector_quantize(float **codes,
 
 	printf("Initial Distortion = %f\n", prevdist);
 	while (((improvement > threshold) || (improvement < 0))
-	       && (iter < 5)) {
+	       && (iter < niter)) {
 		Update_codebook(bin, vector, Nvecs, codes, Ncodes, Ndim);
 		distortion =
 		    Distortion_and_cluster(bin, vector, Nvecs, codes,

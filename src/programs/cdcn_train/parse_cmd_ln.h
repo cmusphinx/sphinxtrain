@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1994-2005 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1994-2000 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,44 +33,50 @@
  * ====================================================================
  *
  */
-#ifndef __CDCN_HEADER_H__
-#define __CDCN_HEADER_H__
+/*********************************************************************
+ *
+ * File: parse_cmd_ln.h
+ * 
+ * Description: 
+ * 
+ * Author: 
+ * 
+ *********************************************************************/
 
-/*#define maxdim 13 */
-#define maxdim 40
-#define maxmodes 257
-#define PI	3.1415927
+#ifndef PARSE_CMD_LN_H
 
-#include <s3/common.h>
-#include <s3/s2io.h>
-#include <s3/s3.h>
+int
+parse_cmd_ln(int argc, char *argv[]);
 
-float gauss(float *x,
-	    float *mean, float *hafinvvar, float corprod, int Ndim);
-
-void vector_quantize(float **codes, int Ncodes,
-		     float **vector, int Nvecs,
-		     int Ndim, int *bin,
-		     int niter, float threshold);
-
-int read_backup_distribution(char *filen,
-			     float ***mean,
-			     float ***variance,
-			     float **pi, int *Nmodes, int Ndim);
-
-int store_distribution(char *file,
-		       int Nmodes,
-		       int Ndim,
-		       float noisec,
-		       float *noisemean,
-		       float *noisevar,
-		       float *c, float **mean, float **var);
-
-void estimate_multi_modals(float **x, int N, int Ndim, int K, 
-			   float **mean, float **var, float *c, 
-			   char *tempfile, int numiters,
-			   float Threshold);
+#define PARSE_CMD_LN_H
 
 
 
-#endif /* __CDCN_HEADER_H__ */
+
+#endif /* PARSE_CMD_LN_H */ 
+
+
+/*
+ * Log record.  Maintained by RCS.
+ *
+ * $Log$
+ * Revision 1.1  2005/11/17  17:18:07  dhdfu
+ * Switch cdcn_train over to a SphinxTrain-standard interface and expose some more parameters (number of iterations, convergence)
+ * 
+ * Revision 1.4  2004/07/21 18:30:32  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
+ * Revision 1.3  2001/04/05 20:02:31  awb
+ * *** empty log message ***
+ *
+ * Revision 1.2  2000/09/29 22:35:13  awb
+ * *** empty log message ***
+ *
+ * Revision 1.1  2000/09/24 21:38:31  awb
+ * *** empty log message ***
+ *
+ * Revision 1.1  1995/12/15  18:38:27  eht
+ * Initial revision
+ *
+ *
+ */

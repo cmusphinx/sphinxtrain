@@ -40,8 +40,9 @@ SRCS = \
 	read_backup_distributions.c \
 	store_distribution.c \
 	vq.c \
+	parse_cmd_ln.c \
 	main.c
-H =  header.h
+H =  header.h parse_cmd_ln.h
 
 FILES = Makefile $(SRCS) $(H)
 TARGET = cdcn_train

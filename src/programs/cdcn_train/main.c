@@ -42,123 +42,35 @@
 #include <string.h>
 #include <stdlib.h>
 #include "header.h"
-
-#define  QUIT(x)  {printf x; fflush (stdout); exit(-1);}
-
-#define DESCRIPTION "\nThis program computes a mixture gaussian distribution for a set of \nspeech cepstral files for use with CDCN. The first mode is computed on only\nthe silence portions of the speech to comply with the requirements of the \nalgorithm. The dimensionality of the cepstral files is assumed to be 13\n"
-
-#define USAGE "USAGE:\n%s -e <filename extension> \\\n\t-c <control file> \\\n\t-o <output file> \\\n\t-m <Total no of modes in distribution>\\\n\t-d <dimensionality of the data (default 13)>\\\n\t-w <c0 width to use for the noise mode> \\\n\t-z the file containing the initial distribution to continue EM from> \\\n\t-t <file to dump temporary results to> \n"
+#include "parse_cmd_ln.h"
 
 int main(int argc, char **argv)
 {
-	float **vector, *buff;
+	vector_t *vector, *buff;
 	float **mean, **variance, *c;
 	float noisec, noisemean[64], noisevar[64];
 	float atemp, noise_threshold, noise_width = 1.0;
 	int numnoise, numspch, numvecs, Ndim, Nmodes, maxlength = 0;
 	int i, j, k, length, *nbin, *bin;
-	int initialize, superiter;
-	char ctlfile[512], infileext[10], outfile[512], tempfile[512];
-	char basefile[512], filename[512], initialcodebk[512], sw;
+	int superiter, stride;
 
-	FILE *listfile;
+	parse_cmd_ln(argc, argv);
+	Ndim = cmd_ln_int32("-ceplen");
+	Nmodes = cmd_ln_int32("-nmodes");
+	stride = cmd_ln_int32("-stride");
 
 	/*
 	 * by default I assume the programs is to be run from data
 	 * only with no initial set of Gaussians. i.e. go to vq and them 
 	 * em.
 	 */
-	/* SET DEFAULTS */
-	initialize = 1;
-	strcpy(tempfile, "CDCN.DIST.TEMP");
-	strcpy(infileext, "");
-	Ndim = 13;
+	corpus_set_mfcc_dir(cmd_ln_str("-cepdir"));
+	corpus_set_mfcc_ext(cmd_ln_str("-cepext"));
+	if (corpus_set_ctl_filename(cmd_ln_str("-ctlfn")) != S3_SUCCESS)
+		E_FATAL("Failed to read control file %s\n", cmd_ln_str("-ctlfn"));
 
-	if (argc == 1) {
-		printf(DESCRIPTION);
-		QUIT((USAGE, argv[0]));
-	}
-	for (i = 1; i < argc; ++i) {
-		if (argv[i][0] != '-')
-			QUIT((USAGE, argv[0]));
-		sw = argv[i][1];
-		switch (sw) {
-		case 'e':
-		case 'E':
-			{
-				strcpy(infileext, argv[++i]);
-				break;
-			}
-		case 'c':
-		case 'C':
-			{
-				strcpy(ctlfile, argv[++i]);
-				break;
-			}
-		case 'o':
-		case 'O':
-			{
-				strcpy(outfile, argv[++i]);
-				break;
-			}
-		case 'm':
-		case 'M':
-			{
-				Nmodes = atoi(argv[++i]);
-				break;
-			}
-		case 'd':
-		case 'D':
-			{
-				Ndim = atoi(argv[++i]);
-				break;
-			}
-		case 'w':
-		case 'W':
-			{
-				sscanf(argv[++i], "%f", &noise_width);
-				break;
-			}
-		case 'z':
-		case 'Z':
-			{
-				strcpy(initialcodebk, argv[++i]);
-				/*
-				 * do not initialize from VQ but from this file
-				 */
-
-				/*
-				 * notice that this is ONLY prepared for restarting the
-				 * program from a previous EM files with the same number
-				 * of Gaussians. i.e. if the machinbe breaks you can 
-				 * contine EM from there
-				 */
-				initialize = 0;
-				break;
-			}
-		case 't':
-		case 'T':
-			{
-				/*
-				 * Temporary file to store partially converged distribution
-				 * to
-				 */
-				strcpy(tempfile, argv[++i]);
-				break;
-			}
-		default:
-			{
-				printf(DESCRIPTION);
-				QUIT((USAGE, argv[0]));
-			}
-
-		}
-	}
-
-
-	listfile = fopen(ctlfile, "r");
-	if (listfile == NULL)
-		QUIT(("Unable to open control file %s\n", ctlfile));
+	if (corpus_init() != S3_SUCCESS)
+		E_FATAL("Corpus initialization failed\n");
 
 	numvecs = 0;
 	numnoise = 0;
@@ -167,81 +79,38 @@ int main(int argc, char **argv)
 		noisevar[j] = 0;
 	}
 
+	/* Count the total number of frames. */
 	maxlength = 0;
-	while (fscanf(listfile, "%s\n", basefile) != EOF) {
-		/*
-		 * If an extension has been specified for the files, append it
-		 */
-		if (strcmp(infileext, ""))
-			sprintf(filename, "%s.%s", basefile, infileext);
-		else
-			strcpy(filename, basefile);
-		if (areadfloat(filename, NULL, &length) == -1) {
-			/*
-			 * What happens on a datafile read error? We can either just go on to
-			 * the next cepfile, or stop the program.  Set switch in header.h.
-			 */
-#ifdef IGNORE_READ_ERR
-			printf("READ FAILURE; skipping cepfile\n");
-			fflush(stdout);
-#else
-			QUIT(("Unable to read %s\n", filename));
-#endif
-		} else {
-			maxlength += length / Ndim;
-		}
+	E_INFO("Counting frames... ");
+	for (j = 0; corpus_next_utt(); ++j) {
+		corpus_get_generic_featurevec(NULL, &length, Ndim);
+		if ((j % stride) == 0)
+			maxlength += length;
 	}
-	printf("%d vectors in all\n", maxlength);
-	rewind(listfile);
+	E_INFOCONT("\n%d vectors in all\n", maxlength);
+	corpus_reset();
 
-	/*
-	 * For our particular case it is needed that the Maximum dimensionality
-	 * is the same as the actual dimension of the data. Else the areadfloat
-	 * routine fails!
-	 */
-	/* FIXME: We should iterate over the corpus for VQ instead of
-	   allocating this unbearably massive array. */
+	/* Now read them all in. */
 	vector = (float **) ckd_calloc_2d(maxlength, Ndim, sizeof(float));
-
-	while ((fscanf(listfile, "%s\n", basefile) != EOF)
-	       && (numvecs <= maxlength)) {
-		/*
-		 * If an extension has been specified for the files, append it
-		 */
-		if (strcmp(infileext, ""))
-			sprintf(filename, "%s.%s", basefile, infileext);
-		else
-			strcpy(filename, basefile);
-		if (areadfloat(filename, &buff, &length) == -1) {
-			/*
-			 * What happens on a datafile read error? We can either just go on to
-			 * the next cepfile, or stop the program.  Set switch in header.h.
-			 */
-#ifdef IGNORE_READ_ERR
-			printf("READ FAILURE; skipping cepfile\n");
-			fflush(stdout);
-#else
-			QUIT(("Unable to read %s\n", filename));
-#endif
-		} else {
-#ifdef DEBUG
-			printf("Success in reading %s feature file\n",
-			       filename);
-#endif
-			for (i = 0; i < length; i += Ndim) {
+	E_INFO("Reading frames... ");
+	for (k = 0; corpus_next_utt() && (numvecs <= maxlength); ++k) {
+		corpus_get_generic_featurevec(&buff, &length, Ndim);
+		if ((k % stride) == 0) {
+			for (i = 0; i < length; ++i) {
 				for (j = 0; j < Ndim; ++j)
-					vector[numvecs][j] = buff[i + j];
+					vector[numvecs][j] = buff[i][j];
 				++numvecs;
 			}
-			free(buff);
+			free(buff[0]);
+			ckd_free(buff);
 		}
 		if (numvecs > maxlength)
-			QUIT(("**** Too many frames? Check your dimensionality!! ****\n"));
+			E_FATAL(("**** Too many frames? Check your dimensionality!! ****\n"));
 	}
-	fclose(listfile);
+	E_INFOCONT("\n");
 
 	if (numvecs == 0)
-		QUIT(("This is silly! You have given me only 0 vectors to compute a DISTRIBUTION!\nI am miffed! I am quitting!\n"));
+		E_FATAL(("This is silly! You have given me only 0 vectors to compute a DISTRIBUTION!\nI am miffed! I am quitting!\n"));
 
 	/*
 	 * Compute threshold for the noise mode as the minimum c[0] + thresholding
@@ -251,9 +120,7 @@ int main(int argc, char **argv)
 		if (vector[i][0] < noise_threshold)
 			noise_threshold = vector[i][0];
 	noise_threshold += noise_width;
-#ifdef DEBUG
-	printf("Noise threshold = %f\n", noise_threshold);
-#endif
+	E_INFO("Noise threshold = %f\n", noise_threshold);
 
 	numnoise = 0;
 	numspch = 0;
@@ -270,7 +137,7 @@ int main(int argc, char **argv)
 			++numspch;
 		}
 	}
-	printf
+	E_INFO
 	    ("%d vectors found below noise threshold %f, %d vectors found above it\n",
 	     numnoise, noise_threshold, numspch);
 
@@ -298,7 +165,7 @@ int main(int argc, char **argv)
 	 * do this only if we are not requesting a restart from a previous 
 	 * temp statistics file .
 	 */
-	if (initialize) {
+	if (cmd_ln_str("-cbfn") == NULL) {
 		/*
 		 * allocate the mean and variance and c arrays.
 		 */
@@ -319,7 +186,9 @@ int main(int argc, char **argv)
 		bin = (int *) ckd_calloc(numspch, sizeof(int));
 
 
-		vector_quantize(mean, Nmodes, vector, numspch, Ndim, bin);
+		vector_quantize(mean, Nmodes, vector, numspch, Ndim, bin,
+				cmd_ln_int32("-vqiter"),
+				cmd_ln_float32("-vqthresh"));
 
 		for (i = 0; i < Nmodes; ++i)
 			c[i] = 1.0 / (float) Nmodes;
@@ -348,19 +217,20 @@ int main(int argc, char **argv)
 		 * straight
 		 */
 		if (!read_backup_distribution
-		    (initialcodebk, &mean, &variance, &c, &Nmodes, Ndim))
-			QUIT(("Unable to read initial distribution\n"));
+		    (cmd_ln_str("-cbfn"), &mean, &variance, &c, &Nmodes, Ndim))
+			E_FATAL(("Unable to read initial distribution\n"));
 	}
 
 	for (superiter = 0; superiter < 1; ++superiter) {
 		estimate_multi_modals(vector, numspch, Ndim, Nmodes, mean,
-				      variance, c, tempfile, 9);
+				      variance, c, cmd_ln_str("-tmpfn"),
+				      cmd_ln_int32("-emiter"),
+				      cmd_ln_float32("-emthresh"));
 		if (store_distribution
-		    (outfile, Nmodes, Ndim, noisec, noisemean, noisevar, c,
+		    (cmd_ln_str("-outfn"), Nmodes, Ndim, noisec, noisemean, noisevar, c,
 		     mean, variance) != 0) {
-			printf("Unable to open %s to store distribution\n",
-			       outfile);
-			printf("Superiter = %d\n", superiter);
+			E_FATAL("Unable to open %s to store distribution\n",
+			       cmd_ln_str("-tmpfn"));
 		}
 	}
 

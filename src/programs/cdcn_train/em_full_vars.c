@@ -138,7 +138,8 @@ void estimate_multi_modals(float **x,	/* The observation vectors */
 			   float *c,	/* A-priori probabilities of each of the
 					   modes, or mixing proportion */
 			   char *tempfile,	/* File to store temporary distributions */
-			   int numiters	/* Number of iterations of EM to run */
+			   int numiters,	/* Number of iterations of EM to run */
+			   float Threshold      /* Convergence ratio */
     )
 {
 	float **Newvar, **hafinvvar,
@@ -146,7 +147,7 @@ void estimate_multi_modals(float **x,	/* The observation vectors */
 	    *Newc,
 	    *Tau,
 	    *corprod,
-	    Const, SumNewc, Prevlogprob, LogProb, Threshold, Improvement;
+	    Const, SumNewc, Prevlogprob, LogProb, Improvement;
 
 	int i, j, k, iter = 0;
 
@@ -161,7 +162,6 @@ void estimate_multi_modals(float **x,	/* The observation vectors */
 	/*
 	 * some initializations
 	 */
-	Threshold = 1.0e-06;
 	Improvement = 100;
 
 	/*
