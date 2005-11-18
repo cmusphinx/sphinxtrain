@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 	vector_t *vector, *buff;
 	float **mean, **variance, *c;
 	float noisec, noisemean[64], noisevar[64];
-	float atemp, noise_threshold, noise_width = 1.0;
+	float atemp, noise_threshold, noise_width;
 	int numnoise, numspch, numvecs, Ndim, Nmodes;
 	int maxframes, vector_alloc;
 	int i, j, k, length, *nbin, *bin;
@@ -61,6 +61,7 @@ int main(int argc, char **argv)
 	Nmodes = cmd_ln_int32("-nmodes");
 	stride = cmd_ln_int32("-stride");
 	maxframes = cmd_ln_int32("-maxframes");
+	noise_width = cmd_ln_float32("-noisewidth");
 	 /* FIXME: this will break when we have terabytes of memory... */
 	if (maxframes == -1)
 		maxframes = INT_MAX;
