@@ -35,4 +35,12 @@ EOF
 	exit 1
 fi
 
+dnl Use PIC on x86_64, as we can't build Perl/Python modules otherwise
+dnl (and it isn't much slower unlike on register-starved i386)
+case $host_cpu in
+     x86_64*)
+	CFLAGS="$CFLAGS -fPIC -DPIC"
+	;;
+esac
+
 AC_OUTPUT([config/config config/system.mak scripts_pl/sphinxDocGen.sh])
