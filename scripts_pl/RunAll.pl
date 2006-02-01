@@ -46,8 +46,10 @@ if (lc($ARGV[0]) eq '-cfg') {
   $cfg_file = "./etc/sphinx_train.cfg";
   die "Must specify -cfg or create default file ./etc/sphinx_train.cfg\n" unless (-s  $cfg_file);
   require ("./etc/sphinx_train.cfg");
-  &ST_LogWarning ("-cfg not specified, using the default ./etc/sphinx_train.cfg\n");
 }
+
+require "$CFG_SCRIPT_DIR/util/utils.pl";
+&ST_LogWarning ("Using the configuration file \"$cfg_file\"\n");
 
 # What pieces would you like to compute.
 

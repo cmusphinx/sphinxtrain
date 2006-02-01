@@ -52,6 +52,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 #***************************************************************************
 # This script launches all the ci - continuous training jobs in the proper
@@ -206,23 +207,12 @@ sub copyci2cd2initialize ()
     mkdir ($logdir,0777) unless -d $logdir;
     my $logfile = "$logdir/$CFG_EXPTNAME.copy.ci.2.cd.log";
 
-    &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . "\n");
+    &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . " ");
 
     my $COPY = "$CFG_BIN_DIR/init_mixw";
 
-    open LOG,"> $logfile";
+    my $cmd = "\"$COPY\" -src_moddeffn \"$src_moddeffn\" -src_ts2cbfn  ${CFG_HMM_TYPE} -src_mixwfn \"$src_mixwfn\" -src_meanfn \"$src_meanfn\" -src_varfn \"$src_varfn\" -src_tmatfn \"$src_tmatfn\" -dest_moddeffn \"$dest_moddeffn\" -dest_ts2cbfn ${CFG_HMM_TYPE} -dest_mixwfn \"$dest_mixwfn\" -dest_meanfn \"$dest_meanfn\" -dest_varfn \"$dest_varfn\" -dest_tmatfn \"$dest_tmatfn\" -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH";
 
-    if (open PIPE,"\"$COPY\" -src_moddeffn \"$src_moddeffn\" -src_ts2cbfn  ${CFG_HMM_TYPE} -src_mixwfn \"$src_mixwfn\" -src_meanfn \"$src_meanfn\" -src_varfn \"$src_varfn\" -src_tmatfn \"$src_tmatfn\" -dest_moddeffn \"$dest_moddeffn\" -dest_ts2cbfn ${CFG_HMM_TYPE} -dest_mixwfn \"$dest_mixwfn\" -dest_meanfn \"$dest_meanfn\" -dest_varfn \"$dest_varfn\" -dest_tmatfn \"$dest_tmatfn\" -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
-	while ($line = <PIPE>) {
-	    print LOG $line;
-	}
-	
-	close PIPE;
-	close LOG;
-    } else {
-	print LOG "Unable to execute $COPY\n";
-	&ST_Log ("Unable to execute $COPY\n");
-    }
-
+    return (RunTool($cmd, $logfile, 0));
 }
 

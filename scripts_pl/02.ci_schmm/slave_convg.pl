@@ -52,6 +52,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 #***************************************************************************
 # This script launches all the ci - continuous training jobs in the proper
@@ -90,8 +91,8 @@ if ($iter == 1) {
     rmtree ("$modeldir/${CFG_EXPTNAME}.ci_$CFG_DIRLABEL") unless ! -d $modeldir;
     
     # For the first iteration Flat initialize models.
-    &FlatInitialize();
-
+    $return_value = &FlatInitialize();
+    exit ($return_value) if ($return_value);
 }
 
 if ($MC && $n_parts > 1)
@@ -176,6 +177,7 @@ sub FlatInitialize ()
     mkdir ($logdir,0777) unless -d $logdir;
     mkdir ($modarchdir,0777) unless -d $modarchdir;
     mkdir ($hmmdir,0777) unless -d $hmmdir;
+    my $cmd ="";
     
     #-------------------------------------------------------------------------
     # Take the phone list. Put three hyphens after every phone. That is the
@@ -202,7 +204,7 @@ sub FlatInitialize ()
 
 
     my $logfile = "$logdir/${CFG_EXPTNAME}.make_ci_mdef_fromphonelist.log";
-    &ST_HTML_Print ("\t\tmk_mdef_gen " . &ST_FormatURL("$logfile", "Log File") . "\n");    
+    &ST_HTML_Print ("\t\tmk_mdef_gen " . &ST_FormatURL("$logfile", "Log File") . " ");    
     #-------------------------------------------------------------------------
     # Decide on what topology to use for the hmms: 3 state, 5 state, blah state
     # or what, give it to the variable "statesperhmm" and use it to create
@@ -217,7 +219,12 @@ sub FlatInitialize ()
     system ("perl \"$CFG_BIN_DIR/maketopology.pl\" $CFG_STATESPERHMM $CFG_SKIPSTATE > \"$topologyfile\"");
 
     $MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
-    system ("\"$MAKE_MDEF\" -phnlstfn \"$phonefile\" -ocimdef \"$ci_mdeffile\" -n_state_pm $CFG_STATESPERHMM > \"$logfile\" 2>&1");
+
+    $cmd = "\"$MAKE_MDEF\" -phnlstfn \"$phonefile\" -ocimdef \"$ci_mdeffile\" -n_state_pm $CFG_STATESPERHMM";
+
+    if ($return_value = RunTool($cmd, $logfile, 0)) {
+      return $return_value;
+    }
 
     #-------------------------------------------------------------------------
     # make the flat models using the above topology file and the mdef file
@@ -228,18 +235,13 @@ sub FlatInitialize ()
     $FLAT = "$CFG_BIN_DIR/mk_flat";
 
     $logfile = "$logdir/${CFG_EXPTNAME}.makeflat_cihmm.log";
-    &ST_HTML_Print ("\t\tmk_flat " . &ST_FormatURL("$logfile", "Log File") . "\n");    
+    &ST_HTML_Print ("\t\tmk_flat " . &ST_FormatURL("$logfile", "Log File") . " ");
 
-    open LOG,">$logfile";
 
-    if (open PIPE, "\"$FLAT\" -moddeffn \"$ci_mdeffile\" -topo \"$topologyfile\" -mixwfn  \"$outhmm/mixture_weights\" -tmatfn \"$outhmm/transition_matrices\" -nstream $CFG_NUM_STREAMS -ndensity  $CFG_INITIAL_NUM_DENSITIES 2>&1 |") {
-    
-	while ($line = <PIPE>) {
-	    print LOG $line;
-	}
-	
-	close PIPE;
-	close LOG;
+    $cmd = "\"$FLAT\" -moddeffn \"$ci_mdeffile\" -topo \"$topologyfile\" -mixwfn  \"$outhmm/mixture_weights\" -tmatfn \"$outhmm/transition_matrices\" -nstream $CFG_NUM_STREAMS -ndensity  $CFG_INITIAL_NUM_DENSITIES";
+
+    if ($return_value = RunTool($cmd, $logfile, 0)) {
+      return $return_value;
     }
 
     if ($CFG_HMM_TYPE eq ".semi.") {
@@ -253,21 +255,16 @@ sub FlatInitialize ()
     $ACCUM = "$CFG_BIN_DIR/init_gau";
 
     $logfile = "$logdir/${CFG_EXPTNAME}.initmean_cihmm.log";
-    &ST_HTML_Print ("\t\taccum_mean " . &ST_FormatURL("$logfile", "Log File") . "\n");
+    &ST_HTML_Print ("\t\taccum_mean " . &ST_FormatURL("$logfile", "Log File") . " ");
 
     open LOG,">$logfile";
 
     $output_buffer_dir = "$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_1";
     mkdir ($output_buffer_dir,0777) unless -d $output_buffer_dir;
 
-    if (open PIPE, "\"$ACCUM\" -ctlfn \"$CFG_LISTOFFILES\" -part 1 -npart 1 -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -accumdir \"$output_buffer_dir\" -agc $CFG_AGC -cmn $CFG_CMN -varnorm $CFG_VARNORM -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
-    
-	while ($line = <PIPE>) {
-	    print LOG $line;
-	}
-	
-	close PIPE;
-	close LOG;
+    $cmd = "\"$ACCUM\" -ctlfn \"$CFG_LISTOFFILES\" -part 1 -npart 1 -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -accumdir \"$output_buffer_dir\" -agc $CFG_AGC -cmn $CFG_CMN -varnorm $CFG_VARNORM -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH";
+    if ($return_value = RunTool($cmd, $logfile, 0)) {
+      return $return_value;
     }
 
     #-------------------------------------------------------------------------
@@ -277,18 +274,11 @@ sub FlatInitialize ()
     $NORM = "$CFG_BIN_DIR/norm";
 
     $logfile = "$logdir/${CFG_EXPTNAME}.normmean_cihmm.log";
-    &ST_HTML_Print ("\t\tnorm_mean " . &ST_FormatURL("$logfile", "Log File") . "\n");
+    &ST_HTML_Print ("\t\tnorm_mean " . &ST_FormatURL("$logfile", "Log File") . " ");
 
-    open LOG,">$logfile";
-
-    if (open PIPE, "\"$NORM\" -accumdir \"$output_buffer_dir\" -meanfn \"$outhmm/globalmean\" 2>&1 |") {
-    
-	while ($line = <PIPE>) {
-	    print LOG $line;
-	}
-	
-	close PIPE;
-	close LOG;
+    $cmd = "\"$NORM\" -accumdir \"$output_buffer_dir\" -meanfn \"$outhmm/globalmean\"";
+    if ($return_value = RunTool($cmd, $logfile, 0)) {
+      return $return_value;
     }
 
     #-------------------------------------------------------------------------
@@ -296,18 +286,11 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
     
     $logfile = "$logdir/${CFG_EXPTNAME}.initvar_cihmm.log";
-    &ST_HTML_Print ("\t\taccum_var " . &ST_FormatURL("$logfile", "Log File") . "\n");
+    &ST_HTML_Print ("\t\taccum_var " . &ST_FormatURL("$logfile", "Log File") . " ");
 
-    open LOG,">$logfile";
-
-    if (open PIPE, "\"$ACCUM\" -meanfn \"$outhmm/globalmean\" -ctlfn \"$CFG_LISTOFFILES\" -part 1 -npart 1 -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -accumdir \"$output_buffer_dir\" -agc $CFG_AGC -cmn $CFG_CMN -varnorm yes -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
-    
-	while ($line = <PIPE>) {
-	    print LOG $line;
-	}
-	
-	close PIPE;
-	close LOG;
+    $cmd = "\"$ACCUM\" -meanfn \"$outhmm/globalmean\" -ctlfn \"$CFG_LISTOFFILES\" -part 1 -npart 1 -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -accumdir \"$output_buffer_dir\" -agc $CFG_AGC -cmn $CFG_CMN -varnorm yes -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH";
+    if ($return_value = RunTool($cmd, $logfile, 0)) {
+      return $return_value;
     }
 
     #-------------------------------------------------------------------------
@@ -315,19 +298,13 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
     
     $logfile = "$logdir/${CFG_EXPTNAME}.normvar_cihmm.log";
-    &ST_HTML_Print ("\t\tnorm_var " . &ST_FormatURL("$logfile", "Log File") . "\n");
+    &ST_HTML_Print ("\t\tnorm_var " . &ST_FormatURL("$logfile", "Log File") . " ");
 
-    open LOG,">$logfile";
-
-    if (open PIPE, "\"$NORM\" -accumdir \"$output_buffer_dir\" -varfn \"$outhmm/globalvar\" 2>&1 |") {
-    
-	while ($line = <PIPE>) {
-	    print LOG $line;
-	}
-	
-	close PIPE;
-	close LOG;
+    $cmd = "\"$NORM\" -accumdir \"$output_buffer_dir\" -varfn \"$outhmm/globalvar\"";
+    if ($return_value = RunTool($cmd, $logfile, 0)) {
+      return $return_value;
     }
+
 
     #-------------------------------------------------------------------------
     # Create the copy operation file, simply a map between states
@@ -350,18 +327,11 @@ sub FlatInitialize ()
     $CPPARM = "$CFG_BIN_DIR/cp_parm";
 
     $logfile = "$logdir/${CFG_EXPTNAME}.cpmean_cihmm.log";
-    &ST_HTML_Print ("\t\tcp_mean " . &ST_FormatURL("$logfile", "Log File") . "\n");
+    &ST_HTML_Print ("\t\tcp_mean " . &ST_FormatURL("$logfile", "Log File") . " ");
 
-    open LOG,">$logfile";
-
-    if (open PIPE, "\"$CPPARM\" -cpopsfn \"$CFG_CP_OPERATION\" -igaufn \"$outhmm/globalmean\" -ncbout $NUM_CI_STATES -ogaufn \"$outhmm/means\" -feat $CFG_FEATURE 2>&1 |") {
-    
-	while ($line = <PIPE>) {
-	    print LOG $line;
-	}
-	
-	close PIPE;
-	close LOG;
+    $cmd = "\"$CPPARM\" -cpopsfn \"$CFG_CP_OPERATION\" -igaufn \"$outhmm/globalmean\" -ncbout $NUM_CI_STATES -ogaufn \"$outhmm/means\" -feat $CFG_FEATURE";
+    if ($return_value = RunTool($cmd, $logfile, 0)) {
+      return $return_value;
     }
 
     #-------------------------------------------------------------------------
@@ -369,18 +339,13 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
     
     $logfile = "$logdir/${CFG_EXPTNAME}.cpvar_cihmm.log";
-    &ST_HTML_Print ("\t\tcp_var " . &ST_FormatURL("$logfile", "Log File") . "\n");
+    &ST_HTML_Print ("\t\tcp_var " . &ST_FormatURL("$logfile", "Log File") . " ");
 
-    open LOG,">$logfile";
-
-    if (open PIPE, "\"$CPPARM\" -cpopsfn \"$CFG_CP_OPERATION\" -igaufn \"$outhmm/globalvar\" -ncbout $NUM_CI_STATES -ogaufn \"$outhmm/variances\" -feat $CFG_FEATURE 2>&1 |") {
-    
-	while ($line = <PIPE>) {
-	    print LOG $line;
-	}
-	
-	close PIPE;
-	close LOG;
+    $cmd = "\"$CPPARM\" -cpopsfn \"$CFG_CP_OPERATION\" -igaufn \"$outhmm/globalvar\" -ncbout $NUM_CI_STATES -ogaufn \"$outhmm/variances\" -feat $CFG_FEATURE";
+    if ($return_value = RunTool($cmd, $logfile, 0)) {
+      return $return_value;
     }
+
     unlink $CFG_CP_OPERATION;
+    return $return_value;
 }

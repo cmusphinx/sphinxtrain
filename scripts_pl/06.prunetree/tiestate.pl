@@ -55,6 +55,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 die "USAGE: $0 <iteration number>" if (($#ARGV != ($index)));
 
@@ -74,8 +75,8 @@ $| = 1; # Turn on autoflushing
 &ST_Log ("    Tie states\n");
 &ST_HTML_Print ("\t\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
-$status = system("\"$TIESTATE\" -imoddeffn \"$untied_mdef_file\" -omoddeffn \"$tied_mdef_file\" -treedir \"$prunedtreedir\" -psetfn \"$CFG_QUESTION_SET\" > \"$logfile\" 2>&1");
+my $cmd = "\"$TIESTATE\" -imoddeffn \"$untied_mdef_file\" -omoddeffn \"$tied_mdef_file\" -treedir \"$prunedtreedir\" -psetfn \"$CFG_QUESTION_SET\"";
 
-&ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
+$status = RunTool($cmd, $logfile, 0);
 
-exit ($status != 0);
+exit ($status);

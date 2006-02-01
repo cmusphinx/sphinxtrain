@@ -158,7 +158,7 @@ mkdir "scripts_pl" unless -d scripts_pl;
 my $scriptdir = "$SPHINXTRAINDIR/scripts_pl";
 print "Copying scripts from $scriptdir\n";
 opendir(DIR, "$scriptdir") or die "Can't open $scriptdir\n";
-@dirlist = grep /^(0.*|mc)$/, readdir DIR;
+@dirlist = grep /^(0.*|mc|util)$/, readdir DIR;
 closedir(DIR);
 
 push @dirlist, ".";

@@ -52,6 +52,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 #*************************************************************************
 # This script runs the build_tree script for each state of each basephone

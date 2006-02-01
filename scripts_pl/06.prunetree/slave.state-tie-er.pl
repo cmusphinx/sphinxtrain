@@ -55,6 +55,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 my $scriptdir = "$CFG_SCRIPT_DIR/06.prunetree";
 
@@ -73,13 +74,13 @@ $modarchdir          = "$CFG_BASE_DIR/model_architecture";
 $ALLTRIPHONESMDDEF = "$modarchdir/$CFG_EXPTNAME.alltriphones.mdef";
 $phonefile           = "$modarchdir/$CFG_EXPTNAME.phonelist";
 
-&ST_HTML_Print ("\t\tmk_mdef_gen " . &ST_FormatURL("$logfile", "Log File") . "\n");
+&ST_HTML_Print ("\t\tmk_mdef_gen " . &ST_FormatURL("$logfile", "Log File") . " ");
 
-$status = system ("\"$MAKE_MDEF\" -phnlstfn \"$phonefile\" -oalltphnmdef \"$ALLTRIPHONESMDDEF\" -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -n_state_pm $CFG_STATESPERHMM > \"$logfile\" 2>&1");
+my $cmd = "\"$MAKE_MDEF\" -phnlstfn \"$phonefile\" -oalltphnmdef \"$ALLTRIPHONESMDDEF\" -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -n_state_pm $CFG_STATESPERHMM";
 
-$status = system("perl \"$scriptdir/prunetree.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES") unless $status;
+$status = RunTool($cmd, $logfile, 0);
 
-$status = system("perl \"$scriptdir/tiestate.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES") unless $status;
+$status = (system("perl \"$scriptdir/prunetree.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES")) or (system("perl \"$scriptdir/tiestate.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES")) unless ($status);
 
-exit ($status != 0);
+exit ($status);
 

@@ -57,6 +57,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 my ($AGG_SEG,$len,$stride,$segdmpdir,$dumpfile,$logfile);
 
@@ -95,17 +96,9 @@ $logfile = "$logdir/${CFG_EXPTNAME}.vq.agg_seg.log";
 # run it here 
 #system ("$AGG_SEG -segdmpdirs $segdmpdir -segdmpfn $dumpfile  -segtype all -ctlfn $CFG_LISTOFFILES -cepdir $CFG_FEATFILES_DIR -cepext $CFG_FEATFILE_EXTENSION -ceplen $CFG_VECTOR_LENGTH -agc $CFG_AGC -cmn $CFG_CMN -feat $CFG_FEATURE -stride $stride");
 
-if (open PIPE, "\"$AGG_SEG\" -segdmpdirs \"$segdmpdir\" -segdmpfn \"$dumpfile\"  -segtype all -ctlfn \"$CFG_LISTOFFILES\" -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -ceplen $CFG_VECTOR_LENGTH -agc $CFG_AGC -cmn $CFG_CMN -feat $CFG_FEATURE -stride $stride  2>&1 |") {
-    open LOG,">$logfile";
-    while (<PIPE>) {
-	print LOG "$_";
-    }
-    close LOG;
-    close PIPE;
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
-    exit (0);
-}
+my $cmd = "\"$AGG_SEG\" -segdmpdirs \"$segdmpdir\" -segdmpfn \"$dumpfile\"  -segtype all -ctlfn \"$CFG_LISTOFFILES\" -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -ceplen $CFG_VECTOR_LENGTH -agc $CFG_AGC -cmn $CFG_CMN -feat $CFG_FEATURE -stride $stride";
 
-&ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> FAILED </font>\n");
-exit (-1);
+$return_value = RunTool($cmd, $logfile, 0);
+
+exit ($return_value);
 

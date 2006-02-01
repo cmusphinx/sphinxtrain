@@ -54,6 +54,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 die "USAGE: $0 <iteration number>" if (($#ARGV != ($index)));
 
@@ -76,9 +77,9 @@ $| = 1; # Turn on autoflushing
 &ST_Log ("    Prune trees\n");
 &ST_HTML_Print ("\t\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
-$status = system ("\"$PRUNETREE\" -itreedir \"$unprunedtreedir\" -nseno $n_tied_states -otreedir \"$prunedtreedir\" -moddeffn \"$mdef_file\" -psetfn \"$CFG_QUESTION_SET\" -minocc $occurance_threshold > \"$logfile\" 2>&1");
+my $cmd = "\"$PRUNETREE\" -itreedir \"$unprunedtreedir\" -nseno $n_tied_states -otreedir \"$prunedtreedir\" -moddeffn \"$mdef_file\" -psetfn \"$CFG_QUESTION_SET\" -minocc $occurance_threshold";
 
-&ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
+$status = RunTool($cmd, $logfile, 0);
 
-exit ($status != 0);
+exit ($status);
 

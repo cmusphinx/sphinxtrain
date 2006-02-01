@@ -53,6 +53,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 #***************************************************************************
 # This script splits the current set of gaussian models. The increase
@@ -146,8 +147,6 @@ my $logfile = "$logdir/$CFG_EXPTNAME.copy.ci.2.cd.log";
 
 my $SPLIT = "$CFG_BIN_DIR/inc_comp";
 
-open LOG,"> $logfile";
-
 my $split_cmd = "\"$SPLIT\" " .
   "-ninc $n_inc " .
   "-dcountfn \"$src_mixwfn\" " .
@@ -160,17 +159,4 @@ my $split_cmd = "\"$SPLIT\" " .
   "-feat      $CFG_FEATURE " .
   "-ceplen    $CFG_VECTOR_LENGTH ";
 
-if (open PIPE,"$split_cmd 2>&1 |") {
-  while ($line = <PIPE>) {
-    print LOG $line;
-  }
-	
-  close PIPE;
-  close LOG;
-} else {
-  print LOG "Unable to execute $SPLIT\n";
-  &ST_Log ("Unable to execute $SPLIT\n");
-}
-
-
-exit 0;
+exit (RunTool($split_cmd, $logfile, 0));

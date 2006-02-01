@@ -53,6 +53,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 # If we're creating continous models, we don't need this
 if ($CFG_HMM_TYPE eq ".cont.") {
@@ -98,17 +99,6 @@ mkdir ($logdir,0777);
 &ST_Log ("    Doing interpolation...\n");
 &ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
-open LOG,"> $logfile";
+my $cmd = "\"$INTERP\" -accumdirs $bwaccumdir -moddeffn \"$moddeffn\" -mixwfn \"$mixwfn\" -cilambda $cilambda -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH -maxiter 4000";
 
-if (open PIPE,"\"$INTERP\" -accumdirs $bwaccumdir -moddeffn \"$moddeffn\" -mixwfn \"$mixwfn\" -cilambda $cilambda -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH -maxiter 4000 2>&1 |") {
-    while ($line = <PIPE>) {
-       print LOG $line;
-    }
-    close PIPE;
-    close LOG;
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
-} else {
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> completed </font>\n");
-}
-
-exit 0;
+exit (RunTool($cmd, $logfile, 0));

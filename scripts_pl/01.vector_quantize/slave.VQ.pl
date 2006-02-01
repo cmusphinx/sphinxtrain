@@ -59,6 +59,7 @@ if (! -s "$cfg_file") {
 }
 
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 #*****************************************************************************
 # The agg_seg script aggregates all the training feature vectors into a 
@@ -76,11 +77,12 @@ $| = 1; # Turn on autoflushing
 # No error checking
 &ST_Log ("MODULE: 01 Vector Quantization\n");
 $scriptdir="$CFG_BASE_DIR/scripts_pl/01.vector_quantize";
+$return_value = 0;
 if ($CFG_HMM_TYPE eq ".semi.") {
-  system ("perl \"$scriptdir/agg_seg.pl\" -cfg \"$cfg_file\"");
-  system ("perl \"$scriptdir/kmeans.pl\" -cfg \"$cfg_file\"");
+  $return_value = system ("perl \"$scriptdir/agg_seg.pl\" -cfg \"$cfg_file\"") or system ("perl \"$scriptdir/kmeans.pl\" -cfg \"$cfg_file\"");
 } else {
   &ST_Log("    Skipped for continuous models\n");
 }
 &ST_Log ("\n");
+exit $return_value;
 

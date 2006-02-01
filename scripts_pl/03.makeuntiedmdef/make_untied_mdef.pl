@@ -51,6 +51,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 #***************************************************************************
 # This script generates an mdef file for all the triphones occuring in the
@@ -84,9 +85,14 @@ $untiedmdef = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
 ##  mk_mdef_gen -phnlstfn $phonelist TRANSCRIPTFILE DICTIONARY -ountiedmdef ..  n_states .. 
 # -minocc       1         Min occurances of a triphone must occur for inclusion in mdef file
 
+&ST_HTML_Print ("\t\tmk_untied_mdef " . &ST_FormatURL("$logfile", "Log File") . " ");
+
 $MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
-system ("\"$MAKE_MDEF\" -phnlstfn \"$CFG_RAWPHONEFILE\" -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -lsnfn \"$CFG_TRANSCRIPTFILE\" -ountiedmdef \"$untiedmdef\" -n_state_pm  $CFG_STATESPERHMM -maxtriphones 10000 > \"$logfile\" 2>&1");
+my $cmd = "\"$MAKE_MDEF\" -phnlstfn \"$CFG_RAWPHONEFILE\" -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -lsnfn \"$CFG_TRANSCRIPTFILE\" -ountiedmdef \"$untiedmdef\" -n_state_pm  $CFG_STATESPERHMM -maxtriphones 10000";
 
-&ST_HTML_Print ("\t\tmk_untied_mdef " . &ST_FormatURL("$logfile", "Log File") . "\n");
+$return_value = RunTool($cmd, $logfile, 0);
 
-exit 0;
+exit ($return_value);
+
+
+

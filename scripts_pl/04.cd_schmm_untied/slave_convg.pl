@@ -52,6 +52,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 #***************************************************************************
 # This script launches all the ci - continuous training jobs in the proper
@@ -61,7 +62,6 @@ require $cfg_file;
 # jobs as the number of parts we wish to split the training into.
 #***************************************************************************
 
-$TESTING = 0;
 my $iter = 1;
 if (($#ARGV >= ($index))) {
    $iter= $ARGV[$index];
@@ -87,13 +87,13 @@ if ($iter == 1) {
     mkdir ($CFG_BWACCUM_DIR,0777);
 
     &ST_Log ("logs...");
-    rmtree ($logdir) unless $TESTING;
+    rmtree ($logdir);
     mkdir ($logdir,0777) unless -d $logdir;
 
     &ST_Log ("\n");
     # For the first iteration Flat initialize models.
-    # To start off queue trap job id
-    &Initialize () unless $TESTING;
+    $return_value = &Initialize();
+    exit ($return_value) if ($return_value);
 }
 
 # The parallel version can't really cope with the huge disk read/writes
@@ -163,35 +163,23 @@ system ("perl \"$scriptdir/norm_and_launchbw.pl\" -cfg \"$cfg_file\" $iter $n_pa
 
 exit 0;
 
-sub Initialize ()
-  {
-    my $cihmmdir = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}";
-    my $cdhmmdir = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied";
-    mkdir ($cdhmmdir,0777) unless -d $cdhmmdir;
+sub Initialize () {
+  my $cihmmdir = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}";
+  my $cdhmmdir = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied";
+  mkdir ($cdhmmdir,0777) unless -d $cdhmmdir;
 
-    my $logdir  =  "${CFG_LOG_DIR}/04.cd_schmm_untied";
-    mkdir ($logdir,0777) unless -d $logdir;
-    my $logfile = "$logdir/${CFG_EXPTNAME}.copycitocd.log";
+  my $logdir  =  "${CFG_LOG_DIR}/04.cd_schmm_untied";
+  mkdir ($logdir,0777) unless -d $logdir;
+  my $logfile = "$logdir/${CFG_EXPTNAME}.copycitocd.log";
 
-    &ST_Log ("    Initialization Copy CI to CD ");
-    &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . "\n");
+  &ST_Log ("    Initialization Copy CI to CD ");
+  &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . " ");
 
+  my $COPY_CI_TO_CD = "${CFG_BIN_DIR}/init_mixw";
 
-    my $COPY_CI_TO_CD = "${CFG_BIN_DIR}/init_mixw";
+  $cmd = "\"$COPY_CI_TO_CD\" -src_moddeffn \"${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.ci.mdef\" -src_ts2cbfn ${CFG_HMM_TYPE} -src_mixwfn \"$cihmmdir/mixture_weights\" -src_meanfn \"$cihmmdir/means\" -src_varfn \"$cihmmdir/variances\" -src_tmatfn \"$cihmmdir/transition_matrices\" -dest_moddeffn \"${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef\" -dest_ts2cbfn ${CFG_HMM_TYPE} -dest_mixwfn \"$cdhmmdir/mixture_weights\" -dest_meanfn \"$cdhmmdir/means\" -dest_varfn \"$cdhmmdir/variances\" -dest_tmatfn \"$cdhmmdir/transition_matrices\" -feat ${CFG_FEATURE} -ceplen ${CFG_VECTOR_LENGTH}";
 
-    open LOG,"> $logfile";
-
-    if (open PIPE,"\"$COPY_CI_TO_CD\" -src_moddeffn \"${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.ci.mdef\" -src_ts2cbfn ${CFG_HMM_TYPE} -src_mixwfn \"$cihmmdir/mixture_weights\" -src_meanfn \"$cihmmdir/means\" -src_varfn \"$cihmmdir/variances\" -src_tmatfn \"$cihmmdir/transition_matrices\" -dest_moddeffn \"${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef\" -dest_ts2cbfn ${CFG_HMM_TYPE} -dest_mixwfn \"$cdhmmdir/mixture_weights\" -dest_meanfn \"$cdhmmdir/means\" -dest_varfn \"$cdhmmdir/variances\" -dest_tmatfn \"$cdhmmdir/transition_matrices\" -feat ${CFG_FEATURE} -ceplen ${CFG_VECTOR_LENGTH} 2>&1 |") {
-	
-	while ($line = <PIPE>) {
-	    print LOG $line;
-	}
-	
-	close PIPE;
-	close LOG;
-    } else {
-	print LOG "Unable to execute $COPY_CI_TO_CD\n";
-	&ST_Log ("Unable to execute $COPY_CI_TO_CD\n");
-    }
+  return (RunTool($cmd, $logfile, 0));
 }
+
 

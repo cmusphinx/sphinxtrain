@@ -56,6 +56,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 #***************************************************************************
 # Script to find the VQ codebooks for the training set.
@@ -87,30 +88,16 @@ $logdir = "$CFG_LOG_DIR/01.vector_quantize";
 mkdir ($logdir,0777) unless -d $logdir;
 $logfile = "$logdir/${CFG_EXPTNAME}.kmeans.log";
 
-&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File"));
+&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
 #set VQ = ~rsingh/09..sphinx3code/trainer/bin.alpha/kmeans_init
 #$VQ = "$CFG_BIN_DIR/kmeans_init";
 # -grandvar   yes   
 
 $| = 1;
-if (open PIPE, "\"${CFG_BIN_DIR}/kmeans_init\" -gthobj single -stride 1 -ntrial 1 -minratio 0.001 -ndensity 256 -meanfn \"$outhmm/means\" -varfn \"$outhmm/variances\" -reest no -segdmpdirs \"$segdmpdir\" -segdmpfn \"$dumpfile\" -ceplen ${CFG_VECTOR_LENGTH} -feat ${CFG_FEATURE} -agc $CFG_AGC -cmn ${CFG_CMN} 2>&1 |") {
-    
-    open LOG,">$logfile";
-    while (<PIPE>) {
-	# Should be filtering for errors/warnings
-	print LOG "$_";
-    }
-    close LOG;
-#    &ST_Log ("\t\tcompleted\n");
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
-    $| = 0;
-    exit (0);
-} 
+my $cmd = "\"${CFG_BIN_DIR}/kmeans_init\" -gthobj single -stride 1 -ntrial 1 -minratio 0.001 -ndensity $CFG_INITIAL_NUM_DENSITIES -meanfn \"$outhmm/means\" -varfn \"$outhmm/variances\" -reest no -segdmpdirs \"$segdmpdir\" -segdmpfn \"$dumpfile\" -ceplen ${CFG_VECTOR_LENGTH} -feat ${CFG_FEATURE} -agc $CFG_AGC -cmn ${CFG_CMN}";
 
-$| = 0;
-# system ("rm -f $dumpfile"); # RAH 7.21.2000 - this was part of the earlier code, it was commented out there as well.
-&ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> FAILED </font>\n");
-#&ST_Log ("\t\tFAILED\n");
-exit (-1);
+$return_value = RunTool($cmd, $logfile, 0);
+
+exit ($return_value);
 

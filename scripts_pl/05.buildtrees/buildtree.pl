@@ -52,6 +52,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 #*************************************************************************
 # This script runs the build_tree script for each state of each basephone
@@ -94,7 +95,7 @@ sub BuildTree ()
     my $logfile = "$logdir/${CFG_EXPTNAME}.buildtree.${phn}.${stt}.log";
 
     &ST_Log ("\t\t${phn} ${stt} ");
-    &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . "\n");
+    &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . " ");
 
     #$mach = `~/51..tools/machine_type.csh`;
     #$BUILDTREE = "/net/alf19/usr2/eht/s3/bin.$mach/bldtree";
@@ -129,17 +130,7 @@ sub BuildTree ()
       $gauflag = "-meanfn \"$means_file\" -varfn \"$variances_file\"";
     }
 
-    open LOG,">$logfile";    
-    if (open PIPE, "\"$BUILDTREE\" ${gauflag} -treefn \"$unprunedtreedir/$phn-$stt.dtree\" -moddeffn \"$mdef_file\" -mixwfn \"$mixture_wt_file\" -ts2cbfn ${CFG_HMM_TYPE} -mwfloor 1e-30 -psetfn \"${CFG_QUESTION_SET}\" -phone \"$phn\" -state $stt -stwt $stwt -ssplitmin 1 -ssplitmax 5 -ssplitthr 0 -csplitmin 1 -csplitmax 500 -csplitthr 0 2>&1 |") {
-	
-	while (<PIPE>) {
-	    print LOG "$_";
-	}
-	close PIPE;
-	close LOG;
-    } else {
-	&ST_LogError ("Unable to start $BUILDTREE\n");
-	print LOG "Unable to start $BUILDTREE\n";
-	close LOG;
-    }
+    my $cmd = "\"$BUILDTREE\" ${gauflag} -treefn \"$unprunedtreedir/$phn-$stt.dtree\" -moddeffn \"$mdef_file\" -mixwfn \"$mixture_wt_file\" -ts2cbfn ${CFG_HMM_TYPE} -mwfloor 1e-30 -psetfn \"${CFG_QUESTION_SET}\" -phone \"$phn\" -state $stt -stwt $stwt -ssplitmin 1 -ssplitmax 5 -ssplitthr 0 -csplitmin 1 -csplitmax 500 -csplitthr 0";
+
+    return (RunTool($cmd, $logfile, 0));
 }

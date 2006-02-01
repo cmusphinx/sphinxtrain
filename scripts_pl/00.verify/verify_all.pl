@@ -52,6 +52,7 @@ if (! -s "$cfg_file") {
 }
 
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 $ret_value = 0;
 

@@ -52,6 +52,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 
 #************************************************************************
@@ -126,43 +127,14 @@ copy "$CFG_GIF_DIR/green-ball.gif", "$CFG_BASE_DIR/.07.bw.$n_gau.$iter.$part.sta
 &ST_Log ("    Baum welch starting for $n_gau Gaussian(s), iteration: $iter ($part of $npart) ");
 &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . "\n");
 
-open LOG,">$logfile";
-
 $BW   = "$CFG_BIN_DIR/bw";
-if (open PIPE, "\"$BW\" -moddeffn \"$moddeffn\" -ts2cbfn \"$statepdeffn\" -mixwfn \"$mixwfn\" -mwfloor $mwfloor -tmatfn \"$tmatfn\" -meanfn \"$meanfn\" -varfn \"$varfn\" -ltsoov $CFG_LTSOOV -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -ctlfn \"$CFG_LISTOFFILES\" -part $part -npart $npart -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -lsnfn \"$CFG_TRANSCRIPTFILE\" -accumdir \"$output_buffer_dir\" -varfloor $minvar -topn $topn -abeam 1e-90 -bbeam 1e-40 -agc $CFG_AGC -cmn $CFG_CMN -meanreest yes -varreest yes -2passvar $var2pass -tmatreest yes -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH 2>&1 |") {
+my $cmd = "\"$BW\" -moddeffn \"$moddeffn\" -ts2cbfn \"$statepdeffn\" -mixwfn \"$mixwfn\" -mwfloor $mwfloor -tmatfn \"$tmatfn\" -meanfn \"$meanfn\" -varfn \"$varfn\" -ltsoov $CFG_LTSOOV -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -ctlfn \"$CFG_LISTOFFILES\" -part $part -npart $npart -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -lsnfn \"$CFG_TRANSCRIPTFILE\" -accumdir \"$output_buffer_dir\" -varfloor $minvar -topn $topn -abeam 1e-90 -bbeam 1e-40 -agc $CFG_AGC -cmn $CFG_CMN -meanreest yes -varreest yes -2passvar $var2pass -tmatreest yes -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH";
 
-    $processed_counter = 0;
-    &ST_Log ("\n        Using $ctl_counter files: ");
-    $| = 1;				# Turn on autoflushing
-    while (<PIPE>) {
-	if (/(ERROR).*/) {
-	    &ST_LogError ($_ . "\n");
-	}
-	if (/(FATAL).*/) {
-	    &ST_LogError ($_ . "\n");
-	    die "Received a fatal error";
-	}
-	print LOG "$_";
-	# Keep track of progress being made.
-	$processed_counter++  if (/.*(utt\>).*/);
-	$percentage = int (($processed_counter / $ctl_counter) * 100);
-	if (!($percentage % 10)) {
-	    &ST_Log ("${percentage}% ") unless $printed;
-	    $printed = 1;
-	} else {
-	    $printed = 0;
-	}
-    }
-    close PIPE;
-    $| = 0;
-    $date = localtime;
-    print LOG "$date\n";
-    close LOG;
-    &ST_Log ("Finished\n");
-    exit (0);
+$return_value = RunTool($cmd, $logfile, 1);
+
+if ($return_value) {
+  copy "$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.07.bw.$n_gau.$iter.$part.state.gif";
+  &ST_LogError ("\tFailed to start $BW \n");
 }
-
-copy "$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.07.bw.$n_gau.$iter.$part.state.gif";
-&ST_LogError ("\tFailed to start $BW \n");    
-exit (-1);
+exit ($return_value);
 

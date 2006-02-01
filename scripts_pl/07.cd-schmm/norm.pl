@@ -52,6 +52,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 #*****************************************************************************
 #  Baum-welch is done in several parts. This script gathers the results of
@@ -93,32 +94,12 @@ copy "$CFG_GIF_DIR/green-ball.gif", "$CFG_BASE_DIR/.07.norm.${n_gau}.$iter.state
 
 $NORM  = "$CFG_BIN_DIR/norm";
 
-open LOG,">$logfile";
+my $cmd = "\"$NORM\" -accumdir $bwaccumdir -mixwfn \"$mixture_weights\"  -tmatfn \"$transition_matrices\" -meanfn \"$means\" -varfn \"$variances\" -feat ${CFG_FEATURE} -ceplen ${CFG_VECTOR_LENGTH}";
 
-if (open PIPE, "\"$NORM\" -accumdir $bwaccumdir -mixwfn \"$mixture_weights\"  -tmatfn \"$transition_matrices\" -meanfn \"$means\" -varfn \"$variances\" -feat ${CFG_FEATURE} -ceplen ${CFG_VECTOR_LENGTH} 2>&1 |") {
+$return_value = RunTool($cmd, $logfile, 0);
 
-    $| = 1;				# Turn on autoflushing
-    while (<PIPE>) {
-	if (/(ERROR).*/) {
-	    &ST_LogError ($_ . "\n");
-	}
-	if (/(FATAL).*/) {
-	    &ST_LogError ($_ . "\n");
-	    die "Received a fatal error";
-	}
-	print LOG "$_";
-    }
-    close PIPE;
-    $| = 0;
-    $date = localtime;
-    print LOG "$date\n";
-    close LOG;
-    &ST_Log ("Finished\n");
-    exit (0);
+if ($return_value) {
+  copy "$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.07.norm.${n_gau}.$iter.state.gif";
+  &ST_LogError ("\tFailed to start $NORM \n");
 }
-
-copy "$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.07.norm.${n_gau}.$iter.state.gif";
-&ST_LogError ("\tFailed to start $NORM \n");    
-exit (-1);
-
-exit 0;
+exit ($return_value);

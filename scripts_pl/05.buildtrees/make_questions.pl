@@ -51,6 +51,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 my $mdeffn   = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.ci.mdef";
 my $hmm_dir  = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}";
@@ -73,21 +74,7 @@ $| = 1; # Turn on autoflushing
 &ST_Log ("    Make Questions\n");
 &ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
 
-$|=1;
+my $cmd = "\"$MAKE_QUEST\" -moddeffn \"$mdeffn\" -meanfn \"$meanfn\" -varfn \"$varfn\" -mixwfn \"$mixwfn\" -npermute 8 -niter 1 -qstperstt 20  -questfn \"$questfn\" -type ${CFG_HMM_TYPE}";
 
-if (open PIPE, "\"$MAKE_QUEST\" -moddeffn \"$mdeffn\" -meanfn \"$meanfn\" -varfn \"$varfn\" -mixwfn \"$mixwfn\" -npermute 8 -niter 1 -qstperstt 20  -questfn \"$questfn\" -type ${CFG_HMM_TYPE} 2>&1 |") {
+exit (RunTool($cmd, $logfile, 0));
 
-  open LOG,">$logfile";
-  while (<PIPE>) {
-    print LOG "$_";
-  }
-  close PIPE;
-  close LOG;
-  &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
-  $| = 0;
-  exit 0;
-}
-
-
-&ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> completed </font>\n");
-exit -1

@@ -55,6 +55,7 @@ if (! -s "$cfg_file") {
     exit -3;
 }
 require $cfg_file;
+require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 # If we created continuous models, we can't create S2 models from
 # them. Sorry, we have to rerun.
@@ -106,7 +107,7 @@ system( "\"$CFG_BIN_DIR/mk_s2sendump\" -moddeffn \"$s3mdef\" -mixwfn \"$s3mixw\"
 
 &ST_Log ("    Make phone and map files\n");
 &ST_HTML_Print ("\t" . &ST_FormatURL("$logfile_s2phonemap", "Log File") . " ");
-system("\"$CFG_BIN_DIR/mk_s2phonemap\" -moddeffn \"$s3mdef\" -phonefn \"$s2dir/phone\" -mapfn \"$s2dir/map\" > \"$logfile_s2phonemap\" 2>&1");
-&ST_HTML_Print ("\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
 
-exit 0;
+my $cmd = "\"$CFG_BIN_DIR/mk_s2phonemap\" -moddeffn \"$s3mdef\" -phonefn \"$s2dir/phone\" -mapfn \"$s2dir/map\" > \"$logfile_s2phonemap\"";
+
+exit (RunTool($cmd, $logfile, 0));
