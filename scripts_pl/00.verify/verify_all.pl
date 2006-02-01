@@ -142,8 +142,15 @@ unlink $uppercase_file;
     
     # Read the phonelist and stick phones into phonelist_hash
     open PHONE,"$CFG_RAWPHONEFILE" or die "Can not open phone list ($CFG_RAWPHONEFILE)\n";
+    my $has_SIL = 0;
     while (<PHONE>) {
 	chomp;
+	if (m/\s/) {
+	  $status = 'FAILED';
+	  $ret_value = -1;
+	  &ST_LogWarning("Phone \"$_\" has extra white spaces\n")
+	}
+	$has_SIL = 1 if m/^SIL$/;
 	if ($is_case_sensitive) {
 	  $phonelist_hash{$_} = 0;
 	} else {
@@ -151,6 +158,12 @@ unlink $uppercase_file;
 	}
     }
     close PHONE;
+
+    unless ($has_SIL) {
+        $status = 'FAILED';
+	$ret_value = -1;
+	&ST_LogWarning ("The phonelist ($CFG_RAWPHONEFILE) does not define the phone SIL (required!)\n");
+      }
     
     @keys = keys %dict_phone_hash;
     &ST_Log ("        Found $counter words using $#keys phones\n");
