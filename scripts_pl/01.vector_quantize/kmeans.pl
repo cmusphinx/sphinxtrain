@@ -97,7 +97,5 @@ $logfile = "$logdir/${CFG_EXPTNAME}.kmeans.log";
 $| = 1;
 my $cmd = "\"${CFG_BIN_DIR}/kmeans_init\" -gthobj single -stride 1 -ntrial 1 -minratio 0.001 -ndensity $CFG_INITIAL_NUM_DENSITIES -meanfn \"$outhmm/means\" -varfn \"$outhmm/variances\" -reest no -segdmpdirs \"$segdmpdir\" -segdmpfn \"$dumpfile\" -ceplen ${CFG_VECTOR_LENGTH} -feat ${CFG_FEATURE} -agc $CFG_AGC -cmn ${CFG_CMN}";
 
-$return_value = RunTool($cmd, $logfile, 0);
-
-exit ($return_value);
+exit (RunTool($cmd, $logfile, 0));
 

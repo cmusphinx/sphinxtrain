@@ -124,27 +124,27 @@ if (open (SYSDESC, "$SPHINXTRAINDIR/config/system.mak")) {
     $PLATFORM = "." . $words[$#words];
   }
   close(SYSDESC);
-  print "Platform: $PLATFORM\n";
-} else {
-  print "Platform: Win32\n";
-  $PLATFORM = "";
 }
 
-# Copy all executables to the local bin directory. We first try the
-# directory bin/Release, that is, release build in windows. Then we
-# back off to the Debug build. If it still fails, then we're probably
-# in linux/unix, and we use the platform info to find the executables
-my $execdir;
-if (opendir(DIR, "$SPHINXTRAINDIR/bin/Release")) {
-  $execdir = "$SPHINXTRAINDIR/bin/Release";
-} elsif (opendir(DIR, "$SPHINXTRAINDIR/bin/Debug")) {
-  $execdir = "$SPHINXTRAINDIR/bin/Debug";
-} elsif (opendir(DIR, "$SPHINXTRAINDIR/bin$PLATFORM")) {
-  $execdir = "$SPHINXTRAINDIR/bin$PLATFORM";
-} else {
-  die "Can't open $SPHINXTRAINDIR/bin$PLATFORM";
-}
+# Copy all executables to the local bin directory. We verify which
+# directory from a list has the most recent file, and assume this is
+# the last time the user compiled something. Therefore, this must be
+# the directory the user cares about. We add bin/Release and bin/Debug
+# to the list (that's where MS Visual C compiles files to), as well as
+# any existing bin.platform
+
+my @dir_candidates = ();
+push @dir_candidates, "$SPHINXTRAINDIR/bin/Release";
+push @dir_candidates, "$SPHINXTRAINDIR/bin/Debug";
+push @dir_candidates, "$SPHINXTRAINDIR/bin$PLATFORM" if ($PLATFORM ne "");
+
+my $execdir = executable_dir(@dir_candidates);
+
+die "Couldn't find executables. Did you compile SphinxTrain?\n" if ($execdir eq "");
+
 print "Copying executables from $execdir\n";
+
+opendir(DIR, "$execdir") or die "Can't open $execdir\n";
 @dirlist = grep !/^\./, readdir DIR;
 closedir(DIR);
 foreach my $executable (@dirlist) {
@@ -214,6 +214,36 @@ close(CFGIN);
 close(CFGOUT);
 
 print "Set up for acoustic training for $DBNAME complete\n";
+
+sub executable_dir {
+  my @dirs = @_;
+  my $return_dir = "";
+  my $most_recent = 0;
+  for my $dir (@dirs) {
+    my $this_date = get_most_recent_date($dir);
+    if ($this_date > $most_recent) {
+      $most_recent = $this_date;
+      $return_dir = $dir;
+    }
+  }
+  return $return_dir;
+}
+
+sub get_most_recent_date {
+  my $dir = shift;
+  my $return_date = 0;
+  if (opendir(DIR, "$dir")) {
+    @dirlist = grep !/^\./, readdir DIR;
+    closedir(DIR);
+    for my $file (@dirlist) {
+      my $this_date = stat("$dir/$file");
+      if (($this_date->mtime) > ($return_date)) {
+	$return_date = $this_date->mtime;
+      }
+    }
+  }
+  return $return_date;
+}
 
 sub replace_file {
   my $source = shift;

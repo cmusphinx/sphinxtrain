@@ -77,6 +77,4 @@ $| = 1; # Turn on autoflushing
 
 my $cmd = "\"$TIESTATE\" -imoddeffn \"$untied_mdef_file\" -omoddeffn \"$tied_mdef_file\" -treedir \"$prunedtreedir\" -psetfn \"$CFG_QUESTION_SET\"";
 
-$status = RunTool($cmd, $logfile, 0);
-
-exit ($status);
+exit (RunTool($cmd, $logfile, 0));

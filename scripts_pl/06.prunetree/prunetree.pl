@@ -79,7 +79,4 @@ $| = 1; # Turn on autoflushing
 
 my $cmd = "\"$PRUNETREE\" -itreedir \"$unprunedtreedir\" -nseno $n_tied_states -otreedir \"$prunedtreedir\" -moddeffn \"$mdef_file\" -psetfn \"$CFG_QUESTION_SET\" -minocc $occurance_threshold";
 
-$status = RunTool($cmd, $logfile, 0);
-
-exit ($status);
-
+exit (RunTool($cmd, $logfile, 0));

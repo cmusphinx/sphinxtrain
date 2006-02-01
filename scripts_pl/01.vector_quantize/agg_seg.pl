@@ -98,7 +98,4 @@ $logfile = "$logdir/${CFG_EXPTNAME}.vq.agg_seg.log";
 
 my $cmd = "\"$AGG_SEG\" -segdmpdirs \"$segdmpdir\" -segdmpfn \"$dumpfile\"  -segtype all -ctlfn \"$CFG_LISTOFFILES\" -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -ceplen $CFG_VECTOR_LENGTH -agc $CFG_AGC -cmn $CFG_CMN -feat $CFG_FEATURE -stride $stride";
 
-$return_value = RunTool($cmd, $logfile, 0);
-
-exit ($return_value);
-
+exit (RunTool($cmd, $logfile, 0));

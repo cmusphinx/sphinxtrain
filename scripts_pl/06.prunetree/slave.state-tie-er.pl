@@ -80,7 +80,7 @@ my $cmd = "\"$MAKE_MDEF\" -phnlstfn \"$phonefile\" -oalltphnmdef \"$ALLTRIPHONES
 
 $status = RunTool($cmd, $logfile, 0);
 
-$status = (system("perl \"$scriptdir/prunetree.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES")) or (system("perl \"$scriptdir/tiestate.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES")) unless ($status);
+$status = (system("perl \"$scriptdir/prunetree.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES") or system("perl \"$scriptdir/tiestate.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES")) unless ($status);
 
-exit ($status);
+exit ($status != 0);
 

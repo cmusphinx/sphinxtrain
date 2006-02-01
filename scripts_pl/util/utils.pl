@@ -208,13 +208,13 @@ sub RunTool {
 
     while (<PIPE>) {
       print LOG "$_";
-      if (/(ERROR).*/) {
-	&ST_LogError ($_ . "\n");
-      }
       if (/(FATAL).*/) {
 	&ST_LogError ($_ . "\n");
-        $returnValue = 1;
+        $returnvalue = 1;
         last;
+      }
+      if (/(ERROR).*/) {
+	&ST_LogError ($_ . "\n");
       }
       if ($progress) {
 	# Keep track of progress being made.
