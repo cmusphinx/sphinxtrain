@@ -164,6 +164,12 @@ transcripts -dictfn dict -fdictfn fillerdict -paramtype phone";
 	  "state",
 	  "Parameter type to count {'state', 'cb', 'phone'}"},
 
+	{ "-outputfn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "If specified, write counts to this file"},
+
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 
@@ -209,9 +215,18 @@ transcripts -dictfn dict -fdictfn fillerdict -paramtype phone";
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.7  2005/04/07  21:23:40  egouvea
- * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
+ * Revision 1.8  2006/02/03  18:53:07  eht
+ * Added -outputfn to the command line.
  * 
+ * When -outputfn <somefile> is present on the command line, the
+ * parameter counts are written to the specified file <somefile>.
+ * When no -outputfn argument is present on the command line, the
+ * parameter counts are written to standard output as before this
+ * change.
+ * 
+ * Revision 1.7  2005/04/07 21:23:40  egouvea
+ * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
+ *
  * Revision 1.6  2004/11/29 01:43:51  egouvea
  * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
  *

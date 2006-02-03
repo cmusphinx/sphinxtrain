@@ -178,6 +178,8 @@ main(int argc, char *argv[])
     lexicon_t *lex;
     model_def_t *mdef;
     const char *type;
+    const char *outfn;
+    FILE *out_fp = stdout;
 
     if (initialize(&lex, &mdef, argc, argv) != S3_SUCCESS) {
 	E_ERROR("errors initializing.\n");
@@ -185,8 +187,15 @@ main(int argc, char *argv[])
     }
 
     type = (const char *)cmd_ln_access("-paramtype");
-    
-    if (param_cnt(lex, mdef, type) != S3_SUCCESS) {
+    outfn = (const char *)cmd_ln_access("-outputfn");
+    if (outfn != NULL) {
+	out_fp = fopen(outfn, "w");
+	if (out_fp == NULL) {
+	    E_ERROR_SYSTEM("Couldn't open %s for writing\n", outfn);
+	}
+    }
+
+    if (param_cnt(out_fp, lex, mdef, type) != S3_SUCCESS) {
 	return 1;
     }
 
@@ -197,9 +206,18 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2006/02/03  18:53:07  eht
+ * Added -outputfn to the command line.
  * 
+ * When -outputfn <somefile> is present on the command line, the
+ * parameter counts are written to the specified file <somefile>.
+ * When no -outputfn argument is present on the command line, the
+ * parameter counts are written to standard output as before this
+ * change.
+ * 
+ * Revision 1.4  2004/07/21 19:17:26  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

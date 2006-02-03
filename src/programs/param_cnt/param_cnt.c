@@ -62,7 +62,8 @@
 #include <stdio.h>
 
 int
-param_cnt(lexicon_t *lex,
+param_cnt(FILE *out_fp,
+	  lexicon_t *lex,
 	  model_def_t *mdef,
 	  const char *param_type)
 {
@@ -95,11 +96,11 @@ param_cnt(lexicon_t *lex,
 
     if (strcmp(param_type, "phone") != 0) {
 	for (i = 0; i < n_cnt; i++)
-	    printf("%u %u\n", i, cnt[i]);
+	    fprintf(out_fp, "%u %u\n", i, cnt[i]);
     }
     else {
 	for (i = 0; i < n_cnt; i++)
-	    printf("%s %u\n", acmod_set_id2fullname(acmod_set, (acmod_id_t)i), cnt[i]);
+	    fprintf(out_fp, "%s %u\n", acmod_set_id2fullname(acmod_set, (acmod_id_t)i), cnt[i]);
     }
 
     return 0;
@@ -112,9 +113,18 @@ param_cnt(lexicon_t *lex,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2006/02/03  18:53:07  eht
+ * Added -outputfn to the command line.
  * 
+ * When -outputfn <somefile> is present on the command line, the
+ * parameter counts are written to the specified file <somefile>.
+ * When no -outputfn argument is present on the command line, the
+ * parameter counts are written to standard output as before this
+ * change.
+ * 
+ * Revision 1.4  2004/07/21 19:17:26  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
