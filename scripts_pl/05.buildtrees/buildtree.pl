@@ -78,12 +78,15 @@ mkdir ($tree_base_dir,0777) unless -d $tree_base_dir;
 mkdir ($unprunedtreedir,0777) unless -d $unprunedtreedir;
 
 $state = 0;
+my $return_value = 0;
 while ( $state < $CFG_STATESPERHMM) {
-    &BuildTree ($phone,$state);
+    if ($return_value = &BuildTree ($phone,$state)) {
+        last;
+    }
     $state++;
 }
 
-exit 0;
+exit $return_value;
 
 
 # SubRoutine created from build_tree.pl

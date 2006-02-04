@@ -59,6 +59,7 @@ require "$CFG_SCRIPT_DIR/util/utils.pl";
 #*************************************************************************
 
 my ($phone,$state);
+my $return_value = 0;
 my $scriptdir = "$CFG_SCRIPT_DIR/05.buildtrees";
 my $logdir = "${CFG_LOG_DIR}/05.buildtrees";
 &ST_Log ("MODULE: 05 Build Trees\n");
@@ -67,7 +68,11 @@ rmtree ("$logdir");
 mkdir ($logdir,0777) unless -d $logdir;
 
 $| = 1; # Turn on autoflushing
-system("perl $scriptdir/make_questions.pl -cfg \"$cfg_file\"");
+if (system("perl $scriptdir/make_questions.pl -cfg \"$cfg_file\"")) {
+  $return_value = 1;
+  exit ($return_value);
+}
+
 &ST_Log ("    Tree building\n");
 
 my $mdef_file       = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
@@ -119,7 +124,10 @@ foreach $phone (<INPUT>) {
     }
     else
     {
-	system("perl \"$scriptdir/buildtree.pl\"  -cfg \"$cfg_file\" \"$phone\"");
+      if (system("perl \"$scriptdir/buildtree.pl\"  -cfg \"$cfg_file\" \"$phone\"")) {
+	$return_value = 1;
+	last;
+      }
     }
     close INPUT;
 }
@@ -142,4 +150,4 @@ if ($MC)       # wait for all the sub tasks to finish
     }
 }
 
-exit 0;
+exit ($return_value);
