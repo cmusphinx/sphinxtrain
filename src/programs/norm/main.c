@@ -174,13 +174,37 @@ normalize()
 	E_INFO("Selecting unseen mixing weight parameters from %s\n",
 	       in_mixw_fn);
     }
+
     if (in_mean_fn != NULL) {
 	E_INFO("Selecting unseen density mean parameters from %s\n",
 	       in_mean_fn);
+
+	if (s3gau_read(in_mean_fn,
+		       &in_mean,
+		       &n_mgau,
+		       &n_gau_stream,
+		       &n_gau_density,
+		       &veclen) != S3_SUCCESS) {
+	  E_FATAL_SYSTEM("Couldn't read %s", in_mean_fn);
+	}
+	ckd_free((void *)veclen);
+	veclen = NULL;
     }
+
     if (in_var_fn != NULL) {
 	E_INFO("Selecting unseen density variance parameters from %s\n",
 	       in_var_fn);
+
+	if (s3gau_read(in_var_fn,
+		       &in_var,
+		       &n_mgau,
+		       &n_gau_stream,
+		       &n_gau_density,
+		       &veclen) != S3_SUCCESS) {
+	  E_FATAL_SYSTEM("Couldn't read %s", in_var_fn);
+	}
+	ckd_free((void *)veclen);
+	veclen = NULL;
     }
 
     n_stream = 0;
@@ -208,31 +232,6 @@ normalize()
 	     * function calls below.*/
 	    if (out_reg_fn) {
 	        ckd_free((void *) veclen);
-	    }
-
-	    /* NB: Assuming in_mean and in_var are consistent */
-	    if (in_mean_fn) {
-		if (s3gau_read(in_mean_fn,
-			       &in_mean,
-			       &n_mgau,
-			       &n_gau_stream,
-			       &n_gau_density,
-			       &veclen) != S3_SUCCESS) {
-		    E_FATAL_SYSTEM("Couldn't read %s", in_mean_fn);
-		}
-		ckd_free((void *)veclen);
-	    }
-
-	    if (in_var_fn) {
-		if (s3gau_read(in_var_fn,
-			       &in_var,
-			       &n_mgau,
-			       &n_gau_stream,
-			       &n_gau_density,
-			       &veclen) != S3_SUCCESS) {
-		    E_FATAL_SYSTEM("Couldn't read %s", in_var_fn);
-		}
-		ckd_free((void *)veclen);
 	    }
 
 	    rdacc_den(accum_dir[i],
@@ -564,9 +563,15 @@ main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.10  2004/11/17  01:46:59  arthchan2003
- * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
+ * Revision 1.11  2006/02/06  13:05:04  eht
+ * Moved reading of input mean/var out of the loop that reads and accumulates
+ * counts because it doesn't need to be there.  Also, since veclen was freed
+ * after reading in the input means/vars, its value was potentially
+ * corrupted for later executed code (i.e. further accumulation and mean/var save).
  * 
+ * Revision 1.10  2004/11/17 01:46:59  arthchan2003
+ * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
+ *
  * Revision 1.9  2004/08/19 22:24:14  arthchan2003
  * Fixing numerical problem of compute_mllr and mllr_solve.  There are small numerical differences between the inputs typed with float64 or float32. In terms of (<6 signficiant digits).  This small difference will translate to perceivable numerical difference in the final matrix. (>5 significant digits).  This fix also marks a stable release for mllr_solve.  I also disallow user to use -regmat in norm because it is highly dangerous and known to be slow and didn't help too much.
  *
