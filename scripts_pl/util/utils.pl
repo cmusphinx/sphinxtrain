@@ -203,6 +203,8 @@ sub RunTool {
   $| = 1;				# Turn on autoflushing
 
   my $returnvalue = 0;
+  my $error_count = 0;
+  my $warning_count = 0;
 
   if (open PIPE, "$cmd 2>&1 |") {
 
@@ -213,9 +215,8 @@ sub RunTool {
         $returnvalue = 1;
         last;
       }
-      if (/(ERROR).*/) {
-	&ST_LogError ($_ . "\n");
-      }
+      $error_count++ if m/(ERROR).*/;
+      $warning_count++ if m/(WARNING).*/;
       if ($progress) {
 	# Keep track of progress being made.
 	$processed_counter++  if (/.*(utt\>).*/);
@@ -230,6 +231,11 @@ sub RunTool {
     }
     close PIPE;
     $| = $pipe;
+    if (($error_count > 0) or ($warning_count > 0)) {
+      &ST_LogError ("\n\t\tThis step had $error_count ERROR messages and " .
+		    "$warning_count WARNING messages.\n" .
+		    "\t\tPlease check the log file for details.\n");
+    }
     $date = localtime;
     print LOG "$date\n";
     close LOG;
