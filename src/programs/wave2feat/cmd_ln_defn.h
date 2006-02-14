@@ -110,6 +110,18 @@ static arg_def_t defn[] = {
     CMD_LN_NO_DEFAULT,
     "Control file for batch processing" },
   
+  { "-nskip",
+    CMD_LN_STRING,
+    CMD_LN_NO_VALIDATION,
+    CMD_LN_NO_DEFAULT,
+    "If a control file was specified, the number of utterances to skip at the head of the file" },
+  
+  { "-runlen",
+    CMD_LN_STRING,
+    CMD_LN_NO_VALIDATION,
+    CMD_LN_NO_DEFAULT,
+    "If a control file was specified, the number of utterances to process (see -nskip too)" },
+  
   { "-di",
     CMD_LN_STRING,
     CMD_LN_NO_VALIDATION,
@@ -252,6 +264,12 @@ static arg_def_t defn[] = {
     "no",
     "Use double bandwidth filters (same center freq)" },
   
+  { "-melwarp",
+    CMD_LN_FLOAT32,
+    CMD_LN_NO_VALIDATION,
+    DEFAULT_MEL_WARP,
+    "Warping parameter of the mel-scale function" },
+  
   { "-blocksize",
     CMD_LN_INT32,
     CMD_LN_NO_VALIDATION,
@@ -282,9 +300,23 @@ static arg_def_t defn[] = {
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2005/05/19  21:21:55  egouvea
- * Bug #1176394: example bug
+ * Revision 1.4  2006/02/14  20:56:54  eht
+ * Implement an argument -melwarp that changes the standard mel-scale
+ * equation from:
+ * 	M(f) = 2595 * log10( 1 + f/700 )
+ * to:
+ * 	M(f,w) = 2595 * log10( 1 + f/(700*w))
  * 
+ * So, 1.0 means no warp,  w > 1.0 means linear compression w < 1.0 means
+ * linear expansion.
+ * 
+ * Implement argument -nskip and -runlen arguments so that a subset of the
+ * utterances in the control file can be executed.  Allows a simple
+ * distribution of wave2feat processing over N processors.
+ * 
+ * Revision 1.3  2005/05/19 21:21:55  egouvea
+ * Bug #1176394: example bug
+ *
  * Revision 1.2  2004/11/23 04:14:06  egouvea
  * Fixed bug in cmd_ln.c in which a wrong boolean argument led into an
  * infinite loop, and fixed the help and example strings, getting rid of

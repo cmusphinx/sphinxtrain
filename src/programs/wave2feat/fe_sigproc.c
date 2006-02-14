@@ -77,17 +77,17 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
     
     dfreq = MEL_FB->sampling_rate/(float32)MEL_FB->fft_size;
     
-    melmax = fe_mel(MEL_FB->upper_filt_freq);
-    melmin = fe_mel(MEL_FB->lower_filt_freq);
+    melmax = fe_mel(MEL_FB->upper_filt_freq, MEL_FB->mel_warp);
+    melmin = fe_mel(MEL_FB->lower_filt_freq, MEL_FB->mel_warp);
     dmelbw = (melmax-melmin)/(MEL_FB->num_filters+1);
 
     if (MEL_FB->doublewide==ON){
 	melmin = melmin-dmelbw;
 	melmax = melmax+dmelbw;
-	if ((fe_melinv(melmin)<0) ||
-	    (fe_melinv(melmax)>MEL_FB->sampling_rate/2)){
-	    fprintf(stderr,"Out of Range: low  filter edge = %f (%f)\n",fe_melinv(melmin),0.0);
-	    fprintf(stderr,"              high filter edge = %f (%f)\n",fe_melinv(melmax),MEL_FB->sampling_rate/2);
+	if ((fe_melinv(melmin, MEL_FB->mel_warp)<0) ||
+	    (fe_melinv(melmax, MEL_FB->mel_warp)>MEL_FB->sampling_rate/2)){
+	  fprintf(stderr,"Out of Range: low  filter edge = %f (%f)\n",fe_melinv(melmin, MEL_FB->mel_warp),0.0);
+	  fprintf(stderr,"              high filter edge = %f (%f)\n",fe_melinv(melmax, MEL_FB->mel_warp),MEL_FB->sampling_rate/2);
 	    fprintf(stderr,"exiting...\n");
 	    exit(0);
 	}
@@ -95,12 +95,12 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
     
     if (MEL_FB->doublewide==ON){
         for (i=0;i<=MEL_FB->num_filters+3; ++i){
-	    filt_edge[i] = fe_melinv(i*dmelbw + melmin);
+	    filt_edge[i] = fe_melinv(i*dmelbw + melmin, MEL_FB->mel_warp);
         }
     }
     else {
 	for (i=0;i<=MEL_FB->num_filters+1; ++i){
-	    filt_edge[i] = fe_melinv(i*dmelbw + melmin);   
+	    filt_edge[i] = fe_melinv(i*dmelbw + melmin, MEL_FB->mel_warp);   
 	}
     }
     
@@ -182,17 +182,25 @@ int32 fe_compute_melcosine(melfb_t *MEL_FB)
 	
 }
 
-
-float32 fe_mel(float32 x)
+float32 fe_mel(float32 x, float32 w)
 {
-    return (float32)(2595.0*log10(1.0+x/700.0));
+    if (w == 1.0) {
+        return (float32)(2595.0*log10(1.0+x/700.0));
+    }
+    else {
+        return (float32)(2595.0*log10(1.0+x/(w*700.0)));
+    }
 }
 
-float32 fe_melinv(float32 x)
+float32 fe_melinv(float32 x, float32 w)
 {
-    return (float32)(700.0*(pow(10.0,x/2595.0) - 1.0));
+    if (w == 1.0) {
+        return (float32)(700.0*(pow(10.0,x/2595.0) - 1.0));
+    }
+    else {
+        return (float32)(w*700.0*(pow(10.0,x/2595.0) - 1.0));
+    }
 }
-
 
 void fe_pre_emphasis(int16 const *in, float64 *out, int32 len, float32
 		     factor, int16 prior)
@@ -532,7 +540,6 @@ void fe_free_2d(void **arr)
 
 void fe_parse_general_params(param_t const *P, fe_t *FE)
 {
-
     if (P->SAMPLING_RATE != 0) 
       FE->SAMPLING_RATE = P->SAMPLING_RATE;
     else
@@ -657,6 +664,7 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
     else
 	MEL->doublewide = OFF;
 
+    MEL->mel_warp = P->MEL_WARP;
 }
 
 void fe_print_current(fe_t *FE)

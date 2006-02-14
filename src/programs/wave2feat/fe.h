@@ -53,10 +53,13 @@ typedef struct{
     float32 LOWER_FILT_FREQ;
     float32 UPPER_FILT_FREQ;
     float32 PRE_EMPHASIS_ALPHA;
+    float32 MEL_WARP;
 
     char *wavfile;
     char *cepfile;
     char *ctlfile;
+    int32 nskip;
+    int32 runlen;
     char *wavdir;
     char *cepdir;
     char *wavext;
@@ -93,6 +96,7 @@ typedef struct{
     float32 *left_apex;
     int32 *width;
     int32 doublewide;
+    float32 mel_warp;
 }melfb_t;
 
 
@@ -144,6 +148,7 @@ typedef struct{
 #define DEFAULT_NUM_FILTERS "40"
 #define DEFAULT_LOWER_FILT_FREQ "133.33334"
 #define DEFAULT_UPPER_FILT_FREQ "6855.4976"
+#define DEFAULT_MEL_WARP "1.0"
 #define DEFAULT_PRE_EMPHASIS_ALPHA "0.97"
 #define DEFAULT_START_FLAG 0
 

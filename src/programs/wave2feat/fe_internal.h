@@ -53,8 +53,8 @@ typedef struct { float64 r, i; } complex;
 /* functions */
 int32 fe_build_melfilters(melfb_t *MEL_FB);
 int32 fe_compute_melcosine(melfb_t *MEL_FB);
-float32 fe_mel(float32 x);
-float32 fe_melinv(float32 x);
+float32 fe_mel(float32 x, float32 w);
+float32 fe_melinv(float32 x, float32 w);
 void fe_pre_emphasis(int16 const *in, float64 *out, int32 len, float32 factor, int16 prior);
 void fe_create_hamming(float64 *in, int32 in_len);
 void fe_hamming_window(float64 *in, float64 *window, int32 in_len);

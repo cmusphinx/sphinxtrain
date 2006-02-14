@@ -117,11 +117,25 @@ int32 fe_convert_files(param_t *P)
     }
 
     if (P->is_batch){
+        int32 nskip = P->nskip;
+        int32 runlen = P->runlen;
+
         if ((ctlfile = fopen(P->ctlfile,"r")) == NULL){
             E_ERROR("Unable to open control file %s\n",P->ctlfile);
             return(FE_CONTROL_FILE_ERROR);
         }
         while (fscanf(ctlfile,"%s",fileroot)!=EOF){
+	    if (nskip > 0) {
+	        --nskip;
+	        continue;
+	    }
+	    if (runlen > 0) {
+	        --runlen;
+	    }
+	    else if (runlen == 0) {
+	        break;
+	    }
+	    
             fe_build_filenames(P,fileroot,&infile,&outfile);
 
             if (P->verbose) E_INFO("%s\n",infile);
@@ -426,7 +440,19 @@ param_t *fe_parse_options(int32 argc, char **argv)
     
     P->ctlfile = cmd_ln_str("-c");
     if (P->ctlfile != CMD_LN_NO_DEFAULT) {
+        char *nskip;
+	char *runlen;
+
         P->is_batch = ON;
+
+	nskip  = cmd_ln_str("-nskip");
+	runlen = cmd_ln_str("-runlen");
+	if ( nskip != CMD_LN_NO_DEFAULT ) {
+	    P->nskip = atoi(nskip);
+	}
+	if ( runlen != CMD_LN_NO_DEFAULT ) {
+	    P->runlen = atoi(runlen);
+	}
     }
     
     P->wavdir = cmd_ln_str("-di");
@@ -466,6 +492,10 @@ param_t *fe_parse_options(int32 argc, char **argv)
     P->NUM_CEPSTRA = cmd_ln_int32("-ncep");
     P->LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
     P->UPPER_FILT_FREQ = cmd_ln_float32("-upperf");
+    P->MEL_WARP = cmd_ln_float32("-melwarp");
+    if (P->MEL_WARP == 0) {
+         E_FATAL("mel warp may not be zero\n");
+    }
     P->FFT_SIZE = cmd_ln_int32("-nfft");
     if (cmd_ln_int32("-doublebw")) {
         P->doublebw = ON; 
@@ -512,6 +542,8 @@ void fe_init_params(param_t *P)
     P->wavfile = NULL;
     P->cepfile = NULL;
     P->ctlfile = NULL;
+    P->nskip   = -1;
+    P->runlen  = -1;
     P->wavdir = NULL;
     P->cepdir = NULL;
     P->wavext = NULL;
@@ -743,9 +775,11 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
             len = hdr_buf->datalength / sizeof(short);
             P->nchans = hdr_buf->numchannels;
             /* DEBUG: Dump Info */
-            E_INFO("Reading MS Wav file %s:\n", infile);
-            E_INFO("\t16 bit PCM data, %d channels %d samples\n",P->nchans,len);
-            E_INFO("\tSampled at %d\n",hdr_buf->SamplingFreq);
+	    if (P->verbose) {
+	        E_INFO("Reading MS Wav file %s:\n", infile);
+	        E_INFO("\t16 bit PCM data, %d channels %d samples\n",P->nchans,len);
+		E_INFO("\tSampled at %d\n",hdr_buf->SamplingFreq);
+	    }
             free(hdr_buf);
         }
         else {
