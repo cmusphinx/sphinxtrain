@@ -18,7 +18,7 @@
 #    prior written permission. To obtain permission, contact 
 #    sphinx@cs.cmu.edu.
 #
-# 54 Redistributions of any form whatsoever must retain the following
+# 4. Redistributions of any form whatsoever must retain the following
 #    acknowledgment:
 #    "This product includes software developed by Carnegie
 #    Mellon University (http://www.speech.cs.cmu.edu/)."
@@ -47,12 +47,22 @@ ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
   fe_interface.c \
   fe_sigproc.c \
+  fe_warp.c \
+  fe_warp_affine.c \
+  fe_warp_eide_gish.c \
+  fe_warp_inverse_linear.c \
+  fe_warp_piecewise_linear.c \
   parse_cmd_ln.c \
   wave2feat.c
 H = \
   cmd_ln_defn.h \
   fe.h \
   fe_internal.h \
+  fe_warp.h \
+  fe_warp_affine.h \
+  fe_warp_eide_gish.h \
+  fe_warp_inverse_linear.h \
+  fe_warp_piecewise_linear.h \
   parse_cmd_ln.h \
   wave2feat.h
 

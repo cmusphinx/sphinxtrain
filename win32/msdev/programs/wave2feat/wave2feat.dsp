@@ -93,6 +93,22 @@ SOURCE=..\..\..\..\src\programs\wave2feat\fe_sigproc.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\src\programs\wave2feat\fe_warp.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\wave2feat\fe_warp_affine.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\wave2feat\fe_warp_inverse_linear.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\wave2feat\fe_warp_piecewise_linear.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\src\programs\wave2feat\parse_cmd_ln.c
 # End Source File
 # Begin Source File
@@ -114,6 +130,22 @@ SOURCE=..\..\..\..\src\programs\wave2feat\fe.h
 # Begin Source File
 
 SOURCE=..\..\..\..\src\programs\wave2feat\fe_internal.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\wave2feat\fe_warp.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\wave2feat\fe_warp_affine.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\wave2feat\fe_warp_inverse_linear.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\wave2feat\fe_warp_piecewise_linear.h
 # End Source File
 # Begin Source File
 

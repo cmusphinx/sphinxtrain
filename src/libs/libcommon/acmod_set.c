@@ -320,7 +320,7 @@ acmod_set_add_tri(acmod_set_t *acmod_set,
     acmod_t *multi;
 
     if (acmod_set->n_multi == acmod_set->max_n_multi) {
-	E_FATAL("Current acmod_set implementation requires the 'n_tri_hint' to be"
+	E_FATAL("Current acmod_set implementation requires the 'n_tri_hint' to "
 		"be not less than the number to be added.\n");
     }
     
@@ -911,9 +911,30 @@ error:
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:05:39  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2006/02/16  00:18:23  egouvea
+ * Implemented flexible warping function. The user can specify at run
+ * time which of several shapes they want to use. Currently implemented
+ * are an affine function (y = ax + b), an inverse linear (y = a/x) and a
+ * piecewise linear (y = ax, up to a frequency F, and then it "breaks" so
+ * Nyquist frequency matches in both scales.
  * 
+ * Added two switches, -warp_type and -warp_params. The first specifies
+ * the type, which valid values:
+ * 
+ * -inverse or inverse_linear
+ * -linear or affine
+ * -piecewise or piecewise_linear
+ * 
+ * The inverse_linear is the same as implemented by EHT. The -mel_warp
+ * switch was kept for compatibility (maybe remove it in the
+ * future?). The code is compatible with EHT's changes: cepstra created
+ * from code after his changes should be the same as now. Scripts that
+ * worked with his changes should work now without changes. Tested a few
+ * cases, same results.
+ * 
+ * Revision 1.4  2004/07/21 18:05:39  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *

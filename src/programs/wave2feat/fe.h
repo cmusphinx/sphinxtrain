@@ -43,61 +43,65 @@ extern "C" {
 #endif
 
 typedef struct{
-    float32 SAMPLING_RATE;
-    int32 FRAME_RATE;
-    float32 WINDOW_LENGTH;
-    int32 FB_TYPE;
-    int32 NUM_CEPSTRA;
-    int32 NUM_FILTERS;
-    int32 FFT_SIZE;
-    float32 LOWER_FILT_FREQ;
-    float32 UPPER_FILT_FREQ;
-    float32 PRE_EMPHASIS_ALPHA;
-    float32 MEL_WARP;
+     float32 SAMPLING_RATE;
+     int32 FRAME_RATE;
+     float32 WINDOW_LENGTH;
+     int32 FB_TYPE;
+     int32 NUM_CEPSTRA;
+     int32 NUM_FILTERS;
+     int32 FFT_SIZE;
+     float32 LOWER_FILT_FREQ;
+     float32 UPPER_FILT_FREQ;
+     float32 PRE_EMPHASIS_ALPHA;
 
-    char *wavfile;
-    char *cepfile;
-    char *ctlfile;
-    int32 nskip;
-    int32 runlen;
-    char *wavdir;
-    char *cepdir;
-    char *wavext;
-    char *cepext;
-    int32 input_format;
-    int32 is_batch;
-    int32 is_single;
-    int32 blocksize;
-    int32 verbose;
-    int32 machine_endian;
-    int32 input_endian;
-    int32 output_endian;
-    int32 dither;
-    int32 logspec;
-    int32 doublebw;
-    int32 nchans;
-    int32 whichchan;
+     char *warp_type;
+     char *warp_params;
+     float32 MEL_WARP;
+
+     char *wavfile;
+     char *cepfile;
+     char *ctlfile;
+     int32 nskip;
+     int32 runlen;
+     char *wavdir;
+     char *cepdir;
+     char *wavext;
+     char *cepext;
+     int32 input_format;
+     int32 is_batch;
+     int32 is_single;
+     int32 blocksize;
+     int32 verbose;
+     int32 machine_endian;
+     int32 input_endian;
+     int32 output_endian;
+     int32 dither;
+     int32 logspec;
+     int32 doublebw;
+     int32 nchans;
+     int32 whichchan;
   
-  int32 splen;
-  int32 nframes;
-  int16* spdata;
+     int32 splen;
+     int32 nframes;
+     int16* spdata;
 } param_t;
 
 
 typedef struct{
-    float32 sampling_rate;
-    int32 num_cepstra;
-    int32 num_filters;
-    int32 fft_size;
-    float32 lower_filt_freq;
-    float32 upper_filt_freq;
-    float32 **filter_coeffs;
-    float32 **mel_cosine;
-    float32 *left_apex;
-    int32 *width;
-    int32 doublewide;
-    float32 mel_warp;
-}melfb_t;
+     float32 sampling_rate;
+     int32 num_cepstra;
+     int32 num_filters;
+     int32 fft_size;
+     float32 lower_filt_freq;
+     float32 upper_filt_freq;
+     float32 **filter_coeffs;
+     float32 **mel_cosine;
+     float32 *left_apex;
+     int32 *width;
+     int32 doublewide;
+     char *warp_type;
+     char *warp_params;
+} melfb_t;
 
 
 typedef struct{
@@ -148,9 +152,11 @@ typedef struct{
 #define DEFAULT_NUM_FILTERS "40"
 #define DEFAULT_LOWER_FILT_FREQ "133.33334"
 #define DEFAULT_UPPER_FILT_FREQ "6855.4976"
-#define DEFAULT_MEL_WARP "1.0"
 #define DEFAULT_PRE_EMPHASIS_ALPHA "0.97"
 #define DEFAULT_START_FLAG 0
+
+#define DEFAULT_WARP_TYPE "inverse_linear"
+#define DEFAULT_MEL_WARP "1.0"
 
 #define BB_SAMPLING_RATE 16000
 #define DEFAULT_BB_FFT_SIZE 512
@@ -276,3 +282,30 @@ int32 fe_dither(int16 *buffer,int32 nsamps);
 #endif
 
 #endif
+
+/*
+ * Log record.  Maintained by RCS.
+ *
+ * $Log$
+ * Revision 1.16  2006/02/16  00:18:26  egouvea
+ * Implemented flexible warping function. The user can specify at run
+ * time which of several shapes they want to use. Currently implemented
+ * are an affine function (y = ax + b), an inverse linear (y = a/x) and a
+ * piecewise linear (y = ax, up to a frequency F, and then it "breaks" so
+ * Nyquist frequency matches in both scales.
+ * 
+ * Added two switches, -warp_type and -warp_params. The first specifies
+ * the type, which valid values:
+ * 
+ * -inverse or inverse_linear
+ * -linear or affine
+ * -piecewise or piecewise_linear
+ * 
+ * The inverse_linear is the same as implemented by EHT. The -mel_warp
+ * switch was kept for compatibility (maybe remove it in the
+ * future?). The code is compatible with EHT's changes: cepstra created
+ * from code after his changes should be the same as now. Scripts that
+ * worked with his changes should work now without changes. Tested a few
+ * cases, same results.
+ * 
+ */

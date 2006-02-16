@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights
+ * Copyright (c) 2006 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,55 +33,63 @@
  * ====================================================================
  *
  */
+
+#ifndef FE_WARP_H
+#define FE_WARP_H
 
-#ifndef _FE_INTERNAL_H_
-#define _FE_INTERNAL_H_
+#include <s3/vector.h>
+#include <s3/prim_type.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define FE_WARP_ID_INVERSE_LINEAR	0
+#define FE_WARP_ID_AFFINE	        1
+#define FE_WARP_ID_PIECEWISE_LINEAR	2
+#define FE_WARP_ID_EIDE_GISH		3
+#define FE_WARP_ID_MAX		        2
+#define FE_WARP_ID_NONE	       0xffffffff
 
-#ifndef	M_PI
-#define M_PI	(3.14159265358979323846)
-#endif	/* M_PI */
+typedef struct {
+    void (*set_parameters)(char *param_str, float sampling_rate);
+    const char * (*doc)(void);
+    uint32 (*id)(void);
+    uint32 (*n_param)(void);
+    float (*warped_to_unwarped)(float nonlinear);
+    float (*unwarped_to_warped)(float linear);
+    void (*print)(const char *label);
+} fe_warp_conf_t;
 
-#define FORWARD_FFT 1
-#define INVERSE_FFT -1
+int
+fe_warp_set(const char *id_name);
 
-typedef struct { float64 r, i; } complex;
+uint32
+fe_warp_id(void);
 
-/* functions */
-int32 fe_build_melfilters(melfb_t *MEL_FB);
-int32 fe_compute_melcosine(melfb_t *MEL_FB);
-float32 fe_mel(float32 x);
-float32 fe_melinv(float32 x);
-void fe_pre_emphasis(int16 const *in, float64 *out, int32 len, float32 factor, int16 prior);
-void fe_create_hamming(float64 *in, int32 in_len);
-void fe_hamming_window(float64 *in, float64 *window, int32 in_len);
-void fe_init_hamming(float64 *win, int32 len);
-void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32 fftsize);
-int32 fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea);
-void fe_mel_spec(fe_t *FE, float64 const *spec, float64 *mfspec);
-int32 fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep);
-int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert);
-void fe_short_to_double(int16 const *in, float64 *out, int32 len);
-char **fe_create_2d(int32 d1, int32 d2, int32 elem_size);
-void fe_free_2d(void **arr);
-void fe_print_current(fe_t *FE);
-void fe_parse_general_params(param_t const *P, fe_t *FE);
-void fe_parse_melfb_params(param_t const *P, melfb_t *MEL);
+const char *
+fe_warp_doc(void);
 
-#ifdef __cplusplus
-}
-#endif
+void
+fe_warp_set_parameters(char *param_str, float sampling_rate);
 
-#endif
+uint32
+fe_warp_n_param(void);
 
+float
+fe_warp_warped_to_unwarped(float nonlinear);
+
+float
+fe_warp_unwarped_to_warped(float linear);
+
+void
+fe_warp_print(const char *label);
+
+#define FE_WARP_NO_SIZE	0xffffffff
+
+#endif /* FE_WARP_H */ 
+
 /*
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.12  2006/02/16  00:18:26  egouvea
+ * Revision 1.1  2006/02/16  00:18:26  egouvea
  * Implemented flexible warping function. The user can specify at run
  * time which of several shapes they want to use. Currently implemented
  * are an affine function (y = ax + b), an inverse linear (y = a/x) and a

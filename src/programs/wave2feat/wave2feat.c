@@ -414,6 +414,19 @@ void fe_validate_parameters(param_t *P)
     if (P->doublebw==ON) {
         E_INFO("Will use double bandwidth filters\n");
     }
+
+    /* Make sure we didn't specify -melwarp and any of -warp_type or
+     * -warp_params at the same time.
+     */
+    if (atof(DEFAULT_MEL_WARP) != P->MEL_WARP) {
+	 if ((CMD_LN_NO_DEFAULT != P->warp_params)  || (strcmp(DEFAULT_WARP_TYPE, P->warp_type) != 0)) {
+	      E_FATAL("You cannot specify -melwarp and either -warp_type or -warp_params\n");
+	 }
+    }
+    if (P->MEL_WARP == 0) {
+         E_FATAL("mel warp may not be zero\n");
+    }
+
 }
 
 
@@ -492,10 +505,11 @@ param_t *fe_parse_options(int32 argc, char **argv)
     P->NUM_CEPSTRA = cmd_ln_int32("-ncep");
     P->LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
     P->UPPER_FILT_FREQ = cmd_ln_float32("-upperf");
+
+    P->warp_type = cmd_ln_str("-warp_type");
+    P->warp_params = cmd_ln_str("-warp_params");
     P->MEL_WARP = cmd_ln_float32("-melwarp");
-    if (P->MEL_WARP == 0) {
-         E_FATAL("mel warp may not be zero\n");
-    }
+
     P->FFT_SIZE = cmd_ln_int32("-nfft");
     if (cmd_ln_int32("-doublebw")) {
         P->doublebw = ON; 
@@ -548,7 +562,7 @@ void fe_init_params(param_t *P)
     P->cepdir = NULL;
     P->wavext = NULL;
     P->cepext = NULL;
-    
+    P->warp_type = NULL;    
 }
 
 
@@ -984,3 +998,30 @@ int32 fe_free_param(param_t *P)
     /* but no one calls it (29/09/00) */
     return 0;
 }
+
+/*
+ * Log record.  Maintained by RCS.
+ *
+ * $Log$
+ * Revision 1.31  2006/02/16  00:18:26  egouvea
+ * Implemented flexible warping function. The user can specify at run
+ * time which of several shapes they want to use. Currently implemented
+ * are an affine function (y = ax + b), an inverse linear (y = a/x) and a
+ * piecewise linear (y = ax, up to a frequency F, and then it "breaks" so
+ * Nyquist frequency matches in both scales.
+ * 
+ * Added two switches, -warp_type and -warp_params. The first specifies
+ * the type, which valid values:
+ * 
+ * -inverse or inverse_linear
+ * -linear or affine
+ * -piecewise or piecewise_linear
+ * 
+ * The inverse_linear is the same as implemented by EHT. The -mel_warp
+ * switch was kept for compatibility (maybe remove it in the
+ * future?). The code is compatible with EHT's changes: cepstra created
+ * from code after his changes should be the same as now. Scripts that
+ * worked with his changes should work now without changes. Tested a few
+ * cases, same results.
+ * 
+ */

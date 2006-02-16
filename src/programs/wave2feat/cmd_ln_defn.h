@@ -264,11 +264,23 @@ static arg_def_t defn[] = {
     "no",
     "Use double bandwidth filters (same center freq)" },
   
+  { "-warp_type",
+    CMD_LN_STRING,
+    CMD_LN_NO_VALIDATION,
+    DEFAULT_WARP_TYPE,
+    "Warping function type (or shape)" },
+
+  { "-warp_params",
+    CMD_LN_STRING,
+    CMD_LN_NO_VALIDATION,
+    CMD_LN_NO_DEFAULT,
+    "Parameters defining the warping function" },
+
   { "-melwarp",
     CMD_LN_FLOAT32,
     CMD_LN_NO_VALIDATION,
     DEFAULT_MEL_WARP,
-    "Warping parameter of the mel-scale function" },
+    "Linear warping parameter of the mel-scale function, sets warp_type fe_warp_inverse_linear" },
   
   { "-blocksize",
     CMD_LN_INT32,
@@ -300,20 +312,41 @@ static arg_def_t defn[] = {
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2006/02/14  20:56:54  eht
+ * Revision 1.5  2006/02/16  00:18:26  egouvea
+ * Implemented flexible warping function. The user can specify at run
+ * time which of several shapes they want to use. Currently implemented
+ * are an affine function (y = ax + b), an inverse linear (y = a/x) and a
+ * piecewise linear (y = ax, up to a frequency F, and then it "breaks" so
+ * Nyquist frequency matches in both scales.
+ * 
+ * Added two switches, -warp_type and -warp_params. The first specifies
+ * the type, which valid values:
+ * 
+ * -inverse or inverse_linear
+ * -linear or affine
+ * -piecewise or piecewise_linear
+ * 
+ * The inverse_linear is the same as implemented by EHT. The -mel_warp
+ * switch was kept for compatibility (maybe remove it in the
+ * future?). The code is compatible with EHT's changes: cepstra created
+ * from code after his changes should be the same as now. Scripts that
+ * worked with his changes should work now without changes. Tested a few
+ * cases, same results.
+ * 
+ * Revision 1.4  2006/02/14 20:56:54  eht
  * Implement an argument -melwarp that changes the standard mel-scale
  * equation from:
  * 	M(f) = 2595 * log10( 1 + f/700 )
  * to:
  * 	M(f,w) = 2595 * log10( 1 + f/(700*w))
- * 
+ *
  * So, 1.0 means no warp,  w > 1.0 means linear compression w < 1.0 means
  * linear expansion.
- * 
+ *
  * Implement argument -nskip and -runlen arguments so that a subset of the
  * utterances in the control file can be executed.  Allows a simple
  * distribution of wave2feat processing over N processors.
- * 
+ *
  * Revision 1.3  2005/05/19 21:21:55  egouvea
  * Bug #1176394: example bug
  *
