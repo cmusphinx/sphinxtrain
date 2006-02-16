@@ -125,17 +125,17 @@ int32 fe_convert_files(param_t *P)
             return(FE_CONTROL_FILE_ERROR);
         }
         while (fscanf(ctlfile,"%s",fileroot)!=EOF){
-	    if (nskip > 0) {
-	        --nskip;
-	        continue;
-	    }
-	    if (runlen > 0) {
-	        --runlen;
-	    }
-	    else if (runlen == 0) {
-	        break;
-	    }
-	    
+            if (nskip > 0) {
+                --nskip;
+                continue;
+            }
+            if (runlen > 0) {
+                --runlen;
+            }
+            else if (runlen == 0) {
+                break;
+            }
+            
             fe_build_filenames(P,fileroot,&infile,&outfile);
 
             if (P->verbose) E_INFO("%s\n",infile);
@@ -242,6 +242,9 @@ int32 fe_convert_files(param_t *P)
                   ckd_free_2d((void **)last_frame_cep);
                   last_frame_cep = NULL;
                 }               
+                if (ON == warn_zero_energy) {
+                  E_WARN("File %s has some frames with zero energy. Consider using dither\n", infile);
+                }
             }
             else{
                 E_ERROR("fe_start_utt() failed\n");
@@ -249,9 +252,6 @@ int32 fe_convert_files(param_t *P)
             }
         }
         fe_close(FE);
-        if (ON == warn_zero_energy) {
-          E_WARN("File %s has some frames with zero energy. Consider using dither\n", infile);
-        }
     }
     
     else if (P->is_single){
@@ -419,9 +419,9 @@ void fe_validate_parameters(param_t *P)
      * -warp_params at the same time.
      */
     if (atof(DEFAULT_MEL_WARP) != P->MEL_WARP) {
-	 if ((CMD_LN_NO_DEFAULT != P->warp_params)  || (strcmp(DEFAULT_WARP_TYPE, P->warp_type) != 0)) {
-	      E_FATAL("You cannot specify -melwarp and either -warp_type or -warp_params\n");
-	 }
+         if ((CMD_LN_NO_DEFAULT != P->warp_params)  || (strcmp(DEFAULT_WARP_TYPE, P->warp_type) != 0)) {
+              E_FATAL("You cannot specify -melwarp and either -warp_type or -warp_params\n");
+         }
     }
     if (P->MEL_WARP == 0) {
          E_FATAL("mel warp may not be zero\n");
@@ -454,18 +454,18 @@ param_t *fe_parse_options(int32 argc, char **argv)
     P->ctlfile = cmd_ln_str("-c");
     if (P->ctlfile != CMD_LN_NO_DEFAULT) {
         char *nskip;
-	char *runlen;
+        char *runlen;
 
         P->is_batch = ON;
 
-	nskip  = cmd_ln_str("-nskip");
-	runlen = cmd_ln_str("-runlen");
-	if ( nskip != CMD_LN_NO_DEFAULT ) {
-	    P->nskip = atoi(nskip);
-	}
-	if ( runlen != CMD_LN_NO_DEFAULT ) {
-	    P->runlen = atoi(runlen);
-	}
+        nskip  = cmd_ln_str("-nskip");
+        runlen = cmd_ln_str("-runlen");
+        if ( nskip != CMD_LN_NO_DEFAULT ) {
+            P->nskip = atoi(nskip);
+        }
+        if ( runlen != CMD_LN_NO_DEFAULT ) {
+            P->runlen = atoi(runlen);
+        }
     }
     
     P->wavdir = cmd_ln_str("-di");
@@ -789,11 +789,11 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
             len = hdr_buf->datalength / sizeof(short);
             P->nchans = hdr_buf->numchannels;
             /* DEBUG: Dump Info */
-	    if (P->verbose) {
-	        E_INFO("Reading MS Wav file %s:\n", infile);
-	        E_INFO("\t16 bit PCM data, %d channels %d samples\n",P->nchans,len);
-		E_INFO("\tSampled at %d\n",hdr_buf->SamplingFreq);
-	    }
+            if (P->verbose) {
+                E_INFO("Reading MS Wav file %s:\n", infile);
+                E_INFO("\t16 bit PCM data, %d channels %d samples\n",P->nchans,len);
+                E_INFO("\tSampled at %d\n",hdr_buf->SamplingFreq);
+            }
             free(hdr_buf);
         }
         else {
@@ -1003,25 +1003,31 @@ int32 fe_free_param(param_t *P)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.31  2006/02/16  00:18:26  egouvea
+ * Revision 1.32  2006/02/16  20:11:20  egouvea
+ * Fixed the code that prints a warning if any zero-energy frames are
+ * found, and recommending the user to add dither. Previously, it would
+ * only report the zero energy frames if they happened in the last
+ * utterance. Now, it reports for each utterance.
+ * 
+ * Revision 1.31  2006/02/16 00:18:26  egouvea
  * Implemented flexible warping function. The user can specify at run
  * time which of several shapes they want to use. Currently implemented
  * are an affine function (y = ax + b), an inverse linear (y = a/x) and a
  * piecewise linear (y = ax, up to a frequency F, and then it "breaks" so
  * Nyquist frequency matches in both scales.
- * 
+ *
  * Added two switches, -warp_type and -warp_params. The first specifies
  * the type, which valid values:
- * 
+ *
  * -inverse or inverse_linear
  * -linear or affine
  * -piecewise or piecewise_linear
- * 
+ *
  * The inverse_linear is the same as implemented by EHT. The -mel_warp
  * switch was kept for compatibility (maybe remove it in the
  * future?). The code is compatible with EHT's changes: cepstra created
  * from code after his changes should be the same as now. Scripts that
  * worked with his changes should work now without changes. Tested a few
  * cases, same results.
- * 
+ *
  */
