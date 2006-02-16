@@ -49,7 +49,6 @@ SRCS = \
   fe_sigproc.c \
   fe_warp.c \
   fe_warp_affine.c \
-  fe_warp_eide_gish.c \
   fe_warp_inverse_linear.c \
   fe_warp_piecewise_linear.c \
   parse_cmd_ln.c \
@@ -60,7 +59,6 @@ H = \
   fe_internal.h \
   fe_warp.h \
   fe_warp_affine.h \
-  fe_warp_eide_gish.h \
   fe_warp_inverse_linear.h \
   fe_warp_piecewise_linear.h \
   parse_cmd_ln.h \

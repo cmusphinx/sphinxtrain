@@ -60,7 +60,7 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
 {    
     int32 i, whichfilt, start_pt;
     float32 leftfr, centerfr, rightfr, fwidth, height, *filt_edge;
-    float32 melmax, melmin, dmelbw, freq, dfreq, leftslope,rightslope;
+    float32 melmax, melmin, dmelbw, freq, dfreq, leftslope=0,rightslope=0;
 
     /*estimate filter coefficients*/
     MEL_FB->filter_coeffs = (float32 **)fe_create_2d(MEL_FB->num_filters, MEL_FB->fft_size, sizeof(float32));
@@ -689,25 +689,28 @@ void fe_print_current(fe_t *FE)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.17  2006/02/16  00:18:26  egouvea
+ * Revision 1.18  2006/02/16  17:07:03  egouvea
+ * Removed unused file from Makefile, initialized leftslope, rightslope to make compiler happy
+ * 
+ * Revision 1.17  2006/02/16 00:18:26  egouvea
  * Implemented flexible warping function. The user can specify at run
  * time which of several shapes they want to use. Currently implemented
  * are an affine function (y = ax + b), an inverse linear (y = a/x) and a
  * piecewise linear (y = ax, up to a frequency F, and then it "breaks" so
  * Nyquist frequency matches in both scales.
- * 
+ *
  * Added two switches, -warp_type and -warp_params. The first specifies
  * the type, which valid values:
- * 
+ *
  * -inverse or inverse_linear
  * -linear or affine
  * -piecewise or piecewise_linear
- * 
+ *
  * The inverse_linear is the same as implemented by EHT. The -mel_warp
  * switch was kept for compatibility (maybe remove it in the
  * future?). The code is compatible with EHT's changes: cepstra created
  * from code after his changes should be the same as now. Scripts that
  * worked with his changes should work now without changes. Tested a few
  * cases, same results.
- * 
+ *
  */
