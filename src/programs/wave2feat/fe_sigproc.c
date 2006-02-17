@@ -653,7 +653,11 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
     else
         MEL->doublewide = OFF;
 
-    MEL->warp_type = P->warp_type;
+    if (P->warp_type == NULL) {
+        MEL->warp_type = DEFAULT_WARP_TYPE;
+    } else {
+        MEL->warp_type = P->warp_type;
+    }
     MEL->warp_params = P->warp_params;
 
     if (fe_warp_set(MEL->warp_type) != FE_SUCCESS) {
@@ -677,12 +681,15 @@ void fe_print_current(fe_t *FE)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.19  2006/02/17  00:31:34  egouvea
+ * Revision 1.20  2006/02/17  17:26:58  egouvea
+ * warp_type was not being initialized in the library, but by the app.
+ * 
+ * Revision 1.19  2006/02/17 00:31:34  egouvea
  * Removed switch -melwarp. Changed the default for window length to
  * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has
  * exactly 410 samples). Cleaned up include's. Replaced some E_FATAL()
  * with E_WARN() and return.
- * 
+ *
  * Revision 1.18  2006/02/16 17:07:03  egouvea
  * Removed unused file from Makefile, initialized leftslope, rightslope to make compiler happy
  *
