@@ -543,7 +543,7 @@ void fe_parse_general_params(param_t const *P, fe_t *FE)
     if (P->FRAME_RATE != 0) 
       FE->FRAME_RATE = P->FRAME_RATE;
     else 
-      FE->FRAME_RATE = (int32)atof(DEFAULT_FRAME_RATE);
+      FE->FRAME_RATE = (int32)atoi(DEFAULT_FRAME_RATE);
     
     if (P->WINDOW_LENGTH != 0) 
       FE->WINDOW_LENGTH = P->WINDOW_LENGTH;
@@ -656,18 +656,6 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
     MEL->warp_type = P->warp_type;
     MEL->warp_params = P->warp_params;
 
-    if (P->MEL_WARP != atof(DEFAULT_MEL_WARP)) {
-         if (strcmp(P->warp_type, DEFAULT_WARP_TYPE) != 0) {
-              E_FATAL("You cannot set -melwarp and -warp_type at the same type\n");
-         } else {
-              if (MEL->warp_params != NULL) {
-                   free(MEL->warp_params);
-                   E_WARN("Ignoring key -warp_params, using -melwarp instead\n");
-              }
-              MEL->warp_params = (char *)calloc(10, sizeof(char));
-              sprintf(MEL->warp_params, "%9.6f", P->MEL_WARP);
-         }
-    }
     if (fe_warp_set(MEL->warp_type) != FE_SUCCESS) {
          E_FATAL("Failed to initialize the warping function.\n");
     }
@@ -689,9 +677,15 @@ void fe_print_current(fe_t *FE)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.18  2006/02/16  17:07:03  egouvea
- * Removed unused file from Makefile, initialized leftslope, rightslope to make compiler happy
+ * Revision 1.19  2006/02/17  00:31:34  egouvea
+ * Removed switch -melwarp. Changed the default for window length to
+ * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has
+ * exactly 410 samples). Cleaned up include's. Replaced some E_FATAL()
+ * with E_WARN() and return.
  * 
+ * Revision 1.18  2006/02/16 17:07:03  egouvea
+ * Removed unused file from Makefile, initialized leftslope, rightslope to make compiler happy
+ *
  * Revision 1.17  2006/02/16 00:18:26  egouvea
  * Implemented flexible warping function. The user can specify at run
  * time which of several shapes they want to use. Currently implemented

@@ -167,11 +167,13 @@ int32 fe_convert_files(param_t *P)
                     }
                     process_utt_return_value = 
                       fe_process_utt(FE,spdata,splen,&cep, &frames_proc);
-                    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
-                      warn_zero_energy = ON;
-                    } else {
-                      assert(process_utt_return_value == FE_SUCCESS);
-                    }
+		    if (process_utt_return_value != FE_SUCCESS) {
+		      if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+			warn_zero_energy = ON;
+		      } else {
+			return(process_utt_return_value);
+		      }
+		    }
                     if (frames_proc>0)
                         fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
                     if (cep != NULL) {
@@ -204,10 +206,12 @@ int32 fe_convert_files(param_t *P)
                 
                 process_utt_return_value = 
                   fe_process_utt(FE,spdata,splen,&cep, &frames_proc);
-                if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
-                  warn_zero_energy = ON;
-                } else {
-                  assert(process_utt_return_value == FE_SUCCESS);
+                if (process_utt_return_value != FE_SUCCESS) {
+                  if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+                    warn_zero_energy = ON;
+                  } else {
+                    return(process_utt_return_value);
+                  }
                 }
                 if (frames_proc>0)
                     fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
@@ -415,18 +419,6 @@ void fe_validate_parameters(param_t *P)
         E_INFO("Will use double bandwidth filters\n");
     }
 
-    /* Make sure we didn't specify -melwarp and any of -warp_type or
-     * -warp_params at the same time.
-     */
-    if (atof(DEFAULT_MEL_WARP) != P->MEL_WARP) {
-         if ((CMD_LN_NO_DEFAULT != P->warp_params)  || (strcmp(DEFAULT_WARP_TYPE, P->warp_type) != 0)) {
-              E_FATAL("You cannot specify -melwarp and either -warp_type or -warp_params\n");
-         }
-    }
-    if (P->MEL_WARP == 0) {
-         E_FATAL("mel warp may not be zero\n");
-    }
-
 }
 
 
@@ -508,7 +500,6 @@ param_t *fe_parse_options(int32 argc, char **argv)
 
     P->warp_type = cmd_ln_str("-warp_type");
     P->warp_params = cmd_ln_str("-warp_params");
-    P->MEL_WARP = cmd_ln_float32("-melwarp");
 
     P->FFT_SIZE = cmd_ln_int32("-nfft");
     if (cmd_ln_int32("-doublebw")) {
@@ -1003,12 +994,18 @@ int32 fe_free_param(param_t *P)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.32  2006/02/16  20:11:20  egouvea
+ * Revision 1.33  2006/02/17  00:31:34  egouvea
+ * Removed switch -melwarp. Changed the default for window length to
+ * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has
+ * exactly 410 samples). Cleaned up include's. Replaced some E_FATAL()
+ * with E_WARN() and return.
+ * 
+ * Revision 1.32  2006/02/16 20:11:20  egouvea
  * Fixed the code that prints a warning if any zero-energy frames are
  * found, and recommending the user to add dither. Previously, it would
  * only report the zero energy frames if they happened in the last
  * utterance. Now, it reports for each utterance.
- * 
+ *
  * Revision 1.31  2006/02/16 00:18:26  egouvea
  * Implemented flexible warping function. The user can specify at run
  * time which of several shapes they want to use. Currently implemented

@@ -38,10 +38,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
+
 #include <s3/err.h>
-/*
-#include <s2types.h>
-*/
 #include "fe.h"
 #include "fe_internal.h"
 
@@ -84,7 +82,8 @@ fe_t *fe_init(param_t const *P)
     fe_t  *FE = (fe_t *) calloc(1,sizeof(fe_t));
 
     if (FE==NULL){
-	E_FATAL("memory alloc failed in fe_init()\n...exiting\n");
+        E_WARN("memory alloc failed in fe_init()\n");
+        return(NULL);
     }
     
     /* transfer params to front end */
@@ -92,12 +91,8 @@ fe_t *fe_init(param_t const *P)
 
     /* compute remaining FE parameters */
 
-    /* We add 0.5 so approximate the float with the closest
-     * integer. E.g., 2.3 is truncate to 2, whereas 3.7 becomes 4
-     */
-
-    FE->FRAME_SHIFT        = (int32)(FE->SAMPLING_RATE/FE->FRAME_RATE + 0.5);/* why 0.5? */
-    FE->FRAME_SIZE         = (int32)(FE->WINDOW_LENGTH*FE->SAMPLING_RATE + 0.5); /* why 0.5? */
+    FE->FRAME_SHIFT        = (int32)(FE->SAMPLING_RATE/FE->FRAME_RATE + 0.5);
+    FE->FRAME_SIZE         = (int32)(FE->WINDOW_LENGTH*FE->SAMPLING_RATE + 0.5);
     FE->PRIOR              = 0;
     FE->FRAME_COUNTER 	   = 0;	 	
 
@@ -106,7 +101,8 @@ fe_t *fe_init(param_t const *P)
     FE->HAMMING_WINDOW = (float64 *) calloc(FE->FRAME_SIZE,sizeof(float64));
     
     if (FE->OVERFLOW_SAMPS==NULL || FE->HAMMING_WINDOW==NULL){
-	E_FATAL("memory alloc failed in fe_init()\n...exiting\n");
+	E_WARN("memory alloc failed in fe_init()\n");
+	return(NULL);
     }
 
     /* create hamming window */    
@@ -115,7 +111,8 @@ fe_t *fe_init(param_t const *P)
     /* init and fill appropriate filter structure */
     if (FE->FB_TYPE==MEL_SCALE) {   
 	if ((FE->MEL_FB = (melfb_t *) calloc(1,sizeof(melfb_t)))==NULL){
-	    E_FATAL("memory alloc failed in fe_init()\n...exiting\n");
+	    E_WARN("memory alloc failed in fe_init()\n");
+	    return(NULL);
 	}
 	/* transfer params to mel fb */
 	fe_parse_melfb_params(P, FE->MEL_FB);
@@ -123,7 +120,8 @@ fe_t *fe_init(param_t const *P)
 	fe_build_melfilters(FE->MEL_FB);
 	fe_compute_melcosine(FE->MEL_FB);
     } else {
-	E_FATAL("MEL SCALE IS CURRENTLY THE ONLY IMPLEMENTATION!\n");
+	E_WARN("MEL SCALE IS CURRENTLY THE ONLY IMPLEMENTATION!\n");
+	return(NULL);
     }
 
     /*** Z.A.B. ***/	
@@ -230,7 +228,8 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
       if ((FE->NUM_OVERFLOW_SAMPS > 0)) {
 
 	if ((tmp_spch = (int16 *) malloc (sizeof(int16)*(FE->NUM_OVERFLOW_SAMPS +nsamps)))==NULL){
-	    E_FATAL("memory alloc failed in fe_process_utt()...exiting\n");
+	    E_WARN("memory alloc failed in fe_process_utt()\n");
+	    return FE_MEM_ALLOC_ERROR;
 	}
 	/* RAH */
 	memcpy (tmp_spch,FE->OVERFLOW_SAMPS,FE->NUM_OVERFLOW_SAMPS*(sizeof(int16))); /* RAH */
@@ -244,17 +243,17 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
 	frame_count++;
 
 
-      /*      if (cep!=NULL) fe_free_2d((void**)cep); */ /* It should never not be NULL */
-      /* 01.14.01 RAH, added +1 Adding one gives us space to stick the last flushed buffer*/
       if ((cep = (float32 **)fe_create_2d(frame_count+1,FE->FEATURE_DIMENSION,sizeof(float32))) == NULL) {
 	/* typecast to make the compiler happy - EBG */
-	E_FATAL("memory alloc for cep failed in fe_process_utt()\n\tfe_create_2d(%ld,%d,%d)\n...exiting\n",
+	E_WARN("memory alloc for cep failed in fe_process_utt()\n\tfe_create_2d(%ld,%d,%d)\n...exiting\n",
 		(long int) (frame_count+1), FE->FEATURE_DIMENSION, sizeof(float32)); 
+	return (FE_MEM_ALLOC_ERROR);
       }
       spbuf_len = (frame_count-1)*FE->FRAME_SHIFT + FE->FRAME_SIZE;    
 
       if ((spbuf=(float64 *)calloc(spbuf_len, sizeof(float64)))==NULL){
-	  E_FATAL("memory alloc failed in fe_process_utt()...exiting\n");
+	  E_WARN("memory alloc failed in fe_process_utt()\n");
+	  return(FE_MEM_ALLOC_ERROR);
       }
       
       /* pre-emphasis if needed,convert from int16 to float64 */
@@ -269,8 +268,8 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
       fr_fea = (float64 *)calloc(FE->FEATURE_DIMENSION, sizeof(float64));
       
       if (fr_data==NULL || fr_fea==NULL){
-	  E_INFO("memory alloc failed in fe_process_utt()...exiting\n");
-	  exit(0);
+	  E_WARN("memory alloc failed in fe_process_utt()\n");
+	  return(FE_MEM_ALLOC_ERROR);
       }
 
       for (whichframe=0;whichframe<frame_count;whichframe++){
@@ -350,7 +349,8 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes)
     assert(FE->NUM_OVERFLOW_SAMPS==FE->FRAME_SIZE);
     
     if ((spbuf=(float64 *)calloc(FE->FRAME_SIZE,sizeof(float64)))==NULL){
-	E_FATAL("memory alloc failed in fe_end_utt()...exiting\n");
+	E_WARN("memory alloc failed in fe_end_utt()\n");
+	return(FE_MEM_ALLOC_ERROR);
     }
  
     if (FE->PRE_EMPHASIS_ALPHA != 0.0){
@@ -362,7 +362,8 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes)
     /* again, who should implement cep vector? this can be implemented
        easily from outside or easily from in here */
     if ((fr_fea = (float64 *)calloc(FE->FEATURE_DIMENSION, sizeof(float64)))==NULL){
-	E_FATAL("memory alloc failed in fe_end_utt()...exiting\n");
+	E_WARN("memory alloc failed in fe_end_utt()\n");
+	return(FE_MEM_ALLOC_ERROR);
     }
 
     fe_hamming_window(spbuf, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
@@ -403,7 +404,10 @@ int32 fe_close(fe_t *FE)
     free(FE->MEL_FB->width);
     free(FE->MEL_FB);
   } else {
-    E_FATAL("MEL SCALE IS CURRENTLY THE ONLY IMPLEMENTATION!\n");
+    /* We won't end up here, since this was already checked up when we
+     * started. But just in case, let's break, if we're debugging.
+     */
+    assert(0);
   }
     
   free(FE->OVERFLOW_SAMPS);

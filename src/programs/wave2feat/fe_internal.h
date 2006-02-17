@@ -58,7 +58,6 @@ float32 fe_melinv(float32 x);
 void fe_pre_emphasis(int16 const *in, float64 *out, int32 len, float32 factor, int16 prior);
 void fe_create_hamming(float64 *in, int32 in_len);
 void fe_hamming_window(float64 *in, float64 *window, int32 in_len);
-void fe_init_hamming(float64 *win, int32 len);
 void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32 fftsize);
 int32 fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea);
 void fe_mel_spec(fe_t *FE, float64 const *spec, float64 *mfspec);
@@ -81,25 +80,31 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL);
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.12  2006/02/16  00:18:26  egouvea
+ * Revision 1.13  2006/02/17  00:31:34  egouvea
+ * Removed switch -melwarp. Changed the default for window length to
+ * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has
+ * exactly 410 samples). Cleaned up include's. Replaced some E_FATAL()
+ * with E_WARN() and return.
+ * 
+ * Revision 1.12  2006/02/16 00:18:26  egouvea
  * Implemented flexible warping function. The user can specify at run
  * time which of several shapes they want to use. Currently implemented
  * are an affine function (y = ax + b), an inverse linear (y = a/x) and a
  * piecewise linear (y = ax, up to a frequency F, and then it "breaks" so
  * Nyquist frequency matches in both scales.
- * 
+ *
  * Added two switches, -warp_type and -warp_params. The first specifies
  * the type, which valid values:
- * 
+ *
  * -inverse or inverse_linear
  * -linear or affine
  * -piecewise or piecewise_linear
- * 
+ *
  * The inverse_linear is the same as implemented by EHT. The -mel_warp
  * switch was kept for compatibility (maybe remove it in the
  * future?). The code is compatible with EHT's changes: cepstra created
  * from code after his changes should be the same as now. Scripts that
  * worked with his changes should work now without changes. Tested a few
  * cases, same results.
- * 
+ *
  */

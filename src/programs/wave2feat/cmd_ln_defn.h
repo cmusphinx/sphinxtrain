@@ -276,12 +276,6 @@ static arg_def_t defn[] = {
     CMD_LN_NO_DEFAULT,
     "Parameters defining the warping function" },
 
-  { "-melwarp",
-    CMD_LN_FLOAT32,
-    CMD_LN_NO_VALIDATION,
-    DEFAULT_MEL_WARP,
-    "Linear warping parameter of the mel-scale function, sets warp_type fe_warp_inverse_linear" },
-  
   { "-blocksize",
     CMD_LN_INT32,
     CMD_LN_NO_VALIDATION,
@@ -312,27 +306,33 @@ static arg_def_t defn[] = {
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2006/02/16  00:18:26  egouvea
+ * Revision 1.6  2006/02/17  00:31:34  egouvea
+ * Removed switch -melwarp. Changed the default for window length to
+ * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has
+ * exactly 410 samples). Cleaned up include's. Replaced some E_FATAL()
+ * with E_WARN() and return.
+ * 
+ * Revision 1.5  2006/02/16 00:18:26  egouvea
  * Implemented flexible warping function. The user can specify at run
  * time which of several shapes they want to use. Currently implemented
  * are an affine function (y = ax + b), an inverse linear (y = a/x) and a
  * piecewise linear (y = ax, up to a frequency F, and then it "breaks" so
  * Nyquist frequency matches in both scales.
- * 
+ *
  * Added two switches, -warp_type and -warp_params. The first specifies
  * the type, which valid values:
- * 
+ *
  * -inverse or inverse_linear
  * -linear or affine
  * -piecewise or piecewise_linear
- * 
+ *
  * The inverse_linear is the same as implemented by EHT. The -mel_warp
  * switch was kept for compatibility (maybe remove it in the
  * future?). The code is compatible with EHT's changes: cepstra created
  * from code after his changes should be the same as now. Scripts that
  * worked with his changes should work now without changes. Tested a few
  * cases, same results.
- * 
+ *
  * Revision 1.4  2006/02/14 20:56:54  eht
  * Implement an argument -melwarp that changes the standard mel-scale
  * equation from:

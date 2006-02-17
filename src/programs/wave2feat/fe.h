@@ -56,7 +56,6 @@ typedef struct{
 
      char *warp_type;
      char *warp_params;
-     float32 MEL_WARP;
 
      char *wavfile;
      char *cepfile;
@@ -145,8 +144,8 @@ typedef struct{
 #define DEFAULT_SAMPLING_RATE "16000.0"
 #define DEFAULT_FRAME_RATE "100"
 #define DEFAULT_FRAME_SHIFT "160"
-#define DEFAULT_WINDOW_LENGTH "0.0256" /*0.025625*/
-#define DEFAULT_FFT_SIZE "512" /*512*/
+#define DEFAULT_WINDOW_LENGTH "0.025625"
+#define DEFAULT_FFT_SIZE "512"
 #define DEFAULT_FB_TYPE MEL_SCALE
 #define DEFAULT_NUM_CEPSTRA "13"
 #define DEFAULT_NUM_FILTERS "40"
@@ -156,7 +155,6 @@ typedef struct{
 #define DEFAULT_START_FLAG 0
 
 #define DEFAULT_WARP_TYPE "inverse_linear"
-#define DEFAULT_MEL_WARP "1.0"
 
 #define BB_SAMPLING_RATE 16000
 #define DEFAULT_BB_FFT_SIZE 512
@@ -247,8 +245,6 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes);
 
 int32 fe_close(fe_t *FE);
 
-int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block);
-
 int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps,float32 *fr_cep);
 
 int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
@@ -287,25 +283,31 @@ int32 fe_dither(int16 *buffer,int32 nsamps);
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.16  2006/02/16  00:18:26  egouvea
+ * Revision 1.17  2006/02/17  00:31:34  egouvea
+ * Removed switch -melwarp. Changed the default for window length to
+ * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has
+ * exactly 410 samples). Cleaned up include's. Replaced some E_FATAL()
+ * with E_WARN() and return.
+ * 
+ * Revision 1.16  2006/02/16 00:18:26  egouvea
  * Implemented flexible warping function. The user can specify at run
  * time which of several shapes they want to use. Currently implemented
  * are an affine function (y = ax + b), an inverse linear (y = a/x) and a
  * piecewise linear (y = ax, up to a frequency F, and then it "breaks" so
  * Nyquist frequency matches in both scales.
- * 
+ *
  * Added two switches, -warp_type and -warp_params. The first specifies
  * the type, which valid values:
- * 
+ *
  * -inverse or inverse_linear
  * -linear or affine
  * -piecewise or piecewise_linear
- * 
+ *
  * The inverse_linear is the same as implemented by EHT. The -mel_warp
  * switch was kept for compatibility (maybe remove it in the
  * future?). The code is compatible with EHT's changes: cepstra created
  * from code after his changes should be the same as now. Scripts that
  * worked with his changes should work now without changes. Tested a few
  * cases, same results.
- * 
+ *
  */
