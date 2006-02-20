@@ -52,8 +52,6 @@
 #if defined(WIN32)
 #include <io.h>
 #include <errno.h>
-#define srand48(x) srand(x)
-#define lrand48() rand()
 #endif
 
 #include "fe.h"
@@ -553,6 +551,7 @@ void fe_init_params(param_t *P)
     P->cepdir = NULL;
     P->wavext = NULL;
     P->cepext = NULL;
+    P->dither = DITHER;
     P->warp_type = NULL;    
 }
 
@@ -972,17 +971,6 @@ int32 fe_closefiles(int32 fp_in, int32 fp_out)
 }
 
 
-/* adds 1/2-bit noise */
-int32 fe_dither(int16 *buffer,int32 nsamps)
-{
-  int32 i;
-  srand48((long)time(0));
-  for (i=0;i<nsamps;i++)
-    buffer[i] += (short)((!(lrand48()%4))?1:0);
-  
-  return 0;
-}
-
 int32 fe_free_param(param_t *P)
 {
 
@@ -994,12 +982,16 @@ int32 fe_free_param(param_t *P)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.33  2006/02/17  00:31:34  egouvea
+ * Revision 1.34  2006/02/20  23:55:51  egouvea
+ * Moved fe_dither() to the "library" side rather than the app side, so
+ * the function can be code when using the front end as a library.
+ * 
+ * Revision 1.33  2006/02/17 00:31:34  egouvea
  * Removed switch -melwarp. Changed the default for window length to
  * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has
  * exactly 410 samples). Cleaned up include's. Replaced some E_FATAL()
  * with E_WARN() and return.
- * 
+ *
  * Revision 1.32  2006/02/16 20:11:20  egouvea
  * Fixed the code that prints a warning if any zero-energy frames are
  * found, and recommending the user to add dither. Previously, it would

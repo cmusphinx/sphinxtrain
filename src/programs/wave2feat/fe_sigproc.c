@@ -88,8 +88,8 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
         melmax = melmax+dmelbw;
         if ((fe_melinv(melmin)<0) ||
             (fe_melinv(melmax)>MEL_FB->sampling_rate/2)){
-          fprintf(stderr,"Out of Range: low  filter edge = %f (%f)\n",fe_melinv(melmin),0.0);
-          fprintf(stderr,"              high filter edge = %f (%f)\n",fe_melinv(melmax),MEL_FB->sampling_rate/2);
+            fprintf(stderr,"Out of Range: low  filter edge = %f (%f)\n",fe_melinv(melmin),0.0);
+            fprintf(stderr,"              high filter edge = %f (%f)\n",fe_melinv(melmax),MEL_FB->sampling_rate/2);
             fprintf(stderr,"exiting...\n");
             exit(0);
         }
@@ -195,6 +195,16 @@ float32 fe_melinv(float32 x)
 {
      float32 warped = (float32)(700.0 * (pow(10.0, x / 2595.0) - 1.0));
      return fe_warp_warped_to_unwarped(warped);
+}
+
+/* adds 1/2-bit noise */
+int32 fe_dither(int16 *buffer, int32 nsamps)
+{
+  int32 i;
+  for (i=0;i<nsamps;i++)
+    buffer[i] += (short)((!(lrand48()%4))?1:0);
+  
+  return 0;
 }
 
 void fe_pre_emphasis(int16 const *in, float64 *out, int32 len, float32
@@ -370,11 +380,11 @@ int32 fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
       for (i=0; i< FE->NUM_CEPSTRA; ++i){
         mfcep[i] = 0;
         for (j=0;j<FE->MEL_FB->num_filters; j++){
-          if (j==0)
-            beta = 0.5;
-          else
-            beta = 1.0;
-          mfcep[i] += beta*mfspec[j]*FE->MEL_FB->mel_cosine[i][j];
+            if (j==0)
+                beta = 0.5;
+            else
+                beta = 1.0;
+            mfcep[i] += beta*mfspec[j]*FE->MEL_FB->mel_cosine[i][j];
         }
         mfcep[i] /= (float32)period;
       }
@@ -388,6 +398,15 @@ int32 fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
 
 int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert)
 {
+  int32
+    s, k,                       /* as above                             */
+    lgN;                        /* log2(N)                              */
+
+  complex
+    *f1, *f2,                   /* pointers into from array             */
+    *t1, *t2,                   /* pointers into to array               */
+    *ww;                        /* pointer into w array                 */
+
   complex
     *w, *from, *to,             /* as above                             */
     wwf2,                       /* temporary for ww*f2                  */
@@ -398,15 +417,6 @@ int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert)
   float64
     div,                        /* amount to divide result by: N or 1   */
     x;                          /* misc.                                */
-
-  int32
-    s, k,                       /* as above                             */
-    lgN;                        /* log2(N)                              */
-
-  complex
-    *f1, *f2,                   /* pointers into from array             */
-    *t1, *t2,                   /* pointers into to array               */
-    *ww;                        /* pointer into w array                 */
 
   
   /* check N, compute lgN                                               */
@@ -536,116 +546,117 @@ void fe_free_2d(void **arr)
 void fe_parse_general_params(param_t const *P, fe_t *FE)
 {
     if (P->SAMPLING_RATE != 0) 
-      FE->SAMPLING_RATE = P->SAMPLING_RATE;
+        FE->SAMPLING_RATE = P->SAMPLING_RATE;
     else
-      FE->SAMPLING_RATE = (float32)atof(DEFAULT_SAMPLING_RATE);
+        FE->SAMPLING_RATE = (float32)atof(DEFAULT_SAMPLING_RATE);
 
     if (P->FRAME_RATE != 0) 
-      FE->FRAME_RATE = P->FRAME_RATE;
+        FE->FRAME_RATE = P->FRAME_RATE;
     else 
-      FE->FRAME_RATE = (int32)atoi(DEFAULT_FRAME_RATE);
+        FE->FRAME_RATE = (int32)atoi(DEFAULT_FRAME_RATE);
     
     if (P->WINDOW_LENGTH != 0) 
-      FE->WINDOW_LENGTH = P->WINDOW_LENGTH;
+        FE->WINDOW_LENGTH = P->WINDOW_LENGTH;
     else 
-      FE->WINDOW_LENGTH = (float32)atof(DEFAULT_WINDOW_LENGTH);
+        FE->WINDOW_LENGTH = (float32)atof(DEFAULT_WINDOW_LENGTH);
     
     if (P->FB_TYPE != 0) 
-      FE->FB_TYPE = P->FB_TYPE;
+        FE->FB_TYPE = P->FB_TYPE;
     else 
-      FE->FB_TYPE = DEFAULT_FB_TYPE;
- 
+        FE->FB_TYPE = DEFAULT_FB_TYPE;
+
+    FE->dither = P->dither;
+
     if (P->PRE_EMPHASIS_ALPHA != 0) 
-      FE->PRE_EMPHASIS_ALPHA = P->PRE_EMPHASIS_ALPHA;
+        FE->PRE_EMPHASIS_ALPHA = P->PRE_EMPHASIS_ALPHA;
     else 
-      FE->PRE_EMPHASIS_ALPHA = (float32)atof(DEFAULT_PRE_EMPHASIS_ALPHA);
+        FE->PRE_EMPHASIS_ALPHA = (float32)atof(DEFAULT_PRE_EMPHASIS_ALPHA);
  
     if (P->NUM_CEPSTRA != 0) 
-      FE->NUM_CEPSTRA = P->NUM_CEPSTRA;
+        FE->NUM_CEPSTRA = P->NUM_CEPSTRA;
     else 
-      FE->NUM_CEPSTRA = atoi(DEFAULT_NUM_CEPSTRA);
+        FE->NUM_CEPSTRA = atoi(DEFAULT_NUM_CEPSTRA);
 
     if (P->FFT_SIZE != 0) 
-      FE->FFT_SIZE = P->FFT_SIZE;
+        FE->FFT_SIZE = P->FFT_SIZE;
     else 
-      FE->FFT_SIZE = atoi(DEFAULT_FFT_SIZE);
+        FE->FFT_SIZE = atoi(DEFAULT_FFT_SIZE);
 
     FE->LOG_SPEC = P->logspec;
     if (FE->LOG_SPEC == OFF) 
-      FE->FEATURE_DIMENSION = FE->NUM_CEPSTRA;
+        FE->FEATURE_DIMENSION = FE->NUM_CEPSTRA;
     else {
-      if (P->NUM_FILTERS != 0)  
-        FE->FEATURE_DIMENSION = P->NUM_FILTERS;
-      else {
-        if (FE->SAMPLING_RATE == BB_SAMPLING_RATE)
-          FE->FEATURE_DIMENSION = DEFAULT_BB_NUM_FILTERS;
-        else if (FE->SAMPLING_RATE == NB_SAMPLING_RATE)
-          FE->FEATURE_DIMENSION = DEFAULT_NB_NUM_FILTERS;
+        if (P->NUM_FILTERS != 0)  
+            FE->FEATURE_DIMENSION = P->NUM_FILTERS;
         else {
-          E_FATAL("Please define the number of MEL filters needed\n");
+            if (FE->SAMPLING_RATE == BB_SAMPLING_RATE)
+                FE->FEATURE_DIMENSION = DEFAULT_BB_NUM_FILTERS;
+            else if (FE->SAMPLING_RATE == NB_SAMPLING_RATE)
+                FE->FEATURE_DIMENSION = DEFAULT_NB_NUM_FILTERS;
+            else {
+                E_FATAL("Please define the number of MEL filters needed\n");
+            }
         }
-      }
     }
- 
 }
 
 void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
 {
     if (P->SAMPLING_RATE != 0) 
-      MEL->sampling_rate = P->SAMPLING_RATE;
+        MEL->sampling_rate = P->SAMPLING_RATE;
     else 
-      MEL->sampling_rate = (float32)atof(DEFAULT_SAMPLING_RATE);
+        MEL->sampling_rate = (float32)atof(DEFAULT_SAMPLING_RATE);
 
     if (P->FFT_SIZE != 0) 
-      MEL->fft_size = P->FFT_SIZE;
+        MEL->fft_size = P->FFT_SIZE;
     else {
-      if (MEL->sampling_rate == BB_SAMPLING_RATE)
-        MEL->fft_size = DEFAULT_BB_FFT_SIZE;
-      if (MEL->sampling_rate == NB_SAMPLING_RATE)
-        MEL->fft_size = DEFAULT_NB_FFT_SIZE;
-      else 
-        MEL->fft_size = atoi(DEFAULT_FFT_SIZE);
+        if (MEL->sampling_rate == BB_SAMPLING_RATE)
+            MEL->fft_size = DEFAULT_BB_FFT_SIZE;
+        if (MEL->sampling_rate == NB_SAMPLING_RATE)
+            MEL->fft_size = DEFAULT_NB_FFT_SIZE;
+        else 
+            MEL->fft_size = atoi(DEFAULT_FFT_SIZE);
     }
- 
+
     if (P->NUM_CEPSTRA != 0) 
-      MEL->num_cepstra = P->NUM_CEPSTRA;
+        MEL->num_cepstra = P->NUM_CEPSTRA;
     else 
-      MEL->num_cepstra = atoi(DEFAULT_NUM_CEPSTRA);
+        MEL->num_cepstra = atoi(DEFAULT_NUM_CEPSTRA);
  
     if (P->NUM_FILTERS != 0)    
         MEL->num_filters = P->NUM_FILTERS;
     else {
-      if (MEL->sampling_rate == BB_SAMPLING_RATE)
-        MEL->num_filters = DEFAULT_BB_NUM_FILTERS;
-      else if (MEL->sampling_rate == NB_SAMPLING_RATE)
-        MEL->num_filters = DEFAULT_NB_NUM_FILTERS;
-      else {
-        E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -nfilt\n");
-      }
+        if (MEL->sampling_rate == BB_SAMPLING_RATE)
+            MEL->num_filters = DEFAULT_BB_NUM_FILTERS;
+        else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+            MEL->num_filters = DEFAULT_NB_NUM_FILTERS;
+        else {
+            E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -nfilt\n");
+        }
     }
 
     if (P->UPPER_FILT_FREQ != 0)        
-      MEL->upper_filt_freq = P->UPPER_FILT_FREQ;
+        MEL->upper_filt_freq = P->UPPER_FILT_FREQ;
     else{
-      if (MEL->sampling_rate == BB_SAMPLING_RATE)
-        MEL->upper_filt_freq = (float32) DEFAULT_BB_UPPER_FILT_FREQ;
-      else if (MEL->sampling_rate == NB_SAMPLING_RATE)
-        MEL->upper_filt_freq = (float32) DEFAULT_NB_UPPER_FILT_FREQ;
-      else {
-        E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -upperf\n");
-      }
-    } 
+        if (MEL->sampling_rate == BB_SAMPLING_RATE)
+            MEL->upper_filt_freq = (float32) DEFAULT_BB_UPPER_FILT_FREQ;
+        else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+            MEL->upper_filt_freq = (float32) DEFAULT_NB_UPPER_FILT_FREQ;
+        else {
+            E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -upperf\n");
+        }
+    }
 
     if (P->LOWER_FILT_FREQ != 0)        
-      MEL->lower_filt_freq = P->LOWER_FILT_FREQ;
+        MEL->lower_filt_freq = P->LOWER_FILT_FREQ;
     else {
-      if (MEL->sampling_rate == BB_SAMPLING_RATE)
-        MEL->lower_filt_freq = (float32) DEFAULT_BB_LOWER_FILT_FREQ;
-      else if (MEL->sampling_rate == NB_SAMPLING_RATE)
-        MEL->lower_filt_freq = (float32) DEFAULT_NB_LOWER_FILT_FREQ;
-      else {
-        E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -lowerf\n");
-      }
+        if (MEL->sampling_rate == BB_SAMPLING_RATE)
+            MEL->lower_filt_freq = (float32) DEFAULT_BB_LOWER_FILT_FREQ;
+        else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+            MEL->lower_filt_freq = (float32) DEFAULT_NB_LOWER_FILT_FREQ;
+        else {
+            E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -lowerf\n");
+        }
     } 
 
     if (P->doublebw == ON)
@@ -666,24 +677,41 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
     fe_warp_set_parameters(MEL->warp_params, MEL->sampling_rate);
 }
 
-void fe_print_current(fe_t *FE)
+void fe_print_current(fe_t const *FE)
 {
-    fprintf(stderr,"Current FE Parameters:\n");
-    fprintf(stderr,"\tSampling Rate:             %f\n",FE->SAMPLING_RATE);
-    fprintf(stderr,"\tFrame Size:                %d\n",FE->FRAME_SIZE);
-    fprintf(stderr,"\tFrame Shift:               %d\n",FE->FRAME_SHIFT);
-    fprintf(stderr,"\tFFT Size:                  %d\n",FE->FFT_SIZE);
-    fprintf(stderr,"\tNumber of Overflow Samps:  %d\n",FE->NUM_OVERFLOW_SAMPS);
-    fprintf(stderr,"\tStart Utt Status:          %d\n",FE->START_FLAG);
+    E_INFO("Current FE Parameters:\n");
+    E_INFO("\tSampling Rate:             %f\n", FE->SAMPLING_RATE);
+    E_INFO("\tFrame Size:                %d\n", FE->FRAME_SIZE);
+    E_INFO("\tFrame Shift:               %d\n", FE->FRAME_SHIFT);
+    E_INFO("\tFFT Size:                  %d\n", FE->FFT_SIZE);
+    E_INFO("\tLower Frequency:           %g\n", FE->MEL_FB->lower_filt_freq);
+    E_INFO("\tUpper Frequency:           %g\n", FE->MEL_FB->upper_filt_freq);
+    E_INFO("\tNumber of filters:         %d\n", FE->MEL_FB->num_filters);
+    E_INFO("\tNumber of Overflow Samps:  %d\n", FE->NUM_OVERFLOW_SAMPS);
+    E_INFO("\tStart Utt Status:          %d\n", FE->START_FLAG);
+    if (FE->dither) {
+        E_INFO("Will add dither to audio\n");
+    } else {
+        E_INFO("Will not add dither to audio\n");
+    }
+    if (FE->MEL_FB->doublewide == ON) {
+        E_INFO("Will use double bandwidth in mel filter\n");
+    } else {
+        E_INFO("Will not use double bandwidth in mel filter\n");
+    }
 }
 
 /*
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.20  2006/02/17  17:26:58  egouvea
- * warp_type was not being initialized in the library, but by the app.
+ * Revision 1.21  2006/02/20  23:55:51  egouvea
+ * Moved fe_dither() to the "library" side rather than the app side, so
+ * the function can be code when using the front end as a library.
  * 
+ * Revision 1.20  2006/02/17 17:26:58  egouvea
+ * warp_type was not being initialized in the library, but by the app.
+ *
  * Revision 1.19  2006/02/17 00:31:34  egouvea
  * Removed switch -melwarp. Changed the default for window length to
  * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has
