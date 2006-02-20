@@ -465,11 +465,19 @@ int32  count_triphones (char *transfile,
         for(nwords=1; strtok(NULL," \t\n") != NULL; nwords++);
 	n_totalwds += nwords;
 	wordarr = (dicthashelement_t **)ckd_calloc(nwords+2,sizeof(dicthashelement_t*));
-	word = strtok(line," \t\n"); 
-	wordarr[1] = dictlookup(word,dicthash);
-        for (j=2; (word = strtok(NULL," \t\n")) != NULL; j++)
-	    wordarr[j] = dictlookup(word,dicthash);
-	
+        word = strtok(line," \t\n"); 
+        if ((wordarr[1] = dictlookup(word,dicthash)) == NULL) {
+            E_WARN("Word %s not found in dictionary. Mapping to SIL.\n", word);
+        }
+        for (j=2; (word = strtok(NULL," \t\n")) != NULL; j++) {
+            if ((wordarr[j] = dictlookup(word,dicthash)) == NULL) {
+                /* If word is surrounded by "()", assume it's the
+                 * utterance ID, and don't report it as an OOV */
+                if ((word[0] != '(') && (word[strlen(word) - 1] != ')')) {
+                    E_WARN("Word %s not found in dictionary. Mapping to SIL.\n", word);
+                }
+            }
+        }       
 	for (i=1; i<=nwords; i++){/* Indices account for padded wordarr array */
 	    if (wordarr[i] == NULL) continue;
 
