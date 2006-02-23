@@ -292,7 +292,7 @@ main_initialize(int argc,
 	   (sil_del ? "" : "NOT "));
 
     if (*(int32 *)cmd_ln_access("-mixwreest")) {
-	if (mod_inv_alloc_mixw_acc(inv) != S3_SUCCESS)
+        if (mod_inv_alloc_mixw_acc(inv) != S3_SUCCESS)
 	    return S3_ERROR;
     }
 
@@ -537,10 +537,17 @@ main_reestimate(model_inventory_t *inv,
     uint32 ckpt_intv = 0;
     uint32 no_retries=0;
 
+    uint32 outputfullpath=0;
+    uint32 fullsuffixmatch=0;
+
     E_INFO("Reestimation: %s\n",
 	   (viterbi ? "Viterbi" : "Baum-Welch"));
     
     profile = *(int32 *)cmd_ln_access("-timing");
+    outputfullpath = *(int32 *)cmd_ln_access("-outputfullpath");
+    fullsuffixmatch = *(int32 *)cmd_ln_access("-fullsuffixmatch");
+
+    corpus_set_full_suffix_match(fullsuffixmatch);
 
     if (profile) {
 	utt_timer  = timing_new();
@@ -660,7 +667,8 @@ main_reestimate(model_inventory_t *inv,
 	}
 
 	printf("utt> %5u %25s", 
-	       seq_no, corpus_utt());
+	       seq_no,
+	       (outputfullpath ? corpus_utt_full_name() : corpus_utt()));
 
 	/* get the MFCC data for the utterance */
 /* CHANGE BY BHIKSHA; IF INPUT VECLEN != 13, THEN DO NOT USE THE
@@ -980,9 +988,39 @@ int main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.12  2005/09/27  02:02:47  arthchan2003
- * Check whether utterance is too short in init_gau, bw and agg_seg.
+ * Revision 1.13  2006/02/23  22:21:29  eht
+ * add -outputfullpath and -fullsuffixmatch arguments to bw.
  * 
+ * Default behavior is to keep the existing system behavior when the
+ * corpus module tries to match the transcript utterance id with the
+ * partial path contained in the control file.
+ * 
+ * Using -fullsuffixmatch yes will do the following:
+ * 	The corpus module will check whether the string contained
+ * 	inside parentheses in the transcript for the utterances
+ * 	matches the final part of the control file partial path
+ * 	for the utterance.  For instance, if the control file
+ * 	partial path is:
+ * 		tidigits/train/man/ae/243za
+ * 	the following strings will be considered to match:
+ * 		243za
+ * 		ae/243za
+ * 		man/ae/243za
+ * 		.
+ * 		.
+ * 		.
+ * 	In any event, the utterance will be used by bw for training.
+ * 	This switch just modifies when the warning message for
+ * 	mismatching control file and transcripts is generated.
+ * 
+ * Using -outputfullpath yes will output the entire subpath from the
+ * control file in the log output of bw rather than just the final path
+ * component.  This allows for simpler automatic processing of the output
+ * of bw.
+ * 
+ * Revision 1.12  2005/09/27 02:02:47  arthchan2003
+ * Check whether utterance is too short in init_gau, bw and agg_seg.
+ *
  * Revision 1.11  2005/09/15 19:36:00  dhdfu
  * Add (as yet untested) support for letter-to-sound rules (from CMU
  * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only

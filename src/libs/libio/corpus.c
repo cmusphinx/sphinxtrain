@@ -1812,6 +1812,14 @@ corpus_get_sildel(uint32 **sf,
 
     return S3_SUCCESS;
 }
+
+static uint32 fullsuffixmatch = 0;
+
+void
+corpus_set_full_suffix_match(uint32 state)
+{
+    fullsuffixmatch = state;
+}
 
 static int
 corpus_read_next_lsn_line(char **trans)
@@ -1843,9 +1851,20 @@ corpus_read_next_lsn_line(char **trans)
 		strcpy(utt_id, s+1);
 
 		/* check LSN utt id (if any) against ctl file utt id */
-		if (strcmp_ci(utt_id, corpus_utt()) != 0) {
-		    E_WARN("LSN utt id, %s, does not match ctl utt id, %s.\n",
-			   utt_id, corpus_utt());
+		if (!fullsuffixmatch) {
+		    if (strcmp_ci(utt_id, corpus_utt()) != 0) {
+		        E_WARN("LSN utt id, %s, does not match ctl utt id, %s.\n",
+			       utt_id, corpus_utt());
+		    }
+		}
+		else {
+		    char * uttfullname = corpus_utt_full_name();
+		    int suffpos = strlen(uttfullname) - strlen(utt_id);
+
+		    if (suffpos >= 0 && strlen(utt_id) > 0 && strcmp_ci(&uttfullname[suffpos], utt_id) != 0) {
+		        E_WARN("LSN utt id, %s, is not a suffix of control file sub-path %s.\n",
+			       utt_id, uttfullname);
+		    }
 		}
 
 		/* look for the first non-whitespace character before
@@ -2023,9 +2042,39 @@ read_sildel(uint32 **out_sf,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.13  2005/11/17  16:28:07  dhdfu
- * corpus_reset() not working as advertised
+ * Revision 1.14  2006/02/23  22:21:26  eht
+ * add -outputfullpath and -fullsuffixmatch arguments to bw.
  * 
+ * Default behavior is to keep the existing system behavior when the
+ * corpus module tries to match the transcript utterance id with the
+ * partial path contained in the control file.
+ * 
+ * Using -fullsuffixmatch yes will do the following:
+ * 	The corpus module will check whether the string contained
+ * 	inside parentheses in the transcript for the utterances
+ * 	matches the final part of the control file partial path
+ * 	for the utterance.  For instance, if the control file
+ * 	partial path is:
+ * 		tidigits/train/man/ae/243za
+ * 	the following strings will be considered to match:
+ * 		243za
+ * 		ae/243za
+ * 		man/ae/243za
+ * 		.
+ * 		.
+ * 		.
+ * 	In any event, the utterance will be used by bw for training.
+ * 	This switch just modifies when the warning message for
+ * 	mismatching control file and transcripts is generated.
+ * 
+ * Using -outputfullpath yes will output the entire subpath from the
+ * control file in the log output of bw rather than just the final path
+ * component.  This allows for simpler automatic processing of the output
+ * of bw.
+ * 
+ * Revision 1.13  2005/11/17 16:28:07  dhdfu
+ * corpus_reset() not working as advertised
+ *
  * Revision 1.12  2005/11/17 16:15:36  dhdfu
  * extend the get-length-only thing to corpus_get_mfcc() and friends
  *

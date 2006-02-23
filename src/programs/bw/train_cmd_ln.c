@@ -626,6 +626,18 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_DEFAULT,
 	  "Checkpoint the reestimation sums every -chkptintv utts" },
 	
+	{ "-outputfullpath",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Output full path of utterance to bw log output" },
+	
+	{ "-fullsuffixmatch",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Expect utterance id in transcript to be a suffix of the partial path in the control file" },
+	
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 
@@ -670,12 +682,42 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.12  2005/09/15  19:36:00  dhdfu
+ * Revision 1.13  2006/02/23  22:21:29  eht
+ * add -outputfullpath and -fullsuffixmatch arguments to bw.
+ * 
+ * Default behavior is to keep the existing system behavior when the
+ * corpus module tries to match the transcript utterance id with the
+ * partial path contained in the control file.
+ * 
+ * Using -fullsuffixmatch yes will do the following:
+ * 	The corpus module will check whether the string contained
+ * 	inside parentheses in the transcript for the utterances
+ * 	matches the final part of the control file partial path
+ * 	for the utterance.  For instance, if the control file
+ * 	partial path is:
+ * 		tidigits/train/man/ae/243za
+ * 	the following strings will be considered to match:
+ * 		243za
+ * 		ae/243za
+ * 		man/ae/243za
+ * 		.
+ * 		.
+ * 		.
+ * 	In any event, the utterance will be used by bw for training.
+ * 	This switch just modifies when the warning message for
+ * 	mismatching control file and transcripts is generated.
+ * 
+ * Using -outputfullpath yes will output the entire subpath from the
+ * control file in the log output of bw rather than just the final path
+ * component.  This allows for simpler automatic processing of the output
+ * of bw.
+ * 
+ * Revision 1.12  2005/09/15 19:36:00  dhdfu
  * Add (as yet untested) support for letter-to-sound rules (from CMU
  * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only
  * rules for CMUdict exist.  Of course this is not a substitute for
  * actually checking pronunciations...
- * 
+ *
  * Revision 1.11  2005/04/07 21:23:39  egouvea
  * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
  *
