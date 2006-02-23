@@ -70,7 +70,7 @@ static float nyquist_frequency = 0.0f;
 const char *
 fe_warp_inverse_linear_doc()
 {
-    return "inverse_linear :== < w' = a * x + b >";
+    return "inverse_linear :== < w' = x / a >";
 }
 
 uint32
@@ -163,12 +163,15 @@ fe_warp_inverse_linear_print(const char *label)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2006/02/17  00:31:34  egouvea
+ * Revision 1.3  2006/02/23  19:40:11  eht
+ * corrected the doc string for the inverse linear warp function.
+ * 
+ * Revision 1.2  2006/02/17 00:31:34  egouvea
  * Removed switch -melwarp. Changed the default for window length to
  * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has
  * exactly 410 samples). Cleaned up include's. Replaced some E_FATAL()
  * with E_WARN() and return.
- * 
+ *
  * Revision 1.1  2006/02/16 00:18:26  egouvea
  * Implemented flexible warping function. The user can specify at run
  * time which of several shapes they want to use. Currently implemented
