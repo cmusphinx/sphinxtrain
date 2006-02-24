@@ -127,7 +127,37 @@ copy "$CFG_GIF_DIR/green-ball.gif", "$CFG_BASE_DIR/.04.bw.$iter.$part.state.gif"
 &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . "\n");
 
 $BW   = "$CFG_BIN_DIR/bw";
-my $cmd = "\"$BW\" -moddeffn \"$moddeffn\" -ts2cbfn \"$statepdeffn\" -mixwfn \"$mixwfn\" -mwfloor $mwfloor -tmatfn \"$tmatfn\" -meanfn \"$meanfn\" -varfn \"$varfn\" -ltsoov $CFG_LTSOOV -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -ctlfn \"$CFG_LISTOFFILES\" -part $part -npart $npart -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -lsnfn \"$CFG_TRANSCRIPTFILE\" -accumdir \"$output_buffer_dir\" -varfloor $minvar -topn $topn -abeam 1e-90 -bbeam 1e-40 -agc $CFG_AGC -cmn $CFG_CMN -meanreest yes -varreest yes -2passvar $var2pass -tmatreest yes -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH";
+my $cmd = "\"$BW\" " .
+  "-moddeffn \"$moddeffn\" " .
+  "-ts2cbfn \"$statepdeffn\" " .
+  "-mixwfn \"$mixwfn\" " .
+  "-mwfloor $mwfloor " .
+  "-tmatfn \"$tmatfn\" " .
+  "-meanfn \"$meanfn\" " .
+  "-varfn \"$varfn\" " .
+  "-ltsoov $CFG_LTSOOV " .
+  "-dictfn \"$CFG_DICTIONARY\" " .
+  "-fdictfn \"$CFG_FILLERDICT\" " .
+  "-ctlfn \"$CFG_LISTOFFILES\" " .
+  "-part $part " .
+  "-npart $npart " .
+  "-cepdir \"$CFG_FEATFILES_DIR\" " .
+  "-cepext $CFG_FEATFILE_EXTENSION " .
+  "-lsnfn \"$CFG_TRANSCRIPTFILE\" " .
+  "-accumdir \"$output_buffer_dir\" " .
+  "-varfloor $minvar " .
+  "-topn $topn " .
+  "-abeam 1e-90 " .
+  "-bbeam 1e-40 " .
+  "-agc $CFG_AGC " .
+  "-cmn $CFG_CMN " .
+  "-meanreest yes " .
+  "-varreest yes " .
+  "-2passvar $var2pass " .
+  "-tmatreest yes " .
+  "-feat $CFG_FEATURE " .
+  "-ceplen $CFG_VECTOR_LENGTH " .
+  "-timing no";
 
 $return_value = RunTool($cmd, $logfile, 1);
 
