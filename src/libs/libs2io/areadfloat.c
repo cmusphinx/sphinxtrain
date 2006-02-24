@@ -34,8 +34,8 @@
  *
  */
 /*
-	30 May 1989 David R. Fulmer (drf) updated to do byte order
-		conversions when necessary.
+        30 May 1989 David R. Fulmer (drf) updated to do byte order
+                conversions when necessary.
  */
 
 #include <s2/byteorder.h>
@@ -59,23 +59,19 @@
 /* Macro to byteswap a float variable.  x = ptr to variable */
 #define MYSWAP_FLOAT(x) MYSWAP_INT((int *) x)
 
-int
-areadfloat (char *file,
-	    float **data_ref,
-	    int *length_ref)
+int get_length(char *file,
+               int *byterev)
 {
-  FILE		  *fp;
+  FILE            *fp;
   int             length;
-  int             ret, byterev, n;
-  int             offset;
-  float           *data;
+  int             n;
   struct stat statbuf;
 
+  *byterev = 0;
   if (stat(file, &statbuf) < 0) {
       printf("stat_retry(%s) failed\n", file);
       return -1;
   }
-
   if ((fp = fopen(file, "rb")) == NULL) {
       printf("fopen(%s,rb) failed\n", file);
       return -1;
@@ -88,7 +84,6 @@ areadfloat (char *file,
   }
 
   /* Check if length matches file size */
-  byterev = 0;
   if ((length*sizeof(float) + 4) != statbuf.st_size) {
       n = length;
       MYSWAP_INT(&n);
@@ -102,19 +97,50 @@ areadfloat (char *file,
       }
 
       length = n;
-      byterev = 1;
+      *byterev = 1;
   }
   if (length <= 0) {
       printf("Header size field: %d\n",  length); fflush(stdout);
       fclose (fp);
       return -1;
   }
+  fclose(fp);
+  return length;
+}
+
+int
+areadfloat (char *file,
+            float **data_ref,
+            int *length_ref)
+{
+  FILE            *fp;
+  int             length;
+  int             ret, byterev;
+  int             offset;
+  float           *data;
+  int dummy_length;
+
+  /* Get the file length and whether the file needs to be byte-reversed */
+  if ((length = get_length(file, &byterev)) < 0) {
+      return -1;
+  }
+  if ((fp = fopen(file, "rb")) == NULL) {
+      printf("fopen(%s,rb) failed\n", file);
+      return -1;
+  }
+
+  /* Read #floats in header, so we start reading at the right position */
+  if (fread(&dummy_length, sizeof(int), 1, fp) != 1) {
+      fclose (fp);
+      return -1;
+  }
+
   /* Just get the file size if we were not given a buffer. */
   if (data_ref == NULL) {
-	  fclose(fp);
-	  if (length_ref)
-	    *length_ref = length;
-	  return length;
+          fclose(fp);
+          if (length_ref)
+            *length_ref = length;
+          return length;
   }
 
   if ((data = (float *) calloc (length,sizeof(float))) == NULL)
@@ -142,70 +168,75 @@ areadfloat (char *file,
 
 int
 areadfloat_part (char *file,
-		 int s_coeff,
-		 int e_coeff,
-		 float **data_ref,
-		 int *length_ref)
+                 int s_coeff,
+                 int e_coeff,
+                 float **data_ref,
+                 int *length_ref)
 {
     static char p_file[MAXPATHLEN] = "";
     static FILE *fp = NULL;
     static int len;
+    static int byterev;
     int r_len;
     float *r_buf;
     int i;
+    int dummy_length;
 
     assert(s_coeff <= e_coeff);
     if (strcmp(file, p_file) != 0) {
-	if (fp) {
-	    fclose(fp);
-	}
-	fp = fopen(file, "rb");
-	if (fp == NULL) {
-	    fprintf(stderr, "areadfloat_part: unable to open %s for reading;", file);
-	    perror("");
-	    *data_ref = NULL;
-	    *length_ref = 0;
+        if (fp) {
+            fclose(fp);
+        }
+        /* Get the file length and whether the file needs to be
+           byte-reversed */
+        if ((len = get_length(file, &byterev)) < 0) {
+            return -1;
+        }
+        fp = fopen(file, "rb");
+        if (fp == NULL) {
+            fprintf(stderr, "areadfloat_part: unable to open %s for reading;", file);
+            perror("");
+            *data_ref = NULL;
+            *length_ref = 0;
 
-	    return -1;
-	}
-	strcpy(p_file, file);
+            return -1;
+        }
+        strcpy(p_file, file);
 
-	if (fread(&len, sizeof(int), 1, fp) != 1) {
-	    fprintf(stderr, "areadfloat_part: unable to read length from %s;", file);
-	    perror("");
+        if (fread(&dummy_length, sizeof(int), 1, fp) != 1) {
+            fprintf(stderr, "areadfloat_part: unable to read length from %s;", file);
+            perror("");
 
-	    *data_ref = NULL;
-	    *length_ref = 0;
+            *data_ref = NULL;
+            *length_ref = 0;
 
-	    return -1;
-	}
-
-	SWAPL(&len);
+            return -1;
+        }
     }
 
     if (s_coeff >= len) {
-	fprintf(stderr, "areadfloat_part: start of data beyond end of file\n");
-	*data_ref = NULL;
-	*length_ref = 0;
+        fprintf(stderr, "areadfloat_part: start of data beyond end of file\n");
+        *data_ref = NULL;
+        *length_ref = 0;
 
-	return 0;
+        return 0;
     }
 
     if (e_coeff >= len) {
-	fprintf(stderr, "areadfloat_part: end of data beyond end of file; resetting\n");
+        fprintf(stderr, "areadfloat_part: end of data beyond end of file; resetting\n");
 
-	e_coeff = len-1;
+        e_coeff = len-1;
     }
 
     if (fseek(fp, s_coeff * sizeof(float) + sizeof(int), SEEK_SET) < 0) {
-	fprintf(stderr, "areadfloat_part: seek fail;");
-	perror("");
-	fprintf(stderr, "offset == %u in %s\n",
-		s_coeff * sizeof(float) + sizeof(int), file);
+        fprintf(stderr, "areadfloat_part: seek fail;");
+        perror("");
+        fprintf(stderr, "offset == %u in %s\n",
+                s_coeff * sizeof(float) + sizeof(int), file);
 
-	*data_ref = NULL;
-	*length_ref = 0;
-	return -1;
+        *data_ref = NULL;
+        *length_ref = 0;
+        return -1;
     }
 
     r_len = e_coeff - s_coeff + 1;
@@ -213,23 +244,24 @@ areadfloat_part (char *file,
     assert(s_coeff + r_len <= len);
     /* Just get the file size if we were not given a buffer. */
     if (data_ref == NULL) {
-	if (length_ref)
-	    *length_ref = r_len;
-	return r_len;
+        if (length_ref)
+            *length_ref = r_len;
+        return r_len;
     }
 
     r_buf = calloc(r_len, sizeof(float));
     if (fread(r_buf, sizeof(float), r_len, fp) != r_len) {
-	fprintf(stderr, "areadfloat_part: unable to read %d coeff @ %d from %s\n",
-		r_len, s_coeff, file);
-	free(r_buf);
-	*data_ref = NULL;
-	*length_ref = 0;
-	return -1;
+        fprintf(stderr, "areadfloat_part: unable to read %d coeff @ %d from %s\n",
+                r_len, s_coeff, file);
+        free(r_buf);
+        *data_ref = NULL;
+        *length_ref = 0;
+        return -1;
     }
 
+  if (byterev==1) 
     for (i = 0; i < r_len; i++) {
-	SWAPF(&r_buf[i]);
+        MYSWAP_FLOAT(&r_buf[i]);
     }
 
     *data_ref = r_buf;
