@@ -38,7 +38,7 @@
  * File: cmd_ln_defn.h
  * 
  * Description: 
- * 	Command line argument definition
+ *      Command line argument definition
  *
  * Author: 
  *      
@@ -288,6 +288,12 @@ static arg_def_t defn[] = {
     "no",
     "Add 1/2-bit noise" },
   
+  { "-seed",
+    CMD_LN_INT32,
+    CMD_LN_NO_VALIDATION,
+    SEED,
+    "Seed for random number generator; if less than zero, pick our own" },
+
   { "-verbose",
     CMD_LN_BOOLEAN,
     CMD_LN_NO_VALIDATION,
@@ -306,12 +312,25 @@ static arg_def_t defn[] = {
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2006/02/17  00:31:34  egouvea
+ * Revision 1.7  2006/02/25  00:53:48  egouvea
+ * Added the flag "-seed". If dither is being used and the seed is less
+ * than zero, the random number generator is initialized with time(). If
+ * it is at least zero, it's initialized with the provided seed. This way
+ * we have the benefit of having dither, and the benefit of being
+ * repeatable.
+ * 
+ * This is consistent with what sphinx3 does. Well, almost. The random
+ * number generator is still what the compiler provides.
+ * 
+ * Also, moved fe_init_params to fe_interface.c, so one can initialize a
+ * variable of type param_t with meaningful values.
+ * 
+ * Revision 1.6  2006/02/17 00:31:34  egouvea
  * Removed switch -melwarp. Changed the default for window length to
  * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has
  * exactly 410 samples). Cleaned up include's. Replaced some E_FATAL()
  * with E_WARN() and return.
- * 
+ *
  * Revision 1.5  2006/02/16 00:18:26  egouvea
  * Implemented flexible warping function. The user can specify at run
  * time which of several shapes they want to use. Currently implemented
@@ -336,9 +355,9 @@ static arg_def_t defn[] = {
  * Revision 1.4  2006/02/14 20:56:54  eht
  * Implement an argument -melwarp that changes the standard mel-scale
  * equation from:
- * 	M(f) = 2595 * log10( 1 + f/700 )
+ *      M(f) = 2595 * log10( 1 + f/700 )
  * to:
- * 	M(f,w) = 2595 * log10( 1 + f/(700*w))
+ *      M(f,w) = 2595 * log10( 1 + f/(700*w))
  *
  * So, 1.0 means no warp,  w > 1.0 means linear compression w < 1.0 means
  * linear expansion.

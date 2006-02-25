@@ -48,86 +48,88 @@ extern "C" {
 #endif
 
     typedef struct{
-	float32 SAMPLING_RATE;
-	int32 FRAME_RATE;
-	float32 WINDOW_LENGTH;
-	int32 FB_TYPE;
-	int32 NUM_CEPSTRA;
-	int32 NUM_FILTERS;
-	int32 FFT_SIZE;
-	float32 LOWER_FILT_FREQ;
-	float32 UPPER_FILT_FREQ;
-	float32 PRE_EMPHASIS_ALPHA;
+        float32 SAMPLING_RATE;
+        int32 FRAME_RATE;
+        float32 WINDOW_LENGTH;
+        int32 FB_TYPE;
+        int32 NUM_CEPSTRA;
+        int32 NUM_FILTERS;
+        int32 FFT_SIZE;
+        float32 LOWER_FILT_FREQ;
+        float32 UPPER_FILT_FREQ;
+        float32 PRE_EMPHASIS_ALPHA;
 
-	char *warp_type;
-	char *warp_params;
+        char *warp_type;
+        char *warp_params;
 
-	char *wavfile;
-	char *cepfile;
-	char *ctlfile;
-	int32 nskip;
-	int32 runlen;
-	char *wavdir;
-	char *cepdir;
-	char *wavext;
-	char *cepext;
-	int32 input_format;
-	int32 is_batch;
-	int32 is_single;
-	int32 blocksize;
-	int32 verbose;
-	int32 machine_endian;
-	int32 input_endian;
-	int32 output_endian;
-	int32 dither;
-	int32 logspec;
-	int32 doublebw;
-	int32 nchans;
-	int32 whichchan;
+        char *wavfile;
+        char *cepfile;
+        char *ctlfile;
+        int32 nskip;
+        int32 runlen;
+        char *wavdir;
+        char *cepdir;
+        char *wavext;
+        char *cepext;
+        int32 input_format;
+        int32 is_batch;
+        int32 is_single;
+        int32 blocksize;
+        int32 verbose;
+        int32 machine_endian;
+        int32 input_endian;
+        int32 output_endian;
+        int32 dither;
+        int32 seed;
+        int32 logspec;
+        int32 doublebw;
+        int32 nchans;
+        int32 whichchan;
   
-	int32 splen;
-	int32 nframes;
-	int16* spdata;
+        int32 splen;
+        int32 nframes;
+        int16* spdata;
     } param_t;
 
 
     typedef struct{
-	float32 sampling_rate;
-	int32 num_cepstra;
-	int32 num_filters;
-	int32 fft_size;
-	float32 lower_filt_freq;
-	float32 upper_filt_freq;
-	float32 **filter_coeffs;
-	float32 **mel_cosine;
-	float32 *left_apex;
-	int32 *width;
-	int32 doublewide;
-	char *warp_type;
-	char *warp_params;
+        float32 sampling_rate;
+        int32 num_cepstra;
+        int32 num_filters;
+        int32 fft_size;
+        float32 lower_filt_freq;
+        float32 upper_filt_freq;
+        float32 **filter_coeffs;
+        float32 **mel_cosine;
+        float32 *left_apex;
+        int32 *width;
+        int32 doublewide;
+        char *warp_type;
+        char *warp_params;
     } melfb_t;
 
 
     typedef struct{
-	float32 SAMPLING_RATE;
-	int32 FRAME_RATE;
-	int32 FRAME_SHIFT;
-	float32 WINDOW_LENGTH;
-	int32 FRAME_SIZE;
-	int32 FFT_SIZE;
-	int32 FB_TYPE;
-	int32 LOG_SPEC;
-	int32 NUM_CEPSTRA;
-	int32 FEATURE_DIMENSION;
-	int32 dither;
-	float32 PRE_EMPHASIS_ALPHA;
-	int16 *OVERFLOW_SAMPS;
-	int32 NUM_OVERFLOW_SAMPS;    
-	melfb_t *MEL_FB;
-	int32 START_FLAG;
-	int16 PRIOR;
-	float64 *HAMMING_WINDOW;
-	int32 FRAME_COUNTER;
+        float32 SAMPLING_RATE;
+        int32 FRAME_RATE;
+        int32 FRAME_SHIFT;
+        float32 WINDOW_LENGTH;
+        int32 FRAME_SIZE;
+        int32 FFT_SIZE;
+        int32 FB_TYPE;
+        int32 LOG_SPEC;
+        int32 NUM_CEPSTRA;
+        int32 FEATURE_DIMENSION;
+        int32 dither;
+        int32 seed;
+        float32 PRE_EMPHASIS_ALPHA;
+        int16 *OVERFLOW_SAMPS;
+        int32 NUM_OVERFLOW_SAMPS;    
+        melfb_t *MEL_FB;
+        int32 START_FLAG;
+        int16 PRIOR;
+        float64 *HAMMING_WINDOW;
+        int32 FRAME_COUNTER;
     } fe_t;
 
 /* Struct to hold the front-end parameters */
@@ -142,9 +144,6 @@ extern "C" {
 
 #define MEL_SCALE 1
 #define LOG_LINEAR 2
-
-#define ON 1
-#define OFF 0
 
 /* Default values */
 #define DEFAULT_SAMPLING_RATE "16000.0"
@@ -177,8 +176,8 @@ extern "C" {
 #define DEFAULT_NB_UPPER_FILT_FREQ 3500
 
 #define DEFAULT_BLOCKSIZE "200000"
-#define DITHER  OFF
 
+#define SEED  "-1"
 
 /* The following only use in the application level */
 
@@ -218,25 +217,25 @@ extern "C" {
 /*#define SWAPBYTES*/
 #define SWAPW(x)        *(x) = ((0xff & (*(x))>>8) | (0xff00 & (*(x))<<8))
 #define SWAPL(x)        *(x) = ((0xff & (*(x))>>24) | (0xff00 & (*(x))>>8) | \
-				(0xff0000 & (*(x))<<8) | (0xff000000 & (*(x))<<24))
+                                (0xff0000 & (*(x))<<8) | (0xff000000 & (*(x))<<24))
 #define SWAPF(x)        SWAPL((int *) x)
 
 
 /* Some defines for MS Wav Files */
 /* The MS Wav file is a RIFF file, and has the following 44 byte header */
     typedef struct RIFFHeader{
-	char rifftag[4];      /* "RIFF" string */
-	int32 TotalLength;      /* Total length */
-	char wavefmttag[8];   /* "WAVEfmt " string (note space after 't') */
-	int32 RemainingLength;  /* Remaining length */
-	int16 data_format;    /* data format tag, 1 = PCM */
-	int16 numchannels;    /* Number of channels in file */
-	int32 SamplingFreq;     /* Sampling frequency */
-	int32 BytesPerSec;      /* Average bytes/sec */
-	int16 BlockAlign;     /* Block align */
-	int16 BitsPerSample;  /* 8 or 16 bit */
-	char datatag[4];      /* "data" string */
-	int32 datalength;       /* Raw data length */
+        char rifftag[4];      /* "RIFF" string */
+        int32 TotalLength;      /* Total length */
+        char wavefmttag[8];   /* "WAVEfmt " string (note space after 't') */
+        int32 RemainingLength;  /* Remaining length */
+        int16 data_format;    /* data format tag, 1 = PCM */
+        int16 numchannels;    /* Number of channels in file */
+        int32 SamplingFreq;     /* Sampling frequency */
+        int32 BytesPerSec;      /* Average bytes/sec */
+        int16 BlockAlign;     /* Block align */
+        int16 BitsPerSample;  /* 8 or 16 bit */
+        char datatag[4];      /* "data" string */
+        int32 datalength;       /* Raw data length */
     } MSWAV_hdr;
 
 
@@ -254,7 +253,7 @@ extern "C" {
     int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps,float32 *fr_cep);
 
     int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
-			 float32 ***cep_block, int32 *nframes);
+                         float32 ***cep_block, int32 *nframes);
 
 /* Functions that wrap up the front-end operations on the front-end
    wrapper operations.  */
@@ -272,7 +271,7 @@ extern "C" {
     int32 fe_writefeat(fe_t *FE, char *outfile, int32 nframes, float32 **feat);
     int32 fe_free_param(param_t *P);
     int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsamps, 
-		       int32 *nframes, int32 *nblocks, char *outfile, int32 *fp_out);
+                       int32 *nframes, int32 *nblocks, char *outfile, int32 *fp_out);
     int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf);
     int32 fe_writeblock_feat(param_t *P, fe_t *FE, int32 fp, int32 nframes, float32 **feat);
     int32 fe_closefiles(int32 fp_in, int32 fp_out);
@@ -287,10 +286,23 @@ extern "C" {
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.18  2006/02/20  23:55:51  egouvea
+ * Revision 1.19  2006/02/25  00:53:48  egouvea
+ * Added the flag "-seed". If dither is being used and the seed is less
+ * than zero, the random number generator is initialized with time(). If
+ * it is at least zero, it's initialized with the provided seed. This way
+ * we have the benefit of having dither, and the benefit of being
+ * repeatable.
+ * 
+ * This is consistent with what sphinx3 does. Well, almost. The random
+ * number generator is still what the compiler provides.
+ * 
+ * Also, moved fe_init_params to fe_interface.c, so one can initialize a
+ * variable of type param_t with meaningful values.
+ * 
+ * Revision 1.18  2006/02/20 23:55:51  egouvea
  * Moved fe_dither() to the "library" side rather than the app side, so
  * the function can be code when using the front end as a library.
- * 
+ *
  * Revision 1.17  2006/02/17 00:31:34  egouvea
  * Removed switch -melwarp. Changed the default for window length to
  * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has

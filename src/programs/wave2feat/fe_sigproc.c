@@ -566,6 +566,7 @@ void fe_parse_general_params(param_t const *P, fe_t *FE)
         FE->FB_TYPE = DEFAULT_FB_TYPE;
 
     FE->dither = P->dither;
+    FE->seed = P->seed;
 
     if (P->PRE_EMPHASIS_ALPHA != 0) 
         FE->PRE_EMPHASIS_ALPHA = P->PRE_EMPHASIS_ALPHA;
@@ -691,6 +692,7 @@ void fe_print_current(fe_t const *FE)
     E_INFO("\tStart Utt Status:          %d\n", FE->START_FLAG);
     if (FE->dither) {
         E_INFO("Will add dither to audio\n");
+        E_INFO("Dither seeded with %d\n", FE->seed);
     } else {
         E_INFO("Will not add dither to audio\n");
     }
@@ -705,10 +707,23 @@ void fe_print_current(fe_t const *FE)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.21  2006/02/20  23:55:51  egouvea
+ * Revision 1.22  2006/02/25  00:53:48  egouvea
+ * Added the flag "-seed". If dither is being used and the seed is less
+ * than zero, the random number generator is initialized with time(). If
+ * it is at least zero, it's initialized with the provided seed. This way
+ * we have the benefit of having dither, and the benefit of being
+ * repeatable.
+ * 
+ * This is consistent with what sphinx3 does. Well, almost. The random
+ * number generator is still what the compiler provides.
+ * 
+ * Also, moved fe_init_params to fe_interface.c, so one can initialize a
+ * variable of type param_t with meaningful values.
+ * 
+ * Revision 1.21  2006/02/20 23:55:51  egouvea
  * Moved fe_dither() to the "library" side rather than the app side, so
  * the function can be code when using the front end as a library.
- * 
+ *
  * Revision 1.20  2006/02/17 17:26:58  egouvea
  * warp_type was not being initialized in the library, but by the app.
  *

@@ -165,13 +165,13 @@ int32 fe_convert_files(param_t *P)
                     }
                     process_utt_return_value = 
                       fe_process_utt(FE,spdata,splen,&cep, &frames_proc);
-		    if (process_utt_return_value != FE_SUCCESS) {
-		      if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
-			warn_zero_energy = ON;
-		      } else {
-			return(process_utt_return_value);
-		      }
-		    }
+                    if (process_utt_return_value != FE_SUCCESS) {
+                      if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+                        warn_zero_energy = ON;
+                      } else {
+                        return(process_utt_return_value);
+                      }
+                    }
                     if (frames_proc>0)
                         fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
                     if (cep != NULL) {
@@ -528,31 +528,13 @@ param_t *fe_parse_options(int32 argc, char **argv)
         }       
     }
     P->dither = cmd_ln_int32("-dither");
+    P->seed = cmd_ln_int32("-seed");
     P->logspec = cmd_ln_int32("-logspec");
     
     fe_validate_parameters(P);
     
     return (P);
     
-}
-
-
-void fe_init_params(param_t *P)
-{
-    P->FB_TYPE = DEFAULT_FB_TYPE;
-    P->is_batch = OFF;
-    P->is_single = OFF;
-    P->wavfile = NULL;
-    P->cepfile = NULL;
-    P->ctlfile = NULL;
-    P->nskip   = -1;
-    P->runlen  = -1;
-    P->wavdir = NULL;
-    P->cepdir = NULL;
-    P->wavext = NULL;
-    P->cepext = NULL;
-    P->dither = DITHER;
-    P->warp_type = NULL;    
 }
 
 
@@ -928,9 +910,6 @@ int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf)
             SWAPW(&buf[i]);
     }
 
-    if (P->dither==ON)
-        fe_dither(buf,nsamps);
-
     return(cum_bytes_read/sizeof(int16));
 
 }
@@ -982,10 +961,23 @@ int32 fe_free_param(param_t *P)
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.34  2006/02/20  23:55:51  egouvea
+ * Revision 1.35  2006/02/25  00:53:48  egouvea
+ * Added the flag "-seed". If dither is being used and the seed is less
+ * than zero, the random number generator is initialized with time(). If
+ * it is at least zero, it's initialized with the provided seed. This way
+ * we have the benefit of having dither, and the benefit of being
+ * repeatable.
+ * 
+ * This is consistent with what sphinx3 does. Well, almost. The random
+ * number generator is still what the compiler provides.
+ * 
+ * Also, moved fe_init_params to fe_interface.c, so one can initialize a
+ * variable of type param_t with meaningful values.
+ * 
+ * Revision 1.34  2006/02/20 23:55:51  egouvea
  * Moved fe_dither() to the "library" side rather than the app side, so
  * the function can be code when using the front end as a library.
- * 
+ *
  * Revision 1.33  2006/02/17 00:31:34  egouvea
  * Removed switch -melwarp. Changed the default for window length to
  * 0.025625 from 0.256 (so that a window at 16kHz sampling rate has

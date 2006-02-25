@@ -66,6 +66,26 @@
 
 
 /*********************************************************************
+   FUNCTION:   fe_init_params
+   PARAMETERS: param_t *P
+   RETURNS:    nothing
+   DESCRIPTION: normally called by an app that reads and parses
+   command line arguments, this function resets the parameters to
+   meaningful values, which are not necessarily zero.
+**********************************************************************/
+void fe_init_params(param_t *P)
+{
+/* This should take care of all variables that default to zero */
+    memset(P, 0, sizeof(param_t));
+/* Now take care of variables that do not default to zero */
+    P->FB_TYPE = DEFAULT_FB_TYPE;
+    P->nskip   = -1;
+    P->runlen  = -1;
+    P->seed = atoi(SEED);
+}
+
+
+/*********************************************************************
    FUNCTION:   fe_init
    PARAMETERS: param_t *P
    RETURNS:    pointer to a new front end or NULL if failure.
@@ -98,7 +118,11 @@ fe_t *fe_init(param_t const *P)
     FE->FRAME_COUNTER      = 0;         
 
     if (FE->dither) {
+      if (FE->seed < 0) {
         srand48((long)time(0));
+      } else {
+        srand48((long)FE->seed);
+      }
     }
 
     /* establish buffers for overflow samps and hamming window */

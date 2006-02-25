@@ -90,6 +90,5 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
 int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf);
 int32 fe_writeblock_feat(param_t *P, fe_t *FE, int32 fp, int32 nframes, float32 **feat);
 int32 fe_closefiles(int32 fp_in, int32 fp_out);
-int32 fe_dither(int16 *buffer,int32 nsamps);
 
 #endif
