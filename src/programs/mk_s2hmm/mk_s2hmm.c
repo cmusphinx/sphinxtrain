@@ -215,7 +215,14 @@ int main(int argc, char *argv[])
 	    vector_nz_floor(tmat[i][j], n_state_pm, tprob_floor);
 
     mtype = (const char *)cmd_ln_access("-mtype");
-    if (strcmp(mtype, "sdm") == 0) {
+    if (strcmp(mtype, "fchmm") == 0) {
+	E_INFO("Outputting fully continuous distribution models\n");
+
+	s2_write_hmm(tmat,
+		     mdef->acmod_set,
+		     cmd_ln_access("-hmmdir"));
+    }
+    else if (strcmp(mtype, "sdm") == 0) {
 	E_INFO("Outputting shared distribution models\n");
 
 	E_INFO("Reading: %s\n", cmd_ln_access("-mixwfn"));
