@@ -104,7 +104,7 @@ unlink $uppercase_file;
     $counter =0;
     while (<DICT>) {
 	if (/^(\S+)\s(.*)$/) {
-	    $dict_hash{lc($1)}++;
+	    $dict_hash{$1}++;
 	    $phonetic = $2;
 	    # Aggregate the non-space characters and store the results
 	    # in @phone
@@ -124,7 +124,7 @@ unlink $uppercase_file;
     open DICT,"$CFG_FILLERDICT" or die "Can not open filler dict ($CFG_FILLERDICT)\n";
     while (<DICT>) {
 	if (/^(\S+)\s(.*)$/) {
-	    $dict_hash{lc($1)}++;
+	    $dict_hash{$1}++;
 	    $phonetic = $2;
 	    @phones = ($phonetic =~ m/(\S+)/g);
 	    for $phone (@phones) {
@@ -347,9 +347,9 @@ unlink $uppercase_file;
     for (@dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
 	if ($is_case_sensitive) {
-	  $d{lc($1)} = $2;
+	  $d{$1} = $2;
 	} else {
-	  $d{lc($1)} = uc($2);
+	  $d{$1} = uc($2);
 	}
     }
     
@@ -361,9 +361,9 @@ unlink $uppercase_file;
     for (@fill_dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
 	if ($is_case_sensitive) {
-	  $d{lc($1)} = $2;
+	  $d{$1} = $2;
 	} else {
-	  $d{lc($1)} = uc($2);
+	  $d{$1} = uc($2);
 	}
     }
     
@@ -378,12 +378,12 @@ unlink $uppercase_file;
 	if ($text) {
 	    @words = split /\s+/,$text;
 	    for $word (@words) {
-		if (! $d{lc($word)} && ($word =~ m/\S+/)) {
-		    &ST_LogWarning ("This word: $word was in the transcript file, but is not in the dictionary ($text)\n");
+		if (! $d{$word} && ($word =~ m/\S+/)) {
+		    &ST_LogWarning ("This word: $word was in the transcript file, but is not in the dictionary ($text). Do cases match?\n");
 		    $status = 'FAILED';
 		    $ret_value = -5;
 		} else {
-		    @phones = ($d{lc($word)} =~ m/(\S+)/g);
+		    @phones = ($d{$word} =~ m/(\S+)/g);
 		    for $phone (@phones) {
 		        $transcript_phonelist_hash{$phone} = 1;
 		    }
