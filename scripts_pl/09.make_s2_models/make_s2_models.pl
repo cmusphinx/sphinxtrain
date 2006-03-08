@@ -91,14 +91,15 @@ my $logfile_senone = "$logdir/${CFG_EXPTNAME}.mk_s2sendump.log";
 my $logfile_s2phonemap = "$logdir/${CFG_EXPTNAME}.mk_s2phonemap.log";
 
 $s3mdef = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
-$s2dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.s2models";
-mkdir ($s2dir,0777) unless -d $s2dir;
 
 if ($CFG_HMM_TYPE eq ".semi.") {
   $s3hmmdir="$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_$CFG_N_TIED_STATES"."_delinterp";
+  $s2dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}.s2models";
 } else {
   $s3hmmdir="$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_$CFG_N_TIED_STATES"."_$CFG_FINAL_NUM_DENSITIES";
+  $s2dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}_$CFG_FINAL_NUM_DENSITIES.s2models";
 }
+mkdir ($s2dir,0777) unless -d $s2dir;
 $s3mixw = "$s3hmmdir/mixture_weights";
 $s3mean = "$s3hmmdir/means";
 $s3var = "$s3hmmdir/variances";
