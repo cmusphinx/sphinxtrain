@@ -103,7 +103,12 @@ read_pset_file(const char *file_name,
 	
 	    out[i].name = strdup(strtok(line, " \t"));
 	    for (j = 0; j < n_phone; j++) {
-		p = (uint32)acmod_set_name2id(acmod_set, strtok(NULL, " \t"));
+		char *phone = strtok(NULL, " \t");
+		p = (uint32)acmod_set_name2id(acmod_set, phone);
+		if (p == (uint32)-1) {
+		    E_WARN("Unknown phone %s in set %s\n", phone, out[i].name);
+		    continue;
+		}
 		out[i].phone[j] = (acmod_id_t)p;
 		out[i].member[p] = TRUE;
 	    }
@@ -139,9 +144,12 @@ read_pset_file(const char *file_name,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:30:31  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2006/03/14  19:30:31  dhdfu
+ * Ignore (with a warning) unknown phones in a questions file, instead of segfaulting
  * 
+ * Revision 1.4  2004/07/21 18:30:31  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *
