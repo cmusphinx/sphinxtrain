@@ -545,8 +545,8 @@ main_reestimate(model_inventory_t *inv,
     
     profile = *(int32 *)cmd_ln_access("-timing");
     if (profile) {
-        E_INFO("Generating profiling information consumes significant CPU resources.");
-	E_INFO("If you are not interested in profiling, use -timing no");
+        E_INFO("Generating profiling information consumes significant CPU resources.\n");
+	E_INFO("If you are not interested in profiling, use -timing no\n");
     }
     outputfullpath = *(int32 *)cmd_ln_access("-outputfullpath");
     fullsuffixmatch = *(int32 *)cmd_ln_access("-fullsuffixmatch");
@@ -992,11 +992,14 @@ int main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.14  2006/02/24  15:50:23  eht
+ * Revision 1.15  2006/03/20  19:05:46  dhdfu
+ * Add missing newlines
+ * 
+ * Revision 1.14  2006/02/24 15:50:23  eht
  * Output an informational message to the log that collecting profiling
  * information about bw consumes significant CPU resources and suggest
  * using -timing no if profiling isn't needed.
- * 
+ *
  * Revision 1.13  2006/02/23 22:21:29  eht
  * add -outputfullpath and -fullsuffixmatch arguments to bw.
  *
