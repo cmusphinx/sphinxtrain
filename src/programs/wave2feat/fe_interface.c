@@ -117,6 +117,11 @@ fe_t *fe_init(param_t const *P)
     FE->PRIOR              = 0;
     FE->FRAME_COUNTER      = 0;         
 
+    if (FE->FRAME_SIZE > (2 * FE->FFT_SIZE)) {
+        E_WARN("Number of FFT points has to be a power of 2 higher than %d\n", (FE->FRAME_SIZE / 2));
+        return(NULL);
+    }
+
     if (FE->dither) {
       if (FE->seed < 0) {
         srand48((long)time(0));
