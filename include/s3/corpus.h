@@ -48,6 +48,8 @@
 
 #include <s3/prim_type.h>
 #include <s3/vector.h>
+#include <s3/acmod_set_ds.h>
+#include <s3/s3phseg_io.h>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -198,6 +200,10 @@ corpus_provides_seg(void);
 int
 corpus_get_seg(uint16 **seg, uint32 *n_frame);
 
+int32 corpus_provides_phseg(void);
+int corpus_get_phseg(acmod_set_t *acmod_set,
+		     s3phseg_t **out_phseg);
+
 int32
 corpus_provides_ccode(void);
 int
@@ -221,9 +227,13 @@ corpus_get_ddcode(unsigned char **ddcode, uint32 *n_frame);
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2006/03/27  04:08:57  dhdfu
+ * Optionally use a set of phoneme segmentations to constrain Baum-Welch
+ * training.
  * 
+ * Revision 1.4  2004/07/21 17:46:09  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *

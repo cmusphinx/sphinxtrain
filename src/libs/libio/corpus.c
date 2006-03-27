@@ -118,8 +118,9 @@ corpus_read_next_lsn_line(char **trans);
 #define DATA_TYPE_PCODE	5
 #define DATA_TYPE_DDCODE 6
 #define DATA_TYPE_MLLR  7
+#define DATA_TYPE_PHSEG 8
 
-#define N_DATA_TYPE	8
+#define N_DATA_TYPE	9
 
 #define MAX_LSN_LINE	8192
 
@@ -201,6 +202,10 @@ static int32 requires_sent = FALSE;
  * segmentations */
 static int32 requires_seg = FALSE;
 
+/* Flag to indicate whether the application requires phone
+ * segmentations */
+static int32 requires_phseg = FALSE;
+
 static int32 requires_ccode = FALSE;
 static int32 requires_dcode = FALSE;
 static int32 requires_pcode = FALSE;
@@ -277,6 +282,12 @@ int32
 corpus_provides_seg()
 {
     return requires_seg;
+}
+
+int32
+corpus_provides_phseg()
+{
+    return requires_phseg;
 }
 
 int32
@@ -825,6 +836,90 @@ corpus_set_seg_ext(const char *ext)
 
 /*********************************************************************
  *
+ * Function: corpus_set_phseg_dir
+ * 
+ * Description: 
+ *    Set the root directory for the phone segmentation data.
+ * 
+ * Function Inputs: 
+ *    const char *dir -
+ *	This is the root directory for the phone segmentation data.
+ *
+ * Global Inputs: 
+ *    None
+ *
+ * Return Values: 
+ *    S3_SUCCESS - Currently the only return value.
+ *
+ * Global Outputs: 
+ *    None
+ * 
+ *********************************************************************/
+
+int
+corpus_set_phseg_dir(const char *dir)
+{
+    char *tt;
+
+    requires_phseg = TRUE;
+
+    tt = strrchr(dir, ',');
+    if (tt != NULL) {
+	if (strcmp(tt+1, "FLAT") == 0) {
+	    is_flat[DATA_TYPE_PHSEG] = TRUE;
+	    *tt = '\0';
+	}
+	else if (strcmp(tt+1, "CTL") == 0) {
+	    is_flat[DATA_TYPE_PHSEG] = FALSE;
+	    *tt = '\0';
+	}
+	else {
+	    E_INFO("Assuming ',' in phseg dir is part of a pathname\n");
+	    
+	    is_flat[DATA_TYPE_PHSEG] = FALSE;
+	}
+    }
+    else {
+	is_flat[DATA_TYPE_PHSEG] = FALSE;
+    }
+
+    data_dir[DATA_TYPE_PHSEG] = dir;
+
+    return S3_SUCCESS;
+}
+
+/*********************************************************************
+ *
+ * Function: corpus_set_phseg_ext
+ * 
+ * Description: 
+ *    Set the file name extension for the phone segmentation files
+ * 
+ * Function Inputs: 
+ *    const char *ext -
+ *	This is the file name extension for the phone segmentation file names.
+ *
+ * Global Inputs: 
+ *    None
+ * 
+ * Return Values: 
+ *    S3_SUCCESS - Currently, the only return value
+ * 
+ * Global Outputs: 
+ *    None
+ * 
+ *********************************************************************/
+
+int
+corpus_set_phseg_ext(const char *ext)
+{
+    extension[DATA_TYPE_PHSEG] = ext;
+
+    return S3_SUCCESS;
+}
+
+/*********************************************************************
+ *
  * Function: corpus_set_sent_dir
  * 
  * Description: 
@@ -1204,6 +1299,13 @@ corpus_init()
     if (requires_seg &&
 	extension[DATA_TYPE_SEG] == NULL) {
 	E_ERROR("No seg extension given\n");
+
+	return S3_ERROR;
+    }
+
+    if (requires_phseg &&
+	extension[DATA_TYPE_PHSEG] == NULL) {
+	E_ERROR("No phseg extension given\n");
 
 	return S3_ERROR;
     }
@@ -1802,6 +1904,31 @@ corpus_get_seg(uint16 **seg,
 }
 
 int
+corpus_get_phseg(acmod_set_t *acmod_set,
+		 s3phseg_t **out_phseg)
+{
+    char *rel_path;
+
+    if (!requires_phseg) {
+	/* asked for seg data, but not set up to send it */
+	return S3_ERROR;
+    }
+
+    /* If control file specifies an utt ID, use it.  O/W use the path */
+    if (cur_ctl_utt_id != NULL)
+	rel_path = cur_ctl_utt_id;
+    else
+	rel_path = cur_ctl_path;
+
+    if (s3phseg_read(mk_filename(DATA_TYPE_PHSEG, rel_path),
+		     acmod_set,
+		     out_phseg) < 0)
+	return S3_ERROR;
+    
+    return S3_SUCCESS;
+}
+
+int
 corpus_get_sildel(uint32 **sf,
 		  uint32 **ef,
 		  uint32 *n_seg)
@@ -2042,13 +2169,17 @@ read_sildel(uint32 **out_sf,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.14  2006/02/23  22:21:26  eht
- * add -outputfullpath and -fullsuffixmatch arguments to bw.
+ * Revision 1.15  2006/03/27  04:08:57  dhdfu
+ * Optionally use a set of phoneme segmentations to constrain Baum-Welch
+ * training.
  * 
+ * Revision 1.14  2006/02/23 22:21:26  eht
+ * add -outputfullpath and -fullsuffixmatch arguments to bw.
+ *
  * Default behavior is to keep the existing system behavior when the
  * corpus module tries to match the transcript utterance id with the
  * partial path contained in the control file.
- * 
+ *
  * Using -fullsuffixmatch yes will do the following:
  * 	The corpus module will check whether the string contained
  * 	inside parentheses in the transcript for the utterances
@@ -2066,12 +2197,12 @@ read_sildel(uint32 **out_sf,
  * 	In any event, the utterance will be used by bw for training.
  * 	This switch just modifies when the warning message for
  * 	mismatching control file and transcripts is generated.
- * 
+ *
  * Using -outputfullpath yes will output the entire subpath from the
  * control file in the log output of bw rather than just the final path
  * component.  This allows for simpler automatic processing of the output
  * of bw.
- * 
+ *
  * Revision 1.13  2005/11/17 16:28:07  dhdfu
  * corpus_reset() not working as advertised
  *

@@ -374,6 +374,11 @@ main_initialize(int argc,
 	corpus_set_sildel_filename((const char *)cmd_ln_access("-sildelfn"));
     }
 
+    if (cmd_ln_access("-phsegdir")) {
+	    corpus_set_phseg_dir(cmd_ln_access("-phsegdir"));
+	    corpus_set_phseg_ext(cmd_ln_access("-phsegext"));
+    }
+
     if (cmd_ln_access("-accumdir")) {
 	char fn[MAXPATHLEN+1];
 	FILE *fp;
@@ -530,6 +535,8 @@ main_reestimate(model_inventory_t *inv,
     uint32 *del_sf;
     uint32 *del_ef;
     uint32 n_del;
+
+    s3phseg_t *phseg = NULL;
 
     uint32 maxuttlen;
     uint32 n_frame_skipped = 0;
@@ -729,6 +736,9 @@ main_reestimate(model_inventory_t *inv,
 	/* Get the transcript */
 	corpus_get_sent(&trans);
 
+	/* Get the phone segmentation */
+	corpus_get_phseg(inv->acmod_set, &phseg);
+
 	if (upd_timer)
 	    timing_start(upd_timer);
 	if (!viterbi) {
@@ -747,6 +757,7 @@ main_reestimate(model_inventory_t *inv,
 				  a_beam,
 				  b_beam,
 				  spthresh,
+				  phseg,
 				  mixw_reest,
 				  tmat_reest,
 				  mean_reest,
@@ -992,9 +1003,13 @@ int main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.15  2006/03/20  19:05:46  dhdfu
- * Add missing newlines
+ * Revision 1.16  2006/03/27  04:08:57  dhdfu
+ * Optionally use a set of phoneme segmentations to constrain Baum-Welch
+ * training.
  * 
+ * Revision 1.15  2006/03/20 19:05:46  dhdfu
+ * Add missing newlines
+ *
  * Revision 1.14  2006/02/24 15:50:23  eht
  * Output an informational message to the log that collecting profiling
  * information about bw consumes significant CPU resources and suggest

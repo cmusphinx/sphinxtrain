@@ -46,6 +46,7 @@
 #define ACHK 10
 
 #include <s3/model_inventory.h>
+#include <s3/s3phseg_io.h>
 #include <s3/vector.h>
 #include <s3/ckd_alloc.h>
 #include <s3/gauden.h>
@@ -130,6 +131,10 @@
  *		A pruning beam to apply to the evaluation of the alpha
  *		variable.
  *
+ *      s3phseg_t *phseg -
+ *              An optional phone segmentation to use to constrain the
+ *              forward lattice.
+ *
  * Global Inputs: 
  * 	None
  *
@@ -165,7 +170,8 @@ forward(float64 **active_alpha,
 	state_t *state_seq,
 	uint32 n_state,
 	model_inventory_t *inv,
-	float64 beam)
+	float64 beam,
+	s3phseg_t *phseg)
 {
     uint32 i, j, s, t, u;
     uint32 l_cb;
@@ -195,6 +201,8 @@ forward(float64 **active_alpha,
     uint32 *acbflag;
     timing_t *gau_timer = NULL;
     float64 *outprob;
+    /* Can we prune this frame using phseg? */
+    int can_prune_phseg;
     
     /* Get the CPU timer associated with mixture Gaussian evaluation */
     gau_timer = timing_get("gau");
@@ -236,7 +244,7 @@ forward(float64 **active_alpha,
     n_active_l_cb = 0;
     n_sum_active = 0;
     n_next_active = 0;
-    
+
     /* Initialize the active state map such that all states are inactive */
     for (i = 0; i < n_state; i++)
 	amap[i] = INACTIVE;
@@ -302,6 +310,13 @@ forward(float64 **active_alpha,
 
     /* Compute scaled alpha over all remaining time in the utterance */
     for (t = 1; t < n_obs; t++) {
+
+	/* Find active phone for this timepoint. */
+	if (phseg) {
+	    /* Move the pointer forward if necessary. */
+	    if (t > phseg->ef)
+		phseg = phseg->next;
+	}
 
 	/* clear the active density flag array */
 	for (i = 0; i < n_active_l_cb; i++) {
@@ -505,14 +520,38 @@ forward(float64 **active_alpha,
 /* pthresh = 0.0; */
 /* END DEBUG */
 
+	/* Determine if phone segmentation-based pruning would leave
+	 * us with an empty active list (that would be bad!) */
+	can_prune_phseg = 0;
+	if (phseg) {
+	    for (s = 0; s < n_next_active; ++s) 
+		if (state_seq[next_active[s]].phn == phseg->phone)
+		    break;
+	    can_prune_phseg = !(s == n_next_active);
+#if FORWARD_DEBUG
+	    if (!can_prune_phseg) {
+		printf("Will not apply phone-based pruning at timepoint %d\n", t);
+	    }
+#endif
+	}
 	/* Produce the scaled alpha values and active state list for
 	 * unpruned alphas */
 	active_astate[t] = ckd_calloc(n_next_active, sizeof(uint32));
 	for (s = 0, n_active = 0; s < n_next_active; s++) {
-	    if (active_alpha[t][s] > pthresh) {
-		active_alpha[t][n_active] = active_alpha[t][s] * scale[t];
-		active[n_active] = active_astate[t][n_active] = next_active[s];
-		n_active++;
+	    /* If we have a phone segmentation, use it instead of the beam. */
+	    if (phseg && can_prune_phseg) {
+		if (state_seq[next_active[s]].phn == phseg->phone) {
+		    active_alpha[t][n_active] = active_alpha[t][s] * scale[t];
+		    active[n_active] = active_astate[t][n_active] = next_active[s];
+		    n_active++;
+		}
+	    }
+	    else {
+		if (active_alpha[t][s] > pthresh) {
+		    active_alpha[t][n_active] = active_alpha[t][s] * scale[t];
+		    active[n_active] = active_astate[t][n_active] = next_active[s];
+		    n_active++;
+		}
 	    }
 	    assert(amap[next_active[s]] != INACTIVE);
 	    amap[next_active[s]] = INACTIVE; /* reset the mapping for next frame */
@@ -545,9 +584,13 @@ cleanup:
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.6  2006/03/27  04:08:57  dhdfu
+ * Optionally use a set of phoneme segmentations to constrain Baum-Welch
+ * training.
  * 
+ * Revision 1.5  2004/07/21 18:30:33  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.4  2004/06/17 19:17:14  arthchan2003
  * Code Update for silence deletion and standardize the name for command -line arguments
  *

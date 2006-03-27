@@ -609,6 +609,7 @@ state_seq_make(uint32 *n_state,
 	    t_state = defn[phn].state[j];
 	    t_ci_state = defn[ci_phn].state[j];
 
+	    state[k].phn = phn;
 	    state[k].mixw = t_state;
 	    state[k].cb = mdef->cb[t_state];
 	    state[k].ci_mixw = t_ci_state;
@@ -651,6 +652,7 @@ state_seq_make(uint32 *n_state,
 
 	state[k].tmat = tmat;
 	state[k].m_state = j;
+	state[k].phn = phn;
 
 	set_prior_state(state, k, n_prior, prior_state, prior_tprob, &p);
 	set_next_state(state, k, n_next, next_state, next_tprob, &n);
@@ -708,9 +710,13 @@ state_seq_make(uint32 *n_state,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.7  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.8  2006/03/27  04:08:57  dhdfu
+ * Optionally use a set of phoneme segmentations to constrain Baum-Welch
+ * training.
  * 
+ * Revision 1.7  2004/07/21 18:05:40  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.6  2004/07/17 08:00:23  arthchan2003
  * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
  *

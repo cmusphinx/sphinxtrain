@@ -63,7 +63,7 @@ H=  \
   s3mixw_io.h s3regmat_io.h s3tmat_io.h s3ts2cb_io.h segdmp.h silcomp.h \
   state.h state_param_def_io.h state_seq.h swap.h tmat_param_io.h topo_read.h \
   ts2cb.h two_class.h uttfile.h vector.h was_added.h \
-  array_alloc.h timer.h
+  array_alloc.h timer.h s3phseg_io.h
 
 FILES = Makefile $(H)
 

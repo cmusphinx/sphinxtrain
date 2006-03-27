@@ -115,6 +115,9 @@
  *		A boolean value to indicate whether variances
  *		should be reestimated.
  * 
+ *      s3phseg_t *phseg -
+ *              An optional phone segmentation to use to constrain the
+ *              forward lattice.
  * Global Inputs: 
  *	None
  * 
@@ -137,6 +140,7 @@ baum_welch_update(float64 *log_forw_prob,
 		  float64 a_beam,
 		  float64 b_beam,
 		  float32 spthresh,
+		  s3phseg_t *phseg,
 		  int32 mixw_reest,
 		  int32 tmat_reest,
 		  int32 mean_reest,
@@ -186,7 +190,7 @@ baum_welch_update(float64 *log_forw_prob,
  */
     ret = forward(active_alpha, active_astate, n_active_astate, scale, dscale,
 		  feature, n_obs, state, n_state,
-		  inv, a_beam);
+		  inv, a_beam, phseg);
 
 #if BW_DEBUG
     for (i=0 ; i < n_obs;i++){
@@ -306,9 +310,13 @@ error:
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.8  2005/03/30  16:43:46  egouvea
- * Commented E_INFO calls that seemed to be there for debug/trace purpose only, not for a user
+ * Revision 1.9  2006/03/27  04:08:57  dhdfu
+ * Optionally use a set of phoneme segmentations to constrain Baum-Welch
+ * training.
  * 
+ * Revision 1.8  2005/03/30 16:43:46  egouvea
+ * Commented E_INFO calls that seemed to be there for debug/trace purpose only, not for a user
+ *
  * Revision 1.7  2004/07/21 18:30:33  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

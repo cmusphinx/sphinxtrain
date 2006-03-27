@@ -63,6 +63,7 @@ SRCS = \
   s3regmat_io.c \
   s3tmat_io.c \
   s3ts2cb_io.c \
+  s3phseg_io.c \
   segdmp.c \
   share_ctl.c \
   swap.c \

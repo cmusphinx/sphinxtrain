@@ -445,6 +445,18 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_DEFAULT,
 	  "State segmentation file root directory" },
 	
+	{ "-phsegext",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  "phseg",
+	  "Phone segmentation file extension" },
+
+	{ "-phsegdir",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Phone segmentation file root directory" },
+
 	{ "-sentdir",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
@@ -682,13 +694,17 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.13  2006/02/23  22:21:29  eht
- * add -outputfullpath and -fullsuffixmatch arguments to bw.
+ * Revision 1.14  2006/03/27  04:08:57  dhdfu
+ * Optionally use a set of phoneme segmentations to constrain Baum-Welch
+ * training.
  * 
+ * Revision 1.13  2006/02/23 22:21:29  eht
+ * add -outputfullpath and -fullsuffixmatch arguments to bw.
+ *
  * Default behavior is to keep the existing system behavior when the
  * corpus module tries to match the transcript utterance id with the
  * partial path contained in the control file.
- * 
+ *
  * Using -fullsuffixmatch yes will do the following:
  * 	The corpus module will check whether the string contained
  * 	inside parentheses in the transcript for the utterances
@@ -706,12 +722,12 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
  * 	In any event, the utterance will be used by bw for training.
  * 	This switch just modifies when the warning message for
  * 	mismatching control file and transcripts is generated.
- * 
+ *
  * Using -outputfullpath yes will output the entire subpath from the
  * control file in the log output of bw rather than just the final path
  * component.  This allows for simpler automatic processing of the output
  * of bw.
- * 
+ *
  * Revision 1.12  2005/09/15 19:36:00  dhdfu
  * Add (as yet untested) support for letter-to-sound rules (from CMU
  * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only

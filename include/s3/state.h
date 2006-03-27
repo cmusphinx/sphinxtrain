@@ -90,6 +90,7 @@ typedef struct {
     float32 *tacc;	/* local transition observation count accumulators */
 
     uint32 bp;		/* backpointer index (for Viterbi algorithm) */
+    uint32 phn;		/* phone ID (for constrained Baum-Welch) */
 } state_t;
 
 #endif /* STATE_H */ 
@@ -99,9 +100,13 @@ typedef struct {
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  17:46:10  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2006/03/27  04:08:57  dhdfu
+ * Optionally use a set of phoneme segmentations to constrain Baum-Welch
+ * training.
  * 
+ * Revision 1.4  2004/07/21 17:46:10  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:30  awb
  * *** empty log message ***
  *
