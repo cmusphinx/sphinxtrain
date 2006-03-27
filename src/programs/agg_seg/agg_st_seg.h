@@ -54,7 +54,7 @@ int
 agg_st_seg(model_def_t *mdef,
 	   lexicon_t *lex,
 	   uint32 *ts2cb,
-	   uint32 *cb2mllr,
+	   int32 *cb2mllr,
 	   segdmp_type_t type);
 
 #endif /* AGG_ST_SEG_H */ 
@@ -63,9 +63,12 @@ agg_st_seg(model_def_t *mdef,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2006/03/27  03:30:14  dhdfu
+ * Fix some minor signedness issues to keep the compiler happy
  * 
+ * Revision 1.4  2004/07/21 18:30:32  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

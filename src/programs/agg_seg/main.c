@@ -80,7 +80,7 @@ int
 initialize(lexicon_t **out_lex,
 	   model_def_t **out_mdef,
 	   uint32 **out_ts2cb,
-	   uint32 **out_cb2mllr,
+	   int32 **out_cb2mllr,
 	   segdmp_type_t *out_dmp_type)
 {
     model_def_t *mdef;
@@ -239,7 +239,7 @@ initialize(lexicon_t **out_lex,
 	}
 	
 	if (strcmp(fn, ".1cls.") == 0) {
-	    *out_cb2mllr = (uint32 *)ckd_calloc(n_cb, sizeof(uint32));
+	    *out_cb2mllr = (int32 *)ckd_calloc(n_cb, sizeof(int32));
 	    n_map = n_cb;
 	}
 	else if (s3cb2mllr_read((const char *)cmd_ln_access("-cb2mllrfn"),
@@ -405,7 +405,8 @@ int main(int argc, char *argv[])
     segdmp_type_t dmp_type;
     uint32 *n_seg;
     uint32 **n_frame;
-    uint32 *ts2cb, *cb2mllr;
+    uint32 *ts2cb;
+    int32 *cb2mllr;
     /*eov*/
 
     parse_cmd_ln(argc, argv);
@@ -482,9 +483,12 @@ int main(int argc, char *argv[])
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/07/21  18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ * Revision 1.5  2006/03/27  03:30:14  dhdfu
+ * Fix some minor signedness issues to keep the compiler happy
  * 
+ * Revision 1.4  2004/07/21 18:30:32  egouvea
+ * Changed the license terms to make it the same as sphinx2 and sphinx3.
+ *
  * Revision 1.3  2001/04/05 20:02:31  awb
  * *** empty log message ***
  *

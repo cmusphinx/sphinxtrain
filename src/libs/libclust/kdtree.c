@@ -379,14 +379,14 @@ write_kd_trees(const char *outfile, kd_tree_node_t **trees, uint32 n_trees)
 }
 
 static int32
-read_tree_int(FILE *fp, const char *name, int32 *out, int32 optional)
+read_tree_int(FILE *fp, const char *name, uint32 *out, int32 optional)
 {
 	char line[256];
 	int n;
 
-	n = fscanf(fp, "%255s %d", line, out);
+	n = fscanf(fp, "%255s %u", line, out);
 	if ((optional == 0 && n != 2) || strcmp(line, name)) {
-		E_ERROR("%s not found: %d %s %d\n", name, n, line, out);
+		E_ERROR("%s not found: %d %s %u\n", name, n, line, out);
 		return -1;
 	}
 	return n;
