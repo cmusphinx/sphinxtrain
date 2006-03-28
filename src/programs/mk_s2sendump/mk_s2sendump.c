@@ -628,7 +628,7 @@ int main (int32 argc, char **argv)
 /*    mgaumap = (char *)cmd_ln_access("-mgaumap"); */
     mgaumap = ".semi.";
     senfile = (char *)cmd_ln_access("-mixwfn");
-    wtflr = (float64)(*(float32 *)cmd_ln_access("-tpfloor"));
+    wtflr = (float64)(*(float32 *)cmd_ln_access("-mwfloor"));
     outfile = (char *)cmd_ln_access("-sendumpfn");
     
     logs3_init ((float64) 1.0001);

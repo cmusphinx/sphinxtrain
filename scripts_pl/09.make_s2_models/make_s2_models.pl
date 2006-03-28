@@ -137,7 +137,7 @@ exit ($return_value != 0) if ($return_value);
 if ($CFG_HMM_TYPE eq ".semi.") {
   &ST_Log ("    Make senone file\n");
   &ST_HTML_Print ("\t" . &ST_FormatURL("$logfile_senone", "Log File") . " ");
-  $cmd = "\"$CFG_BIN_DIR/mk_s2sendump\" -moddeffn \"$s3mdef\" -mixwfn \"$s3mixw\" -tpfloor 0.0000001 -feattype s2_4x -sendumpfn \"$s2dir/sendump\"";
+  $cmd = "\"$CFG_BIN_DIR/mk_s2sendump\" -moddeffn \"$s3mdef\" -mixwfn \"$s3mixw\" -mwfloor 0.0000001 -feattype s2_4x -sendumpfn \"$s2dir/sendump\"";
   $return_value = RunTool($cmd, $logfile_senone, 0);
   #&ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
   exit ($return_value != 0) if ($return_value);
