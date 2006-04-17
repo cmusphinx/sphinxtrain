@@ -69,6 +69,13 @@ corpus_set_seg_dir(const char *root);
 int
 corpus_set_seg_ext(const char *ext);
 
+/* phone seg configuration functions */
+int
+corpus_set_phseg_dir(const char *dir);
+
+int
+corpus_set_phseg_ext(const char *ext);
+
 /* sent file configuration functions */
 int
 corpus_set_sent_dir(const char *root);
@@ -100,6 +107,9 @@ corpus_set_ddcode_dir(const char *root);
 
 int
 corpus_set_ddcode_ext(const char *ext);
+
+void
+corpus_set_full_suffix_match(uint32 state);
 
 /* Corpus LSN file configuration functions */
 int
@@ -227,10 +237,14 @@ corpus_get_ddcode(unsigned char **ddcode, uint32 *n_frame);
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2006/03/27  04:08:57  dhdfu
+ * Revision 1.6  2006/04/17  18:34:46  egouvea
+ * Added s3phseg_io to the MS Dev .dsp file. Added missing function
+ * prototypes to corpus.h.
+ * 
+ * Revision 1.5  2006/03/27 04:08:57  dhdfu
  * Optionally use a set of phoneme segmentations to constrain Baum-Welch
  * training.
- * 
+ *
  * Revision 1.4  2004/07/21 17:46:09  egouvea
  * Changed the license terms to make it the same as sphinx2 and sphinx3.
  *

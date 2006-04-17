@@ -141,6 +141,10 @@ SOURCE=..\..\..\..\src\libs\libio\s3mixw_io.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\src\libs\libio\s3phseg_io.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\src\libs\libio\s3regmat_io.c
 # End Source File
 # Begin Source File
