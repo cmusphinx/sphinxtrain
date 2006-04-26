@@ -42,7 +42,7 @@
 # ====================================================================
 TOP=.
 DIRNAME=.
-BUILD_DIRS = bin scripts_pl include src 
+BUILD_DIRS = scripts_pl include src 
 ALL_DIRS=config etc lib doc $(BUILD_DIRS)
 CONFIG=config.guess config.sub configure configure.in \
        install-sh missing mkinstalldirs
