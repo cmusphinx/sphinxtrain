@@ -43,7 +43,7 @@
 TOP=.
 DIRNAME=.
 BUILD_DIRS = scripts_pl include src 
-ALL_DIRS=config etc lib doc $(BUILD_DIRS)
+ALL_DIRS=config etc doc $(BUILD_DIRS)
 CONFIG=config.guess config.sub configure configure.in \
        install-sh missing mkinstalldirs
 FILES = Makefile README COPYING $(CONFIG)
