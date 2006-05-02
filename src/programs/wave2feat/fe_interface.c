@@ -340,8 +340,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
       
       
       /* assign samples which don't fill an entire frame to FE overflow buffer for use on next pass */
-      if (spbuf_len < nsamps)   {
-        offset = ((frame_count)*FE->FRAME_SHIFT);
+      if ((offset = ((frame_count)*FE->FRAME_SHIFT)) < nsamps) {
         memcpy(FE->OVERFLOW_SAMPS,tmp_spch+offset,(nsamps-offset)*sizeof(int16));
         FE->NUM_OVERFLOW_SAMPS = nsamps-offset;
         FE->PRIOR = tmp_spch[offset-1];

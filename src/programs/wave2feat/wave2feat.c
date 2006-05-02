@@ -612,9 +612,11 @@ int32 fe_count_frames(fe_t *FE, int32 nsamps, int32 count_partial_frames)
     for (frame_start=0;frame_start+FE->FRAME_SIZE<=nsamps;
     frame_start+=FE->FRAME_SHIFT)
         frame_count++;
-   
+
+    /* dhuggins@cs, 2006-04-25: Update this to match the updated
+     * partial frame condition in fe_process_utt(). */
     if (count_partial_frames){
-        if ((frame_count-1)*FE->FRAME_SHIFT+FE->FRAME_SIZE < nsamps)
+        if (frame_count*FE->FRAME_SHIFT < nsamps)
             frame_count++;
     }
     
