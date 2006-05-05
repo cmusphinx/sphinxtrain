@@ -262,8 +262,10 @@ baum_welch_update(float64 *log_forw_prob,
     assert(i < n_active_astate[n_obs-1]);
 
     /* Calculate log[ p( O | \lambda ) ] */
+    assert(active_alpha[n_obs-1][i] > 0);
     log_fp = log(active_alpha[n_obs-1][i]);
     for (t = 0; t < n_obs; t++) {
+	assert(scale[t] > 0);
 	log_fp -= log(scale[t]);
         for (j = 0; j < inv->gauden->n_feat; j++) {
 	    log_fp += dscale[t][j];

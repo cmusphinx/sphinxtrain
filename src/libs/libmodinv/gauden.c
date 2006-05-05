@@ -298,8 +298,10 @@ diag_norm(vector_t var,
 
     log_det = 0;
 
-    for (i = 0; i < len; i++)
+    for (i = 0; i < len; i++) {
+	assert(var[i] > 0);
 	log_det += log(var[i]);
+    }
 
     p = len * log(2.0 * M_PI);
 
@@ -1156,6 +1158,9 @@ gauden_scale_densities_fwd(float64 ***den,		/* density array for a mixture Gauss
     return max_den;
 }
 
+/* log(MIN_IEEE_NORM_POS_FLOAT64) */
+#define MINUS_LOG_INFINITY -708.407751281802
+
 int
 gauden_scale_densities_bwd(float64 ***den,		/* density array for a mixture Gaussian */
 			   uint32 ***den_idx,
@@ -1176,10 +1181,15 @@ gauden_scale_densities_bwd(float64 ***den,		/* density array for a mixture Gauss
     for (i = 0; i < n_cb; i++) {
 	c = cb[i];
 	for (j = 0; j < g->n_feat; j++) {
+	    if (scl[j] <= MINUS_LOG_INFINITY) {
+		E_WARN("Scaling factor too small: %f\n", scl[j]);
+		scl[k] = MINUS_LOG_INFINITY + MAX_LOG_DEN;
+	    }
 /* BHIKSHA converged g->n_density to g->n_top; possible bugfix, APR 6  98 */
 	    for (k = 0; k < g->n_top; k++) {
 /* BHIKSHA converged g->n_density to g->n_top; possible bugfix, END */
 		den[c][j][k] = EXPF(den[c][j][k] - scl[j]);
+		assert(finite(den[c][j][k]));
 	    }
 	}
     }
