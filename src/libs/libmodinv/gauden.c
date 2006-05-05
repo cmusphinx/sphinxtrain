@@ -1183,7 +1183,7 @@ gauden_scale_densities_bwd(float64 ***den,		/* density array for a mixture Gauss
 	for (j = 0; j < g->n_feat; j++) {
 	    if (scl[j] <= MINUS_LOG_INFINITY) {
 		E_WARN("Scaling factor too small: %f\n", scl[j]);
-		scl[k] = MINUS_LOG_INFINITY + MAX_LOG_DEN;
+		scl[j] = MINUS_LOG_INFINITY + MAX_LOG_DEN;
 	    }
 /* BHIKSHA converged g->n_density to g->n_top; possible bugfix, APR 6  98 */
 	    for (k = 0; k < g->n_top; k++) {
