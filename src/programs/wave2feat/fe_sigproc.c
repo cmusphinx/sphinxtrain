@@ -286,52 +286,27 @@ int32 fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
 
 void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32 fftsize)
 {
-    int32  j,wrap;
-    complex  *FFT, *IN;
-    
-    /*fftsize defined at top of file*/
-    FFT = (complex *) calloc(fftsize,sizeof(complex));
-    IN = (complex *) calloc(fftsize,sizeof(complex));
-    
-    if (FFT==NULL || IN==NULL){
-        fprintf(stderr,"memory alloc failed in fe_spec_magnitude()\n...exiting\n");
-        exit(0);
-    }
-        
-    if (data_len > fftsize)  /*aliasing */
-    {
-        
-        for (j=0; j<fftsize;j++) {
-            IN[j].r = data[j];
-            IN[j].i = 0.0;
-        }
-        for (wrap=0; j<data_len; wrap++,j++) {
-            IN[wrap].r += data[j];
-            IN[wrap].i += 0.0;
-        }
-    }
-    else
-    {
-        for (j=0; j < data_len; j++){
-                IN[j].r = data[j];
-                IN[j].i = 0.0;
-        }
-        for ( ;j<fftsize;j++) {  /*pad zeros if necessary */
-                IN[j].r = 0.0;
-                IN[j].i = 0.0;
-        }
-    }
-    
+    int32 j, wrap;
+    int32 fftorder;
+    float64 *fft;
 
-    fe_fft(IN,FFT,fftsize,FORWARD_FFT);
+    if (NULL == (fft = (float64 *) calloc(fftsize,sizeof(float64)))) {
+        E_FATAL("memory alloc failed in fe_spec_magnitude()\n...exiting\n");
+    }
+    memcpy(fft, data, data_len*sizeof(float64));
+    if (data_len > fftsize) { /*aliasing */
+        E_WARN("Aliasing. Consider using fft size (%d) < buffer size (%d)\n", fftsize, data_len);
+        for (wrap = 0, j = fftsize; j < data_len; wrap++,j++)
+            fft[wrap] += data[j];
+    }
+    for (fftorder = 0, j = fftsize; j>1; fftorder++, j>>= 1)
+            ;
+    fe_fft_real(fft, fftsize, fftorder);
     
     for (j=0; j <= fftsize/2; j++)
-    {   
-        spec[j] = FFT[j].r*FFT[j].r + FFT[j].i*FFT[j].i;
-    }
+        spec[j] = fft[j]*fft[j] + fft[fftsize-j]*fft[fftsize-j];
 
-    free(FFT);
-    free(IN);
+    free(fft);
     return;
 }
 
@@ -396,6 +371,7 @@ int32 fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
     return returnValue;
 }
 
+/* This function has been replaced by fe_fft_real, and is no longer used. */
 int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert)
 {
   int32
@@ -505,6 +481,85 @@ int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert)
   return(0);
 }
 
+/* Translated from the FORTRAN (obviously) from "Real-Valued Fast
+ * Fourier Transform Algorithms" by Henrik V. Sorensen et al., IEEE
+ * Transactions on Acoustics, Speech, and Signal Processing, vol. 35,
+ * no.6.  Optimized to use a static array of sine/cosines.
+ */
+int32 fe_fft_real(float64 *x, int n, int m)
+{
+        int32 i, j, k, n1, n2, n4, i1, i2, i3, i4;
+        float64 t1, t2, xt, cc, ss;
+        static float64 *ccc, *sss;
+        static int32 lastn;
+
+        if (ccc == NULL || n != lastn) {
+                free(ccc);
+                free(sss);
+                ccc = calloc(n/4, sizeof(*ccc));
+                sss = calloc(n/4, sizeof(*sss));
+                for (i = 0; i < n/4; ++i) {
+                        float64 a;
+
+                        a = 2*M_PI*i/n;
+                        
+                        ccc[i] = cos(a);
+                        sss[i] = sin(a);
+                }
+                lastn = n;
+        }
+
+        j = 0;
+        n1 = n-1;
+        for (i = 0; i < n1; ++i) {
+                if (i < j) {
+                        xt = x[j];
+                        x[j] = x[i];
+                        x[i] = xt;
+                }
+                k = n/2;
+                while (k <= j) {
+                        j -= k;
+                        k /= 2;
+                }
+                j += k;
+        }
+        for (i = 0; i < n; i += 2) {
+                xt = x[i];
+                x[i] = xt + x[i+1];
+                x[i+1] = xt - x[i+1];
+        }
+        n2 = 0;
+        for (k = 1; k < m; ++k) {
+                n4 = n2;
+                n2 = n4+1;
+                n1 = n2+1;
+                for (i = 0; i < n; i += (1<<n1)) {
+                        xt = x[i];
+                        x[i] = xt + x[i+(1<<n2)];
+                        x[i+(1<<n2)] = xt - x[i+(1<<n2)];
+                        x[i+(1<<n4)+(1<<n2)] = -x[i+(1<<n4)+(1<<n2)];
+                        for (j = 1; j < (1<<n4); ++j) {
+                                i1 = i + j;
+                                i2 = i - j + (1<<n2);
+                                i3 = i + j + (1<<n2);
+                                i4 = i - j + (1<<n1);
+
+                                /* a = 2*M_PI * j / n1; */
+                                /* cc = cos(a); ss = sin(a); */
+                                cc = ccc[j<<(m-n1)];
+                                ss = sss[j<<(m-n1)];
+                                t1 = x[i3] * cc + x[i4] * ss;
+                                t2 = x[i3] * ss - x[i4] * cc;
+                                x[i4] = x[i2] - t2;
+                                x[i3] = -x[i2] - t2;
+                                x[i2] = x[i1] - t1;
+                                x[i1] = x[i1] + t1;
+                        }
+                }
+        }
+        return 0;
+}
 
 
 char **fe_create_2d(int32 d1, int32 d2, int32 elem_size)
@@ -632,7 +687,7 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
         else if (MEL->sampling_rate == NB_SAMPLING_RATE)
             MEL->num_filters = DEFAULT_NB_NUM_FILTERS;
         else {
-            E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -nfilt\n");
+            E_FATAL("Default value not defined for this sampling rate\nPlease explicitly set -nfilt\n");
         }
     }
 
@@ -644,7 +699,7 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
         else if (MEL->sampling_rate == NB_SAMPLING_RATE)
             MEL->upper_filt_freq = (float32) DEFAULT_NB_UPPER_FILT_FREQ;
         else {
-            E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -upperf\n");
+            E_FATAL("Default value not defined for this sampling rate\nPlease explicitly set -upperf\n");
         }
     }
 

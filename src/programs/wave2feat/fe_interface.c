@@ -86,6 +86,27 @@ void fe_init_params(param_t *P)
 
 
 /*********************************************************************
+   FUNCTION:   fe_init_dither
+   PARAMETERS: int32 seed
+   RETURNS:    void
+   DESCRIPTION: Seed the random number generator used by dither. The
+   random number generator is used to add dither to the audio file. If
+   a seed less than zero is used, then an internal mechanism is used
+   to seed the generator.
+**********************************************************************/
+void fe_init_dither(int32 seed)
+{
+    if (seed < 0) {
+        E_INFO("You are using the internal mechanism to generate the seed.");
+        srand48((long)time(0));
+    } else {
+        E_INFO("You are using %d as the seed.", seed);
+        srand48(seed);
+    }
+}
+
+
+/*********************************************************************
    FUNCTION:   fe_init
    PARAMETERS: param_t *P
    RETURNS:    pointer to a new front end or NULL if failure.
@@ -123,11 +144,7 @@ fe_t *fe_init(param_t const *P)
     }
 
     if (FE->dither) {
-      if (FE->seed < 0) {
-        srand48((long)time(0));
-      } else {
-        srand48((long)FE->seed);
-      }
+        fe_init_dither(FE->seed);
     }
 
     /* establish buffers for overflow samps and hamming window */
@@ -214,7 +231,7 @@ int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps, float32 *fr_cep)
     /* pre-emphasis if needed,convert from int16 to float64 */
     if (FE->PRE_EMPHASIS_ALPHA != 0.0){
       fe_pre_emphasis(spch, spbuf, spbuf_len, FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
-      FE->PRIOR = spch[FE->FRAME_SHIFT - 1];    // Z.A.B for frame by frame analysis  
+      FE->PRIOR = spch[FE->FRAME_SHIFT - 1];    /* Z.A.B for frame by frame analysis  */
       } else{
         fe_short_to_double(spch, spbuf, spbuf_len);
       }
@@ -287,7 +304,6 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
 
 
       if ((cep = (float32 **)fe_create_2d(frame_count+1,FE->FEATURE_DIMENSION,sizeof(float32))) == NULL) {
-        /* typecast to make the compiler happy - EBG */
         E_WARN("memory alloc for cep failed in fe_process_utt()\n\tfe_create_2d(%ld,%d,%d)\n...exiting\n",
                 (long int) (frame_count+1), FE->FEATURE_DIMENSION, sizeof(float32)); 
         return (FE_MEM_ALLOC_ERROR);

@@ -385,7 +385,7 @@ void fe_validate_parameters(param_t *P)
 {
     
     if ((P->is_batch) && (P->is_single)) {
-        E_FATAL("You cannot define an input file and a control file\n");
+        E_FATAL("You cannot define an input file and a control file at the same time.\n");
     }
     
     if (P->wavfile == NULL && P->wavdir == NULL){
@@ -610,9 +610,9 @@ int32 fe_count_frames(fe_t *FE, int32 nsamps, int32 count_partial_frames)
     int32 frame_start,frame_count = 0;
     
     for (frame_start=0;frame_start+FE->FRAME_SIZE<=nsamps;
-    frame_start+=FE->FRAME_SHIFT)
+         frame_start+=FE->FRAME_SHIFT) {
         frame_count++;
-
+    }
     /* dhuggins@cs, 2006-04-25: Update this to match the updated
      * partial frame condition in fe_process_utt(). */
     if (count_partial_frames){
@@ -675,7 +675,7 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
         */
     }
     else if (P->input_format == MSWAV){
-        P->input_endian = LITTLE; // Default for MS WAV riff files
+        P->input_endian = LITTLE; /* Default for MS WAV riff files*/
     }
     
     
@@ -713,8 +713,8 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
                 return (FE_INPUT_FILE_READ_ERROR);
             }
             /* Check header */
-            if (strncmp(hdr_buf->rifftag,"RIFF",4)!=0 ||
-                strncmp(hdr_buf->wavefmttag,"WAVEfmt",7)!=0) {
+            if (strncmp(hdr_buf->rifftag, "RIFF", 4)!=0 ||
+                strncmp(hdr_buf->wavefmttag, "WAVEfmt", 7)!=0) {
                 E_ERROR("Error in mswav file header\n");
                 return (FE_INPUT_FILE_READ_ERROR);
             }
@@ -747,7 +747,7 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
                     }
                 }
             }
-            if (P->input_endian!=P->machine_endian) { // If machine is Big Endian
+            if (P->input_endian!=P->machine_endian) { /* If machine is Big Endian*/
                 hdr_buf->datalength = SWAPL(&(hdr_buf->datalength));
                 hdr_buf->data_format = SWAPW(&(hdr_buf->data_format));
                 hdr_buf->numchannels = SWAPW(&(hdr_buf->numchannels));

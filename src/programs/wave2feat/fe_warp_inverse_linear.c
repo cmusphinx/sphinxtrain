@@ -90,6 +90,7 @@ fe_warp_inverse_linear_set_parameters(char *param_str, float sampling_rate)
 {
      char *tok;
      char *seps = " \t";
+     char temp_param_str[256];
      int param_index = 0;
 
      nyquist_frequency = sampling_rate / 2;
@@ -102,9 +103,10 @@ fe_warp_inverse_linear_set_parameters(char *param_str, float sampling_rate)
 	  return;
      }
      is_neutral = NO;
+     strcpy(temp_param_str, param_str);
      memset(params, 0, N_PARAM * sizeof(float));
      strcpy(p_str, param_str);
-     tok = strtok(param_str, seps);
+     tok = strtok(temp_param_str, seps);
      while (tok != NULL) {
 	  params[param_index++] = (float)atof(tok);
 	  tok = strtok(NULL, seps);

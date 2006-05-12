@@ -149,7 +149,13 @@ extern "C" {
 #define DEFAULT_SAMPLING_RATE "16000.0"
 #define DEFAULT_FRAME_RATE "100"
 #define DEFAULT_FRAME_SHIFT "160"
+/* The default below is set so that we have an integral number of
+ * samples in a frame.
+ */
 #define DEFAULT_WINDOW_LENGTH "0.025625"
+/* Since the default sampling rate is 16000, let's make the default
+ * fft size consistent with it.
+ */
 #define DEFAULT_FFT_SIZE "512"
 #define DEFAULT_FB_TYPE MEL_SCALE
 #define DEFAULT_NUM_CEPSTRA "13"
