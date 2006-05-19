@@ -73,7 +73,12 @@ parse_cmd_ln(int argc, char *argv[])
 "Example: \n\
 kdtree \n\
  -meanfn mean \n\
- -varfn variances";
+ -varfn variances\n\
+ -outfn kdtrees\n\
+ -threshold 0.2\n\
+ -depth 6\n\
+ -absolute FALSE\n\
+";
 
 
     static arg_def_t defn[] = {
