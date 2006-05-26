@@ -76,13 +76,6 @@ if ($n_current + $n_inc > $CFG_FINAL_NUM_DENSITIES) {
   exit -3;
 }
 
-# With semi continuous models, we already start with the right number
-# of components
-if ($CFG_HMM_TYPE eq ".semi.") {
-  &ST_Log ("Split Gaussian not performed for semi continuous\n");
-  exit 0;
-}
-
 $| = 1; # Turn on autoflushing
 my $scriptdir = "$CFG_SCRIPT_DIR/07.cd-schmm";
 my $logdir = "$CFG_LOG_DIR/07.cd-schmm";
@@ -135,6 +128,13 @@ copy "$src_tmatfn", "$backup_tmatfn";
 
 # The transition file won't change, so just copy it
 copy "$src_tmatfn", "$dest_tmatfn";
+
+# With semi continuous models, we already start with the right number
+# of components
+if ($CFG_HMM_TYPE eq ".semi.") {
+  &ST_Log ("Split Gaussian not performed for semi continuous\n");
+  exit 0;
+}
 
 # If $n_inc isn't at least 1, there's nothing else to do
 if ($n_inc <= 0) {

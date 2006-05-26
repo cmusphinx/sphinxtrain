@@ -171,7 +171,7 @@ if ($convg_ratio > $CFG_CONVERGENCE_RATIO && $iter >= $CFG_MAX_ITERATIONS) {
     print OUTPUT "******************************TRAINING COMPLETE*************************\n";
     $date = localtime;
     print OUTPUT "$date\n";
-    print "Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating CI training\n";
+    print "Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating CD training\n";
     close OUTPUT;
     exit (0);
 }
@@ -211,7 +211,7 @@ sub Launch_SplitGaussian() {
 	$iter = 0;
 	$n_gau = $n_gau + $n_split;
         &Launch_BW();
-      } elsif ($n_gau == $CFG_FINAL_NUM_DENSITIES) {
+      } elsif ($n_gau == $CFG_FINAL_NUM_DENSITIES || $CFG_HMM_TYPE eq ".semi.") {
 	system("perl \"$scriptdir/split_gaussians.pl\" $CFG_FINAL_NUM_DENSITIES 0");
       }
 }
