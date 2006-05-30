@@ -78,6 +78,10 @@ static float32 min_var = 1e38;	/* just a big num */
 #define EXPF	exp
 #endif
 
+#if defined (WIN32)
+#define finite(x)    _finite(x)
+#endif
+
 
 int gauden_set_min_var(float32 m)
 {

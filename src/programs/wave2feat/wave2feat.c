@@ -385,7 +385,7 @@ void fe_validate_parameters(param_t *P)
 {
     
     if ((P->is_batch) && (P->is_single)) {
-        E_FATAL("You cannot define an input file and a control file at the same time.\n");
+        E_FATAL("You cannot define an input file and a control file at the same time\n");
     }
     
     if (P->wavfile == NULL && P->wavdir == NULL){
@@ -548,22 +548,37 @@ int32 fe_build_filenames(param_t *P, char *fileroot, char **infilename, char **o
     
     if (P->is_batch){
         sprintf(cbuf,"%s","");
+        if (P->wavdir == NULL) {
+          E_FATAL("Input directory not defined\n");
+        }
         strcat(cbuf,P->wavdir);
         strcat(cbuf,"/");
+        if (fileroot == NULL) {
+          E_FATAL("File name not defined\n");
+        }
         strcat(cbuf,fileroot);
         strcat(cbuf,".");
+        if (P->wavext == NULL) {
+          E_FATAL("Input file extension not defined\n");
+        }
         strcat(cbuf,P->wavext);
         if (infilename != NULL) {
           *infilename = fe_copystr(*infilename,cbuf);
         }
         
         sprintf(cbuf,"%s","");
+        if (P->cepdir == NULL) {
+          E_FATAL("Output directory not defined\n");
+        }
         strcat(cbuf,P->cepdir);
         strcat(cbuf,"/");
         strcat(cbuf,fileroot);
         if (P->nchans>1)
             strcat(cbuf, chanlabel);
         strcat(cbuf,".");
+        if (P->cepext == NULL) {
+          E_FATAL("Output file extension not defined\n");
+        }
         strcat(cbuf,P->cepext);
         if (outfilename != NULL) {
           *outfilename = fe_copystr(*outfilename,cbuf); 
