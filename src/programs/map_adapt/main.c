@@ -400,7 +400,7 @@ map_update(void)
 	E_FATAL("Couldn't read %s\n", si_var_fn);
     check_consistency(si_var_fn, n_cb, n_cb_rd, n_stream, n_stream_rd,
 		      n_density, n_density_rd, veclen, veclen_rd);
-    ckd_free((void *)veclen_rd);
+    /* Don't free veclen_rd, as rdacc_den needs it. */
 
     /* Read and normalize SI mixture weights. */
     if (si_mixw_fn) {
@@ -465,8 +465,8 @@ map_update(void)
 	    if (n_tmat_rd != n_tmat || n_state_rd != n_state)
 		E_FATAL("Mimsatch in tranition matrices from %s\n", accum_dir[i]);
 	}
-	ckd_free((void *)veclen_rd);
     }
+    ckd_free((void *)veclen_rd);
 
     /* Allocate MAP parameters */
     map_mean  = gauden_alloc_param(n_cb, n_stream, n_density, veclen);
