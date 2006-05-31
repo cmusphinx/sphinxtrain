@@ -78,12 +78,5 @@ parse_cmd_ln(int argc, char *argv[])
  * any need to run norm to generate an ML estimate, we do that
  * internally.  Also we can now adapt mixture weights, which may or may
  * not improve accuracy slightly versus only updating the means.
- * 
- * Currently this is BROKEN for semi-continuous models (the old map_adapt
- * worked fine for them but didn't do a whole lot since it couldn't
- * update mixture weights).  But it shouldn't be hard to fix it.  Also,
- * variance updating doesn't work, and transition matrix updating isn't
- * implemented.  These might require some changes to bw.
- * 
  */
 
