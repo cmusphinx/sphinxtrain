@@ -293,7 +293,8 @@ void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32
     if (NULL == (fft = (float64 *) calloc(fftsize,sizeof(float64)))) {
         E_FATAL("memory alloc failed in fe_spec_magnitude()\n...exiting\n");
     }
-    memcpy(fft, data, data_len*sizeof(float64));
+    wrap = (datalen < fftsize) ? datalen : fftsize;
+    memcpy(fft, data, wrap*sizeof(float64));
     if (data_len > fftsize) { /*aliasing */
         E_WARN("Aliasing. Consider using fft size (%d) < buffer size (%d)\n", fftsize, data_len);
         for (wrap = 0, j = fftsize; j < data_len; wrap++,j++)
@@ -302,8 +303,10 @@ void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32
     for (fftorder = 0, j = fftsize; j>1; fftorder++, j>>= 1)
             ;
     fe_fft_real(fft, fftsize, fftorder);
-    
-    for (j=0; j <= fftsize/2; j++)
+
+    /* zero is a special case. */
+    spec[0] = fft[0]*fft[0];
+    for (j=1; j <= fftsize/2; j++)
         spec[j] = fft[j]*fft[j] + fft[fftsize-j]*fft[fftsize-j];
 
     free(fft);
@@ -490,12 +493,16 @@ int32 fe_fft_real(float64 *x, int n, int m)
 {
         int32 i, j, k, n1, n2, n4, i1, i2, i3, i4;
         float64 t1, t2, xt, cc, ss;
-        static float64 *ccc, *sss;
-        static int32 lastn;
+        static float64 *ccc = NULL, *sss = NULL;
+        static int32 lastn = 0;
 
         if (ccc == NULL || n != lastn) {
-                free(ccc);
-                free(sss);
+                if (ccc != NULL) {
+                        free(ccc);
+                }
+                if (sss != NULL) {
+                        free(sss);
+                }
                 ccc = calloc(n/4, sizeof(*ccc));
                 sss = calloc(n/4, sizeof(*sss));
                 for (i = 0; i < n/4; ++i) {
