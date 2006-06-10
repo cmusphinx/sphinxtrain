@@ -293,7 +293,7 @@ void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32
     if (NULL == (fft = (float64 *) calloc(fftsize,sizeof(float64)))) {
         E_FATAL("memory alloc failed in fe_spec_magnitude()\n...exiting\n");
     }
-    wrap = (datalen < fftsize) ? datalen : fftsize;
+    wrap = (data_len < fftsize) ? data_len : fftsize;
     memcpy(fft, data, wrap*sizeof(float64));
     if (data_len > fftsize) { /*aliasing */
         E_WARN("Aliasing. Consider using fft size (%d) < buffer size (%d)\n", fftsize, data_len);

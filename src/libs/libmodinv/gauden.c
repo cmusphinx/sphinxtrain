@@ -57,6 +57,7 @@
 #include <s3/feat.h>
 #include <s3/err.h>
 
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <assert.h>
