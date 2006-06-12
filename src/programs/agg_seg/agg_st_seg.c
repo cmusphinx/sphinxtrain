@@ -219,6 +219,7 @@ agg_st_seg(model_def_t *mdef,
 	      if (mfcc) {
 		ckd_free(mfcc[0]);
 		ckd_free(mfcc);
+		mfcc = NULL;
 	      }
 	      continue;
 	    }

@@ -207,6 +207,7 @@ agg_phn_seg(lexicon_t *lex,
 		  if (mfcc) {
 		    ckd_free(mfcc[0]);
 		    ckd_free(mfcc);
+		    mfcc = NULL;
 		  }
 		  continue;
 		}

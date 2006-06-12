@@ -156,6 +156,7 @@ agg_all_seg(segdmp_type_t type,
 	      if (mfcc) {
 		ckd_free(mfcc[0]);
 		ckd_free(mfcc);
+		mfcc = NULL;
 	      }
 	      continue;
 	    }
