@@ -53,6 +53,7 @@
 #include <s3/ckd_alloc.h>
 #include <s3/err.h>
 #include <s3/s3.h>
+#include <s3/cmd_ln.h>
 
 #include <sys_compat/misc.h>
 
@@ -79,7 +80,7 @@ agg_all_seg(segdmp_type_t type,
 {
     uint32 seq_no;
     vector_t *mfcc = NULL;
-    uint32 mfc_veclen;
+    uint32 mfc_veclen = cmd_ln_int32("-ceplen");
     uint32 n_frame;
     uint32 n_out_frame;
     uint32 blksz=0;
@@ -135,7 +136,7 @@ agg_all_seg(segdmp_type_t type,
 	    }
 
 	    /* get the MFCC data for the utterance */
-	    if (corpus_get_mfcc(&mfcc, &n_frame, &mfc_veclen) < 0) {
+	    if (corpus_get_generic_featurevec(&mfcc, &n_frame, mfc_veclen) < 0) {
 		E_FATAL("Can't read input features\n");
 	    }
 	}
