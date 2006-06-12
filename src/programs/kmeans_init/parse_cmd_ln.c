@@ -280,6 +280,12 @@ kmeans_init -gthobj single -stride 1 -ntrial 1 -minratio 0.001 \n\
 	  CMD_LN_NO_DEFAULT,
 	  "Output file for variances" },
 	
+	{ "-fullvar",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Calculate full covariance matrices" },
+	
 	{ "-method",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,

@@ -894,6 +894,58 @@ variances(uint32 ts,
     return 0;
 }
 
+int
+full_variances(uint32 ts,
+	  vector_t **mean,
+	  vector_t ***var,
+	  uint32 n_density,
+	  const uint32 *veclen,
+	  
+	  uint32 n_in_frame,
+	  uint32 n_stream,
+
+	  codew_t *label)
+{
+    uint32 *n_obs;
+    float64 term;
+    uint32 s, i, l, m, k, n_frame;
+    vector_t c;
+    
+    E_INFO("Initializing full covariances\n");
+    for (s = 0; s < n_stream; s++) {
+	n_obs = ckd_calloc(n_density, sizeof(uint32));
+
+	n_frame = setup_obs(ts, s, n_in_frame, veclen);
+
+	for (i = 0; i < n_frame; i++) {
+	    k = label[i];	/* best codeword */
+	    n_obs[k]++;
+
+	    c = get_obs(i);
+
+	    for (l = 0; l < veclen[s]; l++) {
+		for (m = 0; m < veclen[s]; m++) {
+		    var[s][k][l][m] +=
+			(c[l] - mean[s][k][l])
+			* (c[m] - mean[s][k][m]);
+		}
+	    }
+	}
+
+	for (k = 0; k < n_density; k++) {
+	    term = 1.0 / (float64)n_obs[k];
+	    for (l = 0; l < veclen[s]; l++) {
+		for (m = 0; m < veclen[s]; m++) {
+		    var[s][k][l][m] *= term;
+		}
+	    }
+	}
+
+	ckd_free(n_obs);
+    }
+    return 0;
+}
+
 static vector_t **
 alloc_gau_acc(uint32 n_stream,
 	      uint32 n_density,
@@ -1197,8 +1249,9 @@ init_state(const char *obsdmp,
 {
     uint32 blksz;
     vector_t ***mean;
-    vector_t ***var;
-    float32  ***mixw=0;
+    vector_t ***var = NULL;
+    vector_t ****fullvar = NULL;
+    float32  ***mixw = NULL;
     uint32 n_frame;
     uint32 ignore = 0;
     codew_t *label;
@@ -1210,16 +1263,21 @@ init_state(const char *obsdmp,
     timing_t *km_timer;
     timing_t *var_timer;
     timing_t *em_timer;
+    int32 full_covar;
 
     km_timer = timing_get("km");
     var_timer = timing_get("var");
     em_timer = timing_get("em");
     
     blksz = feat_blksize();
-    
+
+    full_covar = cmd_ln_int32("-fullvar");
     /* fully-continuous for now */
     mean = gauden_alloc_param(ts_cnt, n_stream, n_density, veclen);
-    var  = gauden_alloc_param(ts_cnt, n_stream, n_density, veclen);
+    if (full_covar)
+	    fullvar  = gauden_alloc_param_full(ts_cnt, n_stream, n_density, veclen);
+    else
+	    var  = gauden_alloc_param(ts_cnt, n_stream, n_density, veclen);
     if (mixwfn)
 	mixw = (float32 ***)ckd_calloc_3d(ts_cnt,
 					  n_stream,
@@ -1312,7 +1370,11 @@ init_state(const char *obsdmp,
 	 * compute the variances */
 	if (var_timer)
 	    timing_start(var_timer);
-	variances(ts, mean[i], var[i], n_density, veclen, n_frame, n_stream, label);
+	if (full_covar)
+		full_variances(ts, mean[i], fullvar[i], n_density, veclen,
+			       n_frame, n_stream, label);
+	else
+		variances(ts, mean[i], var[i], n_density, veclen, n_frame, n_stream, label);
 	if (var_timer)
 	    timing_stop(var_timer);
 
@@ -1323,7 +1385,9 @@ init_state(const char *obsdmp,
 
 	    ckd_free(label);
 
-	    if (reest == TRUE) {
+	    if (reest == TRUE && full_covar)
+		E_ERROR("EM re-estimation is not yet supported for full covariances\n");
+	    else if (reest == TRUE) {
 		if (em_timer)
 		    timing_start(em_timer);
 		/* Do iterations of EM to estimate the mixture densities */
@@ -1365,13 +1429,23 @@ init_state(const char *obsdmp,
     }
 		    
     if (varfn) {
-	if (s3gau_write(varfn,
-			(const vector_t ***)var,
-			ts_cnt,
-			n_stream,
-			n_density,
-			veclen) != S3_SUCCESS) {
-	    return S3_ERROR;
+	if (full_covar) {
+	    if (s3gau_write_full(varfn,
+				 (const vector_t ****)fullvar,
+				 ts_cnt,
+				 n_stream,
+				 n_density,
+				 veclen) != S3_SUCCESS)
+		return S3_ERROR;
+	}
+	else {
+	    if (s3gau_write(varfn,
+				 (const vector_t ***)var,
+				 ts_cnt,
+				 n_stream,
+				 n_density,
+				 veclen) != S3_SUCCESS)
+		return S3_ERROR;
 	}
     }
     else {
