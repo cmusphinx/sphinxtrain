@@ -218,6 +218,43 @@ gauden_alloc_param(uint32 n_cb,
     return param;
 }
 
+vector_t ****
+gauden_alloc_param_full(uint32 n_cb,
+			uint32 n_feat,
+			uint32 n_density,
+			const uint32 *veclen)
+{
+    uint32 blksize, maxveclen;
+    vector_t ****param;
+    float32 *buf;
+    uint32 i, j, k, l, m;
+
+    for (blksize = 0, maxveclen = 0, j = 0; j < n_feat; j++) {
+	blksize += veclen[j];
+	if (veclen[j] > maxveclen) maxveclen = veclen[j];
+    }
+
+    param = (vector_t ****) ckd_calloc_4d(n_cb, n_feat, n_density,
+					  maxveclen, sizeof(vector_t));
+    
+    buf = ckd_calloc(n_cb * n_density * blksize * blksize,
+		     sizeof(float32));
+
+    for (i = 0, m = 0; i < n_cb; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    for (k = 0; k < n_density; k++) {
+		for (l = 0; l < veclen[j]; l++) {
+		    param[i][j][k][l] = &buf[m];
+
+		    m += veclen[j];
+		}
+	    }
+	}
+    }
+    
+    return param;
+}
+
 int
 gauden_set_const_dim_mgau(gauden_t *g,
 			  uint32 n_m,

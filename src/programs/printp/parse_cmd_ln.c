@@ -75,6 +75,8 @@ Current we supoort the following formats \n\
 \n\
 -gaufn  : mean or variance \n\
 \n\
+-fullgaufn  : full covariance \n\
+\n\
 -gaucntn : sufficient statistics for mean and diagonal covariance \n\
 \n\
 -lambdafn : interpolation weight \n\
@@ -145,6 +147,12 @@ printp -lambdafn lambda ";
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
 	  "A Gaussian parameter file name (either for means or vars)"},
+
+	{ "-fullgaufn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "A full Gaussian covariance file name"},
 
 	{ "-gaucntfn",
 	  CMD_LN_STRING,

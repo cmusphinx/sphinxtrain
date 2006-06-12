@@ -149,6 +149,46 @@ print_gau(const char *fn)
 }
 
 int
+print_full_gau(const char *fn)
+{
+    vector_t ****var;
+    uint32 n_mgau;
+    uint32 n_feat;
+    const uint32 *veclen;
+    uint32 n_density;
+    uint32 i, j, k, l, m;
+
+    E_INFO("Reading %s\n",  fn);
+    
+    if (s3gau_read_full(fn,
+			&var,
+			&n_mgau,
+			&n_feat,
+			&n_density,
+			&veclen) != S3_SUCCESS)
+	return S3_ERROR;
+
+    printf("param %u %u %u (full)\n", n_mgau, n_feat, n_density);
+
+    for (i = 0; i < n_mgau; i++) {
+	printf("mgau %u\n", i);
+	for (j = 0; j < n_feat; j++) {
+	    printf("feat %u\n", j);
+	    for (k = 0; k < n_density; k++) {
+		printf("density %4u (%ux%u)\n", k, veclen[j], veclen[j]);
+		for (l = 0; l < veclen[j]; l++) {
+		    for (m = 0; m < veclen[j]; m++) {
+			printf(e_fmt, var[i][j][k][l][m]);
+		    }
+		printf("\n");
+		}
+	    }
+	}
+    }
+    return S3_SUCCESS;
+}
+
+int
 print_regmat_cnt(const char *fn)
 {
     float32 ****regr;
@@ -435,6 +475,11 @@ print()
 
     fn = (const char *)cmd_ln_access("-gaufn");
     if (fn && (print_gau(fn) != S3_SUCCESS)) {
+	ret_val = S3_ERROR;
+    }
+
+    fn = (const char *)cmd_ln_access("-fullgaufn");
+    if (fn && (print_full_gau(fn) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
 

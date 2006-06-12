@@ -129,6 +129,13 @@ gauden_alloc_param(uint32 n_cb,
 		   uint32 n_stream,
 		   uint32 n_density,
 		   const uint32 *veclen);
+
+vector_t ****
+gauden_alloc_param_full(uint32 n_cb,
+			uint32 n_feat,
+			uint32 n_density,
+			const uint32 *veclen);
+
 int
 gauden_set_const_dim_mgau(gauden_t *g,
 			  uint32 n_mgau,	/* # of mixture gaussians */

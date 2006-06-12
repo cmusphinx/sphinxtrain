@@ -55,6 +55,7 @@ SRCS = \
   s3_open.c \
   s3cb2mllr_io.c \
   s3gau_io.c \
+  s3gau_full_io.c \
   s3io.c \
   s3acc_io.c \
   s3lamb_io.c \
