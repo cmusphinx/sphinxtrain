@@ -11,6 +11,7 @@ AC_CHECK_TOOL(AR, ar)
 AC_C_BIGENDIAN
 
 AC_CHECK_LIB(m, log)
+AC_CHECK_LIB(g2c, d_log)
 AC_CHECK_LIB(blas, dgemm_)
 AC_CHECK_LIB(lapack, dgesv_,,[
 LIBS="-llapack_lite $LIBS"
