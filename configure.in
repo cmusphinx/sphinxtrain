@@ -10,6 +10,14 @@ AC_CHECK_TOOL(AR, ar)
 
 AC_C_BIGENDIAN
 
+AC_CHECK_LIB(m, log)
+AC_CHECK_LIB(blas, dgemm_)
+AC_CHECK_LIB(lapack, dgesv_,,[
+LIBS="-llapack_lite $LIBS"
+LAPACK_LITE=liblapack_lite
+])
+AC_SUBST(LAPACK_LITE)
+
 AC_PATH_PROGS(PERL, [perl5 perl])
 if test "x$PERL" = x; then
 	cat <<\EOF

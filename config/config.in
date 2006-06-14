@@ -7,6 +7,10 @@ CC       = @CC@
 CFLAGS   = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
 DEFS     = @DEFS@
+LIBS	 = @LIBS@
+
+# Determines whether we build lapack_lite or not
+LAPACK_LITE = @LAPACK_LITE@
 
 AR       = @AR@
 RANLIB   = @RANLIB@

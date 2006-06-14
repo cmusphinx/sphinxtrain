@@ -64,7 +64,6 @@ int32 compute_mllr (
              float32 ****B
             );
 
-
 int32
 invert(float32 **ainv,
        float32 **a,
@@ -73,24 +72,9 @@ invert(float32 **ainv,
 int32 solve  (
         float64 **regl,
         float64 *regr,
-        int32   len,
-        float64 *A
+        float64 *x,
+        int32   len
        );
-
-int32 ludcmp (
-         float64 **a,
-         int32   n,
-         int32   *indx,
-         float64 *d
-        );
-
-int32 lubksb(
-       float64 **a,
-       int32   n,
-       int32   *indx,
-       float64 b[],
-       float64 x[]
-      );
 
 #endif
 

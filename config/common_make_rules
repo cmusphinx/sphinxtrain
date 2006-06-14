@@ -74,7 +74,7 @@ EXTRA_CC_FLAGS +=
 CFLAGS += $(EXTRA_CC_FLAGS) $(OPT) $(DBG)
 LDFLAGS += -L$(LIBDIR) $(EXTRA_LD_FLAGS)
 STLIBS = -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc
-LIBS = $(STLIBS) -lm
+LIBS += $(STLIBS)
 
 $(OBJDIR)/%.o : %.c
 	$(CC) $(DEFS) $(CPPFLAGS) $(CFLAGS) -c $< -o $@

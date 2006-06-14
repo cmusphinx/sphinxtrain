@@ -39,6 +39,7 @@
 #include <s3/common.h>
 #include <s3/s3regmat_io.h>
 #include <s3/mllr.h>
+#include <s3/clapack_lite.h>
 
 int32
 regmat_read (const char    *accumdir,
@@ -225,7 +226,7 @@ compute_mllr (
 		}
 		for (j = 0; j < len; ++j) {
 		    /** If estimation of rotation not possible, dont rotate **/
-		    if (solve(regl[m][i][j],regr[m][i][j],len,ABloc) != S3_SUCCESS){
+		    if (solve(regl[m][i][j],regr[m][i][j],ABloc,len) != S3_SUCCESS){
 			E_INFO("Estimation of %d th multiplicative",
 			       " term in MLLR regression failed\n",j);
 			for (k = 0;k < len; k++) {
@@ -266,7 +267,7 @@ compute_mllr (
 		E_INFO("Computing both multiplicative and additive part of MLLR\n");
 		for (j = 0; j < len; ++j) {
 		    /** If estimation of regression not possible, dont do anything **/
-		    if (solve(regl[m][i][j],regr[m][i][j],len+1,ABloc) != S3_SUCCESS) {
+		    if (solve(regl[m][i][j],regr[m][i][j],ABloc,len+1) != S3_SUCCESS) {
 			E_INFO("Estimation of %d th regression in MLLR failed\n",j);
 			for (k = 0;k < len; k++) {
 			    Aloc[m][i][j][k] = 0.0;
@@ -295,197 +296,107 @@ compute_mllr (
     return S3_SUCCESS;
 }
 
+/* Solve x for equations Ax=b */
+int32
+solve  (float64 **A, /*Input : an n*n matrix A */
+        float64 *b,  /*Input : a n dimesion vector b */
+	float64 *x,  /*Output : a n dimesion vector x */
+	int32   n)
+
+{
+  float64 *tmp_l;
+  float64 *tmp_r;
+  int i, j;
+  int32 N, NRHS, LDA, LDB, INFO;
+  int32 *IPIV;
+
+  N=n;
+  NRHS=1;    
+  LDA=n;    
+  LDB=n;
+
+    /* don't know whether we HAVE to do this to get the f2c routine
+       running. */
+
+    tmp_l = (float64 *)ckd_calloc(N * N, sizeof(float64));
+
+    /*To use the f2c lapack function, row/column ordering of the
+      arrays need to be changed. */
+
+    for (i = 0; i < N; i++) 
+      for (j = 0; j < N; j++) 
+	tmp_l[j+N*i] = A[i][j]; 
+
+    tmp_r = (float64*) ckd_calloc(N, sizeof(float64));
+
+    for (i = 0; i < N; i++) 
+      tmp_r[i] = b[i];
+
+    IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
+
+    /* Beware ! all arguments of lapack have to be a pointer */
+
+    dgesv_(&N, &NRHS, tmp_l,&LDA,IPIV,tmp_r, &LDB, &INFO);
+
+    if( INFO==0 ){ /*fprintf( stderr, "OK\n" );*/ }
+    else{ return S3_ERROR; }
+
+    for(i= 0 ; i< n ; i++){
+      x[i] = tmp_r[i]; 
+    }
+    
+    ckd_free ((void *)tmp_l);
+    ckd_free ((void *)tmp_r);
+    ckd_free ((void *)IPIV);
 
 
+    return S3_SUCCESS;
+}
+
+/* Find inverse by solving AX=I. */
 int32
 invert(float32 **ainv,
        float32 **a,
-       int32 len)
+       int32 n)
 {
-    int32 i, j;
-    int32 *indx;
-    float64 d;
-    float64 *col;
-    float64 **adcmp;
-
-    indx = ckd_calloc(len, sizeof(int32));
-    col = ckd_calloc(len, sizeof(float64));
-    adcmp = (float64 **)ckd_calloc_2d(len, len, sizeof(float64));
-
-    for (i = 0; i < len; i++) {
-	for (j = 0; j < len; j++) {
-	    adcmp[i][j] = a[i][j];
-	}
-    }
-
-    ludcmp(adcmp, len, indx, &d);
-    for (j = 0; j < len; j++) {
-	for (i = 0; i < len; i++)
-	    col[i] = 0;
-	col[j] = 1;
-
-	lubksb(adcmp, len, indx, col, col);
-	for (i = 0; i < len; i++) {
-	    ainv[i][j] = col[i];
-	}
-    }
-
-    ckd_free(indx);
-    ckd_free(col);
-    ckd_free_2d((void **)adcmp);
-
-    return S3_SUCCESS;
-}
-
-int32
-solve  (float64 **regl,
-        float64 *regr,
-	int32   len,
-	float64 *A)
-{
-    float64 d;
-    float64 **tmp_regl;
-    float64 *tmp_regr;
-    int32 *indx;
+    float64 *tmp_a;
+    float64 *tmp_i;
     int i, j;
+    int32 N, NRHS, LDA, LDB, INFO;
+    int32 *IPIV;
 
-    tmp_regl = (float64 **)ckd_calloc_2d(len, len, sizeof(float64));
-    for (i = 0; i < len; i++) {
-	for (j = 0; j < len; j++) {
-	    tmp_regl[i][j] = regl[i][j];
-	}
-    }
-    indx = (int32 *) ckd_calloc(len, sizeof(int32));
+    N=n;
+    NRHS=n;
+    LDA=n;    
+    LDB=n;
 
-    if (ludcmp(tmp_regl, len, indx, &d) != S3_SUCCESS) {
-	ckd_free (indx);
-	ckd_free_2d ((void **)tmp_regl);
+    /*To use the f2c lapack function, row/column ordering of the
+      arrays need to be changed. */
+    tmp_a = (float64 *)ckd_calloc(N * N, sizeof(float64));
+    for (i = 0; i < N; i++) 
+	for (j = 0; j < N; j++) 
+	    tmp_a[j+N*i] = a[i][j]; 
 
+    /* Construct an identity matrix. */
+    tmp_i = (float64*) ckd_calloc(N * N, sizeof(float64));
+    for (i = 0; i < N; i++) 
+	tmp_i[i+N*i] = 1.0;
+
+    IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
+
+    /* Beware ! all arguments of lapack have to be a pointer */
+    dgesv_(&N, &NRHS, tmp_a, &LDA, IPIV, tmp_i, &LDB, &INFO);
+
+    if (INFO != 0)
 	return S3_ERROR;
-    }
 
-    tmp_regr = ckd_calloc(len, sizeof(float64));
-    for (i = 0; i < len; i++)
-	tmp_regr[i] = regr[i];
-
-    lubksb(tmp_regl, len, indx, tmp_regr, A);
-
-    ckd_free (indx);
-    ckd_free_2d ((void **)tmp_regl);
-    ckd_free ((void *)tmp_regr);
-
-    return S3_SUCCESS;
-}
-
-
-int32 ludcmp(float64 **a,
-             int32   n,
-             int32   *indx,
-             float64 *d)
-{
-    int32    i,imax=0,j,k;
-    float64  big,dum,sum,t1;
-    float64  *vv;  /* vv stores the implicit scaling of each row */
-
-    if((vv=(float64 *) ckd_calloc(n,sizeof(float64))) == NULL)
-	E_INFO("Unable to allocate space for vv\n");
-
-    *d=1.0;           /* No row interchanges yet */
-    for (i = 0; i < n; i++) { /*Loop over the rows to get the implicit scaling */
-	big = 0.0;    /*information */
-	for (j = 0; j < n; j++) {
-	    if((t1 = fabs(a[i][j])) > big)
-		big=t1;
-	}
-	if (big == 0.0) {
-	    /* No nonzero largest element. */
-	    E_ERROR("Singular matrix in routine ludcmp\n");
-
-	    return S3_ERROR;
-	}
-	vv[i] = 1.0/big; /* Save the scaling */
-    }
-    for (j = 0; j < n; j++) {
-	for (i = 0; i < j; i++) {
-	    sum = a[i][j];
-	    for (k = 0; k < i; k++)
-		sum -= a[i][k]*a[k][j];
-	    a[i][j] = sum;
-	}
-	big = 0.0;
-	for (i = j; i < n;i++) {
-	    sum = a[i][j];
-	    for (k = 0; k < j; k++)
-		sum -= a[i][k] * a[k][j];
-	    a[i][j] = sum;
-	    if ( (dum = vv[i] * fabs(sum)) >= big) {
-		big = dum;
-		imax = i;
-	    }
-	}
-	if (j != imax) {
-	    for (k = 0; k < n; k++) {
-		dum = a[imax][k];
-		a[imax][k] = a[j][k];
-		a[j][k] = dum;
-	    }
-	    *d = -(*d);
-	    vv[imax] = vv[j];
-	}
-	indx[j] = imax;
-	if (a[j][j] == 0.0)
-	    a[j][j]=TINY;
-
-	if (j != n-1) {
-	    dum = 1.0 / a[j][j];
-	    for (i = j+1; i < n; i++)
-		a[i][j] *= dum;
-	}
-    }
+    for (i = 0; i < n; ++i)
+	for (j = 0; j < n; ++j)
+	    ainv[i][j] = tmp_i[j+N*i];
     
-    ckd_free(vv);
-
-    return S3_SUCCESS;
-}
-
-
-int32 lubksb(
-       float64 **a, 
-       int32   n, 
-       int32   *indx, 
-       float64 b[],
-       float64 x[]
-      )
-{
-    int32   i,ii=0,ip,j,done=0;
-    float64 sum;
-
-    for (i = 0; i < n; i++) {
-	ip = indx[i];
-	sum = b[ip];
-	b[ip] = b[i];
-	if (done) {
-	    for (j = ii; j < i; j++)
-		sum -= a[i][j] * b[j];
-	}
-	else if (sum) {
-	    ii=i;
-	    done=1;
-	}
-	b[i]=sum;
-    }
-    for (i=0;i<n;i++) {
-	x[i] = b[i];
-    }
-    
-    for (i = n-1; i >= 0; i--) {
-	sum = x[i];
-	
-	for (j = n-1; j > i; j--)
-	    sum -= a[i][j]*x[j];
-	
-	x[i]=sum/a[i][i];
-    }
+    ckd_free ((void *)tmp_a);
+    ckd_free ((void *)tmp_i);
+    ckd_free ((void *)IPIV);
 
     return S3_SUCCESS;
 }
