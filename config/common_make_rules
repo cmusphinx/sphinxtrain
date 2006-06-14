@@ -73,7 +73,7 @@ EXTRA_CC_FLAGS +=
 #-DNEXT_UTT_STATES_VERBOSE
 CFLAGS += $(EXTRA_CC_FLAGS) $(OPT) $(DBG)
 LDFLAGS += -L$(LIBDIR) $(EXTRA_LD_FLAGS)
-STLIBS = -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc
+STLIBS = -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc
 LIBS += $(STLIBS)
 
 $(OBJDIR)/%.o : %.c
@@ -102,7 +102,7 @@ endif
 
 # Program build rules
 $(BINDIR)/$(TARGET): $(OBJS) $(DEP_LIBS)
-	$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
+	$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) $(LIBS)
 
 # Festival Script build rules
 $(SCRIPTDIR)/%: %.festival
