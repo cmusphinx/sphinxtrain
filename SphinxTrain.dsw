@@ -426,6 +426,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "liblapack_lite"=.\win32\msdev\libs\liblapack_lite\liblapack_lite.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "libmllr"=.\win32\msdev\libs\libmllr\libmllr.dsp - Package Owner=<4>
 
 Package=<5>
@@ -434,6 +446,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name liblapack_lite
+    End Project Dependency
 }}}
 
 ###############################################################################
