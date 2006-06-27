@@ -302,10 +302,8 @@ accum_gauden(float32 ***denacc,
 		    if (!pass2var)
 			outerproduct(cov, feat, feat, g->veclen[j]);
 		    else {
-			for (l = 0; l < g->veclen[j]; ++l) {
+			for (l = 0; l < g->veclen[j]; ++l)
 			    dvec[l] = feat[l] - pm[l];
-			    dvec[l] *= dvec[l];
-			}
 			outerproduct(cov, dvec, dvec, g->veclen[j]);
 		    }
 		    scalarmultiply(cov, obs_cnt, g->veclen[j], g->veclen[j]);
