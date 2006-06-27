@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -421,7 +422,7 @@ gauden_floor_variance(gauden_t *g)
 		if (g->fullvar) {
 		    uint32 l;
 		    /* Only floor the diagonal. */
-		    for (l = 0; l < g->n_density; ++l)
+		    for (l = 0; l < g->veclen[j]; ++l)
 			if (g->fullvar[i][j][k][l][l] < min_var)
 			    g->fullvar[i][j][k][l][l] = min_var;
 		}
