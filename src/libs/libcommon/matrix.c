@@ -238,7 +238,7 @@ invert(vector_t *ainv, vector_t *a, int32 n)
     IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
 
     /* Beware! all arguments of lapack have to be a pointer */
-    sgesv_(&N, &NRHS, tmp_a, &LDA, IPIV, ainv[0], &LDB, &INFO);
+    sgesv_(&N, &NRHS, tmp_a, &LDA, IPIV, tmp_i, &LDB, &INFO);
 
     if (INFO != 0)
 	return S3_ERROR;
