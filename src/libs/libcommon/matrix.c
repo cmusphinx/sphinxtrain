@@ -176,7 +176,7 @@ float32
 determinant(vector_t *a, int32 n)
 {
     float32 *tmp_a;
-    float32 det;
+    float64 det;
     int32 M, N, LDA, INFO;
     int32 *IPIV;
     int32 i, j;
@@ -194,8 +194,8 @@ determinant(vector_t *a, int32 n)
     IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
     sgetrf_(&M, &N, tmp_a, &LDA, IPIV, &INFO);
 
-    det = 0.0;
-    for (i = 0; i < n; ++i) {
+    det = tmp_a[0];
+    for (i = 1; i < n; ++i) {
 	if (IPIV[i] != i+1)
 	    det *= -tmp_a[i+N*i];
 	else
@@ -204,6 +204,7 @@ determinant(vector_t *a, int32 n)
 
     ckd_free(tmp_a);
     ckd_free(IPIV);
+
     return det;
 }
 
@@ -211,7 +212,7 @@ determinant(vector_t *a, int32 n)
 int32
 invert(vector_t *ainv, vector_t *a, int32 n)
 {
-    float32 *tmp_a;
+    float32 *tmp_a, *tmp_i;
     int i, j;
     int32 N, NRHS, LDA, LDB, INFO;
     int32 *IPIV;
@@ -230,9 +231,9 @@ invert(vector_t *ainv, vector_t *a, int32 n)
 	    tmp_a[j+N*i] = a[i][j]; 
 
     /* Construct an identity matrix. */
-    memset(ainv[0], 0, sizeof(float32) * N * N);
+    tmp_i = (float32 *) ckd_calloc(N * N, sizeof(float32));
     for (i = 0; i < N; i++) 
-	ainv[i][i] = 1.0;
+	tmp_i[i+N*i] = 1.0;
 
     IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
 
@@ -242,16 +243,13 @@ invert(vector_t *ainv, vector_t *a, int32 n)
     if (INFO != 0)
 	return S3_ERROR;
 
-    /* Swap rows/columns in place. */
-    for (i = 0; i < n; ++i) {
-	for (j = i+1; j < n; ++j) {
-	    float64 tmp = ainv[i][j];
-	    ainv[i][j] = ainv[j][i];
-	    ainv[j][i] = tmp;
-	}
-    }
+    /* FIXME: We should be able to do this in place actually */
+    for (i = 0; i < n; ++i)
+	for (j = 0; j < n; ++j)
+	    ainv[i][j] = tmp_i[j+N*i];
     
     ckd_free ((void *)tmp_a);
+    ckd_free ((void *)tmp_i);
     ckd_free ((void *)IPIV);
 
     return S3_SUCCESS;
@@ -269,6 +267,39 @@ outerproduct(vector_t *a, vector_t x, vector_t y, int32 len)
 	    a[j][i] = x[j] * y[i];
 	}
     }
+}
+
+void
+matrixmultiply(vector_t *c, vector_t *a, vector_t *b, int32 m, int32 n, int32 k)
+{
+    int32 i, j, r;
+
+    /* FIXME: Probably faster to do this with SGEMM */
+    memset(c[0], 0, sizeof(float32) * m * n);
+    for (i = 0; i < m; ++i)
+	for (j = 0; j < n; ++j)
+	    for (r = 0; r < k; ++r)
+		c[i][j] += a[i][r] * b[r][j];
+}
+
+void
+scalarmultiply(vector_t *a, float32 x, int32 m, int32 n)
+{
+    int32 i, j;
+
+    for (i = 0; i < m; ++i)
+	for (j = 0; j < n; ++j)
+	    a[i][j] *= x;
+}
+
+void
+matrixadd(vector_t *a, vector_t *b, int32 m, int32 n)
+{
+    int32 i, j;
+
+    for (i = 0; i < m; ++i)
+	for (j = 0; j < n; ++j)
+	    a[i][j] += b[i][j];
 }
 
 /*

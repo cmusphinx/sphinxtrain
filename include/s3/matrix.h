@@ -96,6 +96,20 @@ invert(vector_t *ainv, vector_t *a, int32 len);
 void
 outerproduct(vector_t *a, vector_t x, vector_t y, int32 len);
 
+void
+matrixmultiply(vector_t *c, /* = */
+	       vector_t *a, /* * */ vector_t *b,
+	       int32 m, /**< #rows of a. */
+	       int32 n, /**< #cols of b. */
+	       int32 k  /**< #cols of a, #rows of b. */
+	);
+
+void
+scalarmultiply(vector_t *a, float32 x, int32 m, int32 n);
+
+void
+matrixadd(vector_t *a, vector_t *b, int32 m, int32 n);
+
 #endif /* MATRIX_H */ 
 
 
