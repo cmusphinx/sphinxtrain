@@ -420,8 +420,10 @@ gauden_floor_variance(gauden_t *g)
 	    for (k = 0; k < g->n_density; k++) {
 		if (g->fullvar) {
 		    uint32 l;
+		    /* Only floor the diagonal. */
 		    for (l = 0; l < g->n_density; ++l)
-			vector_floor(g->fullvar[i][j][k][l], g->veclen[j], min_var);
+			if (g->fullvar[i][j][k][l][l] < min_var)
+			    g->fullvar[i][j][k][l][l] = min_var;
 		}
 		else
 		    vector_floor(g->var[i][j][k], g->veclen[j], min_var);
