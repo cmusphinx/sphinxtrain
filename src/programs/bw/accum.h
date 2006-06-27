@@ -96,6 +96,7 @@ accum_dump(const char *out_dir,
 	   int32 pass2var,
 	   int32 mllr_mult,
 	   int32 mllr_add,
+	   int32 var_is_full,
 	   int ckpt);
 
 int32

@@ -889,6 +889,7 @@ main_reestimate(model_inventory_t *inv,
 			      pass2var,
 			      mllr_mult,
 			      mllr_add,
+			      var_is_full,
 			      TRUE) != S3_SUCCESS) {
 		static int notified = FALSE;
 		time_t t;
@@ -945,6 +946,7 @@ main_reestimate(model_inventory_t *inv,
 		      pass2var,
 		      mllr_mult,
 		      mllr_add,
+		      var_is_full,
 		      FALSE) != S3_SUCCESS) {
 	static int notified = FALSE;
 	time_t t;

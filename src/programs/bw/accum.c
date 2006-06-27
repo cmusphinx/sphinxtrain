@@ -913,6 +913,7 @@ accum_dump(const char *out_dir,
 	   int32 pass2var,
 	   int32 mllr_mult, /* MLLR: dump A accumulators */
 	   int32 mllr_add,  /* MLLR: dump B accumulators */
+	   int32 var_is_full,
 	   int ckpt)  	    /* checkpoint dump flag */
 {
     char fn[MAXPATHLEN+1];
@@ -979,17 +980,30 @@ accum_dump(const char *out_dir,
     }
     
     if (mean_reest || var_reest) {
-	sprintf(fn, "%s/gauden_counts", out_dir);
-	if (s3gaucnt_write(fn,
-			   (mean_reest ? g->macc : NULL),
-			   (var_reest ? g->vacc : NULL),
-			   pass2var,
-			   g->dnom,
-			   g->n_mgau,
-			   g->n_feat,
-			   g->n_density,
-			   g->veclen) != S3_SUCCESS) {
+	int32 rv;
 
+	sprintf(fn, "%s/gauden_counts", out_dir);
+	if (var_is_full)
+	    rv = s3gaucnt_write_full(fn,
+				(mean_reest ? g->macc : NULL),
+				(var_reest ? g->fullvacc : NULL),
+				pass2var,
+				g->dnom,
+				g->n_mgau,
+				g->n_feat,
+				g->n_density,
+				g->veclen);
+	else
+	    rv = s3gaucnt_write(fn,
+				(mean_reest ? g->macc : NULL),
+				(var_reest ? g->vacc : NULL),
+				pass2var,
+				g->dnom,
+				g->n_mgau,
+				g->n_feat,
+				g->n_density,
+				g->veclen);
+	if (rv != S3_SUCCESS) {
 	    revert_bkp(mixw_reest,
 		       tmat_reest,
 		       mean_reest,
