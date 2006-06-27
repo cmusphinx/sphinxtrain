@@ -456,7 +456,7 @@ s3gaucnt_write_full(const char *fn,
     for (j = 0, blk = 0; j < n_feat; j++)
 	blk += veclen[j];
 
-    n_elem = n_cb * n_density * blk * blk;
+    n_elem = n_cb * n_density * blk;
 
     if (has_means) {
 	band_nz_1d(wt_mean[0][0][0], n_elem, MIN_POS_FLOAT32);
@@ -466,9 +466,10 @@ s3gaucnt_write_full(const char *fn,
     }
 
     if (has_vars) {
-	floor_nz_1d(wt_var[0][0][0][0], n_elem, MIN_POS_FLOAT32);
+	floor_nz_1d(wt_var[0][0][0][0], n_elem * blk, MIN_POS_FLOAT32);
 
-	if (s3write_1d((void *)wt_var[0][0][0][0], sizeof(float32), n_elem, fp, &chksum) != S3_SUCCESS)
+	if (s3write_1d((void *)wt_var[0][0][0][0], sizeof(float32),
+		       n_elem * blk, fp, &chksum) != S3_SUCCESS)
 	    return S3_ERROR;
     }
 
@@ -476,7 +477,8 @@ s3gaucnt_write_full(const char *fn,
        that results are compatible between machines */
     floor_nz_3d(dnom, n_cb, n_feat, n_density, MIN_POS_FLOAT32);
 
-    if (s3write_3d((void ***)dnom, sizeof(float32), n_cb, n_feat, n_density, fp, &chksum) != S3_SUCCESS) {
+    if (s3write_3d((void ***)dnom, sizeof(float32),
+		   n_cb, n_feat, n_density, fp, &chksum) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
