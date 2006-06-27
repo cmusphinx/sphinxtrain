@@ -49,6 +49,7 @@
 #include <s3/corpus.h>
 #include <s3/segdmp.h>
 #include <s3/mllr.h>
+#include <s3/matrix.h>
 #include <s3/feat.h>
 #include <s3/ck_seg.h>
 #include <s3/mk_sseq.h>
