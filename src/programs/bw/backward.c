@@ -302,7 +302,8 @@ backward_update(float64 **active_alpha,
 		int32 var_reest,
 		int32 pass2var,
 		int32 mllr_mult,
-		int32 mllr_add)
+		int32 mllr_add,
+		int32 var_is_full)
 {
     void *tt;			/* temp variable used to do
 				   pointer swapping */
@@ -491,7 +492,8 @@ backward_update(float64 **active_alpha,
     /* Allocate local accumulators for mean, variance or mllr
        matrix reestimation sums if necessary */
     gauden_alloc_l_acc(g, n_lcl_cb,
-		       mean_reest, var_reest, mllr_mult, mllr_add);
+		       mean_reest, var_reest, mllr_mult, mllr_add,
+		       var_is_full);
 
     if (tmat_reest) {
 	if (inv->l_tmat_acc) {
@@ -1061,7 +1063,8 @@ backward_update(float64 **active_alpha,
 			 mean_reest,
 			 var_reest,
 			 pass2var,
-			 inv->l_mixw_acc);
+			 inv->l_mixw_acc,
+			 var_is_full);
 	}
 
         if (mllr_mult || mllr_add) {
@@ -1218,7 +1221,8 @@ backward_update(float64 **active_alpha,
 			 mean_reest,
 			 var_reest,
 			 pass2var,
-			 wacc);
+			 wacc,
+			 var_is_full);
 	}
 
         if (mllr_mult || mllr_add) {

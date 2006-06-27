@@ -139,6 +139,18 @@ cp_parm -cpopsfn  cp_op \n\
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
 	  "Output Gaussian density parameter file" },
+
+	{ "-ifullgaufn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Input Gaussian covariance matrix file" },
+	{ "-ofullgaufn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Output Gaussian covariance matrix file" },
+
 	{ "-ncbout",
 	  CMD_LN_INT32,
 	  CMD_LN_NO_VALIDATION,

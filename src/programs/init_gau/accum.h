@@ -76,6 +76,20 @@ accum_state_var(vector_t ***var_acc,
 		uint32 *ci_sseq,
 		uint32 n_frame);
 
+int
+accum_state_fullvar(vector_t ****var_acc,
+		    vector_t ***mean,
+		    float32  ***dnom,
+		    vector_t **f,
+		    uint32 *del_b,
+		    uint32 *del_e,
+		    uint32 n_del,
+		    uint32 n_feat,
+		    const uint32 *veclen,
+		    uint32 *sseq,
+		    uint32 *ci_sseq,
+		    uint32 n_frame);
+
 #endif /* ACCUM_H */ 
 
 

@@ -102,6 +102,7 @@ init_gau(lexicon_t *lex,
     vector_t ***mean_acc = NULL;
     vector_t ***mean = NULL;
     vector_t ***var_acc = NULL;
+    vector_t ****fullvar_acc = NULL;
     float32 ***dnom = NULL;
 
     const uint32 *veclen;
@@ -126,6 +127,7 @@ init_gau(lexicon_t *lex,
 /* ADDITION BY BHIKSHA, TO CHECK FOR FEATURE LENGTH, 7 JAN 98 */
     uint32 ceplen;
 /* END ADDITION BY BHIKSHA */
+    int32 var_is_full = cmd_ln_int32("-fullvar");
 
     if (mdef) {
 	acmod_set = mdef->acmod_set;
@@ -165,10 +167,16 @@ init_gau(lexicon_t *lex,
 	}
 
 	mean_acc = NULL;
-	var_acc =  gauden_alloc_param(n_ts,
-				      feat_n_stream(),
-				      1,
-				      veclen);
+	if (var_is_full)
+		fullvar_acc = gauden_alloc_param_full(n_ts,
+						      feat_n_stream(),
+						      1,
+						      veclen);
+	else
+		var_acc =  gauden_alloc_param(n_ts,
+					      feat_n_stream(),
+					      1,
+					      veclen);
     }
 
     dnom = (float32 ***)ckd_calloc_3d(n_ts, feat_n_stream(), 1, sizeof(float32));
@@ -318,13 +326,25 @@ init_gau(lexicon_t *lex,
 	    /* accumulate var sums since mean estimate exists */
 	    accum_state_var(var_acc, mean, dnom, f, del_b, del_e, n_del, feat_n_stream(), veclen, sseq, ci_sseq, n_frame);
 	}
+	else if (fullvar_acc) {
+	    /* accumulate var sums since mean estimate exists */
+	    accum_state_fullvar(fullvar_acc, mean, dnom, f, del_b, del_e, n_del, feat_n_stream(), veclen, sseq, ci_sseq, n_frame);
+	}
     }
 
     sprintf(fn, "%s/gauden_counts", (const char *)cmd_ln_access("-accumdir"));
     
-    if (s3gaucnt_write(fn, mean_acc, var_acc, TRUE /* 2-pass variance */, dnom,
-		       n_ts, feat_n_stream(), 1, veclen) != 0) {
-	exit(1);
+    if (var_is_full) {
+	if (s3gaucnt_write_full(fn, mean_acc, fullvar_acc, TRUE /* 2-pass variance */, dnom,
+				n_ts, feat_n_stream(), 1, veclen) != 0) {
+	    exit(1);
+	}
+    }
+    else {
+	if (s3gaucnt_write(fn, mean_acc, var_acc, TRUE /* 2-pass variance */, dnom,
+			   n_ts, feat_n_stream(), 1, veclen) != 0) {
+	    exit(1);
+	}
     }
 
     /* free the per utterance data structures from the last utt */
@@ -371,6 +391,9 @@ init_gau(lexicon_t *lex,
     }
     if (var_acc) {
 	gauden_free_param(var_acc);
+    }
+    if (fullvar_acc) {
+	gauden_free_param_full(fullvar_acc);
     }
     ckd_free_3d((void ***)dnom);
 

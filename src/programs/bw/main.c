@@ -235,7 +235,8 @@ main_initialize(int argc,
 			    cmd_ln_access("-meanfn"),
 			    cmd_ln_access("-varfn"),
 			    *(float32 *)cmd_ln_access("-varfloor"),
-			    *(int32 *)cmd_ln_access("-topn")) != S3_SUCCESS)
+			    *(int32 *)cmd_ln_access("-topn"),
+			    cmd_ln_int32("-fullvar")) != S3_SUCCESS)
 	return S3_ERROR;
     
     if (gauden_eval_precomp(inv->gauden) != S3_SUCCESS) {
@@ -526,6 +527,7 @@ main_reestimate(model_inventory_t *inv,
     int32 profile;
 
     int32 pass2var;
+    int32 var_is_full;
 
     uint32 n_utt;
 
@@ -585,6 +587,7 @@ main_reestimate(model_inventory_t *inv,
     mean_reest = *(int32 *)cmd_ln_access("-meanreest");
     var_reest = *(int32 *)cmd_ln_access("-varreest");
     pass2var = *(int32 *)cmd_ln_access("-2passvar");
+    var_is_full = *(int32 *)cmd_ln_access("-fullvar");
     mllr_mult = *(int32 *)cmd_ln_access("-mllrmult");
     mllr_add = *(int32 *)cmd_ln_access("-mllradd");
     sil_del    = *(int32 *)cmd_ln_access("-sildel");
@@ -764,7 +767,8 @@ main_reestimate(model_inventory_t *inv,
 				  var_reest,
 				  pass2var,
 				  mllr_mult,
-				  mllr_add
+				  mllr_add,
+				  var_is_full
 				  ) == S3_SUCCESS) {
 		total_frames += n_frame;
 		total_log_lik += log_lik;
@@ -982,10 +986,10 @@ main_reestimate(model_inventory_t *inv,
 int main(int argc, char *argv[])
 {
     model_inventory_t *inv;
-    lexicon_t *lex;
-    model_def_t *mdef;
-    float32 ****spkr_xfrm_ainv;
-    float32 ***spkr_xfrm_b;
+    lexicon_t *lex = NULL;
+    model_def_t *mdef = NULL;
+    float32 ****spkr_xfrm_ainv = NULL;
+    float32 ***spkr_xfrm_b = NULL;
     
     (void) prefetch_init();	/* should do this BEFORE any allocations */
 

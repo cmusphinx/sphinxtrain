@@ -110,7 +110,10 @@ normalize()
     vector_t ***wt_mean = NULL;
     vector_t ***in_var = NULL;
     vector_t ***wt_var = NULL;
+    vector_t ****in_fullvar = NULL;
+    vector_t ****wt_fullvar = NULL;
     int32 pass2var = FALSE;
+    int32 var_is_full = FALSE;
     float32 ***dnom = NULL;
     uint32 n_mgau;
     uint32 n_gau_stream;
@@ -148,6 +151,7 @@ normalize()
     in_mean_fn = (const char *)cmd_ln_access("-inmeanfn");
     in_var_fn = (const char *)cmd_ln_access("-invarfn");
     out_dcount_fn = (const char *)cmd_ln_access("-dcountfn");
+    var_is_full = cmd_ln_int32("-fullvar");
 
     out_reg_fn = (const char *)cmd_ln_access("-regmatfn");
     if(out_reg_fn){
@@ -195,13 +199,25 @@ normalize()
 	E_INFO("Selecting unseen density variance parameters from %s\n",
 	       in_var_fn);
 
-	if (s3gau_read(in_var_fn,
-		       &in_var,
-		       &n_mgau,
-		       &n_gau_stream,
-		       &n_gau_density,
-		       &veclen) != S3_SUCCESS) {
-	  E_FATAL_SYSTEM("Couldn't read %s", in_var_fn);
+	if (var_is_full) {
+	    if (s3gau_read_full(in_var_fn,
+			   &in_fullvar,
+			   &n_mgau,
+			   &n_gau_stream,
+			   &n_gau_density,
+			   &veclen) != S3_SUCCESS) {
+		E_FATAL_SYSTEM("Couldn't read %s", in_var_fn);
+	    }
+	}
+	else {
+	    if (s3gau_read(in_var_fn,
+			   &in_var,
+			   &n_mgau,
+			   &n_gau_stream,
+			   &n_gau_density,
+			   &veclen) != S3_SUCCESS) {
+		E_FATAL_SYSTEM("Couldn't read %s", in_var_fn);
+	    }
 	}
 	ckd_free((void *)veclen);
 	veclen = NULL;
@@ -234,15 +250,26 @@ normalize()
 	        ckd_free((void *) veclen);
 	    }
 
-	    rdacc_den(accum_dir[i],
-		      &wt_mean,
-		      &wt_var,
-		      &pass2var,
-		      &dnom,
-		      &n_mgau,
-		      &n_gau_stream,
-		      &n_gau_density,
-		      &veclen);
+	    if (var_is_full)
+		rdacc_den_full(accum_dir[i],
+			       &wt_mean,
+			       &wt_fullvar,
+			       &pass2var,
+			       &dnom,
+			       &n_mgau,
+			       &n_gau_stream,
+			       &n_gau_density,
+			       &veclen);
+	    else
+		rdacc_den(accum_dir[i],
+			  &wt_mean,
+			  &wt_var,
+			  &pass2var,
+			  &dnom,
+			  &n_mgau,
+			  &n_gau_stream,
+			  &n_gau_density,
+			  &veclen);
 
 	    if (out_mixw_fn) {
 		if (n_stream != n_gau_stream) {
@@ -323,21 +350,36 @@ normalize()
 	} while (err > 1);
     }
 
-    if (oaccum_dir && (wt_mean || wt_var)) {
+    if (oaccum_dir && (wt_mean || wt_var || wt_fullvar)) {
 	/* write the total mixing Gau. den reest. accumulators */
 
 	err = 0;
 	sprintf(file_name, "%s/gauden_counts", oaccum_dir);
 	do {
-	    if (s3gaucnt_write(file_name,
-			       wt_mean,
-			       wt_var,
-			       pass2var,
-			       dnom,
-			       n_mgau,
-			       n_gau_stream,
-			       n_gau_density,
-			       veclen) != S3_SUCCESS) {
+	    int32 rv;
+
+	    if (var_is_full)
+		rv = s3gaucnt_write_full(file_name,
+					 wt_mean,
+					 wt_fullvar,
+					 pass2var,
+					 dnom,
+					 n_mgau,
+					 n_gau_stream,
+					 n_gau_density,
+					 veclen);
+	    else
+		rv = s3gaucnt_write(file_name,
+				    wt_mean,
+				    wt_var,
+				    pass2var,
+				    dnom,
+				    n_mgau,
+				    n_gau_stream,
+				    n_gau_density,
+				    veclen);
+		
+	    if (rv != S3_SUCCESS) {
 		if (err == 0) {
 		    E_ERROR("Unable to write %s; Retrying...\n", file_name);
 		}
@@ -401,7 +443,7 @@ normalize()
 	} while (err > 1);
     }
 
-    if (wt_mean || wt_var) {
+    if (wt_mean || wt_var || wt_fullvar) {
 	if (out_mean_fn) {
 	    E_INFO("Normalizing mean for n_mgau= %u, n_stream= %u, n_density= %u\n",
 		   n_mgau, n_stream, n_density);
@@ -416,15 +458,25 @@ normalize()
 	}
 
 	if (out_var_fn) {
-	    if (wt_var) {
-		E_INFO("Normalizing var\n");
-		gauden_norm_wt_var(in_var, wt_var, pass2var, dnom,
-				   wt_mean,	/* wt_mean now just mean */
-				   n_mgau, n_stream, n_density, veclen);
+	    if (var_is_full) {
+		if (wt_fullvar) {
+		    E_INFO("Normalizing fullvar\n");
+		    gauden_norm_wt_fullvar(in_fullvar, wt_fullvar, pass2var, dnom,
+					   wt_mean,	/* wt_mean now just mean */
+					   n_mgau, n_stream, n_density, veclen);
+		}
+	    }
+	    else {
+		if (wt_var) {
+		    E_INFO("Normalizing var\n");
+		    gauden_norm_wt_var(in_var, wt_var, pass2var, dnom,
+				       wt_mean,	/* wt_mean now just mean */
+				       n_mgau, n_stream, n_density, veclen);
+		}
 	    }
 	}
 	else {
-	    if (wt_var) {
+	    if (wt_var || wt_fullvar) {
 		E_INFO("Ignoring variances since -varfn not specified\n");
 	    }
 	}
@@ -521,17 +573,32 @@ normalize()
     }
     
     if (out_var_fn) {
-	if (wt_var) {
-	    if (s3gau_write(out_var_fn,
-			    (const vector_t ***)wt_var,
-			    n_mgau,
-			    n_stream,
-			    n_density,
-			    veclen) != S3_SUCCESS)
-		return S3_ERROR;
+	if (var_is_full) {
+	    if (wt_fullvar) {
+		if (s3gau_write_full(out_var_fn,
+				     (const vector_t ****)wt_fullvar,
+				     n_mgau,
+				     n_stream,
+				     n_density,
+				     veclen) != S3_SUCCESS)
+		    return S3_ERROR;
+	    }
+	    else
+		E_WARN("NO reestimated variances seen, but -varfn specified\n");
 	}
-	else
-	    E_WARN("NO reestimated variances seen, but -varfn specified\n");
+	else {
+	    if (wt_var) {
+		if (s3gau_write(out_var_fn,
+				(const vector_t ***)wt_var,
+				n_mgau,
+				n_stream,
+				n_density,
+				veclen) != S3_SUCCESS)
+		    return S3_ERROR;
+	    }
+	    else
+		E_WARN("NO reestimated variances seen, but -varfn specified\n");
+	}
     }
     else {
 	if (wt_var) {

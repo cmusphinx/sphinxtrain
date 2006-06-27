@@ -71,7 +71,8 @@ accum_gauden(float32 ***cbacc,
 	     int32 mean_reest,
 	     int32 var_reest,
 	     int32 pass2var,
-	     float32 ***wacc);
+	     float32 ***wacc,
+	     int32 var_is_full);
 
 int32
 accum_global(model_inventory_t *inv,
@@ -82,7 +83,8 @@ accum_global(model_inventory_t *inv,
 	     int32 mean_reest,
 	     int32 var_reest,
 	     int32 mllr_mult,
- 	     int32 mllr_add);
+ 	     int32 mllr_add,
+	     int32 var_is_full);
 
 int32
 accum_dump(const char *out_dir,
@@ -122,6 +124,12 @@ accum_global_gauden(vector_t ***acc,
 		    gauden_t *g,
 		    uint32 *lcl2glb,
 		    uint32 n_lcl2glb);
+void
+accum_global_gauden_full(vector_t ****acc,
+			 vector_t ****l_acc,
+			 gauden_t *g,
+			 uint32 *lcl2glb,
+			 uint32 n_lcl2glb);
 void
 accum_global_gauden_dnom(float32 ***dnom,
 			 float32 ***l_dnom,

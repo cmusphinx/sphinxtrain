@@ -66,13 +66,16 @@ typedef struct {
     float32 ***norm;
     vector_t ***mean;
     vector_t ***var;
+    vector_t ****fullvar;
 
     vector_t ***macc;
     vector_t ***vacc;
+    vector_t ****fullvacc;
     float32  ***dnom;
 
     vector_t ***l_macc;
     vector_t ***l_vacc;
+    vector_t ****l_fullvacc;
     float32  ***l_dnom;
 
     int32 *mllr_idx;		/* MLLR class for each mixture Gaussian */
@@ -123,6 +126,13 @@ gauden_var(gauden_t *g);
 int
 gauden_set_var(gauden_t *g,
 	       vector_t ***variance);
+
+vector_t ****
+gauden_fullvar(gauden_t *g);
+
+int
+gauden_set_fullvar(gauden_t *g,
+		   vector_t ****variance);
 
 vector_t ***
 gauden_alloc_param(uint32 n_cb,
@@ -238,10 +248,14 @@ gauden_alloc_l_acc(gauden_t *g, uint32 n_lcl,
 		   int32 mean_reest,
 		   int32 var_reest,
 		   int32 mllr_mult,
-		   int32 mllr_add);
+		   int32 mllr_add,
+		   int32 fullvar);
 
 void
 gauden_free_param(vector_t ***p);
+
+void
+gauden_free_param_full(vector_t ****p);
 
 vector_t ***gauden_l_macc(gauden_t *g);
 
@@ -256,6 +270,14 @@ gauden_accum_param(vector_t ***out,
 		   uint32 n_feat,
 		   uint32 n_density,
 		   const uint32 *veclen);
+
+void
+gauden_accum_param_full(vector_t ****out,
+			vector_t ****in,
+			uint32 n_mgau,
+			uint32 n_feat,
+			uint32 n_density,
+			const uint32 *veclen);
 
 void
 gauden_norm_wt_mean(vector_t ***in_mean,
@@ -277,6 +299,16 @@ gauden_norm_wt_var(vector_t ***in_var,
 		   uint32 n_density,
 		   const uint32 *veclen);
 
+void
+gauden_norm_wt_fullvar(vector_t ****in_var,
+		       vector_t ****wt_var,
+		       int32 pass2var,
+		       float32 ***dnom,
+		       vector_t ***mean,
+		       uint32 n_mgau,
+		       uint32 n_feat,
+		       uint32 n_density,
+		       const uint32 *veclen);
 int
 gauden_eval_precomp(gauden_t *g);
 
@@ -311,6 +343,13 @@ log_diag_eval(vector_t obs,
 	      float32  norm,
 	      vector_t mean,
 	      vector_t var_fact, /* 1 / (2 * sigma ^ 2) */
+	      uint32 veclen);	
+
+float64
+log_full_eval(vector_t obs,
+	      float32  norm,
+	      vector_t mean,
+	      vector_t *var_inv, /* var^-1 */
 	      uint32 veclen);	
 	  
 int

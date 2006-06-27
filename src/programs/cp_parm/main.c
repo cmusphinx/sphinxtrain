@@ -71,8 +71,10 @@ static uint32 n_stream;
 static uint32 n_density;
 
 static vector_t ***igau;
+static vector_t ****igau_full;
 static uint32 n_cb_i;
 static vector_t ***ogau;
+static vector_t ****ogau_full;
 static uint32 n_cb_o;
 static const uint32 *veclen;
 
@@ -235,6 +237,61 @@ wr_gau(const char *fn)
     return S3_SUCCESS;
 }
 
+int
+rd_gau_full(const char *fn, uint32 n_o)
+{
+    if (s3gau_read_full(fn,
+			&igau_full,
+			&n_cb_i,
+			&n_stream,
+			&n_density,
+			&veclen) != S3_SUCCESS)
+	return S3_ERROR;
+
+    n_cb_o = n_o;
+    
+    ogau_full = (vector_t ****)gauden_alloc_param_full(n_cb_o,
+						       n_stream,
+						       n_density,
+						       veclen);
+    return S3_SUCCESS;
+}
+int
+cp_gau_full(uint32 o,
+	    uint32 i)
+{
+    uint32 j, k, l, ll;
+
+    printf("gau %u <= %u\n", o, i);
+
+    for (j = 0; j < n_stream; j++) {
+	for (k = 0; k < n_density; k++) {
+	    for (l = 0; l < veclen[j]; l++) {
+		for (ll = 0; ll < veclen[j]; ll++) {
+		    ogau_full[o][j][k][l][ll] = igau_full[i][j][k][l][ll];
+		}
+	    }
+	}
+    }
+    return S3_SUCCESS;
+}
+int
+wr_gau_full(const char *fn)
+{
+    if (s3gau_write_full(fn,
+		    (const vector_t ****)ogau_full,
+		    n_cb_o,
+		    n_stream,
+		    n_density,
+		    veclen) != S3_SUCCESS)
+	return S3_ERROR;
+
+    gauden_free_param_full(ogau_full);
+    gauden_free_param_full(igau_full);
+
+    return S3_SUCCESS;
+}
+
 static int
 rd_parm()
 {
@@ -244,6 +301,10 @@ rd_parm()
     }
     if (cmd_ln_access("-igaufn")) {
 	rd_gau((const char *)cmd_ln_access("-igaufn"),
+		*(uint32 *)cmd_ln_access("-ncbout"));
+    }
+    if (cmd_ln_access("-ifullgaufn")) {
+	rd_gau_full((const char *)cmd_ln_access("-ifullgaufn"),
 		*(uint32 *)cmd_ln_access("-ncbout"));
     }
     if (cmd_ln_access("-itmatfn")) {
@@ -272,6 +333,9 @@ cp_parm()
 	if (ogau) {
 	    cp_gau(o, i);
 	}
+	if (ogau_full) {
+	    cp_gau_full(o, i);
+	}
 	if (otmat) {
 	    cp_tmat(o, i);
 	}
@@ -289,6 +353,9 @@ wr_parm()
     }
     if (ogau) {
 	wr_gau((const char *)cmd_ln_access("-ogaufn"));
+    }
+    if (ogau_full) {
+	wr_gau_full((const char *)cmd_ln_access("-ofullgaufn"));
     }
     if (otmat) {
 	wr_tmat((const char *)cmd_ln_access("-otmatfn"));

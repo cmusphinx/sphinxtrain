@@ -45,9 +45,14 @@
  *			e^{-{1 \over 2} \sum_{i=1}^d ({x_i - m_i \over \sigma_i})^2}$$
  *
  *	(just dump the above string into a TeX file)
+ *
+ *      And the functions for full multivariate Gaussian densities:
+ *
+ *      $\frac{1}{\sqrt{2 \pi^d ||\Sigma||}} \exp -\frac{1}{2}(x - \mu)\Sigma(x - \mu)^T$
  *		
  * Author: 
  * 	Eric H. Thayer (eht@cs.cmu.edu)
+ *      David Huggins-Daines (dhuggins@cs.cmu.edu)
  *********************************************************************/
 
 #include <s3/gauden.h>
@@ -56,6 +61,7 @@
 #include <s3/cmd_ln.h>
 #include <s3/feat.h>
 #include <s3/err.h>
+#include <s3/matrix.h>
 
 #include <float.h>
 #include <math.h>
@@ -118,7 +124,11 @@ gauden_free(gauden_t *g)
     /* free the variances (if any) */
     if (g->var)
 	gauden_free_param(g->var);
+    if (g->fullvar)
+	gauden_free_param_full(g->fullvar);
+	    
     g->var = NULL;
+    g->fullvar = NULL;
 
     /* free the density normalization terms */
     if (g->norm)
@@ -315,7 +325,7 @@ gauden_set_mean(gauden_t *g, vector_t ***mean)
 
     return S3_SUCCESS;
 }
-
+
 vector_t ***
 gauden_var(gauden_t *g)
 {
@@ -326,6 +336,19 @@ int
 gauden_set_var(gauden_t *g, vector_t ***variance)
 {
     g->var = variance;
+
+    return S3_SUCCESS;
+}
+vector_t ****
+gauden_fullvar(gauden_t *g)
+{
+    return g->fullvar;
+}
+
+int
+gauden_set_fullvar(gauden_t *g, vector_t ****variance)
+{
+    g->fullvar = variance;
 
     return S3_SUCCESS;
 }
@@ -350,6 +373,19 @@ diag_norm(vector_t var,
     return - 0.5 * (log_det + p);
 }
 
+float32
+full_norm(vector_t *var,
+	  uint32 len)
+{
+    float64 log_det;
+    float32 p;
+
+    log_det = log(fabs(determinant(var, len)));
+    p = len * log(2.0 * M_PI);
+
+    return - 0.5 * (log_det + p);
+}
+
 void
 gauden_compute_norm(gauden_t *g)
 {
@@ -365,7 +401,10 @@ gauden_compute_norm(gauden_t *g)
     for (i = 0; i < g->n_mgau; i++) {
 	for (j = 0; j < g->n_feat; j++) {
 	    for (k = 0; k < g->n_density; k++) {
-		g->norm[i][j][k] = diag_norm(g->var[i][j][k], g->veclen[j]);
+		if (g->fullvar)
+		    g->norm[i][j][k] = full_norm(g->fullvar[i][j][k], g->veclen[j]);
+		else
+		    g->norm[i][j][k] = diag_norm(g->var[i][j][k], g->veclen[j]);
 	    }
 	}
     }
@@ -379,7 +418,13 @@ gauden_floor_variance(gauden_t *g)
     for (i = 0; i < g->n_mgau; i++) {
 	for (j = 0; j < g->n_feat; j++) {
 	    for (k = 0; k < g->n_density; k++) {
-		vector_floor(g->var[i][j][k], g->veclen[j], min_var);
+		if (g->fullvar) {
+		    uint32 l;
+		    for (l = 0; l < g->n_density; ++l)
+			vector_floor(g->fullvar[i][j][k][l], g->veclen[j], min_var);
+		}
+		else
+		    vector_floor(g->var[i][j][k], g->veclen[j], min_var);
 	    }
 	}
     }
@@ -434,6 +479,28 @@ gauden_invert_variance(gauden_t *g)
     return S3_SUCCESS;
 }
 
+int
+gauden_invert_variance_full(gauden_t *g)
+{
+    uint32 i, j, k;
+
+    for (i = 0; i < g->n_mgau; i++) {
+	for (j = 0; j < g->n_feat; j++) {
+	    for (k = 0; k < g->n_density; k++) {
+		/* Yes, this works in-place (we hope) */
+		if (invert(g->fullvar[i][j][k], g->fullvar[i][j][k],
+			   g->veclen[j]) != S3_SUCCESS) {
+		    /* This really is a fatal error, I think. */
+		    E_FATAL("Singular covariance matrix ([%d][%d][%d]), can't continue!\n",
+			    i, j, k);
+		}
+	    }
+	}
+    }
+
+    return S3_SUCCESS;
+}
+
 /*
  * Precompute term 1 / (2 * \sigma_i ^ 2) and normalization factor (determinant
  * of covariance matrix).
@@ -442,8 +509,13 @@ int
 gauden_eval_precomp(gauden_t *g)
 {
     gauden_compute_norm(g);	/* compute normalization factor for Gaussians */
-    gauden_double_variance(g);	/* pre-multiply variances by 2 for EXP dnom */
-    gauden_invert_variance(g);	/* compute 1/(2 sigma^2) terms */
+    if (g->fullvar) {
+	gauden_invert_variance_full(g);
+    }
+    else {
+	gauden_double_variance(g);	/* pre-multiply variances by 2 for EXP dnom */
+	gauden_invert_variance(g);	/* compute 1/(2 sigma^2) terms */
+    }
     
     return S3_SUCCESS;
 }
@@ -486,6 +558,13 @@ alloc_acc(gauden_t *g, uint32 n_id)
     return out;
 }
 
+static vector_t ****
+alloc_acc_full(gauden_t *g, uint32 n_id)
+{
+    /* FIXME: Shouldn't this work above too?  Let's try it... */
+    return gauden_alloc_param_full(n_id, g->n_feat, g->n_density, g->veclen);
+}
+
 void
 gauden_free_acc(gauden_t *g)
 {
@@ -498,6 +577,11 @@ gauden_free_acc(gauden_t *g)
 
     if (g->vacc) {
 	gauden_free_param(g->vacc);
+    }
+    g->vacc = NULL;
+
+    if (g->fullvacc) {
+	gauden_free_param_full(g->fullvacc);
     }
     g->vacc = NULL;
 
@@ -529,7 +613,10 @@ gauden_alloc_acc(gauden_t *g)
 	g->macc = alloc_acc(g, g->n_mgau);
     }
     if (*(int32 *)cmd_ln_access("-varreest") == TRUE) {
-	g->vacc = alloc_acc(g, g->n_mgau);
+	if (cmd_ln_int32("-fullvar") == TRUE)
+	    g->fullvacc = alloc_acc_full(g, g->n_mgau);
+	else
+	    g->vacc = alloc_acc(g, g->n_mgau);
     }
     
     if (*(int32 *)cmd_ln_access("-meanreest") == TRUE) {
@@ -574,6 +661,11 @@ gauden_free_l_acc(gauden_t *g)
     }
     g->l_vacc = NULL;
 
+    if (g->l_fullvacc) {
+	gauden_free_param_full(g->l_fullvacc);
+    }
+    g->l_fullvacc = NULL;
+
     if (g->l_dnom) {
 	ckd_free_3d((void ***)g->l_dnom);
     }
@@ -598,7 +690,8 @@ gauden_alloc_l_acc(gauden_t *g, uint32 n_lcl,
 		   int32 mean_reest,
 		   int32 var_reest,
 		   int32 mllr_mult,
-		   int32 mllr_add)
+		   int32 mllr_add,
+		   int32 fullvar)
 {
     uint32 f, m;
 
@@ -612,8 +705,14 @@ gauden_alloc_l_acc(gauden_t *g, uint32 n_lcl,
     }
     if (var_reest) {
 	/* allocate variance accumulators */
-	assert(g->l_vacc == NULL);
-	g->l_vacc = alloc_acc(g, n_lcl);
+	if (fullvar) {
+	    assert(g->l_fullvacc == NULL);
+	    g->l_fullvacc = alloc_acc_full(g, n_lcl);
+	}
+	else {
+	    assert(g->l_vacc == NULL);
+	    g->l_vacc = alloc_acc(g, n_lcl);
+	}
     }
     if (mean_reest || var_reest) {
 	/* allocate mean/var normalization accumulators */
@@ -657,6 +756,11 @@ vector_t ***gauden_l_vacc(gauden_t *g)
     return g->l_vacc;
 }
 
+vector_t ****gauden_l_fullvacc(gauden_t *g)
+{
+    return g->l_fullvacc;
+}
+
 float32 ***gauden_l_dnom(gauden_t *g)
 {
     return g->l_dnom;
@@ -666,6 +770,12 @@ void gauden_free_param(vector_t ***p)
 {
     ckd_free(p[0][0][0]);
     ckd_free_3d((void ***)p);
+}
+
+void gauden_free_param_full(vector_t ****p)
+{
+    ckd_free(p[0][0][0][0]);
+    ckd_free_4d((void ****)p);
 }
 
 #if 0
@@ -809,6 +919,39 @@ log_diag_eval(vector_t obs,
     return d;
 }
 
+float64
+log_full_eval(vector_t obs,
+	      float32 norm,
+	      vector_t mean,
+	      vector_t *var_inv,
+	      uint32 veclen)
+{
+    float64 *diff, *vtmp, d;
+    uint32 i, j;
+    
+    d = norm;
+
+    /* Precompute x-m */
+    diff = ckd_malloc(veclen * sizeof(float64));
+    for (i = 0; i < veclen; i++)
+	diff[i] = obs[i] - mean[i];
+
+    /* Compute -0.5 * (x-m) * sigma^-1 * (x-m)^T */
+    /* FIXME: We could probably use BLAS for this, though it is
+     * unclear if that would actually be faster (particularly with
+     * refblas) */
+    vtmp = ckd_calloc(veclen, sizeof(float64));
+    for (i = 0; i < veclen; ++i)
+	for (j = 0; j < veclen; ++j)
+	    vtmp[j] += var_inv[i][j] * diff[i];
+    for (i = 0; i < veclen; ++i)
+	d -= 0.5 * diff[i] * vtmp[i];
+    ckd_free(vtmp);
+    ckd_free(diff);
+
+    return d;
+}
+
 /*********************************************************************
  *
  * Function: 
@@ -867,7 +1010,7 @@ log_diag_eval(vector_t obs,
  * 
  *********************************************************************/
 
-void
+static void
 log_full_densities(float64 *den,
 		   uint32  *den_idx,	/* the indices of the component densities */
 		   uint32   n_density,	/* The number of component densities of the mixture */
@@ -885,7 +1028,25 @@ log_full_densities(float64 *den,
     }
 }
 
-void
+static void
+log_full_densities_full(float64 *den,
+			uint32  *den_idx,
+			uint32   n_density,
+			uint32   veclen,
+			vector_t obs,
+			vector_t *mean,
+			vector_t **var,
+			float32  *log_norm)
+{
+    uint32 i;
+    
+    for (i = 0; i < n_density; i++) {
+	den[i] = log_full_eval(obs, log_norm[i], mean[i], var[i], veclen);
+	den_idx[i] = i;
+    }
+}
+
+static void
 log_topn_densities(float64 *den,
 		   uint32 *den_idx,
 		   uint32 n_top,
@@ -1051,7 +1212,24 @@ gauden_compute(float64 **den,		/* density array for a mixture Gaussian */
     /* make sure this is true at initialization time */
     assert(g->n_top <= g->n_density);
 
-    if (g->n_top == g->n_density) {
+    /* Top-N computation not (yet) possible for full covariances */
+    if (g->fullvar) {
+	for (j = 0; j < g->n_feat; j++) {
+	    log_full_densities_full(den[j],
+			       den_idx[j],
+			       g->n_density,
+			       g->veclen[j],
+			       obs[j],
+			       g->mean[mgau][j],
+			       g->fullvar[mgau][j],
+			       g->norm[mgau][j]);
+
+	    for (k = 0; k < g->n_density; k++) {
+		den[j][k] = EXPF( den[j][k] );
+	    }
+	}
+    }
+    else if (g->n_top == g->n_density) {
 	for (j = 0; j < g->n_feat; j++) {
 	    log_full_densities(den[j],
 			       den_idx[j],
@@ -1109,7 +1287,20 @@ gauden_compute_log(float64 **den,		/* density array for a mixture Gaussian */
     /* make sure this is true at initialization time */
     assert(g->n_top <= g->n_density);
 
-    if (g->n_top == g->n_density) {
+    /* Top-N computation not (yet) possible for full covariances */
+    if (g->fullvar) {
+	for (j = 0; j < g->n_feat; j++) {
+	    log_full_densities_full(den[j],
+			       den_idx[j],
+			       g->n_density,
+			       g->veclen[j],
+			       obs[j],
+			       g->mean[mgau][j],
+			       g->fullvar[mgau][j],
+			       g->norm[mgau][j]);
+	}
+    }
+    else if (g->n_top == g->n_density) {
 	for (j = 0; j < g->n_feat; j++) {
 	    log_full_densities(den[j],
 			       den_idx[j],
@@ -1406,6 +1597,29 @@ gauden_accum_param(vector_t ***out,
 }
 
 void
+gauden_accum_param_full(vector_t ****out,
+			vector_t ****in,
+			uint32 n_mgau,
+			uint32 n_feat,
+			uint32 n_density,
+			const uint32 *veclen)
+{
+    uint32 i, j, k, l, ll;
+
+    for (i = 0; i < n_mgau; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    for (k = 0; k < n_density; k++) {
+		for (l = 0; l < veclen[j]; l++) {
+		    for (ll = 0; ll < veclen[j]; ll++) {
+			out[i][j][k][l][ll] += in[i][j][k][l][ll];
+		    }
+		}
+	    }
+	}
+    }
+}
+
+void
 gauden_norm_wt_mean(vector_t ***in_mean,
 		    vector_t ***wt_mean,
 		    float32 ***dnom,
@@ -1483,6 +1697,60 @@ gauden_norm_wt_var(vector_t ***in_var,
 		    }
 		}
 	    }
+	}
+    }
+}
+
+void
+gauden_norm_wt_fullvar(vector_t ****in_var,
+		       vector_t ****wt_var,
+		       int32 pass2var,
+		       float32 ***dnom,
+		       vector_t ***mean,
+		       uint32 n_mgau,
+		       uint32 n_feat,
+		       uint32 n_density,
+		       const uint32 *veclen)
+{
+    uint32 i, j, k, l, ll;
+
+    for (i = 0; i < n_mgau; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    vector_t *outermean = NULL;
+	    if (!pass2var)
+		outermean = (vector_t *)ckd_calloc_2d(veclen[j], veclen[j], sizeof(float32));
+		
+	    for (k = 0; k < n_density; k++) {
+		if (!pass2var)
+		    outerproduct(outermean,
+				 mean[i][j][k], mean[i][j][k],
+				 veclen[j]);
+		if (dnom[i][j][k] != 0) {
+		    for (l = 0; l < veclen[j]; l++) {
+			for (ll = 0; ll < veclen[j]; ll++) {
+			    if (!pass2var) {
+				wt_var[i][j][k][l][ll] =
+				    (wt_var[i][j][k][l][ll] / dnom[i][j][k]) -
+				    outermean[l][ll];
+			    }
+			    else {
+				wt_var[i][j][k][l][ll] /= dnom[i][j][k];
+			    }
+			}
+		    }
+		}
+		else {
+		    if (in_var) {
+			E_INFO("Copying unseen var (%u, %u, %u) from in_var\n",
+			       i, j, k);
+			for (l = 0; l < veclen[j]; l++) {
+			    wt_var[i][j][k][l] = in_var[i][j][k][l];
+			}
+		    }
+		}
+	    }
+	    if (!pass2var)
+		ckd_free_2d((void **)outermean);
 	}
     }
 }

@@ -69,6 +69,16 @@ int rdacc_den(const char *dir,
 	      uint32 *inout_n_density,
 	      const uint32 **inout_veclen);
 
+int
+rdacc_den_full(const char *dir,
+	       vector_t ****inout_wt_mean,
+	       vector_t *****inout_wt_var,
+	       int32 *inout_pass2var,
+	       float32  ****inout_dnom,
+	       uint32 *inout_n_mgau,
+	       uint32 *inout_n_stream,
+	       uint32 *inout_n_density,
+	       const uint32 **inout_veclen);
 
 #endif /* S3ACC_IO_H */ 
 

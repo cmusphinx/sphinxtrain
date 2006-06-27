@@ -147,7 +147,8 @@ baum_welch_update(float64 *log_forw_prob,
 		  int32 var_reest,
 		  int32 pass2var,
 		  int32 mllr_mult, /* MLLR: accumulate multiplicative term */
-		  int32 mllr_add)  /* MLLR: accumulate additive term */
+		  int32 mllr_add,  /* MLLR: accumulate additive term */
+		  int32 var_is_full)
 {
     float64 *scale = NULL;
     float64 **dscale = NULL;
@@ -230,7 +231,7 @@ baum_welch_update(float64 *log_forw_prob,
 			  state, n_state,
 			  inv, b_beam, spthresh,
 			  mixw_reest, tmat_reest, mean_reest, var_reest, pass2var,
-			  mllr_mult, mllr_add);
+			  mllr_mult, mllr_add, var_is_full);
     if (bwd_timer)
 	timing_stop(bwd_timer);
 
@@ -253,7 +254,7 @@ baum_welch_update(float64 *log_forw_prob,
 	timing_start(rstu_timer);
     accum_global(inv, state, n_state,
 		 mixw_reest, tmat_reest, mean_reest, var_reest,
-		 mllr_mult, mllr_add);
+		 mllr_mult, mllr_add, var_is_full);
     if (rstu_timer)
 	timing_stop(rstu_timer);
 

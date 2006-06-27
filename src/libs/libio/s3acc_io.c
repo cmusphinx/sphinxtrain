@@ -343,3 +343,136 @@ rdacc_den(const char *dir,
 
     return S3_SUCCESS;
 }
+
+int
+rdacc_den_full(const char *dir,
+	       vector_t ****inout_wt_mean,
+	       vector_t *****inout_wt_var,
+	       int32 *inout_pass2var,
+	       float32  ****inout_dnom,
+	       uint32 *inout_n_mgau,
+	       uint32 *inout_n_stream,
+	       uint32 *inout_n_density,
+	       const uint32 **inout_veclen)
+{
+    char fn[MAXPATHLEN+1];
+    vector_t ***in_wt_mean;
+    vector_t ***wt_mean;
+    vector_t ****in_wt_var;
+    vector_t ****wt_var;
+    float32 ***in_dnom;
+    float32 ***dnom;
+    uint32 n_mgau;
+    uint32 n_stream;
+    uint32 n_density;
+    const uint32 *veclen;
+    const uint32 *in_veclen;
+    int32 pass2var;
+    int i;
+
+    sprintf(fn, "%s/gauden_counts", dir);
+
+    if (ck_readable(fn)) {
+	if (s3gaucnt_read_full(fn,
+			  &in_wt_mean,
+			  &in_wt_var,
+			  &pass2var,
+			  &in_dnom,
+			  &n_mgau,
+			  &n_stream,
+			  &n_density,
+			  &in_veclen) != S3_SUCCESS) {
+	    fflush(stdout);
+	    perror(fn);
+	    
+	    return S3_ERROR;
+	}
+
+	wt_mean = *inout_wt_mean;
+	wt_var = *inout_wt_var;
+	dnom = *inout_dnom;
+	veclen = *inout_veclen;
+
+	if (wt_mean == NULL) {
+
+	    /* if a gauden_counts file exists, it will have reestimated means */
+
+	    *inout_wt_mean = wt_mean = in_wt_mean;
+	    *inout_dnom = dnom = in_dnom;
+	    *inout_n_mgau = n_mgau;
+	    *inout_n_stream = n_stream;
+	    *inout_n_density = n_density;
+	    *inout_veclen = in_veclen;
+	    *inout_pass2var = pass2var;
+
+	    if (wt_var == NULL && in_wt_var != NULL) {
+		*inout_wt_var = wt_var = in_wt_var;
+	    }
+	}
+	else {
+	    int err = FALSE;
+	    
+	    /* check if matrices are able to be added */
+	    if (*inout_n_mgau != n_mgau) {
+		E_ERROR("# mix. Gau. for file %s (== %u) != prior # mix. Gau. (== %u)\n",
+			fn, n_mgau, *inout_n_mgau);
+		err = TRUE;
+	    }
+
+	    if (*inout_n_stream != n_stream) {
+		E_ERROR("# stream for file %s (== %u) != prior # stream (== %u)\n",
+			fn, n_stream, *inout_n_stream);
+		err = TRUE;
+	    }
+
+	    if (*inout_n_density != n_density) {
+		E_ERROR("# density comp/mix for file %s (== %u) != prior # density, %u\n",
+			fn, n_density, *inout_n_density);
+		err = TRUE;
+	    }
+
+	    if (*inout_pass2var != pass2var) {
+		E_ERROR("2 pass var %s in %s, but %s in others.\n",
+			fn, (pass2var ? "true" : "false"),
+			(*inout_pass2var ? "true" : "false"));
+		err = TRUE;
+	    }
+
+	    for (i = 0; i < n_stream; i++) {
+		if (veclen[i] != in_veclen[i]) {
+		    E_ERROR("vector length of stream %u (== %u) != prior length (== %u)\n",
+			    i, in_veclen[i], veclen[i]);
+		    err = TRUE;
+		}
+	    }
+
+	    ckd_free((void *)in_veclen);
+	    
+	    if (err)
+		return S3_ERROR;
+
+	    /* accumulate values */
+	    accum_3d(dnom, in_dnom,
+		     n_mgau, n_stream, n_density);
+
+	    gauden_accum_param(wt_mean, in_wt_mean,
+			       n_mgau, n_stream, n_density, veclen);
+	    gauden_free_param(in_wt_mean);
+
+	    if (wt_var) {
+		assert(in_wt_var);
+		
+		gauden_accum_param_full(wt_var, in_wt_var,
+					n_mgau, n_stream, n_density, veclen);
+		gauden_free_param_full(in_wt_var);
+	    }
+	}
+    }
+    else {
+	E_ERROR("Unable to access %s\n", fn);
+
+	return S3_ERROR;
+    }
+
+    return S3_SUCCESS;
+}

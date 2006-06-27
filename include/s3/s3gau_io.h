@@ -114,6 +114,28 @@ s3gaudnom_read(const char *fn,
 	       uint32 *out_n_density);
 
 int
+s3gaucnt_read_full(const char *fn,
+		   vector_t ****out_wt_mean,
+		   vector_t *****out_wt_var,
+		   int32 *out_pass2var,
+		   float32 ****out_dnom,
+		   uint32 *out_n_cb,
+		   uint32 *out_n_feat,
+		   uint32 *out_n_density,
+		   const uint32 **out_veclen);
+
+int
+s3gaucnt_write_full(const char *fn,
+		    vector_t ***wt_mean,
+		    vector_t ****wt_var,
+		    int32 pass2var,
+		    float32 ***dnom,
+		    uint32 n_cb,
+		    uint32 n_feat,
+		    uint32 n_density,
+		    const uint32 *veclen);
+
+int
 s3gaudnom_write(const char *fn,
 		float32 ***dnom,
 		uint32 n_cb,

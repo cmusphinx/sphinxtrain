@@ -44,8 +44,9 @@
  * 	Eric H. Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
+#include <s3/matrix.h>
+#include <s3/ckd_alloc.h>
 #include "accum.h"
-
 
 int
 accum_state_mean(vector_t ***mean,
@@ -146,6 +147,67 @@ accum_state_var(vector_t ***var,
 		    var[ci_s][f][0][c] += diff * diff;
 		}
 	    }
+	}
+    }
+    return 0;
+}
+
+int
+accum_state_fullvar(vector_t ****var,
+		    vector_t ***mean,
+		    float32  ***dnom,
+		    vector_t **feat,
+		    uint32 *del_b,
+		    uint32 *del_e,
+		    uint32 n_del,
+		    uint32 n_feat,
+		    const uint32 *veclen,
+		    uint32 *sseq,
+		    uint32 *ci_sseq,
+		    uint32 n_frame)
+{
+    uint32 t;		/* time (in frames) */
+    uint32 s;		/* a tied state */
+    uint32 ci_s;	/* a CI tied state */
+    uint32 f;		/* a feature stream idx */
+    uint32 c;		/* a vector component idx */
+
+    for (t = 0; t < n_frame; t++) {
+
+	if (sseq && ci_sseq) {
+	    /* get the tied state for time t */
+	    s = sseq[t];
+	
+	    /* get the CI state as well */
+	    ci_s = ci_sseq[t];
+	}
+	else {
+	    s = 0;
+	    ci_s = 0;
+	}
+
+	for (f = 0; f < n_feat; f++) {
+	    vector_t dvec = ckd_calloc(veclen[f], sizeof(float32));
+	    vector_t *cov = (vector_t *)ckd_calloc_2d(veclen[f], veclen[f], sizeof(float32));
+
+	    dnom[s][f][0] += 1.0;
+	    if (s != ci_s) {
+		dnom[ci_s][f][0] += 1.0;
+	    }
+	    for (c = 0; c < veclen[f]; c++)
+		dvec[c] = feat[t][f][c] - mean[s][f][0][c];
+
+	    outerproduct(cov, dvec, dvec, veclen[f]);
+	    matrixadd(var[s][f][0], cov, veclen[f], veclen[f]);
+
+	    if (s != ci_s) {
+		for (c = 0; c < veclen[f]; c++)
+		    dvec[c] = feat[t][f][c] - mean[ci_s][f][0][c];
+		outerproduct(cov, dvec, dvec, veclen[f]);
+		matrixadd(var[ci_s][f][0], cov, veclen[f], veclen[f]);
+	    }
+	    ckd_free(dvec);
+	    ckd_free_2d((void **)cov);
 	}
     }
     return 0;

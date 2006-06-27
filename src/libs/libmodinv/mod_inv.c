@@ -150,10 +150,11 @@ mod_inv_read_gauden(model_inventory_t *minv,
 		    const char *meanfn,
 		    const char *varfn,
 		    float32 varfloor,
-		    uint32 n_top)
+		    uint32 n_top,
+		    int32 var_is_full)
 {
     vector_t ***mean;
-    vector_t ***var;
+    vector_t ***var = NULL, ****fullvar = NULL;
     uint32 n_mgau, i;
     uint32 n_feat, j;
     uint32 n_density, k;
@@ -190,13 +191,25 @@ mod_inv_read_gauden(model_inventory_t *minv,
 	minv->n_density = n_density;
     }
 
-    if (s3gau_read(varfn,
-		   &var,
-		   &i,
-		   &j,
-		   &k,
-		   &vl) != S3_SUCCESS) {
-	return S3_ERROR;
+    if (var_is_full) {
+	if (s3gau_read_full(varfn,
+		       &fullvar,
+		       &i,
+		       &j,
+		       &k,
+		       &vl) != S3_SUCCESS) {
+	    return S3_ERROR;
+	}
+    }
+    else {
+	if (s3gau_read(varfn,
+		       &var,
+		       &i,
+		       &j,
+		       &k,
+		       &vl) != S3_SUCCESS) {
+	    return S3_ERROR;
+	}
     }
 
     if (j != minv->n_feat) {
@@ -231,7 +244,10 @@ mod_inv_read_gauden(model_inventory_t *minv,
     gauden_set_n_density(g, n_density);
 
     gauden_set_mean(g, mean);
-    gauden_set_var(g, var);
+    if (var_is_full)
+	gauden_set_fullvar(g, fullvar);
+    else
+	gauden_set_var(g, var);
 
     gauden_set_min_var(varfloor);
     gauden_floor_variance(g);

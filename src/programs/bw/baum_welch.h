@@ -71,7 +71,8 @@ baum_welch_update(float64 *log_forw_prob,
 		  int32 var_reest,
 		  int32 pass2var,
 		  int32 mllr_mult,
-		  int32 mllr_add);
+		  int32 mllr_add,
+		  int32 var_is_full);
 
 #endif /* BAUM_WELCH_H */ 
 

@@ -128,7 +128,7 @@ viterbi_update(float64 *out_log_prob,
 	l_mixw_acc = NULL;
 
     gauden_alloc_l_acc(g, n_obs,
-		       mean_reest, var_reest, FALSE, FALSE);
+		       mean_reest, var_reest, FALSE, FALSE, FALSE);
 
     l_dnom = g->l_dnom;
 

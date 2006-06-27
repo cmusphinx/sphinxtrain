@@ -107,6 +107,7 @@
 #include <s3/ckd_alloc.h>
 #include <s3/s2_param.h>
 #include <s3/feat.h>
+#include <s3/matrix.h>
 #include <s3/s3.h>
 
 #include <s3/state_seq.h>
@@ -208,7 +209,8 @@ accum_gauden(float32 ***denacc,
 	     int32 mean_reest,
 	     int32 var_reest,
 	     int32 pass2var,
-	     float32 ***wacc)
+	     float32 ***wacc,
+	     int32 var_is_full)
 {
     uint32 g_i, i, j, k, kk, l, mc=0;
 
@@ -219,6 +221,11 @@ accum_gauden(float32 ***denacc,
 
     vector_t ***vacc = g->l_vacc;
     vector_t v = NULL;
+
+    vector_t ****fullvacc = g->l_fullvacc;
+    vector_t *fv = NULL;
+    vector_t *cov = NULL;
+    vector_t dvec = NULL;
 
     float32 ***dnom = g->l_dnom;
 
@@ -239,6 +246,13 @@ accum_gauden(float32 ***denacc,
 	for (j = 0; j < gauden_n_feat(g); j++) {
 
 	    feat = frame[j];
+
+	    if (var_is_full) {
+		ckd_free_2d((void **)cov);
+		cov = (vector_t *)ckd_calloc_2d(g->veclen[j], g->veclen[j], sizeof(float32));
+		ckd_free(dvec);
+		dvec = ckd_calloc(g->veclen[j], sizeof(float32));
+	    }
 
 	    if (spkr_xfrm_ainv || spkr_xfrm_b) {
 		/* If there is a speaker MLLR inverse transform
@@ -278,9 +292,25 @@ accum_gauden(float32 ***denacc,
 		}
 
 		if (var_reest) {
-		    v = vacc[i][j][k];	/* the vector accumulator for variance (i,j,k) */
+		    if (var_is_full)
+			fv = fullvacc[i][j][k];
+		    else
+			v = vacc[i][j][k];	/* the vector accumulator for variance (i,j,k) */
 		}
 
+		if (var_reest && var_is_full) {
+		    if (!pass2var)
+			outerproduct(cov, feat, feat, g->veclen[j]);
+		    else {
+			for (l = 0; l < g->veclen[j]; ++l) {
+			    dvec[l] = feat[l] - pm[l];
+			    dvec[l] *= dvec[l];
+			}
+			outerproduct(cov, dvec, dvec, g->veclen[j]);
+		    }
+		    scalarmultiply(cov, obs_cnt, g->veclen[j], g->veclen[j]);
+		    matrixadd(fv, cov, g->veclen[j], g->veclen[j]);
+		}
 		for (l = 0; l < g->veclen[j]; l++) {
 		    if (mean_reest) {
 			/* Reest means based on transformed features; if any */
@@ -288,7 +318,7 @@ accum_gauden(float32 ***denacc,
 			m[l] += obs_cnt * xfeat[l];
 		    }
 
-		    if (var_reest) {
+		    if (var_reest && !var_is_full) {
 			/* Always reest vars on untransformed features for now */
 
 			if (!pass2var)
@@ -300,9 +330,15 @@ accum_gauden(float32 ***denacc,
 			    v[l] += obs_cnt * diff;
 			}
 		    }
-		}		    
+		}
 		/* accumulate observation count for all densities */
 		dnom[i][j][k] += obs_cnt;
+	    }
+	    if (var_is_full) {
+		ckd_free_2d((void **)cov);
+		cov = NULL;
+		ckd_free(dvec);
+		dvec = NULL;
 	    }
 	}
     }
@@ -343,6 +379,47 @@ accum_global_gauden(vector_t ***acc,
 		
 		for (l = 0; l < g->veclen[j]; l++) {
 		    acc[i][j][k][l] += l_acc[ii][j][k][l];
+		}
+	    }
+	}
+    }
+}
+
+void
+accum_global_gauden_full(vector_t ****acc,
+			 vector_t ****l_acc,
+			 gauden_t *g,
+			 uint32 *lcl2glb,
+			 uint32 n_lcl2glb)
+{
+    uint32 n_feat;
+    uint32 n_density;
+    uint32 ii, i, j, k, l, ll;
+
+    if (acc == NULL) {
+	/* nothing to do */
+
+	return;
+    }
+
+    n_feat = gauden_n_feat(g);
+    n_density = gauden_n_density(g);
+
+    /* for each mixture density */
+    for (ii = 0; ii < n_lcl2glb; ii++) {
+	/* map local density id to global one */
+	i = lcl2glb[ii];
+
+	/* for each feature */
+	for (j = 0; j < n_feat; j++) {
+
+	    /* for each density in the mixture density */
+	    for (k = 0; k < n_density; k++) {
+		
+		for (l = 0; l < g->veclen[j]; l++) {
+		    for (ll = 0; ll < g->veclen[j]; ll++) {
+			acc[i][j][k][l][ll] += l_acc[ii][j][k][l][ll];
+		    }
 		}
 	    }
 	}
@@ -483,7 +560,8 @@ accum_global(model_inventory_t *inv,
 	     int32 mean_reest,
 	     int32 var_reest,
              int32 mllr_mult,    /* MLLR: accumulate A of Ax + B */
-             int32 mllr_add)     /* MLLR: accumulate B of Ax + B */
+             int32 mllr_add,     /* MLLR: accumulate B of Ax + B */
+	     int32 var_is_full)
 {
     gauden_t *g;
 
@@ -506,8 +584,12 @@ accum_global(model_inventory_t *inv,
     }
     if (var_reest) {
 	/* add local variance accumulators to global ones */
-	accum_global_gauden(g->vacc, g->l_vacc, g,
-			    inv->cb_inverse, inv->n_cb_inverse);
+	if (var_is_full)
+	    accum_global_gauden_full(g->fullvacc, g->l_fullvacc, g,
+				     inv->cb_inverse, inv->n_cb_inverse);
+	else
+	    accum_global_gauden(g->vacc, g->l_vacc, g,
+				inv->cb_inverse, inv->n_cb_inverse);
     }
     if (mean_reest || var_reest) {
 	/* add local mean/variance denominator accumulators to global ones */

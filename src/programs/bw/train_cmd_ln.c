@@ -349,6 +349,12 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_DEFAULT,
 	  "The var parameter file name"},
 
+	{ "-fullvar",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Variances are full covariance matrices"},
+
 	{ "-mwfloor",
 	  CMD_LN_FLOAT32,
 	  CMD_LN_NO_VALIDATION,

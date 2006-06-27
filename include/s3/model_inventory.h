@@ -113,7 +113,8 @@ mod_inv_read_gauden(model_inventory_t *minv,
 		    const char *meanfn,
 		    const char *varfn,
 		    float32 varfloor,
-		    uint32 n_top);
+		    uint32 n_top,
+		    int32 var_is_full);
 
 int32
 mod_inv_read_tmat(model_inventory_t *minv,
