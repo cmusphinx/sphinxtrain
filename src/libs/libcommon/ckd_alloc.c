@@ -150,6 +150,8 @@ __ckd_calloc_2d(size_t d1,
 void
 __ckd_free_2d(void **arr, char *file, int line)
 {
+    if (arr == NULL)
+	return;
     __ckd_free(arr[0], file, line);
 
     __ckd_free(arr, file, line);
@@ -200,6 +202,8 @@ __ckd_calloc_3d(size_t d1,
 void
 __ckd_free_3d(void ***arr, char *file, int line)
 {
+    if (arr == NULL)
+	return;
     __ckd_free(arr[0][0], file, line);
 
     __ckd_free(arr[0], file, line);
@@ -263,6 +267,8 @@ __ckd_calloc_4d(size_t d1,
 void
 __ckd_free_4d(void ****arr, char *file, int line)
 {
+    if (arr == NULL)
+	return;
     /* free the underlying store */
     __ckd_free(arr[0][0][0], file, line);
 
