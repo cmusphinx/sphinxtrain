@@ -64,11 +64,6 @@ int32 compute_mllr (
              float32 ****B
             );
 
-int32
-invert(float32 **ainv,
-       float32 **a,
-       int32 len);
-
 int32 solve  (
         float64 **regl,
         float64 *regr,
