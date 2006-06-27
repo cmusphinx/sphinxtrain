@@ -2,28 +2,206 @@
 NOTE: This is generated code. Look in Misc/lapack_lite for information on
       remaking this file.
 */
-#include "s3/f2c.h"
+#include <s3/f2c.h>
 
 #ifdef HAVE_CONFIG
 #include "config.h"
 #else
-extern doublereal dlamch_(char *);
-#define EPSILON dlamch_("Epsilon")
-#define SAFEMINIMUM dlamch_("Safe minimum")
-#define PRECISION dlamch_("Precision")
-#define BASE dlamch_("Base")
+extern doublereal slamch_(char *);
+#define EPSILON slamch_("Epsilon")
+#define SAFEMINIMUM slamch_("Safe minimum")
+#define PRECISION slamch_("Precision")
+#define BASE slamch_("Base")
 #endif
 
-extern doublereal dlapy2_(doublereal *x, doublereal *y);
-
+extern doublereal slapy2_(real *, real *);
 
 
 /* Table of constant values */
 
 static integer c__1 = 1;
 
-/* Subroutine */ int daxpy_(integer *n, doublereal *da, doublereal *dx,
-	integer *incx, doublereal *dy, integer *incy)
+integer isamax_(integer *n, real *sx, integer *incx)
+{
+    /* System generated locals */
+    integer ret_val, i__1;
+    real r__1;
+
+    /* Local variables */
+    static integer i__, ix;
+    static real smax;
+
+
+/*
+       finds the index of element having max. absolute value.
+       jack dongarra, linpack, 3/11/78.
+       modified 3/93 to return if incx .le. 0.
+       modified 12/3/93, array(1) declarations changed to array(*)
+*/
+
+
+    /* Parameter adjustments */
+    --sx;
+
+    /* Function Body */
+    ret_val = 0;
+    if (*n < 1 || *incx <= 0) {
+	return ret_val;
+    }
+    ret_val = 1;
+    if (*n == 1) {
+	return ret_val;
+    }
+    if (*incx == 1) {
+	goto L20;
+    }
+
+/*        code for increment not equal to 1 */
+
+    ix = 1;
+    smax = dabs(sx[1]);
+    ix += *incx;
+    i__1 = *n;
+    for (i__ = 2; i__ <= i__1; ++i__) {
+	if ((r__1 = sx[ix], dabs(r__1)) <= smax) {
+	    goto L5;
+	}
+	ret_val = i__;
+	smax = (r__1 = sx[ix], dabs(r__1));
+L5:
+	ix += *incx;
+/* L10: */
+    }
+    return ret_val;
+
+/*        code for increment equal to 1 */
+
+L20:
+    smax = dabs(sx[1]);
+    i__1 = *n;
+    for (i__ = 2; i__ <= i__1; ++i__) {
+	if ((r__1 = sx[i__], dabs(r__1)) <= smax) {
+	    goto L30;
+	}
+	ret_val = i__;
+	smax = (r__1 = sx[i__], dabs(r__1));
+L30:
+	;
+    }
+    return ret_val;
+} /* isamax_ */
+
+logical lsame_(char *ca, char *cb)
+{
+    /* System generated locals */
+    logical ret_val;
+
+    /* Local variables */
+    static integer inta, intb, zcode;
+
+
+/*
+    -- LAPACK auxiliary routine (version 3.0) --
+       Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+       Courant Institute, Argonne National Lab, and Rice University
+       September 30, 1994
+
+
+    Purpose
+    =======
+
+    LSAME returns .TRUE. if CA is the same letter as CB regardless of
+    case.
+
+    Arguments
+    =========
+
+    CA      (input) CHARACTER*1
+    CB      (input) CHARACTER*1
+            CA and CB specify the single characters to be compared.
+
+   =====================================================================
+
+
+       Test if the characters are equal
+*/
+
+    ret_val = *(unsigned char *)ca == *(unsigned char *)cb;
+    if (ret_val) {
+	return ret_val;
+    }
+
+/*     Now test for equivalence if both characters are alphabetic. */
+
+    zcode = 'Z';
+
+/*
+       Use 'Z' rather than 'A' so that ASCII can be detected on Prime
+       machines, on which ICHAR returns a value with bit 8 set.
+       ICHAR('A') on Prime machines returns 193 which is the same as
+       ICHAR('A') on an EBCDIC machine.
+*/
+
+    inta = *(unsigned char *)ca;
+    intb = *(unsigned char *)cb;
+
+    if (zcode == 90 || zcode == 122) {
+
+/*
+          ASCII is assumed - ZCODE is the ASCII code of either lower or
+          upper case 'Z'.
+*/
+
+	if (inta >= 97 && inta <= 122) {
+	    inta += -32;
+	}
+	if (intb >= 97 && intb <= 122) {
+	    intb += -32;
+	}
+
+    } else if (zcode == 233 || zcode == 169) {
+
+/*
+          EBCDIC is assumed - ZCODE is the EBCDIC code of either lower or
+          upper case 'Z'.
+*/
+
+	if (inta >= 129 && inta <= 137 || inta >= 145 && inta <= 153 || inta
+		>= 162 && inta <= 169) {
+	    inta += 64;
+	}
+	if (intb >= 129 && intb <= 137 || intb >= 145 && intb <= 153 || intb
+		>= 162 && intb <= 169) {
+	    intb += 64;
+	}
+
+    } else if (zcode == 218 || zcode == 250) {
+
+/*
+          ASCII is assumed, on Prime machines - ZCODE is the ASCII code
+          plus 128 of either lower or upper case 'Z'.
+*/
+
+	if (inta >= 225 && inta <= 250) {
+	    inta += -32;
+	}
+	if (intb >= 225 && intb <= 250) {
+	    intb += -32;
+	}
+    }
+    ret_val = inta == intb;
+
+/*
+       RETURN
+
+       End of LSAME
+*/
+
+    return ret_val;
+} /* lsame_ */
+
+/* Subroutine */ int saxpy_(integer *n, real *sa, real *sx, integer *incx,
+	real *sy, integer *incy)
 {
     /* System generated locals */
     integer i__1;
@@ -34,24 +212,24 @@ static integer c__1 = 1;
 
 /*
        constant times a vector plus a vector.
-       uses unrolled loops for increments equal to one.
+       uses unrolled loop for increments equal to one.
        jack dongarra, linpack, 3/11/78.
        modified 12/3/93, array(1) declarations changed to array(*)
 */
 
 
     /* Parameter adjustments */
-    --dy;
-    --dx;
+    --sy;
+    --sx;
 
     /* Function Body */
     if (*n <= 0) {
 	return 0;
     }
-    if (*da == 0.) {
+    if (*sa == 0.f) {
 	return 0;
     }
-    if ((*incx == 1 && *incy == 1)) {
+    if (*incx == 1 && *incy == 1) {
 	goto L20;
     }
 
@@ -70,7 +248,7 @@ static integer c__1 = 1;
     }
     i__1 = *n;
     for (i__ = 1; i__ <= i__1; ++i__) {
-	dy[iy] += *da * dx[ix];
+	sy[iy] += *sa * sx[ix];
 	ix += *incx;
 	iy += *incy;
 /* L10: */
@@ -91,7 +269,7 @@ L20:
     }
     i__1 = m;
     for (i__ = 1; i__ <= i__1; ++i__) {
-	dy[i__] += *da * dx[i__];
+	sy[i__] += *sa * sx[i__];
 /* L30: */
     }
     if (*n < 4) {
@@ -101,36 +279,17 @@ L40:
     mp1 = m + 1;
     i__1 = *n;
     for (i__ = mp1; i__ <= i__1; i__ += 4) {
-	dy[i__] += *da * dx[i__];
-	dy[i__ + 1] += *da * dx[i__ + 1];
-	dy[i__ + 2] += *da * dx[i__ + 2];
-	dy[i__ + 3] += *da * dx[i__ + 3];
+	sy[i__] += *sa * sx[i__];
+	sy[i__ + 1] += *sa * sx[i__ + 1];
+	sy[i__ + 2] += *sa * sx[i__ + 2];
+	sy[i__ + 3] += *sa * sx[i__ + 3];
 /* L50: */
     }
     return 0;
-} /* daxpy_ */
+} /* saxpy_ */
 
-doublereal dcabs1_(doublecomplex *z__)
-{
-    /* System generated locals */
-    doublereal ret_val;
-    static doublecomplex equiv_0[1];
-
-    /* Local variables */
-#define t ((doublereal *)equiv_0)
-#define zz (equiv_0)
-
-    zz->r = z__->r, zz->i = z__->i;
-    ret_val = abs(t[0]) + abs(t[1]);
-    return ret_val;
-} /* dcabs1_ */
-
-#undef zz
-#undef t
-
-
-/* Subroutine */ int dcopy_(integer *n, doublereal *dx, integer *incx,
-	doublereal *dy, integer *incy)
+/* Subroutine */ int scopy_(integer *n, real *sx, integer *incx, real *sy,
+	integer *incy)
 {
     /* System generated locals */
     integer i__1;
@@ -141,21 +300,21 @@ doublereal dcabs1_(doublecomplex *z__)
 
 /*
        copies a vector, x, to a vector, y.
-       uses unrolled loops for increments equal to one.
+       uses unrolled loops for increments equal to 1.
        jack dongarra, linpack, 3/11/78.
        modified 12/3/93, array(1) declarations changed to array(*)
 */
 
 
     /* Parameter adjustments */
-    --dy;
-    --dx;
+    --sy;
+    --sx;
 
     /* Function Body */
     if (*n <= 0) {
 	return 0;
     }
-    if ((*incx == 1 && *incy == 1)) {
+    if (*incx == 1 && *incy == 1) {
 	goto L20;
     }
 
@@ -174,7 +333,7 @@ doublereal dcabs1_(doublecomplex *z__)
     }
     i__1 = *n;
     for (i__ = 1; i__ <= i__1; ++i__) {
-	dy[iy] = dx[ix];
+	sy[iy] = sx[ix];
 	ix += *incx;
 	iy += *incy;
 /* L10: */
@@ -195,7 +354,7 @@ L20:
     }
     i__1 = m;
     for (i__ = 1; i__ <= i__1; ++i__) {
-	dy[i__] = dx[i__];
+	sy[i__] = sx[i__];
 /* L30: */
     }
     if (*n < 7) {
@@ -205,28 +364,27 @@ L40:
     mp1 = m + 1;
     i__1 = *n;
     for (i__ = mp1; i__ <= i__1; i__ += 7) {
-	dy[i__] = dx[i__];
-	dy[i__ + 1] = dx[i__ + 1];
-	dy[i__ + 2] = dx[i__ + 2];
-	dy[i__ + 3] = dx[i__ + 3];
-	dy[i__ + 4] = dx[i__ + 4];
-	dy[i__ + 5] = dx[i__ + 5];
-	dy[i__ + 6] = dx[i__ + 6];
+	sy[i__] = sx[i__];
+	sy[i__ + 1] = sx[i__ + 1];
+	sy[i__ + 2] = sx[i__ + 2];
+	sy[i__ + 3] = sx[i__ + 3];
+	sy[i__ + 4] = sx[i__ + 4];
+	sy[i__ + 5] = sx[i__ + 5];
+	sy[i__ + 6] = sx[i__ + 6];
 /* L50: */
     }
     return 0;
-} /* dcopy_ */
+} /* scopy_ */
 
-doublereal ddot_(integer *n, doublereal *dx, integer *incx, doublereal *dy,
-	integer *incy)
+doublereal sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
 {
     /* System generated locals */
     integer i__1;
-    doublereal ret_val;
+    real ret_val;
 
     /* Local variables */
     static integer i__, m, ix, iy, mp1;
-    static doublereal dtemp;
+    static real stemp;
 
 
 /*
@@ -238,16 +396,16 @@ doublereal ddot_(integer *n, doublereal *dx, integer *incx, doublereal *dy,
 
 
     /* Parameter adjustments */
-    --dy;
-    --dx;
+    --sy;
+    --sx;
 
     /* Function Body */
-    ret_val = 0.;
-    dtemp = 0.;
+    stemp = 0.f;
+    ret_val = 0.f;
     if (*n <= 0) {
 	return ret_val;
     }
-    if ((*incx == 1 && *incy == 1)) {
+    if (*incx == 1 && *incy == 1) {
 	goto L20;
     }
 
@@ -266,12 +424,12 @@ doublereal ddot_(integer *n, doublereal *dx, integer *incx, doublereal *dy,
     }
     i__1 = *n;
     for (i__ = 1; i__ <= i__1; ++i__) {
-	dtemp += dx[ix] * dy[iy];
+	stemp += sx[ix] * sy[iy];
 	ix += *incx;
 	iy += *incy;
 /* L10: */
     }
-    ret_val = dtemp;
+    ret_val = stemp;
     return ret_val;
 
 /*
@@ -288,7 +446,7 @@ L20:
     }
     i__1 = m;
     for (i__ = 1; i__ <= i__1; ++i__) {
-	dtemp += dx[i__] * dy[i__];
+	stemp += sx[i__] * sy[i__];
 /* L30: */
     }
     if (*n < 5) {
@@ -298,20 +456,19 @@ L40:
     mp1 = m + 1;
     i__1 = *n;
     for (i__ = mp1; i__ <= i__1; i__ += 5) {
-	dtemp = dtemp + dx[i__] * dy[i__] + dx[i__ + 1] * dy[i__ + 1] + dx[
-		i__ + 2] * dy[i__ + 2] + dx[i__ + 3] * dy[i__ + 3] + dx[i__ +
-		4] * dy[i__ + 4];
+	stemp = stemp + sx[i__] * sy[i__] + sx[i__ + 1] * sy[i__ + 1] + sx[
+		i__ + 2] * sy[i__ + 2] + sx[i__ + 3] * sy[i__ + 3] + sx[i__ +
+		4] * sy[i__ + 4];
 /* L50: */
     }
 L60:
-    ret_val = dtemp;
+    ret_val = stemp;
     return ret_val;
-} /* ddot_ */
+} /* sdot_ */
 
-/* Subroutine */ int dgemm_(char *transa, char *transb, integer *m, integer *
-	n, integer *k, doublereal *alpha, doublereal *a, integer *lda,
-	doublereal *b, integer *ldb, doublereal *beta, doublereal *c__,
-	integer *ldc)
+/* Subroutine */ int sgemm_(char *transa, char *transb, integer *m, integer *
+	n, integer *k, real *alpha, real *a, integer *lda, real *b, integer *
+	ldb, real *beta, real *c__, integer *ldc)
 {
     /* System generated locals */
     integer a_dim1, a_offset, b_dim1, b_offset, c_dim1, c_offset, i__1, i__2,
@@ -320,7 +477,7 @@ L60:
     /* Local variables */
     static integer i__, j, l, info;
     static logical nota, notb;
-    static doublereal temp;
+    static real temp;
     static integer ncola;
     extern logical lsame_(char *, char *);
     static integer nrowa, nrowb;
@@ -331,7 +488,7 @@ L60:
     Purpose
     =======
 
-    DGEMM  performs one of the matrix-matrix operations
+    SGEMM  performs one of the matrix-matrix operations
 
        C := alpha*op( A )*op( B ) + beta*C,
 
@@ -386,11 +543,11 @@ L60:
              be at least  zero.
              Unchanged on exit.
 
-    ALPHA  - DOUBLE PRECISION.
+    ALPHA  - REAL            .
              On entry, ALPHA specifies the scalar alpha.
              Unchanged on exit.
 
-    A      - DOUBLE PRECISION array of DIMENSION ( LDA, ka ), where ka is
+    A      - REAL             array of DIMENSION ( LDA, ka ), where ka is
              k  when  TRANSA = 'N' or 'n',  and is  m  otherwise.
              Before entry with  TRANSA = 'N' or 'n',  the leading  m by k
              part of the array  A  must contain the matrix  A,  otherwise
@@ -405,7 +562,7 @@ L60:
              least  max( 1, k ).
              Unchanged on exit.
 
-    B      - DOUBLE PRECISION array of DIMENSION ( LDB, kb ), where kb is
+    B      - REAL             array of DIMENSION ( LDB, kb ), where kb is
              n  when  TRANSB = 'N' or 'n',  and is  k  otherwise.
              Before entry with  TRANSB = 'N' or 'n',  the leading  k by n
              part of the array  B  must contain the matrix  B,  otherwise
@@ -420,12 +577,12 @@ L60:
              least  max( 1, n ).
              Unchanged on exit.
 
-    BETA   - DOUBLE PRECISION.
+    BETA   - REAL            .
              On entry,  BETA  specifies the scalar  beta.  When  BETA  is
              supplied as zero then C need not be set on input.
              Unchanged on exit.
 
-    C      - DOUBLE PRECISION array of DIMENSION ( LDC, n ).
+    C      - REAL             array of DIMENSION ( LDC, n ).
              Before entry, the leading  m by n  part of the array  C must
              contain the matrix  C,  except when  beta  is zero, in which
              case C need not be set on entry.
@@ -455,13 +612,13 @@ L60:
 
     /* Parameter adjustments */
     a_dim1 = *lda;
-    a_offset = 1 + a_dim1 * 1;
+    a_offset = 1 + a_dim1;
     a -= a_offset;
     b_dim1 = *ldb;
-    b_offset = 1 + b_dim1 * 1;
+    b_offset = 1 + b_dim1;
     b -= b_offset;
     c_dim1 = *ldc;
-    c_offset = 1 + c_dim1 * 1;
+    c_offset = 1 + c_dim1;
     c__ -= c_offset;
 
     /* Function Body */
@@ -483,11 +640,11 @@ L60:
 /*     Test the input parameters. */
 
     info = 0;
-    if (((! nota && ! lsame_(transa, "C")) && ! lsame_(
-	    transa, "T"))) {
+    if (! nota && ! lsame_(transa, "C") && ! lsame_(
+	    transa, "T")) {
 	info = 1;
-    } else if (((! notb && ! lsame_(transb, "C")) && !
-	    lsame_(transb, "T"))) {
+    } else if (! notb && ! lsame_(transb, "C") && !
+	    lsame_(transb, "T")) {
 	info = 2;
     } else if (*m < 0) {
 	info = 3;
@@ -503,25 +660,25 @@ L60:
 	info = 13;
     }
     if (info != 0) {
-	xerbla_("DGEMM ", &info);
+	xerbla_("SGEMM ", &info);
 	return 0;
     }
 
 /*     Quick return if possible. */
 
-    if (*m == 0 || *n == 0 || ((*alpha == 0. || *k == 0) && *beta == 1.)) {
+    if (*m == 0 || *n == 0 || (*alpha == 0.f || *k == 0) && *beta == 1.f) {
 	return 0;
     }
 
 /*     And if  alpha.eq.zero. */
 
-    if (*alpha == 0.) {
-	if (*beta == 0.) {
+    if (*alpha == 0.f) {
+	if (*beta == 0.f) {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
 		i__2 = *m;
 		for (i__ = 1; i__ <= i__2; ++i__) {
-		    c__[i__ + j * c_dim1] = 0.;
+		    c__[i__ + j * c_dim1] = 0.f;
 /* L10: */
 		}
 /* L20: */
@@ -549,13 +706,13 @@ L60:
 
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (*beta == 0.) {
+		if (*beta == 0.f) {
 		    i__2 = *m;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
+			c__[i__ + j * c_dim1] = 0.f;
 /* L50: */
 		    }
-		} else if (*beta != 1.) {
+		} else if (*beta != 1.f) {
 		    i__2 = *m;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
 			c__[i__ + j * c_dim1] = *beta * c__[i__ + j * c_dim1];
@@ -564,7 +721,7 @@ L60:
 		}
 		i__2 = *k;
 		for (l = 1; l <= i__2; ++l) {
-		    if (b[l + j * b_dim1] != 0.) {
+		    if (b[l + j * b_dim1] != 0.f) {
 			temp = *alpha * b[l + j * b_dim1];
 			i__3 = *m;
 			for (i__ = 1; i__ <= i__3; ++i__) {
@@ -585,13 +742,13 @@ L60:
 	    for (j = 1; j <= i__1; ++j) {
 		i__2 = *m;
 		for (i__ = 1; i__ <= i__2; ++i__) {
-		    temp = 0.;
+		    temp = 0.f;
 		    i__3 = *k;
 		    for (l = 1; l <= i__3; ++l) {
 			temp += a[l + i__ * a_dim1] * b[l + j * b_dim1];
 /* L100: */
 		    }
-		    if (*beta == 0.) {
+		    if (*beta == 0.f) {
 			c__[i__ + j * c_dim1] = *alpha * temp;
 		    } else {
 			c__[i__ + j * c_dim1] = *alpha * temp + *beta * c__[
@@ -609,13 +766,13 @@ L60:
 
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (*beta == 0.) {
+		if (*beta == 0.f) {
 		    i__2 = *m;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
+			c__[i__ + j * c_dim1] = 0.f;
 /* L130: */
 		    }
-		} else if (*beta != 1.) {
+		} else if (*beta != 1.f) {
 		    i__2 = *m;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
 			c__[i__ + j * c_dim1] = *beta * c__[i__ + j * c_dim1];
@@ -624,7 +781,7 @@ L60:
 		}
 		i__2 = *k;
 		for (l = 1; l <= i__2; ++l) {
-		    if (b[j + l * b_dim1] != 0.) {
+		    if (b[j + l * b_dim1] != 0.f) {
 			temp = *alpha * b[j + l * b_dim1];
 			i__3 = *m;
 			for (i__ = 1; i__ <= i__3; ++i__) {
@@ -645,13 +802,13 @@ L60:
 	    for (j = 1; j <= i__1; ++j) {
 		i__2 = *m;
 		for (i__ = 1; i__ <= i__2; ++i__) {
-		    temp = 0.;
+		    temp = 0.f;
 		    i__3 = *k;
 		    for (l = 1; l <= i__3; ++l) {
 			temp += a[l + i__ * a_dim1] * b[j + l * b_dim1];
 /* L180: */
 		    }
-		    if (*beta == 0.) {
+		    if (*beta == 0.f) {
 			c__[i__ + j * c_dim1] = *alpha * temp;
 		    } else {
 			c__[i__ + j * c_dim1] = *alpha * temp + *beta * c__[
@@ -666,20 +823,20 @@ L60:
 
     return 0;
 
-/*     End of DGEMM . */
+/*     End of SGEMM . */
 
-} /* dgemm_ */
+} /* sgemm_ */
 
-/* Subroutine */ int dgemv_(char *trans, integer *m, integer *n, doublereal *
-	alpha, doublereal *a, integer *lda, doublereal *x, integer *incx,
-	doublereal *beta, doublereal *y, integer *incy)
+/* Subroutine */ int sgemv_(char *trans, integer *m, integer *n, real *alpha,
+	real *a, integer *lda, real *x, integer *incx, real *beta, real *y,
+	integer *incy)
 {
     /* System generated locals */
     integer a_dim1, a_offset, i__1, i__2;
 
     /* Local variables */
     static integer i__, j, ix, iy, jx, jy, kx, ky, info;
-    static doublereal temp;
+    static real temp;
     static integer lenx, leny;
     extern logical lsame_(char *, char *);
     extern /* Subroutine */ int xerbla_(char *, integer *);
@@ -689,7 +846,7 @@ L60:
     Purpose
     =======
 
-    DGEMV  performs one of the matrix-vector operations
+    SGEMV  performs one of the matrix-vector operations
 
        y := alpha*A*x + beta*y,   or   y := alpha*A'*x + beta*y,
 
@@ -721,11 +878,11 @@ L60:
              N must be at least zero.
              Unchanged on exit.
 
-    ALPHA  - DOUBLE PRECISION.
+    ALPHA  - REAL            .
              On entry, ALPHA specifies the scalar alpha.
              Unchanged on exit.
 
-    A      - DOUBLE PRECISION array of DIMENSION ( LDA, n ).
+    A      - REAL             array of DIMENSION ( LDA, n ).
              Before entry, the leading m by n part of the array A must
              contain the matrix of coefficients.
              Unchanged on exit.
@@ -736,7 +893,7 @@ L60:
              max( 1, m ).
              Unchanged on exit.
 
-    X      - DOUBLE PRECISION array of DIMENSION at least
+    X      - REAL             array of DIMENSION at least
              ( 1 + ( n - 1 )*abs( INCX ) ) when TRANS = 'N' or 'n'
              and at least
              ( 1 + ( m - 1 )*abs( INCX ) ) otherwise.
@@ -749,12 +906,12 @@ L60:
              X. INCX must not be zero.
              Unchanged on exit.
 
-    BETA   - DOUBLE PRECISION.
+    BETA   - REAL            .
              On entry, BETA specifies the scalar beta. When BETA is
              supplied as zero then Y need not be set on input.
              Unchanged on exit.
 
-    Y      - DOUBLE PRECISION array of DIMENSION at least
+    Y      - REAL             array of DIMENSION at least
              ( 1 + ( m - 1 )*abs( INCY ) ) when TRANS = 'N' or 'n'
              and at least
              ( 1 + ( n - 1 )*abs( INCY ) ) otherwise.
@@ -782,14 +939,15 @@ L60:
 
     /* Parameter adjustments */
     a_dim1 = *lda;
-    a_offset = 1 + a_dim1 * 1;
+    a_offset = 1 + a_dim1;
     a -= a_offset;
     --x;
     --y;
 
     /* Function Body */
     info = 0;
-    if (((! lsame_(trans, "N") && ! lsame_(trans, "T")) && ! lsame_(trans, "C"))) {
+    if (! lsame_(trans, "N") && ! lsame_(trans, "T") && ! lsame_(trans, "C")
+	    ) {
 	info = 1;
     } else if (*m < 0) {
 	info = 2;
@@ -803,13 +961,13 @@ L60:
 	info = 11;
     }
     if (info != 0) {
-	xerbla_("DGEMV ", &info);
+	xerbla_("SGEMV ", &info);
 	return 0;
     }
 
 /*     Quick return if possible. */
 
-    if (*m == 0 || *n == 0 || (*alpha == 0. && *beta == 1.)) {
+    if (*m == 0 || *n == 0 || *alpha == 0.f && *beta == 1.f) {
 	return 0;
     }
 
@@ -843,12 +1001,12 @@ L60:
        First form  y := beta*y.
 */
 
-    if (*beta != 1.) {
+    if (*beta != 1.f) {
 	if (*incy == 1) {
-	    if (*beta == 0.) {
+	    if (*beta == 0.f) {
 		i__1 = leny;
 		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[i__] = 0.;
+		    y[i__] = 0.f;
 /* L10: */
 		}
 	    } else {
@@ -860,10 +1018,10 @@ L60:
 	    }
 	} else {
 	    iy = ky;
-	    if (*beta == 0.) {
+	    if (*beta == 0.f) {
 		i__1 = leny;
 		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[iy] = 0.;
+		    y[iy] = 0.f;
 		    iy += *incy;
 /* L30: */
 		}
@@ -877,7 +1035,7 @@ L60:
 	    }
 	}
     }
-    if (*alpha == 0.) {
+    if (*alpha == 0.f) {
 	return 0;
     }
     if (lsame_(trans, "N")) {
@@ -888,7 +1046,7 @@ L60:
 	if (*incy == 1) {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (x[jx] != 0.) {
+		if (x[jx] != 0.f) {
 		    temp = *alpha * x[jx];
 		    i__2 = *m;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
@@ -902,7 +1060,7 @@ L60:
 	} else {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (x[jx] != 0.) {
+		if (x[jx] != 0.f) {
 		    temp = *alpha * x[jx];
 		    iy = ky;
 		    i__2 = *m;
@@ -924,7 +1082,7 @@ L60:
 	if (*incx == 1) {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		temp = 0.;
+		temp = 0.f;
 		i__2 = *m;
 		for (i__ = 1; i__ <= i__2; ++i__) {
 		    temp += a[i__ + j * a_dim1] * x[i__];
@@ -937,7 +1095,7 @@ L60:
 	} else {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		temp = 0.;
+		temp = 0.f;
 		ix = kx;
 		i__2 = *m;
 		for (i__ = 1; i__ <= i__2; ++i__) {
@@ -954,20 +1112,19 @@ L60:
 
     return 0;
 
-/*     End of DGEMV . */
+/*     End of SGEMV . */
 
-} /* dgemv_ */
+} /* sgemv_ */
 
-/* Subroutine */ int dger_(integer *m, integer *n, doublereal *alpha,
-	doublereal *x, integer *incx, doublereal *y, integer *incy,
-	doublereal *a, integer *lda)
+/* Subroutine */ int sger_(integer *m, integer *n, real *alpha, real *x,
+	integer *incx, real *y, integer *incy, real *a, integer *lda)
 {
     /* System generated locals */
     integer a_dim1, a_offset, i__1, i__2;
 
     /* Local variables */
     static integer i__, j, ix, jy, kx, info;
-    static doublereal temp;
+    static real temp;
     extern /* Subroutine */ int xerbla_(char *, integer *);
 
 
@@ -975,7 +1132,7 @@ L60:
     Purpose
     =======
 
-    DGER   performs the rank 1 operation
+    SGER   performs the rank 1 operation
 
        A := alpha*x*y' + A,
 
@@ -995,11 +1152,11 @@ L60:
              N must be at least zero.
              Unchanged on exit.
 
-    ALPHA  - DOUBLE PRECISION.
+    ALPHA  - REAL            .
              On entry, ALPHA specifies the scalar alpha.
              Unchanged on exit.
 
-    X      - DOUBLE PRECISION array of dimension at least
+    X      - REAL             array of dimension at least
              ( 1 + ( m - 1 )*abs( INCX ) ).
              Before entry, the incremented array X must contain the m
              element vector x.
@@ -1010,7 +1167,7 @@ L60:
              X. INCX must not be zero.
              Unchanged on exit.
 
-    Y      - DOUBLE PRECISION array of dimension at least
+    Y      - REAL             array of dimension at least
              ( 1 + ( n - 1 )*abs( INCY ) ).
              Before entry, the incremented array Y must contain the n
              element vector y.
@@ -1021,7 +1178,7 @@ L60:
              Y. INCY must not be zero.
              Unchanged on exit.
 
-    A      - DOUBLE PRECISION array of DIMENSION ( LDA, n ).
+    A      - REAL             array of DIMENSION ( LDA, n ).
              Before entry, the leading m by n part of the array A must
              contain the matrix of coefficients. On exit, A is
              overwritten by the updated matrix.
@@ -1049,7 +1206,7 @@ L60:
     --x;
     --y;
     a_dim1 = *lda;
-    a_offset = 1 + a_dim1 * 1;
+    a_offset = 1 + a_dim1;
     a -= a_offset;
 
     /* Function Body */
@@ -1066,13 +1223,13 @@ L60:
 	info = 9;
     }
     if (info != 0) {
-	xerbla_("DGER  ", &info);
+	xerbla_("SGER  ", &info);
 	return 0;
     }
 
 /*     Quick return if possible. */
 
-    if (*m == 0 || *n == 0 || *alpha == 0.) {
+    if (*m == 0 || *n == 0 || *alpha == 0.f) {
 	return 0;
     }
 
@@ -1089,7 +1246,7 @@ L60:
     if (*incx == 1) {
 	i__1 = *n;
 	for (j = 1; j <= i__1; ++j) {
-	    if (y[jy] != 0.) {
+	    if (y[jy] != 0.f) {
 		temp = *alpha * y[jy];
 		i__2 = *m;
 		for (i__ = 1; i__ <= i__2; ++i__) {
@@ -1108,7 +1265,7 @@ L60:
 	}
 	i__1 = *n;
 	for (j = 1; j <= i__1; ++j) {
-	    if (y[jy] != 0.) {
+	    if (y[jy] != 0.f) {
 		temp = *alpha * y[jy];
 		ix = kx;
 		i__2 = *m;
@@ -1125,33 +1282,33 @@ L60:
 
     return 0;
 
-/*     End of DGER  . */
+/*     End of SGER  . */
 
-} /* dger_ */
+} /* sger_ */
 
-doublereal dnrm2_(integer *n, doublereal *x, integer *incx)
+doublereal snrm2_(integer *n, real *x, integer *incx)
 {
     /* System generated locals */
     integer i__1, i__2;
-    doublereal ret_val, d__1;
+    real ret_val, r__1;
 
     /* Builtin functions */
     double sqrt(doublereal);
 
     /* Local variables */
     static integer ix;
-    static doublereal ssq, norm, scale, absxi;
+    static real ssq, norm, scale, absxi;
 
 
 /*
-    DNRM2 returns the euclidean norm of a vector via the function
+    SNRM2 returns the euclidean norm of a vector via the function
     name, so that
 
-       DNRM2 := sqrt( x'*x )
+       SNRM2 := sqrt( x'*x )
 
 
     -- This version written on 25-October-1982.
-       Modified on 14-October-1993 to inline the call to DLASSQ.
+       Modified on 14-October-1993 to inline the call to SLASSQ.
        Sven Hammarling, Nag Ltd.
 */
 
@@ -1161,32 +1318,32 @@ doublereal dnrm2_(integer *n, doublereal *x, integer *incx)
 
     /* Function Body */
     if (*n < 1 || *incx < 1) {
-	norm = 0.;
+	norm = 0.f;
     } else if (*n == 1) {
-	norm = abs(x[1]);
+	norm = dabs(x[1]);
     } else {
-	scale = 0.;
-	ssq = 1.;
+	scale = 0.f;
+	ssq = 1.f;
 /*
           The following loop is equivalent to this call to the LAPACK
           auxiliary routine:
-          CALL DLASSQ( N, X, INCX, SCALE, SSQ )
+          CALL SLASSQ( N, X, INCX, SCALE, SSQ )
 */
 
 	i__1 = (*n - 1) * *incx + 1;
 	i__2 = *incx;
 	for (ix = 1; i__2 < 0 ? ix >= i__1 : ix <= i__1; ix += i__2) {
-	    if (x[ix] != 0.) {
-		absxi = (d__1 = x[ix], abs(d__1));
+	    if (x[ix] != 0.f) {
+		absxi = (r__1 = x[ix], dabs(r__1));
 		if (scale < absxi) {
 /* Computing 2nd power */
-		    d__1 = scale / absxi;
-		    ssq = ssq * (d__1 * d__1) + 1.;
+		    r__1 = scale / absxi;
+		    ssq = ssq * (r__1 * r__1) + 1.f;
 		    scale = absxi;
 		} else {
 /* Computing 2nd power */
-		    d__1 = absxi / scale;
-		    ssq += d__1 * d__1;
+		    r__1 = absxi / scale;
+		    ssq += r__1 * r__1;
 		}
 	    }
 /* L10: */
@@ -1197,19 +1354,19 @@ doublereal dnrm2_(integer *n, doublereal *x, integer *incx)
     ret_val = norm;
     return ret_val;
 
-/*     End of DNRM2. */
+/*     End of SNRM2. */
 
-} /* dnrm2_ */
+} /* snrm2_ */
 
-/* Subroutine */ int drot_(integer *n, doublereal *dx, integer *incx,
-	doublereal *dy, integer *incy, doublereal *c__, doublereal *s)
+/* Subroutine */ int srot_(integer *n, real *sx, integer *incx, real *sy,
+	integer *incy, real *c__, real *s)
 {
     /* System generated locals */
     integer i__1;
 
     /* Local variables */
     static integer i__, ix, iy;
-    static doublereal dtemp;
+    static real stemp;
 
 
 /*
@@ -1220,14 +1377,14 @@ doublereal dnrm2_(integer *n, doublereal *x, integer *incx)
 
 
     /* Parameter adjustments */
-    --dy;
-    --dx;
+    --sy;
+    --sx;
 
     /* Function Body */
     if (*n <= 0) {
 	return 0;
     }
-    if ((*incx == 1 && *incy == 1)) {
+    if (*incx == 1 && *incy == 1) {
 	goto L20;
     }
 
@@ -1246,9 +1403,9 @@ doublereal dnrm2_(integer *n, doublereal *x, integer *incx)
     }
     i__1 = *n;
     for (i__ = 1; i__ <= i__1; ++i__) {
-	dtemp = *c__ * dx[ix] + *s * dy[iy];
-	dy[iy] = *c__ * dy[iy] - *s * dx[ix];
-	dx[ix] = dtemp;
+	stemp = *c__ * sx[ix] + *s * sy[iy];
+	sy[iy] = *c__ * sy[iy] - *s * sx[ix];
+	sx[ix] = stemp;
 	ix += *incx;
 	iy += *incy;
 /* L10: */
@@ -1260,16 +1417,15 @@ doublereal dnrm2_(integer *n, doublereal *x, integer *incx)
 L20:
     i__1 = *n;
     for (i__ = 1; i__ <= i__1; ++i__) {
-	dtemp = *c__ * dx[i__] + *s * dy[i__];
-	dy[i__] = *c__ * dy[i__] - *s * dx[i__];
-	dx[i__] = dtemp;
+	stemp = *c__ * sx[i__] + *s * sy[i__];
+	sy[i__] = *c__ * sy[i__] - *s * sx[i__];
+	sx[i__] = stemp;
 /* L30: */
     }
     return 0;
-} /* drot_ */
+} /* srot_ */
 
-/* Subroutine */ int dscal_(integer *n, doublereal *da, doublereal *dx,
-	integer *incx)
+/* Subroutine */ int sscal_(integer *n, real *sa, real *sx, integer *incx)
 {
     /* System generated locals */
     integer i__1, i__2;
@@ -1280,7 +1436,7 @@ L20:
 
 /*
        scales a vector by a constant.
-       uses unrolled loops for increment equal to one.
+       uses unrolled loops for increment equal to 1.
        jack dongarra, linpack, 3/11/78.
        modified 3/93 to return if incx .le. 0.
        modified 12/3/93, array(1) declarations changed to array(*)
@@ -1288,7 +1444,7 @@ L20:
 
 
     /* Parameter adjustments */
-    --dx;
+    --sx;
 
     /* Function Body */
     if (*n <= 0 || *incx <= 0) {
@@ -1304,7 +1460,7 @@ L20:
     i__1 = nincx;
     i__2 = *incx;
     for (i__ = 1; i__2 < 0 ? i__ >= i__1 : i__ <= i__1; i__ += i__2) {
-	dx[i__] = *da * dx[i__];
+	sx[i__] = *sa * sx[i__];
 /* L10: */
     }
     return 0;
@@ -1323,7 +1479,7 @@ L20:
     }
     i__2 = m;
     for (i__ = 1; i__ <= i__2; ++i__) {
-	dx[i__] = *da * dx[i__];
+	sx[i__] = *sa * sx[i__];
 /* L30: */
     }
     if (*n < 5) {
@@ -1333,44 +1489,44 @@ L40:
     mp1 = m + 1;
     i__2 = *n;
     for (i__ = mp1; i__ <= i__2; i__ += 5) {
-	dx[i__] = *da * dx[i__];
-	dx[i__ + 1] = *da * dx[i__ + 1];
-	dx[i__ + 2] = *da * dx[i__ + 2];
-	dx[i__ + 3] = *da * dx[i__ + 3];
-	dx[i__ + 4] = *da * dx[i__ + 4];
+	sx[i__] = *sa * sx[i__];
+	sx[i__ + 1] = *sa * sx[i__ + 1];
+	sx[i__ + 2] = *sa * sx[i__ + 2];
+	sx[i__ + 3] = *sa * sx[i__ + 3];
+	sx[i__ + 4] = *sa * sx[i__ + 4];
 /* L50: */
     }
     return 0;
-} /* dscal_ */
+} /* sscal_ */
 
-/* Subroutine */ int dswap_(integer *n, doublereal *dx, integer *incx,
-	doublereal *dy, integer *incy)
+/* Subroutine */ int sswap_(integer *n, real *sx, integer *incx, real *sy,
+	integer *incy)
 {
     /* System generated locals */
     integer i__1;
 
     /* Local variables */
     static integer i__, m, ix, iy, mp1;
-    static doublereal dtemp;
+    static real stemp;
 
 
 /*
        interchanges two vectors.
-       uses unrolled loops for increments equal one.
+       uses unrolled loops for increments equal to 1.
        jack dongarra, linpack, 3/11/78.
        modified 12/3/93, array(1) declarations changed to array(*)
 */
 
 
     /* Parameter adjustments */
-    --dy;
-    --dx;
+    --sy;
+    --sx;
 
     /* Function Body */
     if (*n <= 0) {
 	return 0;
     }
-    if ((*incx == 1 && *incy == 1)) {
+    if (*incx == 1 && *incy == 1) {
 	goto L20;
     }
 
@@ -1389,9 +1545,9 @@ L40:
     }
     i__1 = *n;
     for (i__ = 1; i__ <= i__1; ++i__) {
-	dtemp = dx[ix];
-	dx[ix] = dy[iy];
-	dy[iy] = dtemp;
+	stemp = sx[ix];
+	sx[ix] = sy[iy];
+	sy[iy] = stemp;
 	ix += *incx;
 	iy += *incy;
 /* L10: */
@@ -1412,9 +1568,9 @@ L20:
     }
     i__1 = m;
     for (i__ = 1; i__ <= i__1; ++i__) {
-	dtemp = dx[i__];
-	dx[i__] = dy[i__];
-	dy[i__] = dtemp;
+	stemp = sx[i__];
+	sx[i__] = sy[i__];
+	sy[i__] = stemp;
 /* L30: */
     }
     if (*n < 3) {
@@ -1424,30 +1580,30 @@ L40:
     mp1 = m + 1;
     i__1 = *n;
     for (i__ = mp1; i__ <= i__1; i__ += 3) {
-	dtemp = dx[i__];
-	dx[i__] = dy[i__];
-	dy[i__] = dtemp;
-	dtemp = dx[i__ + 1];
-	dx[i__ + 1] = dy[i__ + 1];
-	dy[i__ + 1] = dtemp;
-	dtemp = dx[i__ + 2];
-	dx[i__ + 2] = dy[i__ + 2];
-	dy[i__ + 2] = dtemp;
+	stemp = sx[i__];
+	sx[i__] = sy[i__];
+	sy[i__] = stemp;
+	stemp = sx[i__ + 1];
+	sx[i__ + 1] = sy[i__ + 1];
+	sy[i__ + 1] = stemp;
+	stemp = sx[i__ + 2];
+	sx[i__ + 2] = sy[i__ + 2];
+	sy[i__ + 2] = stemp;
 /* L50: */
     }
     return 0;
-} /* dswap_ */
+} /* sswap_ */
 
-/* Subroutine */ int dsymv_(char *uplo, integer *n, doublereal *alpha,
-	doublereal *a, integer *lda, doublereal *x, integer *incx, doublereal
-	*beta, doublereal *y, integer *incy)
+/* Subroutine */ int ssymv_(char *uplo, integer *n, real *alpha, real *a,
+	integer *lda, real *x, integer *incx, real *beta, real *y, integer *
+	incy)
 {
     /* System generated locals */
     integer a_dim1, a_offset, i__1, i__2;
 
     /* Local variables */
     static integer i__, j, ix, iy, jx, jy, kx, ky, info;
-    static doublereal temp1, temp2;
+    static real temp1, temp2;
     extern logical lsame_(char *, char *);
     extern /* Subroutine */ int xerbla_(char *, integer *);
 
@@ -1456,7 +1612,7 @@ L40:
     Purpose
     =======
 
-    DSYMV  performs the matrix-vector  operation
+    SSYMV  performs the matrix-vector  operation
 
        y := alpha*A*x + beta*y,
 
@@ -1484,11 +1640,11 @@ L40:
              N must be at least zero.
              Unchanged on exit.
 
-    ALPHA  - DOUBLE PRECISION.
+    ALPHA  - REAL            .
              On entry, ALPHA specifies the scalar alpha.
              Unchanged on exit.
 
-    A      - DOUBLE PRECISION array of DIMENSION ( LDA, n ).
+    A      - REAL             array of DIMENSION ( LDA, n ).
              Before entry with  UPLO = 'U' or 'u', the leading n by n
              upper triangular part of the array A must contain the upper
              triangular part of the symmetric matrix and the strictly
@@ -1505,7 +1661,7 @@ L40:
              max( 1, n ).
              Unchanged on exit.
 
-    X      - DOUBLE PRECISION array of dimension at least
+    X      - REAL             array of dimension at least
              ( 1 + ( n - 1 )*abs( INCX ) ).
              Before entry, the incremented array X must contain the n
              element vector x.
@@ -1516,12 +1672,12 @@ L40:
              X. INCX must not be zero.
              Unchanged on exit.
 
-    BETA   - DOUBLE PRECISION.
+    BETA   - REAL            .
              On entry, BETA specifies the scalar beta. When BETA is
              supplied as zero then Y need not be set on input.
              Unchanged on exit.
 
-    Y      - DOUBLE PRECISION array of dimension at least
+    Y      - REAL             array of dimension at least
              ( 1 + ( n - 1 )*abs( INCY ) ).
              Before entry, the incremented array Y must contain the n
              element vector y. On exit, Y is overwritten by the updated
@@ -1547,14 +1703,14 @@ L40:
 
     /* Parameter adjustments */
     a_dim1 = *lda;
-    a_offset = 1 + a_dim1 * 1;
+    a_offset = 1 + a_dim1;
     a -= a_offset;
     --x;
     --y;
 
     /* Function Body */
     info = 0;
-    if ((! lsame_(uplo, "U") && ! lsame_(uplo, "L"))) {
+    if (! lsame_(uplo, "U") && ! lsame_(uplo, "L")) {
 	info = 1;
     } else if (*n < 0) {
 	info = 2;
@@ -1566,13 +1722,13 @@ L40:
 	info = 10;
     }
     if (info != 0) {
-	xerbla_("DSYMV ", &info);
+	xerbla_("SSYMV ", &info);
 	return 0;
     }
 
 /*     Quick return if possible. */
 
-    if (*n == 0 || (*alpha == 0. && *beta == 1.)) {
+    if (*n == 0 || *alpha == 0.f && *beta == 1.f) {
 	return 0;
     }
 
@@ -1597,12 +1753,12 @@ L40:
        First form  y := beta*y.
 */
 
-    if (*beta != 1.) {
+    if (*beta != 1.f) {
 	if (*incy == 1) {
-	    if (*beta == 0.) {
+	    if (*beta == 0.f) {
 		i__1 = *n;
 		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[i__] = 0.;
+		    y[i__] = 0.f;
 /* L10: */
 		}
 	    } else {
@@ -1614,10 +1770,10 @@ L40:
 	    }
 	} else {
 	    iy = ky;
-	    if (*beta == 0.) {
+	    if (*beta == 0.f) {
 		i__1 = *n;
 		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[iy] = 0.;
+		    y[iy] = 0.f;
 		    iy += *incy;
 /* L30: */
 		}
@@ -1631,18 +1787,18 @@ L40:
 	    }
 	}
     }
-    if (*alpha == 0.) {
+    if (*alpha == 0.f) {
 	return 0;
     }
     if (lsame_(uplo, "U")) {
 
 /*        Form  y  when A is stored in upper triangle. */
 
-	if ((*incx == 1 && *incy == 1)) {
+	if (*incx == 1 && *incy == 1) {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
 		temp1 = *alpha * x[j];
-		temp2 = 0.;
+		temp2 = 0.f;
 		i__2 = j - 1;
 		for (i__ = 1; i__ <= i__2; ++i__) {
 		    y[i__] += temp1 * a[i__ + j * a_dim1];
@@ -1658,7 +1814,7 @@ L40:
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
 		temp1 = *alpha * x[jx];
-		temp2 = 0.;
+		temp2 = 0.f;
 		ix = kx;
 		iy = ky;
 		i__2 = j - 1;
@@ -1679,11 +1835,11 @@ L40:
 
 /*        Form  y  when A is stored in lower triangle. */
 
-	if ((*incx == 1 && *incy == 1)) {
+	if (*incx == 1 && *incy == 1) {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
 		temp1 = *alpha * x[j];
-		temp2 = 0.;
+		temp2 = 0.f;
 		y[j] += temp1 * a[j + j * a_dim1];
 		i__2 = *n;
 		for (i__ = j + 1; i__ <= i__2; ++i__) {
@@ -1700,7 +1856,7 @@ L40:
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
 		temp1 = *alpha * x[jx];
-		temp2 = 0.;
+		temp2 = 0.f;
 		y[jy] += temp1 * a[j + j * a_dim1];
 		ix = jx;
 		iy = jy;
@@ -1722,20 +1878,19 @@ L40:
 
     return 0;
 
-/*     End of DSYMV . */
+/*     End of SSYMV . */
 
-} /* dsymv_ */
+} /* ssymv_ */
 
-/* Subroutine */ int dsyr2_(char *uplo, integer *n, doublereal *alpha,
-	doublereal *x, integer *incx, doublereal *y, integer *incy,
-	doublereal *a, integer *lda)
+/* Subroutine */ int ssyr2_(char *uplo, integer *n, real *alpha, real *x,
+	integer *incx, real *y, integer *incy, real *a, integer *lda)
 {
     /* System generated locals */
     integer a_dim1, a_offset, i__1, i__2;
 
     /* Local variables */
     static integer i__, j, ix, iy, jx, jy, kx, ky, info;
-    static doublereal temp1, temp2;
+    static real temp1, temp2;
     extern logical lsame_(char *, char *);
     extern /* Subroutine */ int xerbla_(char *, integer *);
 
@@ -1744,7 +1899,7 @@ L40:
     Purpose
     =======
 
-    DSYR2  performs the symmetric rank 2 operation
+    SSYR2  performs the symmetric rank 2 operation
 
        A := alpha*x*y' + alpha*y*x' + A,
 
@@ -1772,11 +1927,11 @@ L40:
              N must be at least zero.
              Unchanged on exit.
 
-    ALPHA  - DOUBLE PRECISION.
+    ALPHA  - REAL            .
              On entry, ALPHA specifies the scalar alpha.
              Unchanged on exit.
 
-    X      - DOUBLE PRECISION array of dimension at least
+    X      - REAL             array of dimension at least
              ( 1 + ( n - 1 )*abs( INCX ) ).
              Before entry, the incremented array X must contain the n
              element vector x.
@@ -1787,7 +1942,7 @@ L40:
              X. INCX must not be zero.
              Unchanged on exit.
 
-    Y      - DOUBLE PRECISION array of dimension at least
+    Y      - REAL             array of dimension at least
              ( 1 + ( n - 1 )*abs( INCY ) ).
              Before entry, the incremented array Y must contain the n
              element vector y.
@@ -1798,7 +1953,7 @@ L40:
              Y. INCY must not be zero.
              Unchanged on exit.
 
-    A      - DOUBLE PRECISION array of DIMENSION ( LDA, n ).
+    A      - REAL             array of DIMENSION ( LDA, n ).
              Before entry with  UPLO = 'U' or 'u', the leading n by n
              upper triangular part of the array A must contain the upper
              triangular part of the symmetric matrix and the strictly
@@ -1835,12 +1990,12 @@ L40:
     --x;
     --y;
     a_dim1 = *lda;
-    a_offset = 1 + a_dim1 * 1;
+    a_offset = 1 + a_dim1;
     a -= a_offset;
 
     /* Function Body */
     info = 0;
-    if ((! lsame_(uplo, "U") && ! lsame_(uplo, "L"))) {
+    if (! lsame_(uplo, "U") && ! lsame_(uplo, "L")) {
 	info = 1;
     } else if (*n < 0) {
 	info = 2;
@@ -1852,13 +2007,13 @@ L40:
 	info = 9;
     }
     if (info != 0) {
-	xerbla_("DSYR2 ", &info);
+	xerbla_("SSYR2 ", &info);
 	return 0;
     }
 
 /*     Quick return if possible. */
 
-    if (*n == 0 || *alpha == 0.) {
+    if (*n == 0 || *alpha == 0.f) {
 	return 0;
     }
 
@@ -1892,10 +2047,10 @@ L40:
 
 /*        Form  A  when A is stored in the upper triangle. */
 
-	if ((*incx == 1 && *incy == 1)) {
+	if (*incx == 1 && *incy == 1) {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (x[j] != 0. || y[j] != 0.) {
+		if (x[j] != 0.f || y[j] != 0.f) {
 		    temp1 = *alpha * y[j];
 		    temp2 = *alpha * x[j];
 		    i__2 = j;
@@ -1910,7 +2065,7 @@ L40:
 	} else {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (x[jx] != 0. || y[jy] != 0.) {
+		if (x[jx] != 0.f || y[jy] != 0.f) {
 		    temp1 = *alpha * y[jy];
 		    temp2 = *alpha * x[jx];
 		    ix = kx;
@@ -1933,10 +2088,10 @@ L40:
 
 /*        Form  A  when A is stored in the lower triangle. */
 
-	if ((*incx == 1 && *incy == 1)) {
+	if (*incx == 1 && *incy == 1) {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (x[j] != 0. || y[j] != 0.) {
+		if (x[j] != 0.f || y[j] != 0.f) {
 		    temp1 = *alpha * y[j];
 		    temp2 = *alpha * x[j];
 		    i__2 = *n;
@@ -1951,7 +2106,7 @@ L40:
 	} else {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (x[jx] != 0. || y[jy] != 0.) {
+		if (x[jx] != 0.f || y[jy] != 0.f) {
 		    temp1 = *alpha * y[jy];
 		    temp2 = *alpha * x[jx];
 		    ix = jx;
@@ -1974,13 +2129,13 @@ L40:
 
     return 0;
 
-/*     End of DSYR2 . */
+/*     End of SSYR2 . */
 
-} /* dsyr2_ */
+} /* ssyr2_ */
 
-/* Subroutine */ int dsyr2k_(char *uplo, char *trans, integer *n, integer *k,
-	doublereal *alpha, doublereal *a, integer *lda, doublereal *b,
-	integer *ldb, doublereal *beta, doublereal *c__, integer *ldc)
+/* Subroutine */ int ssyr2k_(char *uplo, char *trans, integer *n, integer *k,
+	real *alpha, real *a, integer *lda, real *b, integer *ldb, real *beta,
+	 real *c__, integer *ldc)
 {
     /* System generated locals */
     integer a_dim1, a_offset, b_dim1, b_offset, c_dim1, c_offset, i__1, i__2,
@@ -1988,7 +2143,7 @@ L40:
 
     /* Local variables */
     static integer i__, j, l, info;
-    static doublereal temp1, temp2;
+    static real temp1, temp2;
     extern logical lsame_(char *, char *);
     static integer nrowa;
     static logical upper;
@@ -1999,7 +2154,7 @@ L40:
     Purpose
     =======
 
-    DSYR2K  performs one of the symmetric rank 2k operations
+    SSYR2K  performs one of the symmetric rank 2k operations
 
        C := alpha*A*B' + alpha*B*A' + beta*C,
 
@@ -2054,11 +2209,11 @@ L40:
              of rows of the matrices  A and B.  K must be at least  zero.
              Unchanged on exit.
 
-    ALPHA  - DOUBLE PRECISION.
+    ALPHA  - REAL            .
              On entry, ALPHA specifies the scalar alpha.
              Unchanged on exit.
 
-    A      - DOUBLE PRECISION array of DIMENSION ( LDA, ka ), where ka is
+    A      - REAL             array of DIMENSION ( LDA, ka ), where ka is
              k  when  TRANS = 'N' or 'n',  and is  n  otherwise.
              Before entry with  TRANS = 'N' or 'n',  the  leading  n by k
              part of the array  A  must contain the matrix  A,  otherwise
@@ -2073,7 +2228,7 @@ L40:
              be at least  max( 1, k ).
              Unchanged on exit.
 
-    B      - DOUBLE PRECISION array of DIMENSION ( LDB, kb ), where kb is
+    B      - REAL             array of DIMENSION ( LDB, kb ), where kb is
              k  when  TRANS = 'N' or 'n',  and is  n  otherwise.
              Before entry with  TRANS = 'N' or 'n',  the  leading  n by k
              part of the array  B  must contain the matrix  B,  otherwise
@@ -2088,11 +2243,11 @@ L40:
              be at least  max( 1, k ).
              Unchanged on exit.
 
-    BETA   - DOUBLE PRECISION.
+    BETA   - REAL            .
              On entry, BETA specifies the scalar beta.
              Unchanged on exit.
 
-    C      - DOUBLE PRECISION array of DIMENSION ( LDC, n ).
+    C      - REAL             array of DIMENSION ( LDC, n ).
              Before entry  with  UPLO = 'U' or 'u',  the leading  n by n
              upper triangular part of the array C must contain the upper
              triangular part  of the  symmetric matrix  and the strictly
@@ -2128,13 +2283,13 @@ L40:
 
     /* Parameter adjustments */
     a_dim1 = *lda;
-    a_offset = 1 + a_dim1 * 1;
+    a_offset = 1 + a_dim1;
     a -= a_offset;
     b_dim1 = *ldb;
-    b_offset = 1 + b_dim1 * 1;
+    b_offset = 1 + b_dim1;
     b -= b_offset;
     c_dim1 = *ldc;
-    c_offset = 1 + c_dim1 * 1;
+    c_offset = 1 + c_dim1;
     c__ -= c_offset;
 
     /* Function Body */
@@ -2146,10 +2301,10 @@ L40:
     upper = lsame_(uplo, "U");
 
     info = 0;
-    if ((! upper && ! lsame_(uplo, "L"))) {
+    if (! upper && ! lsame_(uplo, "L")) {
 	info = 1;
-    } else if (((! lsame_(trans, "N") && ! lsame_(trans,
-	     "T")) && ! lsame_(trans, "C"))) {
+    } else if (! lsame_(trans, "N") && ! lsame_(trans,
+	    "T") && ! lsame_(trans, "C")) {
 	info = 2;
     } else if (*n < 0) {
 	info = 3;
@@ -2163,26 +2318,26 @@ L40:
 	info = 12;
     }
     if (info != 0) {
-	xerbla_("DSYR2K", &info);
+	xerbla_("SSYR2K", &info);
 	return 0;
     }
 
 /*     Quick return if possible. */
 
-    if (*n == 0 || ((*alpha == 0. || *k == 0) && *beta == 1.)) {
+    if (*n == 0 || (*alpha == 0.f || *k == 0) && *beta == 1.f) {
 	return 0;
     }
 
 /*     And when  alpha.eq.zero. */
 
-    if (*alpha == 0.) {
+    if (*alpha == 0.f) {
 	if (upper) {
-	    if (*beta == 0.) {
+	    if (*beta == 0.f) {
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j) {
 		    i__2 = j;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
+			c__[i__ + j * c_dim1] = 0.f;
 /* L10: */
 		    }
 /* L20: */
@@ -2199,12 +2354,12 @@ L40:
 		}
 	    }
 	} else {
-	    if (*beta == 0.) {
+	    if (*beta == 0.f) {
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j) {
 		    i__2 = *n;
 		    for (i__ = j; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
+			c__[i__ + j * c_dim1] = 0.f;
 /* L50: */
 		    }
 /* L60: */
@@ -2233,13 +2388,13 @@ L40:
 	if (upper) {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (*beta == 0.) {
+		if (*beta == 0.f) {
 		    i__2 = j;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
+			c__[i__ + j * c_dim1] = 0.f;
 /* L90: */
 		    }
-		} else if (*beta != 1.) {
+		} else if (*beta != 1.f) {
 		    i__2 = j;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
 			c__[i__ + j * c_dim1] = *beta * c__[i__ + j * c_dim1];
@@ -2248,7 +2403,8 @@ L40:
 		}
 		i__2 = *k;
 		for (l = 1; l <= i__2; ++l) {
-		    if (a[j + l * a_dim1] != 0. || b[j + l * b_dim1] != 0.) {
+		    if (a[j + l * a_dim1] != 0.f || b[j + l * b_dim1] != 0.f)
+			    {
 			temp1 = *alpha * b[j + l * b_dim1];
 			temp2 = *alpha * a[j + l * a_dim1];
 			i__3 = j;
@@ -2266,13 +2422,13 @@ L40:
 	} else {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (*beta == 0.) {
+		if (*beta == 0.f) {
 		    i__2 = *n;
 		    for (i__ = j; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
+			c__[i__ + j * c_dim1] = 0.f;
 /* L140: */
 		    }
-		} else if (*beta != 1.) {
+		} else if (*beta != 1.f) {
 		    i__2 = *n;
 		    for (i__ = j; i__ <= i__2; ++i__) {
 			c__[i__ + j * c_dim1] = *beta * c__[i__ + j * c_dim1];
@@ -2281,7 +2437,8 @@ L40:
 		}
 		i__2 = *k;
 		for (l = 1; l <= i__2; ++l) {
-		    if (a[j + l * a_dim1] != 0. || b[j + l * b_dim1] != 0.) {
+		    if (a[j + l * a_dim1] != 0.f || b[j + l * b_dim1] != 0.f)
+			    {
 			temp1 = *alpha * b[j + l * b_dim1];
 			temp2 = *alpha * a[j + l * a_dim1];
 			i__3 = *n;
@@ -2306,15 +2463,15 @@ L40:
 	    for (j = 1; j <= i__1; ++j) {
 		i__2 = j;
 		for (i__ = 1; i__ <= i__2; ++i__) {
-		    temp1 = 0.;
-		    temp2 = 0.;
+		    temp1 = 0.f;
+		    temp2 = 0.f;
 		    i__3 = *k;
 		    for (l = 1; l <= i__3; ++l) {
 			temp1 += a[l + i__ * a_dim1] * b[l + j * b_dim1];
 			temp2 += b[l + i__ * b_dim1] * a[l + j * a_dim1];
 /* L190: */
 		    }
-		    if (*beta == 0.) {
+		    if (*beta == 0.f) {
 			c__[i__ + j * c_dim1] = *alpha * temp1 + *alpha *
 				temp2;
 		    } else {
@@ -2330,15 +2487,15 @@ L40:
 	    for (j = 1; j <= i__1; ++j) {
 		i__2 = *n;
 		for (i__ = j; i__ <= i__2; ++i__) {
-		    temp1 = 0.;
-		    temp2 = 0.;
+		    temp1 = 0.f;
+		    temp2 = 0.f;
 		    i__3 = *k;
 		    for (l = 1; l <= i__3; ++l) {
 			temp1 += a[l + i__ * a_dim1] * b[l + j * b_dim1];
 			temp2 += b[l + i__ * b_dim1] * a[l + j * a_dim1];
 /* L220: */
 		    }
-		    if (*beta == 0.) {
+		    if (*beta == 0.f) {
 			c__[i__ + j * c_dim1] = *alpha * temp1 + *alpha *
 				temp2;
 		    } else {
@@ -2354,20 +2511,20 @@ L40:
 
     return 0;
 
-/*     End of DSYR2K. */
+/*     End of SSYR2K. */
 
-} /* dsyr2k_ */
+} /* ssyr2k_ */
 
-/* Subroutine */ int dsyrk_(char *uplo, char *trans, integer *n, integer *k,
-	doublereal *alpha, doublereal *a, integer *lda, doublereal *beta,
-	doublereal *c__, integer *ldc)
+/* Subroutine */ int ssyrk_(char *uplo, char *trans, integer *n, integer *k,
+	real *alpha, real *a, integer *lda, real *beta, real *c__, integer *
+	ldc)
 {
     /* System generated locals */
     integer a_dim1, a_offset, c_dim1, c_offset, i__1, i__2, i__3;
 
     /* Local variables */
     static integer i__, j, l, info;
-    static doublereal temp;
+    static real temp;
     extern logical lsame_(char *, char *);
     static integer nrowa;
     static logical upper;
@@ -2378,7 +2535,7 @@ L40:
     Purpose
     =======
 
-    DSYRK  performs one of the symmetric rank k operations
+    SSYRK  performs one of the symmetric rank k operations
 
        C := alpha*A*A' + beta*C,
 
@@ -2430,11 +2587,11 @@ L40:
              of rows of the matrix  A.  K must be at least zero.
              Unchanged on exit.
 
-    ALPHA  - DOUBLE PRECISION.
+    ALPHA  - REAL            .
              On entry, ALPHA specifies the scalar alpha.
              Unchanged on exit.
 
-    A      - DOUBLE PRECISION array of DIMENSION ( LDA, ka ), where ka is
+    A      - REAL             array of DIMENSION ( LDA, ka ), where ka is
              k  when  TRANS = 'N' or 'n',  and is  n  otherwise.
              Before entry with  TRANS = 'N' or 'n',  the  leading  n by k
              part of the array  A  must contain the matrix  A,  otherwise
@@ -2449,11 +2606,11 @@ L40:
              be at least  max( 1, k ).
              Unchanged on exit.
 
-    BETA   - DOUBLE PRECISION.
+    BETA   - REAL            .
              On entry, BETA specifies the scalar beta.
              Unchanged on exit.
 
-    C      - DOUBLE PRECISION array of DIMENSION ( LDC, n ).
+    C      - REAL             array of DIMENSION ( LDC, n ).
              Before entry  with  UPLO = 'U' or 'u',  the leading  n by n
              upper triangular part of the array C must contain the upper
              triangular part  of the  symmetric matrix  and the strictly
@@ -2488,10 +2645,10 @@ L40:
 
     /* Parameter adjustments */
     a_dim1 = *lda;
-    a_offset = 1 + a_dim1 * 1;
+    a_offset = 1 + a_dim1;
     a -= a_offset;
     c_dim1 = *ldc;
-    c_offset = 1 + c_dim1 * 1;
+    c_offset = 1 + c_dim1;
     c__ -= c_offset;
 
     /* Function Body */
@@ -2503,10 +2660,10 @@ L40:
     upper = lsame_(uplo, "U");
 
     info = 0;
-    if ((! upper && ! lsame_(uplo, "L"))) {
+    if (! upper && ! lsame_(uplo, "L")) {
 	info = 1;
-    } else if (((! lsame_(trans, "N") && ! lsame_(trans,
-	     "T")) && ! lsame_(trans, "C"))) {
+    } else if (! lsame_(trans, "N") && ! lsame_(trans,
+	    "T") && ! lsame_(trans, "C")) {
 	info = 2;
     } else if (*n < 0) {
 	info = 3;
@@ -2518,26 +2675,26 @@ L40:
 	info = 10;
     }
     if (info != 0) {
-	xerbla_("DSYRK ", &info);
+	xerbla_("SSYRK ", &info);
 	return 0;
     }
 
 /*     Quick return if possible. */
 
-    if (*n == 0 || ((*alpha == 0. || *k == 0) && *beta == 1.)) {
+    if (*n == 0 || (*alpha == 0.f || *k == 0) && *beta == 1.f) {
 	return 0;
     }
 
 /*     And when  alpha.eq.zero. */
 
-    if (*alpha == 0.) {
+    if (*alpha == 0.f) {
 	if (upper) {
-	    if (*beta == 0.) {
+	    if (*beta == 0.f) {
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j) {
 		    i__2 = j;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
+			c__[i__ + j * c_dim1] = 0.f;
 /* L10: */
 		    }
 /* L20: */
@@ -2554,12 +2711,12 @@ L40:
 		}
 	    }
 	} else {
-	    if (*beta == 0.) {
+	    if (*beta == 0.f) {
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j) {
 		    i__2 = *n;
 		    for (i__ = j; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
+			c__[i__ + j * c_dim1] = 0.f;
 /* L50: */
 		    }
 /* L60: */
@@ -2588,13 +2745,13 @@ L40:
 	if (upper) {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (*beta == 0.) {
+		if (*beta == 0.f) {
 		    i__2 = j;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
+			c__[i__ + j * c_dim1] = 0.f;
 /* L90: */
 		    }
-		} else if (*beta != 1.) {
+		} else if (*beta != 1.f) {
 		    i__2 = j;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
 			c__[i__ + j * c_dim1] = *beta * c__[i__ + j * c_dim1];
@@ -2603,7 +2760,7 @@ L40:
 		}
 		i__2 = *k;
 		for (l = 1; l <= i__2; ++l) {
-		    if (a[j + l * a_dim1] != 0.) {
+		    if (a[j + l * a_dim1] != 0.f) {
 			temp = *alpha * a[j + l * a_dim1];
 			i__3 = j;
 			for (i__ = 1; i__ <= i__3; ++i__) {
@@ -2619,13 +2776,13 @@ L40:
 	} else {
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
-		if (*beta == 0.) {
+		if (*beta == 0.f) {
 		    i__2 = *n;
 		    for (i__ = j; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
+			c__[i__ + j * c_dim1] = 0.f;
 /* L140: */
 		    }
-		} else if (*beta != 1.) {
+		} else if (*beta != 1.f) {
 		    i__2 = *n;
 		    for (i__ = j; i__ <= i__2; ++i__) {
 			c__[i__ + j * c_dim1] = *beta * c__[i__ + j * c_dim1];
@@ -2634,7 +2791,7 @@ L40:
 		}
 		i__2 = *k;
 		for (l = 1; l <= i__2; ++l) {
-		    if (a[j + l * a_dim1] != 0.) {
+		    if (a[j + l * a_dim1] != 0.f) {
 			temp = *alpha * a[j + l * a_dim1];
 			i__3 = *n;
 			for (i__ = j; i__ <= i__3; ++i__) {
@@ -2657,13 +2814,13 @@ L40:
 	    for (j = 1; j <= i__1; ++j) {
 		i__2 = j;
 		for (i__ = 1; i__ <= i__2; ++i__) {
-		    temp = 0.;
+		    temp = 0.f;
 		    i__3 = *k;
 		    for (l = 1; l <= i__3; ++l) {
 			temp += a[l + i__ * a_dim1] * a[l + j * a_dim1];
 /* L190: */
 		    }
-		    if (*beta == 0.) {
+		    if (*beta == 0.f) {
 			c__[i__ + j * c_dim1] = *alpha * temp;
 		    } else {
 			c__[i__ + j * c_dim1] = *alpha * temp + *beta * c__[
@@ -2678,13 +2835,13 @@ L40:
 	    for (j = 1; j <= i__1; ++j) {
 		i__2 = *n;
 		for (i__ = j; i__ <= i__2; ++i__) {
-		    temp = 0.;
+		    temp = 0.f;
 		    i__3 = *k;
 		    for (l = 1; l <= i__3; ++l) {
 			temp += a[l + i__ * a_dim1] * a[l + j * a_dim1];
 /* L220: */
 		    }
-		    if (*beta == 0.) {
+		    if (*beta == 0.f) {
 			c__[i__ + j * c_dim1] = *alpha * temp;
 		    } else {
 			c__[i__ + j * c_dim1] = *alpha * temp + *beta * c__[
@@ -2699,20 +2856,20 @@ L40:
 
     return 0;
 
-/*     End of DSYRK . */
+/*     End of SSYRK . */
 
-} /* dsyrk_ */
+} /* ssyrk_ */
 
-/* Subroutine */ int dtrmm_(char *side, char *uplo, char *transa, char *diag,
-	integer *m, integer *n, doublereal *alpha, doublereal *a, integer *
-	lda, doublereal *b, integer *ldb)
+/* Subroutine */ int strmm_(char *side, char *uplo, char *transa, char *diag,
+	integer *m, integer *n, real *alpha, real *a, integer *lda, real *b,
+	integer *ldb)
 {
     /* System generated locals */
     integer a_dim1, a_offset, b_dim1, b_offset, i__1, i__2, i__3;
 
     /* Local variables */
     static integer i__, j, k, info;
-    static doublereal temp;
+    static real temp;
     static logical lside;
     extern logical lsame_(char *, char *);
     static integer nrowa;
@@ -2725,7 +2882,7 @@ L40:
     Purpose
     =======
 
-    DTRMM  performs one of the matrix-matrix operations
+    STRMM  performs one of the matrix-matrix operations
 
        B := alpha*op( A )*B,   or   B := alpha*B*op( A ),
 
@@ -2790,13 +2947,13 @@ L40:
              at least zero.
              Unchanged on exit.
 
-    ALPHA  - DOUBLE PRECISION.
+    ALPHA  - REAL            .
              On entry,  ALPHA specifies the scalar  alpha. When  alpha is
              zero then  A is not referenced and  B need not be set before
              entry.
              Unchanged on exit.
 
-    A      - DOUBLE PRECISION array of DIMENSION ( LDA, k ), where k is m
+    A      - REAL             array of DIMENSION ( LDA, k ), where k is m
              when  SIDE = 'L' or 'l'  and is  n  when  SIDE = 'R' or 'r'.
              Before entry  with  UPLO = 'U' or 'u',  the  leading  k by k
              upper triangular part of the array  A must contain the upper
@@ -2817,7 +2974,7 @@ L40:
              then LDA must be at least max( 1, n ).
              Unchanged on exit.
 
-    B      - DOUBLE PRECISION array of DIMENSION ( LDB, n ).
+    B      - REAL             array of DIMENSION ( LDB, n ).
              Before entry,  the leading  m by n part of the array  B must
              contain the matrix  B,  and  on exit  is overwritten  by the
              transformed matrix.
@@ -2843,10 +3000,10 @@ L40:
 
     /* Parameter adjustments */
     a_dim1 = *lda;
-    a_offset = 1 + a_dim1 * 1;
+    a_offset = 1 + a_dim1;
     a -= a_offset;
     b_dim1 = *ldb;
-    b_offset = 1 + b_dim1 * 1;
+    b_offset = 1 + b_dim1;
     b -= b_offset;
 
     /* Function Body */
@@ -2860,15 +3017,15 @@ L40:
     upper = lsame_(uplo, "U");
 
     info = 0;
-    if ((! lside && ! lsame_(side, "R"))) {
+    if (! lside && ! lsame_(side, "R")) {
 	info = 1;
-    } else if ((! upper && ! lsame_(uplo, "L"))) {
+    } else if (! upper && ! lsame_(uplo, "L")) {
 	info = 2;
-    } else if (((! lsame_(transa, "N") && ! lsame_(
-	    transa, "T")) && ! lsame_(transa, "C"))) {
+    } else if (! lsame_(transa, "N") && ! lsame_(transa,
+	     "T") && ! lsame_(transa, "C")) {
 	info = 3;
-    } else if ((! lsame_(diag, "U") && ! lsame_(diag,
-	    "N"))) {
+    } else if (! lsame_(diag, "U") && ! lsame_(diag,
+	    "N")) {
 	info = 4;
     } else if (*m < 0) {
 	info = 5;
@@ -2880,7 +3037,7 @@ L40:
 	info = 11;
     }
     if (info != 0) {
-	xerbla_("DTRMM ", &info);
+	xerbla_("STRMM ", &info);
 	return 0;
     }
 
@@ -2892,12 +3049,12 @@ L40:
 
 /*     And when  alpha.eq.zero. */
 
-    if (*alpha == 0.) {
+    if (*alpha == 0.f) {
 	i__1 = *n;
 	for (j = 1; j <= i__1; ++j) {
 	    i__2 = *m;
 	    for (i__ = 1; i__ <= i__2; ++i__) {
-		b[i__ + j * b_dim1] = 0.;
+		b[i__ + j * b_dim1] = 0.f;
 /* L10: */
 	    }
 /* L20: */
@@ -2917,7 +3074,7 @@ L40:
 		for (j = 1; j <= i__1; ++j) {
 		    i__2 = *m;
 		    for (k = 1; k <= i__2; ++k) {
-			if (b[k + j * b_dim1] != 0.) {
+			if (b[k + j * b_dim1] != 0.f) {
 			    temp = *alpha * b[k + j * b_dim1];
 			    i__3 = k - 1;
 			    for (i__ = 1; i__ <= i__3; ++i__) {
@@ -2938,7 +3095,7 @@ L40:
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j) {
 		    for (k = *m; k >= 1; --k) {
-			if (b[k + j * b_dim1] != 0.) {
+			if (b[k + j * b_dim1] != 0.f) {
 			    temp = *alpha * b[k + j * b_dim1];
 			    b[k + j * b_dim1] = temp;
 			    if (nounit) {
@@ -3017,7 +3174,7 @@ L40:
 		    }
 		    i__1 = j - 1;
 		    for (k = 1; k <= i__1; ++k) {
-			if (a[k + j * a_dim1] != 0.) {
+			if (a[k + j * a_dim1] != 0.f) {
 			    temp = *alpha * a[k + j * a_dim1];
 			    i__2 = *m;
 			    for (i__ = 1; i__ <= i__2; ++i__) {
@@ -3044,7 +3201,7 @@ L40:
 		    }
 		    i__2 = *n;
 		    for (k = j + 1; k <= i__2; ++k) {
-			if (a[k + j * a_dim1] != 0.) {
+			if (a[k + j * a_dim1] != 0.f) {
 			    temp = *alpha * a[k + j * a_dim1];
 			    i__3 = *m;
 			    for (i__ = 1; i__ <= i__3; ++i__) {
@@ -3067,7 +3224,7 @@ L40:
 		for (k = 1; k <= i__1; ++k) {
 		    i__2 = k - 1;
 		    for (j = 1; j <= i__2; ++j) {
-			if (a[j + k * a_dim1] != 0.) {
+			if (a[j + k * a_dim1] != 0.f) {
 			    temp = *alpha * a[j + k * a_dim1];
 			    i__3 = *m;
 			    for (i__ = 1; i__ <= i__3; ++i__) {
@@ -3082,7 +3239,7 @@ L40:
 		    if (nounit) {
 			temp *= a[k + k * a_dim1];
 		    }
-		    if (temp != 1.) {
+		    if (temp != 1.f) {
 			i__2 = *m;
 			for (i__ = 1; i__ <= i__2; ++i__) {
 			    b[i__ + k * b_dim1] = temp * b[i__ + k * b_dim1];
@@ -3095,7 +3252,7 @@ L40:
 		for (k = *n; k >= 1; --k) {
 		    i__1 = *n;
 		    for (j = k + 1; j <= i__1; ++j) {
-			if (a[j + k * a_dim1] != 0.) {
+			if (a[j + k * a_dim1] != 0.f) {
 			    temp = *alpha * a[j + k * a_dim1];
 			    i__2 = *m;
 			    for (i__ = 1; i__ <= i__2; ++i__) {
@@ -3110,7 +3267,7 @@ L40:
 		    if (nounit) {
 			temp *= a[k + k * a_dim1];
 		    }
-		    if (temp != 1.) {
+		    if (temp != 1.f) {
 			i__1 = *m;
 			for (i__ = 1; i__ <= i__1; ++i__) {
 			    b[i__ + k * b_dim1] = temp * b[i__ + k * b_dim1];
@@ -3125,19 +3282,19 @@ L40:
 
     return 0;
 
-/*     End of DTRMM . */
+/*     End of STRMM . */
 
-} /* dtrmm_ */
+} /* strmm_ */
 
-/* Subroutine */ int dtrmv_(char *uplo, char *trans, char *diag, integer *n,
-	doublereal *a, integer *lda, doublereal *x, integer *incx)
+/* Subroutine */ int strmv_(char *uplo, char *trans, char *diag, integer *n,
+	real *a, integer *lda, real *x, integer *incx)
 {
     /* System generated locals */
     integer a_dim1, a_offset, i__1, i__2;
 
     /* Local variables */
     static integer i__, j, ix, jx, kx, info;
-    static doublereal temp;
+    static real temp;
     extern logical lsame_(char *, char *);
     extern /* Subroutine */ int xerbla_(char *, integer *);
     static logical nounit;
@@ -3147,7 +3304,7 @@ L40:
     Purpose
     =======
 
-    DTRMV  performs one of the matrix-vector operations
+    STRMV  performs one of the matrix-vector operations
 
        x := A*x,   or   x := A'*x,
 
@@ -3195,7 +3352,7 @@ L40:
              N must be at least zero.
              Unchanged on exit.
 
-    A      - DOUBLE PRECISION array of DIMENSION ( LDA, n ).
+    A      - REAL             array of DIMENSION ( LDA, n ).
              Before entry with  UPLO = 'U' or 'u', the leading n by n
              upper triangular part of the array A must contain the upper
              triangular matrix and the strictly lower triangular part of
@@ -3214,7 +3371,7 @@ L40:
              max( 1, n ).
              Unchanged on exit.
 
-    X      - DOUBLE PRECISION array of dimension at least
+    X      - REAL             array of dimension at least
              ( 1 + ( n - 1 )*abs( INCX ) ).
              Before entry, the incremented array X must contain the n
              element vector x. On exit, X is overwritten with the
@@ -3240,19 +3397,19 @@ L40:
 
     /* Parameter adjustments */
     a_dim1 = *lda;
-    a_offset = 1 + a_dim1 * 1;
+    a_offset = 1 + a_dim1;
     a -= a_offset;
     --x;
 
     /* Function Body */
     info = 0;
-    if ((! lsame_(uplo, "U") && ! lsame_(uplo, "L"))) {
+    if (! lsame_(uplo, "U") && ! lsame_(uplo, "L")) {
 	info = 1;
-    } else if (((! lsame_(trans, "N") && ! lsame_(trans,
-	     "T")) && ! lsame_(trans, "C"))) {
+    } else if (! lsame_(trans, "N") && ! lsame_(trans,
+	    "T") && ! lsame_(trans, "C")) {
 	info = 2;
-    } else if ((! lsame_(diag, "U") && ! lsame_(diag,
-	    "N"))) {
+    } else if (! lsame_(diag, "U") && ! lsame_(diag,
+	    "N")) {
 	info = 3;
     } else if (*n < 0) {
 	info = 4;
@@ -3262,7 +3419,7 @@ L40:
 	info = 8;
     }
     if (info != 0) {
-	xerbla_("DTRMV ", &info);
+	xerbla_("STRMV ", &info);
 	return 0;
     }
 
@@ -3298,7 +3455,7 @@ L40:
 	    if (*incx == 1) {
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j) {
-		    if (x[j] != 0.) {
+		    if (x[j] != 0.f) {
 			temp = x[j];
 			i__2 = j - 1;
 			for (i__ = 1; i__ <= i__2; ++i__) {
@@ -3315,7 +3472,7 @@ L40:
 		jx = kx;
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j) {
-		    if (x[jx] != 0.) {
+		    if (x[jx] != 0.f) {
 			temp = x[jx];
 			ix = kx;
 			i__2 = j - 1;
@@ -3335,7 +3492,7 @@ L40:
 	} else {
 	    if (*incx == 1) {
 		for (j = *n; j >= 1; --j) {
-		    if (x[j] != 0.) {
+		    if (x[j] != 0.f) {
 			temp = x[j];
 			i__1 = j + 1;
 			for (i__ = *n; i__ >= i__1; --i__) {
@@ -3352,7 +3509,7 @@ L40:
 		kx += (*n - 1) * *incx;
 		jx = kx;
 		for (j = *n; j >= 1; --j) {
-		    if (x[jx] != 0.) {
+		    if (x[jx] != 0.f) {
 			temp = x[jx];
 			ix = kx;
 			i__1 = j + 1;
@@ -3447,20 +3604,20 @@ L40:
 
     return 0;
 
-/*     End of DTRMV . */
+/*     End of STRMV . */
 
-} /* dtrmv_ */
+} /* strmv_ */
 
-/* Subroutine */ int dtrsm_(char *side, char *uplo, char *transa, char *diag,
-	integer *m, integer *n, doublereal *alpha, doublereal *a, integer *
-	lda, doublereal *b, integer *ldb)
+/* Subroutine */ int strsm_(char *side, char *uplo, char *transa, char *diag,
+	integer *m, integer *n, real *alpha, real *a, integer *lda, real *b,
+	integer *ldb)
 {
     /* System generated locals */
     integer a_dim1, a_offset, b_dim1, b_offset, i__1, i__2, i__3;
 
     /* Local variables */
     static integer i__, j, k, info;
-    static doublereal temp;
+    static real temp;
     static logical lside;
     extern logical lsame_(char *, char *);
     static integer nrowa;
@@ -3473,7 +3630,7 @@ L40:
     Purpose
     =======
 
-    DTRSM  solves one of the matrix equations
+    STRSM  solves one of the matrix equations
 
        op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
 
@@ -3540,13 +3697,13 @@ L40:
              at least zero.
              Unchanged on exit.
 
-    ALPHA  - DOUBLE PRECISION.
+    ALPHA  - REAL            .
              On entry,  ALPHA specifies the scalar  alpha. When  alpha is
              zero then  A is not referenced and  B need not be set before
              entry.
              Unchanged on exit.
 
-    A      - DOUBLE PRECISION array of DIMENSION ( LDA, k ), where k is m
+    A      - REAL             array of DIMENSION ( LDA, k ), where k is m
              when  SIDE = 'L' or 'l'  and is  n  when  SIDE = 'R' or 'r'.
              Before entry  with  UPLO = 'U' or 'u',  the  leading  k by k
              upper triangular part of the array  A must contain the upper
@@ -3567,7 +3724,7 @@ L40:
              then LDA must be at least max( 1, n ).
              Unchanged on exit.
 
-    B      - DOUBLE PRECISION array of DIMENSION ( LDB, n ).
+    B      - REAL             array of DIMENSION ( LDB, n ).
              Before entry,  the leading  m by n part of the array  B must
              contain  the  right-hand  side  matrix  B,  and  on exit  is
              overwritten by the solution matrix  X.
@@ -3594,10 +3751,10 @@ L40:
 
     /* Parameter adjustments */
     a_dim1 = *lda;
-    a_offset = 1 + a_dim1 * 1;
+    a_offset = 1 + a_dim1;
     a -= a_offset;
     b_dim1 = *ldb;
-    b_offset = 1 + b_dim1 * 1;
+    b_offset = 1 + b_dim1;
     b -= b_offset;
 
     /* Function Body */
@@ -3611,15 +3768,15 @@ L40:
     upper = lsame_(uplo, "U");
 
     info = 0;
-    if ((! lside && ! lsame_(side, "R"))) {
+    if (! lside && ! lsame_(side, "R")) {
 	info = 1;
-    } else if ((! upper && ! lsame_(uplo, "L"))) {
+    } else if (! upper && ! lsame_(uplo, "L")) {
 	info = 2;
-    } else if (((! lsame_(transa, "N") && ! lsame_(
-	    transa, "T")) && ! lsame_(transa, "C"))) {
+    } else if (! lsame_(transa, "N") && ! lsame_(transa,
+	     "T") && ! lsame_(transa, "C")) {
 	info = 3;
-    } else if ((! lsame_(diag, "U") && ! lsame_(diag,
-	    "N"))) {
+    } else if (! lsame_(diag, "U") && ! lsame_(diag,
+	    "N")) {
 	info = 4;
     } else if (*m < 0) {
 	info = 5;
@@ -3631,7 +3788,7 @@ L40:
 	info = 11;
     }
     if (info != 0) {
-	xerbla_("DTRSM ", &info);
+	xerbla_("STRSM ", &info);
 	return 0;
     }
 
@@ -3643,12 +3800,12 @@ L40:
 
 /*     And when  alpha.eq.zero. */
 
-    if (*alpha == 0.) {
+    if (*alpha == 0.f) {
 	i__1 = *n;
 	for (j = 1; j <= i__1; ++j) {
 	    i__2 = *m;
 	    for (i__ = 1; i__ <= i__2; ++i__) {
-		b[i__ + j * b_dim1] = 0.;
+		b[i__ + j * b_dim1] = 0.f;
 /* L10: */
 	    }
 /* L20: */
@@ -3666,7 +3823,7 @@ L40:
 	    if (upper) {
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j) {
-		    if (*alpha != 1.) {
+		    if (*alpha != 1.f) {
 			i__2 = *m;
 			for (i__ = 1; i__ <= i__2; ++i__) {
 			    b[i__ + j * b_dim1] = *alpha * b[i__ + j * b_dim1]
@@ -3675,7 +3832,7 @@ L40:
 			}
 		    }
 		    for (k = *m; k >= 1; --k) {
-			if (b[k + j * b_dim1] != 0.) {
+			if (b[k + j * b_dim1] != 0.f) {
 			    if (nounit) {
 				b[k + j * b_dim1] /= a[k + k * a_dim1];
 			    }
@@ -3693,7 +3850,7 @@ L40:
 	    } else {
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j) {
-		    if (*alpha != 1.) {
+		    if (*alpha != 1.f) {
 			i__2 = *m;
 			for (i__ = 1; i__ <= i__2; ++i__) {
 			    b[i__ + j * b_dim1] = *alpha * b[i__ + j * b_dim1]
@@ -3703,7 +3860,7 @@ L40:
 		    }
 		    i__2 = *m;
 		    for (k = 1; k <= i__2; ++k) {
-			if (b[k + j * b_dim1] != 0.) {
+			if (b[k + j * b_dim1] != 0.f) {
 			    if (nounit) {
 				b[k + j * b_dim1] /= a[k + k * a_dim1];
 			    }
@@ -3770,7 +3927,7 @@ L40:
 	    if (upper) {
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j) {
-		    if (*alpha != 1.) {
+		    if (*alpha != 1.f) {
 			i__2 = *m;
 			for (i__ = 1; i__ <= i__2; ++i__) {
 			    b[i__ + j * b_dim1] = *alpha * b[i__ + j * b_dim1]
@@ -3780,7 +3937,7 @@ L40:
 		    }
 		    i__2 = j - 1;
 		    for (k = 1; k <= i__2; ++k) {
-			if (a[k + j * a_dim1] != 0.) {
+			if (a[k + j * a_dim1] != 0.f) {
 			    i__3 = *m;
 			    for (i__ = 1; i__ <= i__3; ++i__) {
 				b[i__ + j * b_dim1] -= a[k + j * a_dim1] * b[
@@ -3791,7 +3948,7 @@ L40:
 /* L190: */
 		    }
 		    if (nounit) {
-			temp = 1. / a[j + j * a_dim1];
+			temp = 1.f / a[j + j * a_dim1];
 			i__2 = *m;
 			for (i__ = 1; i__ <= i__2; ++i__) {
 			    b[i__ + j * b_dim1] = temp * b[i__ + j * b_dim1];
@@ -3802,7 +3959,7 @@ L40:
 		}
 	    } else {
 		for (j = *n; j >= 1; --j) {
-		    if (*alpha != 1.) {
+		    if (*alpha != 1.f) {
 			i__1 = *m;
 			for (i__ = 1; i__ <= i__1; ++i__) {
 			    b[i__ + j * b_dim1] = *alpha * b[i__ + j * b_dim1]
@@ -3812,7 +3969,7 @@ L40:
 		    }
 		    i__1 = *n;
 		    for (k = j + 1; k <= i__1; ++k) {
-			if (a[k + j * a_dim1] != 0.) {
+			if (a[k + j * a_dim1] != 0.f) {
 			    i__2 = *m;
 			    for (i__ = 1; i__ <= i__2; ++i__) {
 				b[i__ + j * b_dim1] -= a[k + j * a_dim1] * b[
@@ -3823,7 +3980,7 @@ L40:
 /* L240: */
 		    }
 		    if (nounit) {
-			temp = 1. / a[j + j * a_dim1];
+			temp = 1.f / a[j + j * a_dim1];
 			i__1 = *m;
 			for (i__ = 1; i__ <= i__1; ++i__) {
 			    b[i__ + j * b_dim1] = temp * b[i__ + j * b_dim1];
@@ -3840,7 +3997,7 @@ L40:
 	    if (upper) {
 		for (k = *n; k >= 1; --k) {
 		    if (nounit) {
-			temp = 1. / a[k + k * a_dim1];
+			temp = 1.f / a[k + k * a_dim1];
 			i__1 = *m;
 			for (i__ = 1; i__ <= i__1; ++i__) {
 			    b[i__ + k * b_dim1] = temp * b[i__ + k * b_dim1];
@@ -3849,7 +4006,7 @@ L40:
 		    }
 		    i__1 = k - 1;
 		    for (j = 1; j <= i__1; ++j) {
-			if (a[j + k * a_dim1] != 0.) {
+			if (a[j + k * a_dim1] != 0.f) {
 			    temp = a[j + k * a_dim1];
 			    i__2 = *m;
 			    for (i__ = 1; i__ <= i__2; ++i__) {
@@ -3860,7 +4017,7 @@ L40:
 			}
 /* L290: */
 		    }
-		    if (*alpha != 1.) {
+		    if (*alpha != 1.f) {
 			i__1 = *m;
 			for (i__ = 1; i__ <= i__1; ++i__) {
 			    b[i__ + k * b_dim1] = *alpha * b[i__ + k * b_dim1]
@@ -3874,7 +4031,7 @@ L40:
 		i__1 = *n;
 		for (k = 1; k <= i__1; ++k) {
 		    if (nounit) {
-			temp = 1. / a[k + k * a_dim1];
+			temp = 1.f / a[k + k * a_dim1];
 			i__2 = *m;
 			for (i__ = 1; i__ <= i__2; ++i__) {
 			    b[i__ + k * b_dim1] = temp * b[i__ + k * b_dim1];
@@ -3883,7 +4040,7 @@ L40:
 		    }
 		    i__2 = *n;
 		    for (j = k + 1; j <= i__2; ++j) {
-			if (a[j + k * a_dim1] != 0.) {
+			if (a[j + k * a_dim1] != 0.f) {
 			    temp = a[j + k * a_dim1];
 			    i__3 = *m;
 			    for (i__ = 1; i__ <= i__3; ++i__) {
@@ -3894,7 +4051,7 @@ L40:
 			}
 /* L340: */
 		    }
-		    if (*alpha != 1.) {
+		    if (*alpha != 1.f) {
 			i__2 = *m;
 			for (i__ = 1; i__ <= i__2; ++i__) {
 			    b[i__ + k * b_dim1] = *alpha * b[i__ + k * b_dim1]
@@ -3910,400 +4067,9 @@ L40:
 
     return 0;
 
-/*     End of DTRSM . */
+/*     End of STRSM . */
 
-} /* dtrsm_ */
-
-doublereal dzasum_(integer *n, doublecomplex *zx, integer *incx)
-{
-    /* System generated locals */
-    integer i__1;
-    doublereal ret_val;
-
-    /* Local variables */
-    static integer i__, ix;
-    static doublereal stemp;
-    extern doublereal dcabs1_(doublecomplex *);
-
-
-/*
-       takes the sum of the absolute values.
-       jack dongarra, 3/11/78.
-       modified 3/93 to return if incx .le. 0.
-       modified 12/3/93, array(1) declarations changed to array(*)
-*/
-
-
-    /* Parameter adjustments */
-    --zx;
-
-    /* Function Body */
-    ret_val = 0.;
-    stemp = 0.;
-    if (*n <= 0 || *incx <= 0) {
-	return ret_val;
-    }
-    if (*incx == 1) {
-	goto L20;
-    }
-
-/*        code for increment not equal to 1 */
-
-    ix = 1;
-    i__1 = *n;
-    for (i__ = 1; i__ <= i__1; ++i__) {
-	stemp += dcabs1_(&zx[ix]);
-	ix += *incx;
-/* L10: */
-    }
-    ret_val = stemp;
-    return ret_val;
-
-/*        code for increment equal to 1 */
-
-L20:
-    i__1 = *n;
-    for (i__ = 1; i__ <= i__1; ++i__) {
-	stemp += dcabs1_(&zx[i__]);
-/* L30: */
-    }
-    ret_val = stemp;
-    return ret_val;
-} /* dzasum_ */
-
-doublereal dznrm2_(integer *n, doublecomplex *x, integer *incx)
-{
-    /* System generated locals */
-    integer i__1, i__2, i__3;
-    doublereal ret_val, d__1;
-
-    /* Builtin functions */
-    double d_imag(doublecomplex *), sqrt(doublereal);
-
-    /* Local variables */
-    static integer ix;
-    static doublereal ssq, temp, norm, scale;
-
-
-/*
-    DZNRM2 returns the euclidean norm of a vector via the function
-    name, so that
-
-       DZNRM2 := sqrt( conjg( x' )*x )
-
-
-    -- This version written on 25-October-1982.
-       Modified on 14-October-1993 to inline the call to ZLASSQ.
-       Sven Hammarling, Nag Ltd.
-*/
-
-
-    /* Parameter adjustments */
-    --x;
-
-    /* Function Body */
-    if (*n < 1 || *incx < 1) {
-	norm = 0.;
-    } else {
-	scale = 0.;
-	ssq = 1.;
-/*
-          The following loop is equivalent to this call to the LAPACK
-          auxiliary routine:
-          CALL ZLASSQ( N, X, INCX, SCALE, SSQ )
-*/
-
-	i__1 = (*n - 1) * *incx + 1;
-	i__2 = *incx;
-	for (ix = 1; i__2 < 0 ? ix >= i__1 : ix <= i__1; ix += i__2) {
-	    i__3 = ix;
-	    if (x[i__3].r != 0.) {
-		i__3 = ix;
-		temp = (d__1 = x[i__3].r, abs(d__1));
-		if (scale < temp) {
-/* Computing 2nd power */
-		    d__1 = scale / temp;
-		    ssq = ssq * (d__1 * d__1) + 1.;
-		    scale = temp;
-		} else {
-/* Computing 2nd power */
-		    d__1 = temp / scale;
-		    ssq += d__1 * d__1;
-		}
-	    }
-	    if (d_imag(&x[ix]) != 0.) {
-		temp = (d__1 = d_imag(&x[ix]), abs(d__1));
-		if (scale < temp) {
-/* Computing 2nd power */
-		    d__1 = scale / temp;
-		    ssq = ssq * (d__1 * d__1) + 1.;
-		    scale = temp;
-		} else {
-/* Computing 2nd power */
-		    d__1 = temp / scale;
-		    ssq += d__1 * d__1;
-		}
-	    }
-/* L10: */
-	}
-	norm = scale * sqrt(ssq);
-    }
-
-    ret_val = norm;
-    return ret_val;
-
-/*     End of DZNRM2. */
-
-} /* dznrm2_ */
-
-integer idamax_(integer *n, doublereal *dx, integer *incx)
-{
-    /* System generated locals */
-    integer ret_val, i__1;
-    doublereal d__1;
-
-    /* Local variables */
-    static integer i__, ix;
-    static doublereal dmax__;
-
-
-/*
-       finds the index of element having max. absolute value.
-       jack dongarra, linpack, 3/11/78.
-       modified 3/93 to return if incx .le. 0.
-       modified 12/3/93, array(1) declarations changed to array(*)
-*/
-
-
-    /* Parameter adjustments */
-    --dx;
-
-    /* Function Body */
-    ret_val = 0;
-    if (*n < 1 || *incx <= 0) {
-	return ret_val;
-    }
-    ret_val = 1;
-    if (*n == 1) {
-	return ret_val;
-    }
-    if (*incx == 1) {
-	goto L20;
-    }
-
-/*        code for increment not equal to 1 */
-
-    ix = 1;
-    dmax__ = abs(dx[1]);
-    ix += *incx;
-    i__1 = *n;
-    for (i__ = 2; i__ <= i__1; ++i__) {
-	if ((d__1 = dx[ix], abs(d__1)) <= dmax__) {
-	    goto L5;
-	}
-	ret_val = i__;
-	dmax__ = (d__1 = dx[ix], abs(d__1));
-L5:
-	ix += *incx;
-/* L10: */
-    }
-    return ret_val;
-
-/*        code for increment equal to 1 */
-
-L20:
-    dmax__ = abs(dx[1]);
-    i__1 = *n;
-    for (i__ = 2; i__ <= i__1; ++i__) {
-	if ((d__1 = dx[i__], abs(d__1)) <= dmax__) {
-	    goto L30;
-	}
-	ret_val = i__;
-	dmax__ = (d__1 = dx[i__], abs(d__1));
-L30:
-	;
-    }
-    return ret_val;
-} /* idamax_ */
-
-integer izamax_(integer *n, doublecomplex *zx, integer *incx)
-{
-    /* System generated locals */
-    integer ret_val, i__1;
-
-    /* Local variables */
-    static integer i__, ix;
-    static doublereal smax;
-    extern doublereal dcabs1_(doublecomplex *);
-
-
-/*
-       finds the index of element having max. absolute value.
-       jack dongarra, 1/15/85.
-       modified 3/93 to return if incx .le. 0.
-       modified 12/3/93, array(1) declarations changed to array(*)
-*/
-
-
-    /* Parameter adjustments */
-    --zx;
-
-    /* Function Body */
-    ret_val = 0;
-    if (*n < 1 || *incx <= 0) {
-	return ret_val;
-    }
-    ret_val = 1;
-    if (*n == 1) {
-	return ret_val;
-    }
-    if (*incx == 1) {
-	goto L20;
-    }
-
-/*        code for increment not equal to 1 */
-
-    ix = 1;
-    smax = dcabs1_(&zx[1]);
-    ix += *incx;
-    i__1 = *n;
-    for (i__ = 2; i__ <= i__1; ++i__) {
-	if (dcabs1_(&zx[ix]) <= smax) {
-	    goto L5;
-	}
-	ret_val = i__;
-	smax = dcabs1_(&zx[ix]);
-L5:
-	ix += *incx;
-/* L10: */
-    }
-    return ret_val;
-
-/*        code for increment equal to 1 */
-
-L20:
-    smax = dcabs1_(&zx[1]);
-    i__1 = *n;
-    for (i__ = 2; i__ <= i__1; ++i__) {
-	if (dcabs1_(&zx[i__]) <= smax) {
-	    goto L30;
-	}
-	ret_val = i__;
-	smax = dcabs1_(&zx[i__]);
-L30:
-	;
-    }
-    return ret_val;
-} /* izamax_ */
-
-logical lsame_(char *ca, char *cb)
-{
-    /* System generated locals */
-    logical ret_val;
-
-    /* Local variables */
-    static integer inta, intb, zcode;
-
-
-/*
-    -- LAPACK auxiliary routine (version 3.0) --
-       Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-       Courant Institute, Argonne National Lab, and Rice University
-       September 30, 1994
-
-
-    Purpose
-    =======
-
-    LSAME returns .TRUE. if CA is the same letter as CB regardless of
-    case.
-
-    Arguments
-    =========
-
-    CA      (input) CHARACTER*1
-    CB      (input) CHARACTER*1
-            CA and CB specify the single characters to be compared.
-
-   =====================================================================
-
-
-       Test if the characters are equal
-*/
-
-    ret_val = *(unsigned char *)ca == *(unsigned char *)cb;
-    if (ret_val) {
-	return ret_val;
-    }
-
-/*     Now test for equivalence if both characters are alphabetic. */
-
-    zcode = 'Z';
-
-/*
-       Use 'Z' rather than 'A' so that ASCII can be detected on Prime
-       machines, on which ICHAR returns a value with bit 8 set.
-       ICHAR('A') on Prime machines returns 193 which is the same as
-       ICHAR('A') on an EBCDIC machine.
-*/
-
-    inta = *(unsigned char *)ca;
-    intb = *(unsigned char *)cb;
-
-    if (zcode == 90 || zcode == 122) {
-
-/*
-          ASCII is assumed - ZCODE is the ASCII code of either lower or
-          upper case 'Z'.
-*/
-
-	if ((inta >= 97 && inta <= 122)) {
-	    inta += -32;
-	}
-	if ((intb >= 97 && intb <= 122)) {
-	    intb += -32;
-	}
-
-    } else if (zcode == 233 || zcode == 169) {
-
-/*
-          EBCDIC is assumed - ZCODE is the EBCDIC code of either lower or
-          upper case 'Z'.
-*/
-
-	if ((inta >= 129 && inta <= 137) || (inta >= 145 && inta <= 153) || (
-		inta >= 162 && inta <= 169)) {
-	    inta += 64;
-	}
-	if ((intb >= 129 && intb <= 137) || (intb >= 145 && intb <= 153) || (
-		intb >= 162 && intb <= 169)) {
-	    intb += 64;
-	}
-
-    } else if (zcode == 218 || zcode == 250) {
-
-/*
-          ASCII is assumed, on Prime machines - ZCODE is the ASCII code
-          plus 128 of either lower or upper case 'Z'.
-*/
-
-	if ((inta >= 225 && inta <= 250)) {
-	    inta += -32;
-	}
-	if ((intb >= 225 && intb <= 250)) {
-	    intb += -32;
-	}
-    }
-    ret_val = inta == intb;
-
-/*
-       RETURN
-
-       End of LSAME
-*/
-
-    return ret_val;
-} /* lsame_ */
+} /* strsm_ */
 
 /* Subroutine */ int xerbla_(char *srname, integer *info)
 {
@@ -4316,7 +4082,7 @@ logical lsame_(char *ca, char *cb)
     /* Subroutine */ int s_stop(char *, ftnlen);
 
     /* Fortran I/O blocks */
-    static cilist io___147 = { 0, 6, 0, fmt_9999, 0 };
+    static cilist io___134 = { 0, 6, 0, fmt_9999, 0 };
 
 
 /*
@@ -4348,7 +4114,7 @@ logical lsame_(char *ca, char *cb)
 */
 
 
-    s_wsfe(&io___147);
+    s_wsfe(&io___134);
     do_fio(&c__1, srname, (ftnlen)6);
     do_fio(&c__1, (char *)&(*info), (ftnlen)sizeof(integer));
     e_wsfe();

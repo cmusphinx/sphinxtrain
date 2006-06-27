@@ -39,9 +39,9 @@ DIRNAME=src/libs/liblapack_lite
 BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
-  dlamch.c \
   blas_lite.c \
-  dlapack_lite.c \
+  slapack_lite.c \
+  slamch.c \
   f2c_lite.c
 H = config.h
 

@@ -24,14 +24,14 @@ s_rnge(char *var, int index, char *routine, int lineno)
 
 #ifdef KR_headers
 extern double sqrt();
-double f__cabs(real, imag) double real, imag;
+float f__cabs(real, imag) float real, imag;
 #else
 #undef abs
 
-double f__cabs(double real, double imag)
+float f__cabs(float real, float imag)
 #endif
 {
-double temp;
+float temp;
 
 if(real < 0)
 	real = -real;
@@ -43,7 +43,7 @@ if(imag > real){
 	imag = temp;
 }
 if((imag+real) == real)
-	return((double)real);
+	return((float)real);
 
 temp = imag/real;
 temp = real*sqrt(1.0 + temp*temp);  /*overflow!!*/
@@ -53,9 +53,9 @@ return(temp);
 
  VOID
 #ifdef KR_headers
-d_cnjg(r, z) doublecomplex *r, *z;
+s_cnjg(r, z) complex *r, *z;
 #else
-d_cnjg(doublecomplex *r, doublecomplex *z)
+s_cnjg(complex *r, complex *z)
 #endif
 {
 r->r = z->r;
@@ -64,9 +64,9 @@ r->i = - z->i;
 
 
 #ifdef KR_headers
-double d_imag(z) doublecomplex *z;
+float r_imag(z) complex *z;
 #else
-double d_imag(doublecomplex *z)
+float r_imag(complex *z)
 #endif
 {
 return(z->i);
@@ -77,11 +77,11 @@ return(z->i);
 
 #ifdef KR_headers
 double log();
-double d_lg10(x) doublereal *x;
+float r_lg10(x) real *x;
 #else
 #undef abs
 
-double d_lg10(doublereal *x)
+float r_lg10(real *x)
 #endif
 {
 return( log10e * log(*x) );
@@ -89,12 +89,12 @@ return( log10e * log(*x) );
 
 
 #ifdef KR_headers
-double d_sign(a,b) doublereal *a, *b;
+float r_sign(a,b) real *a, *b;
 #else
-double d_sign(doublereal *a, doublereal *b)
+float r_sign(real *a, real *b)
 #endif
 {
-double x;
+float x;
 x = (*a >= 0 ? *a : - *a);
 return( *b >= 0 ? x : -x);
 }
@@ -102,11 +102,11 @@ return( *b >= 0 ? x : -x);
 
 #ifdef KR_headers
 double floor();
-integer i_dnnt(x) doublereal *x;
+integer i_dnnt(x) real *x;
 #else
 #undef abs
 
-integer i_dnnt(doublereal *x)
+integer i_dnnt(real *x)
 #endif
 {
 return( (*x)>=0 ?
@@ -128,12 +128,12 @@ return(pow(*ap, *bp) );
 
 
 #ifdef KR_headers
-double pow_di(ap, bp) doublereal *ap; integer *bp;
+float pow_ri(ap, bp) real *ap; integer *bp;
 #else
-double pow_di(doublereal *ap, integer *bp)
+float pow_ri(real *ap, integer *bp)
 #endif
 {
-double pow, x;
+float pow, x;
 integer n;
 unsigned long u;
 
@@ -332,11 +332,11 @@ void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb)
 
 
 #ifdef KR_headers
-double f__cabs();
-double z_abs(z) doublecomplex *z;
+float f__cabs();
+float z_abs(z) complex *z;
 #else
-double f__cabs(double, double);
-double z_abs(doublecomplex *z)
+float f__cabs(float, float);
+float z_abs(complex *z)
 #endif
 {
 return( f__cabs( z->r, z->i ) );
@@ -345,14 +345,14 @@ return( f__cabs( z->r, z->i ) );
 
 #ifdef KR_headers
 extern void sig_die();
-VOID z_div(c, a, b) doublecomplex *a, *b, *c;
+VOID z_div(c, a, b) complex *a, *b, *c;
 #else
 extern void sig_die(char*, int);
-void z_div(doublecomplex *c, doublecomplex *a, doublecomplex *b)
+void z_div(complex *c, complex *a, complex *b)
 #endif
 {
-double ratio, den;
-double abr, abi;
+float ratio, den;
+float abr, abi;
 
 if( (abr = b->r) < 0.)
 	abr = - abr;
@@ -381,16 +381,17 @@ else
 
 
 #ifdef KR_headers
-double sqrt(), f__cabs();
-VOID z_sqrt(r, z) doublecomplex *r, *z;
+double sqrt();
+double f__cabs();
+VOID z_sqrt(r, z) complex *r, *z;
 #else
 #undef abs
 
-extern double f__cabs(double, double);
-void z_sqrt(doublecomplex *r, doublecomplex *z)
+extern float f__cabs(float, float);
+void z_sqrt(complex *r, complex *z)
 #endif
 {
-double mag;
+float mag;
 
 if( (mag = f__cabs(z->r, z->i)) == 0.)
 	r->r = r->i = 0.;
