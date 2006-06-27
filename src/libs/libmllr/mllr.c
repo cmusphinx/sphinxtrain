@@ -304,8 +304,8 @@ solve  (float64 **A, /*Input : an n*n matrix A */
 	int32   n)
 
 {
-  float64 *tmp_l;
-  float64 *tmp_r;
+  float32 *tmp_l;
+  float32 *tmp_r;
   int i, j;
   int32 N, NRHS, LDA, LDB, INFO;
   int32 *IPIV;
@@ -318,7 +318,7 @@ solve  (float64 **A, /*Input : an n*n matrix A */
     /* don't know whether we HAVE to do this to get the f2c routine
        running. */
 
-    tmp_l = (float64 *)ckd_calloc(N * N, sizeof(float64));
+    tmp_l = (float32 *)ckd_calloc(N * N, sizeof(float32));
 
     /*To use the f2c lapack function, row/column ordering of the
       arrays need to be changed. */
@@ -327,7 +327,7 @@ solve  (float64 **A, /*Input : an n*n matrix A */
       for (j = 0; j < N; j++) 
 	tmp_l[j+N*i] = A[i][j]; 
 
-    tmp_r = (float64*) ckd_calloc(N, sizeof(float64));
+    tmp_r = (float32*) ckd_calloc(N, sizeof(float32));
 
     for (i = 0; i < N; i++) 
       tmp_r[i] = b[i];
@@ -335,8 +335,7 @@ solve  (float64 **A, /*Input : an n*n matrix A */
     IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
 
     /* Beware ! all arguments of lapack have to be a pointer */
-
-    dgesv_(&N, &NRHS, tmp_l,&LDA,IPIV,tmp_r, &LDB, &INFO);
+    sgesv_(&N, &NRHS, tmp_l,&LDA,IPIV,tmp_r, &LDB, &INFO);
 
     if( INFO==0 ){ /*fprintf( stderr, "OK\n" );*/ }
     else{ return S3_ERROR; }
@@ -349,54 +348,6 @@ solve  (float64 **A, /*Input : an n*n matrix A */
     ckd_free ((void *)tmp_r);
     ckd_free ((void *)IPIV);
 
-
-    return S3_SUCCESS;
-}
-
-/* Find inverse by solving AX=I. */
-int32
-invert(float32 **ainv,
-       float32 **a,
-       int32 n)
-{
-    float64 *tmp_a;
-    float64 *tmp_i;
-    int i, j;
-    int32 N, NRHS, LDA, LDB, INFO;
-    int32 *IPIV;
-
-    N=n;
-    NRHS=n;
-    LDA=n;    
-    LDB=n;
-
-    /*To use the f2c lapack function, row/column ordering of the
-      arrays need to be changed. */
-    tmp_a = (float64 *)ckd_calloc(N * N, sizeof(float64));
-    for (i = 0; i < N; i++) 
-	for (j = 0; j < N; j++) 
-	    tmp_a[j+N*i] = a[i][j]; 
-
-    /* Construct an identity matrix. */
-    tmp_i = (float64*) ckd_calloc(N * N, sizeof(float64));
-    for (i = 0; i < N; i++) 
-	tmp_i[i+N*i] = 1.0;
-
-    IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
-
-    /* Beware ! all arguments of lapack have to be a pointer */
-    dgesv_(&N, &NRHS, tmp_a, &LDA, IPIV, tmp_i, &LDB, &INFO);
-
-    if (INFO != 0)
-	return S3_ERROR;
-
-    for (i = 0; i < n; ++i)
-	for (j = 0; j < n; ++j)
-	    ainv[i][j] = tmp_i[j+N*i];
-    
-    ckd_free ((void *)tmp_a);
-    ckd_free ((void *)tmp_i);
-    ckd_free ((void *)IPIV);
 
     return S3_SUCCESS;
 }

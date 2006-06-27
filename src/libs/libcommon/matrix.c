@@ -43,8 +43,14 @@
  * 
  *********************************************************************/
 
+#include <string.h>
+#include <stdlib.h>
+
 #include <s3/matrix.h>
+#include <s3/s3.h>
 #include <s3/err.h>
+#include <s3/clapack_lite.h>
+#include <s3/ckd_alloc.h>
 
 void
 norm_3d(float32 ***arr,
@@ -165,6 +171,106 @@ band_nz_1d(float32 *v,
     }
 }
 
+/* Find determinant through LU decomposition. */
+float32
+determinant(vector_t *a, int32 n)
+{
+    float32 *tmp_a;
+    float32 det;
+    int32 M, N, LDA, INFO;
+    int32 *IPIV;
+    int32 i, j;
+
+    M = N = LDA = n;
+
+    /* To use the f2c lapack function, row/column ordering of the
+       arrays need to be changed.  (FIXME: might be faster to do this
+       in-place twice?) */
+    tmp_a = (float32 *)ckd_calloc(N * N, sizeof(float32));
+    for (i = 0; i < N; i++) 
+	for (j = 0; j < N; j++) 
+	    tmp_a[j+N*i] = a[i][j]; 
+
+    IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
+    sgetrf_(&M, &N, tmp_a, &LDA, IPIV, &INFO);
+
+    det = 0.0;
+    for (i = 0; i < n; ++i) {
+	if (IPIV[i] != i+1)
+	    det *= -tmp_a[i+N*i];
+	else
+	    det *= tmp_a[i+N*i];
+    }
+
+    ckd_free(tmp_a);
+    ckd_free(IPIV);
+    return det;
+}
+
+/* Find inverse by solving AX=I. */
+int32
+invert(vector_t *ainv, vector_t *a, int32 n)
+{
+    float32 *tmp_a;
+    int i, j;
+    int32 N, NRHS, LDA, LDB, INFO;
+    int32 *IPIV;
+
+    N=n;
+    NRHS=n;
+    LDA=n;    
+    LDB=n;
+
+    /* To use the f2c lapack function, row/column ordering of the
+       arrays need to be changed.  (FIXME: might be faster to do this
+       in-place twice?) */
+    tmp_a = (float32 *)ckd_calloc(N * N, sizeof(float32));
+    for (i = 0; i < N; i++) 
+	for (j = 0; j < N; j++) 
+	    tmp_a[j+N*i] = a[i][j]; 
+
+    /* Construct an identity matrix. */
+    memset(ainv[0], 0, sizeof(float32) * N * N);
+    for (i = 0; i < N; i++) 
+	ainv[i][i] = 1.0;
+
+    IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
+
+    /* Beware! all arguments of lapack have to be a pointer */
+    sgesv_(&N, &NRHS, tmp_a, &LDA, IPIV, ainv[0], &LDB, &INFO);
+
+    if (INFO != 0)
+	return S3_ERROR;
+
+    /* Swap rows/columns in place. */
+    for (i = 0; i < n; ++i) {
+	for (j = i+1; j < n; ++j) {
+	    float64 tmp = ainv[i][j];
+	    ainv[i][j] = ainv[j][i];
+	    ainv[j][i] = tmp;
+	}
+    }
+    
+    ckd_free ((void *)tmp_a);
+    ckd_free ((void *)IPIV);
+
+    return S3_SUCCESS;
+}
+
+void
+outerproduct(vector_t *a, vector_t x, vector_t y, int32 len)
+{
+    int32 i, j;
+
+    for (i = 0; i < len; ++i) {
+	a[i][i] = x[i] * y[i];
+	for (j = i+1; j < len; ++j) {
+	    a[i][j] = x[i] * y[j];
+	    a[j][i] = x[j] * y[i];
+	}
+    }
+}
+
 /*
  * Log record.  Maintained by RCS.
  *

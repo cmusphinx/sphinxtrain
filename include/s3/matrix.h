@@ -37,7 +37,7 @@
  *
  * File: matrix.h
  * 
- * Description: 
+ * Description: Matrix and linear algebra functions
  * 
  * Author: 
  * 
@@ -47,6 +47,7 @@
 #define MATRIX_H
 
 #include <s3/prim_type.h>
+#include <s3/vector.h>
 
 void
 norm_3d(float32 ***arr,
@@ -84,6 +85,16 @@ void
 band_nz_1d(float32 *v,
 	   uint32 d1,
 	   float32 band);
+
+float32
+determinant(float32 **a, int32 len);
+
+/* Returns S3_ERROR for a singular matrix. */
+int32
+invert(vector_t *ainv, vector_t *a, int32 len);
+
+void
+outerproduct(vector_t *a, vector_t x, vector_t y, int32 len);
 
 #endif /* MATRIX_H */ 
 
