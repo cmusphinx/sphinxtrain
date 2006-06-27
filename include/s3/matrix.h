@@ -86,7 +86,8 @@ band_nz_1d(float32 *v,
 	   uint32 d1,
 	   float32 band);
 
-float32
+/* These can be vanishingly small hence the float64 */
+float64
 determinant(float32 **a, int32 len);
 
 /* Returns S3_ERROR for a singular matrix. */

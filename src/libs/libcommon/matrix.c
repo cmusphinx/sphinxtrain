@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1997-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -172,7 +173,7 @@ band_nz_1d(float32 *v,
 }
 
 /* Find determinant through LU decomposition. */
-float32
+float64
 determinant(vector_t *a, int32 n)
 {
     float32 *tmp_a;
@@ -196,6 +197,10 @@ determinant(vector_t *a, int32 n)
 
     det = tmp_a[0];
     for (i = 1; i < n; ++i) {
+#if 0
+	printf("%g * %s1 * %f =>\n", det,
+	       (IPIV[i] == i+1 ? "+" : "-"), tmp_a[i+N*i]);
+#endif
 	if (IPIV[i] != i+1)
 	    det *= -tmp_a[i+N*i];
 	else
