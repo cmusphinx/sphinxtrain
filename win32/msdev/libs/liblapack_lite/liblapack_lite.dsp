@@ -89,15 +89,15 @@ SOURCE=..\..\..\..\src\libs\liblapack_lite\blas_lite.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\libs\liblapack_lite\dlamch.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\src\libs\liblapack_lite\dlapack_lite.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\..\src\libs\liblapack_lite\f2c_lite.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\libs\liblapack_lite\slamch.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\libs\liblapack_lite\slapack_lite.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
