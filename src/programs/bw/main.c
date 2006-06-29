@@ -238,6 +238,26 @@ main_initialize(int argc,
 			    *(int32 *)cmd_ln_access("-topn"),
 			    cmd_ln_int32("-fullvar")) != S3_SUCCESS)
 	return S3_ERROR;
+
+    if (cmd_ln_int32("-diagfull")) {
+	    /* Extract diagonals and use them for Gaussian computation. */
+	    gauden_t *g;
+	    uint32 i, j, k, l;
+
+	    g = inv->gauden;
+	    g->var = gauden_alloc_param(g->n_mgau,
+					g->n_feat,
+					g->n_density,
+					g->veclen);
+	    for (i = 0; i < g->n_mgau; ++i)
+		    for (j = 0; j < g->n_feat; ++j)
+			    for (k = 0; k < g->n_density; ++k)
+				    for (l = 0; l < g->veclen[j]; ++l)
+					    g->var[i][j][k][l] =
+						    g->fullvar[i][j][k][l][l];
+	    gauden_free_param_full(g->fullvar);
+	    g->fullvar = NULL;
+    }
     
     if (gauden_eval_precomp(inv->gauden) != S3_SUCCESS) {
 	E_ERROR("Problems precomputing values used during Gaussian density evaluation\n");

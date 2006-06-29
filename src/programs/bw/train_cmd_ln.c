@@ -355,6 +355,12 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  "no",
 	  "Variances are full covariance matrices"},
 
+	{ "-diagfull",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Evaluate Gaussian densities using diagonals only"},
+
 	{ "-mwfloor",
 	  CMD_LN_FLOAT32,
 	  CMD_LN_NO_VALIDATION,
