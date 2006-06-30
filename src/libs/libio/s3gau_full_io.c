@@ -224,7 +224,7 @@ s3gau_write_full(const char *fn,
 
     s3close(fp);
 
-    E_INFO("Wrote %s [%ux%ux%ux array of full matrices]\n",
+    E_INFO("Wrote %s [%ux%ux%u array of full matrices]\n",
 	   fn, n_mgau, n_feat, n_density);
 
     return S3_SUCCESS;

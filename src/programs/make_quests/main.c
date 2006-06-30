@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -81,6 +82,7 @@
 #include <s3/s3.h>
 #include <s3/vector.h>
 #include <s3/s3gau_io.h>
+#include <s3/gauden.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -800,6 +802,7 @@ init(float32 *****out_mixw,
     uint32  t_nfeat, t_ndensity;
     vector_t  ***fullmean=NULL;
     vector_t  ***fullvar=NULL;
+    vector_t  ****fullvar_full=NULL;
     float32   ***mean=NULL;
     float32   ***var=NULL;
     float32   varfloor;
@@ -876,6 +879,7 @@ init(float32 *****out_mixw,
     assert(j == n_model);
     
     if (continuous) {      /* bother with means and variances only if not semi*/
+	int32 var_is_full = cmd_ln_int32("-fullvar");
         /* Read Means and Variances; perform consistency checks */
         if (s3gau_read(cmd_ln_access("-meanfn"),
                        &fullmean,
@@ -888,13 +892,24 @@ init(float32 *****out_mixw,
         if (t_nfeat != n_stream && t_ndensity != n_density)
             E_FATAL("Mismatch between Mean and Mixture weight files\n");
 
-        if (s3gau_read(cmd_ln_access("-varfn"),
-                       &fullvar,
-                       &t_nstates,
-                       &t_nfeat,
-                       &t_ndensity,
-                       &t_veclen) != S3_SUCCESS)
-            E_FATAL("Error reading var file %s\n",cmd_ln_access("-varfn"));
+	if (var_is_full) {
+	    if (s3gau_read_full(cmd_ln_access("-varfn"),
+				&fullvar_full,
+				&t_nstates,
+				&t_nfeat,
+				&t_ndensity,
+				&t_veclen) != S3_SUCCESS)
+		E_FATAL("Error reading var file %s\n",cmd_ln_access("-varfn"));
+	}
+	else {
+	    if (s3gau_read(cmd_ln_access("-varfn"),
+			   &fullvar,
+			   &t_nstates,
+			   &t_nfeat,
+			   &t_ndensity,
+			   &t_veclen) != S3_SUCCESS)
+		E_FATAL("Error reading var file %s\n",cmd_ln_access("-varfn"));
+	}
         if (t_nfeat != n_stream && t_ndensity != n_density)
             E_FATAL("Mismatch between Variance and Mixture weight files\n");
         for (i=0;i<n_stream;i++)
@@ -913,6 +928,7 @@ init(float32 *****out_mixw,
            states to out_mean and out_var */
         for (i=0,sumveclen=0; i < n_stream; i++) sumveclen += t_veclen[i];
         mean = (float32 ***)ckd_calloc_3d(n_model,n_state,sumveclen,sizeof(float32));
+	/* Use only the diagonals regardless of whether -varfn is full. */
         var = (float32 ***)ckd_calloc_3d(n_model,n_state,sumveclen,sizeof(float32));
         mixw = (float32 ****)ckd_calloc_4d(n_model,n_state,1,1,sizeof(float32));
         varfloor = *(float32 *)cmd_ln_access("-varfloor");
@@ -928,9 +944,14 @@ init(float32 *****out_mixw,
                     dnom += mw;
                     for (nn = 0; nn < l_veclen[0]; nn++) {
                         featmean[nn] += mw * fullmean[m][0][n][nn];
-                        featvar[nn] += 
-                           mw *(fullmean[m][0][n][nn]*fullmean[m][0][n][nn] +
-                                            fullvar[m][0][n][nn]);
+			if (var_is_full)
+			    featvar[nn] += 
+				mw *(fullmean[m][0][n][nn]*fullmean[m][0][n][nn] +
+				     fullvar_full[m][0][n][nn][nn]);
+			else
+			    featvar[nn] += 
+				mw *(fullmean[m][0][n][nn]*fullmean[m][0][n][nn] +
+				     fullvar[m][0][n][nn]);
                     }
                 }
                 if (dnom != 0) {
@@ -991,7 +1012,10 @@ init(float32 *****out_mixw,
     *out_mixw = mixw;
     if (continuous) {
         ckd_free_4d((void ****)fullmean);
-        ckd_free_4d((void ****)fullvar);
+	if (fullvar)
+	    ckd_free_4d((void ****)fullvar);
+	if (fullvar_full)
+	    gauden_free_param_full(fullvar_full);
     }
 
     return S3_SUCCESS;

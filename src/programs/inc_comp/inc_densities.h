@@ -53,10 +53,12 @@ int
 inc_densities(float32 ***new_mixw,
 	      vector_t ***new_mean,
 	      vector_t ***new_var,
+	      vector_t ****new_fullvar,
 
 	      float32 ***mixw,
 	      vector_t ***mean,
 	      vector_t ***var,
+	      vector_t ****fullvar,
 	      float32 ***dnom,
 	      
 	      uint32 n_mixw,

@@ -135,6 +135,12 @@ inc_comp \n\
 	  CMD_LN_NO_DEFAULT,
 	  "The source variance file w/ N means"},
 
+	{ "-fullvar",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "variances file contains full covariances" },
+
 	{ "-outvarfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,

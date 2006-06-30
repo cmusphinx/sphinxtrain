@@ -106,6 +106,12 @@ questions -type .cont.";
 	  CMD_LN_NO_DEFAULT,
 	  "variances file for tree building using continuous HMMs" },
 
+	{ "-fullvar",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "variances file contains full covariances" },
+
         { "-varfloor",
           CMD_LN_FLOAT32,
           CMD_LN_NO_VALIDATION,

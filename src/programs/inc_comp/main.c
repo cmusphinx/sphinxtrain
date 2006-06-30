@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1994-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -63,9 +64,11 @@ int
 main(int argc, char *argv[])
 {
     vector_t ***mean;
-    vector_t ***var;
+    vector_t ***var = NULL;
+    vector_t ****fullvar = NULL;
     vector_t ***new_mean;
-    vector_t ***new_var;
+    vector_t ***new_var = NULL;
+    vector_t ****new_fullvar = NULL;
     float32  ***dnom;
     float32 ***mixw;
     float32 ***new_mixw;
@@ -76,6 +79,7 @@ main(int argc, char *argv[])
     uint32 n_density;
     uint32 n_inc;
     const uint32 *veclen;
+    int32 var_is_full;
 
     parse_cmd_ln(argc, argv);
 
@@ -116,13 +120,26 @@ main(int argc, char *argv[])
 	return 1;
     }
 
-    if (s3gau_read((const char *)cmd_ln_access("-invarfn"),
-		   &var,
-		   &n_mgau,
-		   &n_feat,
-		   &n_density,
-		   &veclen) != S3_SUCCESS) {
-	return 1;
+    var_is_full = cmd_ln_int32("-fullvar");
+    if (var_is_full) {
+	if (s3gau_read_full((const char *)cmd_ln_access("-invarfn"),
+			    &fullvar,
+			    &n_mgau,
+			    &n_feat,
+			    &n_density,
+			    &veclen) != S3_SUCCESS) {
+	    return 1;
+	}
+    }
+    else {
+	if (s3gau_read((const char *)cmd_ln_access("-invarfn"),
+		       &var,
+		       &n_mgau,
+		       &n_feat,
+		       &n_density,
+		       &veclen) != S3_SUCCESS) {
+	    return 1;
+	}
     }
 
     if (s3gaudnom_read((const char *)cmd_ln_access("-dcountfn"),
@@ -134,7 +151,10 @@ main(int argc, char *argv[])
     }
 	
     new_mean = gauden_alloc_param(n_mgau, n_feat, n_density+n_inc, veclen);
-    new_var  = gauden_alloc_param(n_mgau, n_feat, n_density+n_inc, veclen);
+    if (var_is_full)
+	    new_fullvar  = gauden_alloc_param_full(n_mgau, n_feat, n_density+n_inc, veclen);
+    else
+	    new_var  = gauden_alloc_param(n_mgau, n_feat, n_density+n_inc, veclen);
     new_mixw = (float32 ***)ckd_calloc_3d(n_mixw, n_feat, n_density+n_inc,
 					  sizeof(float32));
     
@@ -143,10 +163,12 @@ main(int argc, char *argv[])
     inc_densities(new_mixw,
 		  new_mean,
 		  new_var,
+		  new_fullvar,
 
 		  mixw,
 		  mean,
 		  var,
+		  fullvar,
 		  dnom,
 
 		  n_mixw,
@@ -184,13 +206,25 @@ main(int argc, char *argv[])
     }
 
     if (cmd_ln_access("-outvarfn") != NULL) {
-	if (s3gau_write((const char *)cmd_ln_access("-outvarfn"),
-			(const vector_t ***)new_var,
-			n_mgau,
-			n_feat,
-			n_density+n_inc,
-			feat_vecsize()) != S3_SUCCESS) {
-	    return 1;
+	if (var_is_full) {
+	    if (s3gau_write_full((const char *)cmd_ln_access("-outvarfn"),
+				 (const vector_t ****)new_fullvar,
+				 n_mgau,
+				 n_feat,
+				 n_density+n_inc,
+				 feat_vecsize()) != S3_SUCCESS) {
+		return 1;
+	    }
+	}
+	else {
+	    if (s3gau_write((const char *)cmd_ln_access("-outvarfn"),
+			    (const vector_t ***)new_var,
+			    n_mgau,
+			    n_feat,
+			    n_density+n_inc,
+			    feat_vecsize()) != S3_SUCCESS) {
+		return 1;
+	    }
 	}
     }
     else {

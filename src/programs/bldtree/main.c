@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1997-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -62,6 +63,7 @@
 #include <s3/s3.h>
 #include <s3/vector.h>
 #include <s3/s3gau_io.h>
+#include <s3/gauden.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -207,6 +209,7 @@ init(model_def_t **out_mdef,
     uint32  t_nfeat, t_ndensity;
     vector_t  ***fullmean;
     vector_t  ***fullvar;
+    vector_t  ****fullvar_full;
     float32   ****mean;
     float32   ****var;
     float32   varfloor;
@@ -428,6 +431,7 @@ init(model_def_t **out_mdef,
 /* ADDITIONS FOR CONTINUOUS_TREES 18 May 98.
    If DISCRETE HMM, GET PROBABILITIES, ELSE SIMPLY GET MEANS AND VARIANCES */
     if (continuous == 1) {
+	int32 var_is_full = cmd_ln_int32("-fullvar");
         /* Read Means and Variances; perform consistency checks */
         if (s3gau_read(cmd_ln_access("-meanfn"),
                        &fullmean,
@@ -440,13 +444,24 @@ init(model_def_t **out_mdef,
         if (t_nfeat != n_stream && t_ndensity != n_density)
             E_FATAL("Mismatch between Mean and Mixture weight files\n");
 
-        if (s3gau_read(cmd_ln_access("-varfn"),
-                       &fullvar,
-                       &t_nstates,
-                       &t_nfeat,
-                       &t_ndensity,
-                       &t_veclen) != S3_SUCCESS)
-            E_FATAL("Error reading var file %s\n",cmd_ln_access("-varfn"));
+	if (var_is_full) {
+	    if (s3gau_read_full(cmd_ln_access("-varfn"),
+				&fullvar_full,
+				&t_nstates,
+				&t_nfeat,
+				&t_ndensity,
+				&t_veclen) != S3_SUCCESS)
+		E_FATAL("Error reading var file %s\n",cmd_ln_access("-varfn"));
+	}
+        else {
+	    if (s3gau_read(cmd_ln_access("-varfn"),
+			   &fullvar,
+			   &t_nstates,
+			   &t_nfeat,
+			   &t_ndensity,
+			   &t_veclen) != S3_SUCCESS)
+		E_FATAL("Error reading var file %s\n",cmd_ln_access("-varfn"));
+	}
         if (t_nfeat != n_stream && t_ndensity != n_density)
             E_FATAL("Mismatch between Variance and Mixture weight files\n");
         for (i=0;i<n_stream;i++)
@@ -463,6 +478,7 @@ init(model_def_t **out_mdef,
            states to out_mean and out_var */
         for (i=0,sumveclen=0; i < n_stream; i++) sumveclen += t_veclen[i];
         mean = (float32 ****)ckd_calloc_4d(n_model,n_state,n_stream,sumveclen,sizeof(float32));
+	/* Use only the diagonals regardless of whether -varfn is full. */
         var = (float32 ****)ckd_calloc_4d(n_model,n_state,n_stream,sumveclen,sizeof(float32));
         varfloor = *(float32 *)cmd_ln_access("-varfloor");
  
@@ -481,7 +497,14 @@ init(model_def_t **out_mdef,
                             dnom += mw;
                             for (nn = 0; nn < l_veclen[ll]; nn++) {
                                 featmean[nn] += mw * fullmean[m][ll][n][nn];
-                                featvar[nn] += mw * (fullmean[m][ll][n][nn]*fullmean[m][ll][n][nn] + fullvar[m][ll][n][nn]);
+				if (var_is_full)
+				    featvar[nn] += 
+					mw *(fullmean[m][ll][n][nn]*fullmean[m][ll][n][nn] +
+					     fullvar_full[m][ll][n][nn][nn]);
+				else
+				    featvar[nn] += 
+					mw *(fullmean[m][ll][n][nn]*fullmean[m][ll][n][nn] +
+					     fullvar[m][ll][n][nn]);
                             }
                         }
                         if (dnom != 0) {
@@ -515,7 +538,10 @@ init(model_def_t **out_mdef,
         *out_mean = mean;
         *out_var = var;
         ckd_free_4d((void ****)fullmean);
-        ckd_free_4d((void ****)fullvar);
+	if (fullvar)
+	    ckd_free_4d((void ****)fullvar);
+	if (fullvar_full)
+	    gauden_free_param_full(fullvar_full);
     }
 /* END ADDITIONS FOR CONTINUOUS_TREES */
 

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1994-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -71,10 +72,12 @@ int
 inc_densities(float32 ***new_mixw,
 	      vector_t ***new_mean,
 	      vector_t ***new_var,
+	      vector_t ****new_fullvar,
 
 	      float32 ***mixw,
 	      vector_t ***mean,
 	      vector_t ***var,
+	      vector_t ****fullvar,
 	      float32 ***dnom,
 	      
 	      uint32 n_mixw,
@@ -104,7 +107,11 @@ inc_densities(float32 ***new_mixw,
 	for (j = 0; j < n_feat; j++) {
 	    for (k = 0; k < n_density; k++) {
 		memcpy(new_mean[i][j][k], mean[i][j][k], veclen[j]*sizeof(float32));
-		memcpy(new_var[i][j][k], var[i][j][k], veclen[j]*sizeof(float32));
+		if (fullvar)
+		    memcpy(new_fullvar[i][j][k][0], fullvar[i][j][k][0],
+			   veclen[j]*veclen[j]*sizeof(float32));
+		else
+		    memcpy(new_var[i][j][k], var[i][j][k], veclen[j]*sizeof(float32));
 		new_mixw[i][j][k] = mixw[i][j][k];
 	    }
 	}
@@ -145,8 +152,12 @@ inc_densities(float32 ***new_mixw,
 
 		    new_mixw[i][j][n_density+r] = 0;
 
-		    memcpy(new_var[i][j][n_density+r], var[i][j][0],
-			   veclen[j]*sizeof(float32));
+		    if (fullvar)
+			memcpy(new_fullvar[i][j][n_density+r][0], fullvar[i][j][0][0],
+			       veclen[j]*veclen[j]*sizeof(float32));
+		    else 
+			memcpy(new_var[i][j][n_density+r], var[i][j][0],
+			       veclen[j]*sizeof(float32));
 
 		    memcpy(new_mean[i][j][n_density+r], mean[i][j][0],
 			   veclen[j]*sizeof(float32));
@@ -159,13 +170,21 @@ inc_densities(float32 ***new_mixw,
 		new_mixw[i][j][n_density+r] = new_mixw[i][j][max_wt_idx];
 
 		/* Keep variance of new class same as old */
-		memcpy(new_var[i][j][n_density+r], var[i][j][max_wt_idx],
-		       veclen[j]*sizeof(float32));
+		if (fullvar)
+		    memcpy(new_fullvar[i][j][n_density+r][0], fullvar[i][j][max_wt_idx][0],
+			   veclen[j]*veclen[j]*sizeof(float32));
+		else
+		    memcpy(new_var[i][j][n_density+r], var[i][j][max_wt_idx],
+			   veclen[j]*sizeof(float32));
 
 		/* mean_a = mean + 0.2 std */
 		/* mean_b = mean - 0.2 std */
 		for (l = 0; l < veclen[j]; l++) {
-		    std = sqrt(var[i][j][max_wt_idx][l]);
+		    /* Use the stddev of mean[l] itself for full covariances. */
+		    if (fullvar)
+			std = sqrt(fullvar[i][j][max_wt_idx][l][l]);
+		    else
+			std = sqrt(var[i][j][max_wt_idx][l]);
 		    
 		    new_mean[i][j][max_wt_idx][l] = mean[i][j][max_wt_idx][l] + 0.2 * std;
 		    new_mean[i][j][n_density+r][l]  = mean[i][j][max_wt_idx][l] - 0.2 * std;

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -129,6 +130,7 @@ static int
 init_model(float32 ***dest_mixw,
 	   vector_t ***dest_mean,
 	   vector_t ***dest_var,
+	   vector_t ****dest_fullvar,
 	   float32 ***dest_tmat,
 	   model_def_entry_t *dest,
 	   uint32 *dest_cb_map,
@@ -137,6 +139,7 @@ init_model(float32 ***dest_mixw,
 	   float32 ***src_mixw,
 	   vector_t ***src_mean,
 	   vector_t ***src_var,
+	   vector_t ****src_fullvar,
 	   float32 ***src_tmat,
 	   model_def_entry_t *src,
 	   uint32 *src_cb_map,
@@ -146,7 +149,7 @@ init_model(float32 ***dest_mixw,
 	   uint32 n_gau,
 	   uint32 n_state_pm)
 {
-    unsigned int s, i, j, k, l;
+    unsigned int s, i, j, k, l, ll;
     unsigned int s_m, s_mg;
     unsigned int d_m, d_mg;
     uint32 s_tmat, d_tmat;
@@ -202,7 +205,14 @@ init_model(float32 ***dest_mixw,
 		    for (k = 0; k < n_gau; k++) {
 			for (l = 0; l < veclen[j]; l++) {
 			    dest_mean[d_mg][j][k][l] = src_mean[s_mg][j][k][l];
-			    dest_var[d_mg][j][k][l] = src_var[s_mg][j][k][l];
+			    if (dest_var)
+				dest_var[d_mg][j][k][l] = src_var[s_mg][j][k][l];
+			    else if (dest_fullvar) {
+				for (ll = 0; ll < veclen[j]; ++ll) {
+				    dest_fullvar[d_mg][j][k][l][ll]
+					= src_fullvar[s_mg][j][k][l][ll];
+				}
+			    }
 			}
 		    }
 		}
@@ -226,13 +236,15 @@ init_mixw()
     model_def_t *src_mdef;
     float32 ***src_mixw;
     vector_t ***src_mean;
-    vector_t ***src_var;
+    vector_t ***src_var = NULL;
+    vector_t ****src_fullvar = NULL;
     float32 ***src_tmat;
 
     model_def_t *dest_mdef;
     float32 ***dest_mixw;
     vector_t ***dest_mean;
-    vector_t ***dest_var;
+    vector_t ***dest_var = NULL;
+    vector_t ****dest_fullvar = NULL;
     float32 ***dest_tmat;
 
     uint32 n_mixw_src;
@@ -342,14 +354,25 @@ init_mixw()
     }
 
     E_INFO("Reading src %s\n", (const char *)cmd_ln_access("-src_varfn"));
-	   
-    if (s3gau_read((const char *)cmd_ln_access("-src_varfn"),
-		   &src_var,
-		   &n_cb_src,
-		   &tmp_n_feat,
-		   &tmp_n_gau,
-		   &tmp_veclen) != S3_SUCCESS) {
-	return S3_ERROR;
+    if (cmd_ln_int32("-fullvar")) {
+	if (s3gau_read_full((const char *)cmd_ln_access("-src_varfn"),
+		       &src_fullvar,
+		       &n_cb_src,
+		       &tmp_n_feat,
+		       &tmp_n_gau,
+		       &tmp_veclen) != S3_SUCCESS) {
+	    return S3_ERROR;
+	}
+    }
+    else {
+	if (s3gau_read((const char *)cmd_ln_access("-src_varfn"),
+		       &src_var,
+		       &n_cb_src,
+		       &tmp_n_feat,
+		       &tmp_n_gau,
+		       &tmp_veclen) != S3_SUCCESS) {
+	    return S3_ERROR;
+	}
     }
 
     ckd_free((void *)tmp_veclen);
@@ -441,7 +464,10 @@ init_mixw()
     E_INFO("Alloc %ux%ux%u dest mean and var\n",
 	   n_cb_dest, n_feat, n_gau);
     dest_mean = gauden_alloc_param(n_cb_dest, n_feat, n_gau, veclen);
-    dest_var = gauden_alloc_param(n_cb_dest, n_feat, n_gau, veclen);
+    if (src_var)
+	dest_var = gauden_alloc_param(n_cb_dest, n_feat, n_gau, veclen);
+    else if (src_fullvar)
+	dest_fullvar = gauden_alloc_param_full(n_cb_dest, n_feat, n_gau, veclen);
     
     for (dest_m = 0; dest_m < dest_mdef->n_defn; dest_m++) {
 	dest_m_name = acmod_set_id2name(dest_mdef->acmod_set, dest_m);
@@ -468,9 +494,9 @@ init_mixw()
 	    }
 	    else {
 		/* No corresponding model, but a base model was found.  Use base distribution. */
-		init_model(dest_mixw, dest_mean, dest_var, dest_tmat,
+		init_model(dest_mixw, dest_mean, dest_var, dest_fullvar, dest_tmat,
 			   &dest_mdef->defn[dest_m], dest_mdef->cb, dest_mdef->acmod_set,
-			   src_mixw, src_mean, src_var, src_tmat,
+			   src_mixw, src_mean, src_var, src_fullvar, src_tmat,
 			   &src_mdef->defn[src_m_base], src_mdef->cb, src_mdef->acmod_set,
 			   n_feat, n_gau, n_state_pm);
 	    }
@@ -478,9 +504,9 @@ init_mixw()
 	else {
 	    /* Found a corresponding model in the source set, so use source distributions to init
 	       the destination */
-	    init_model(dest_mixw, dest_mean, dest_var, dest_tmat,
+	    init_model(dest_mixw, dest_mean, dest_var, dest_fullvar, dest_tmat,
 		       &dest_mdef->defn[dest_m], dest_mdef->cb, dest_mdef->acmod_set,
-		       src_mixw, src_mean, src_var, src_tmat,
+		       src_mixw, src_mean, src_var, src_fullvar, src_tmat,
 		       &src_mdef->defn[src_m], src_mdef->cb, src_mdef->acmod_set,
 		       n_feat, n_gau, n_state_pm);
 	}
@@ -535,14 +561,25 @@ init_mixw()
 
     E_INFO("Writing dest %s\n",
 	   (const char *)cmd_ln_access("-dest_varfn"));
-
-    if (s3gau_write((const char *)cmd_ln_access("-dest_varfn"),
-		    (const vector_t ***)dest_var,
-		    n_cb_dest,
-		    n_feat,
-		    n_gau,
-		    feat_vecsize()) != S3_SUCCESS) {
-	return S3_ERROR;
+    if (cmd_ln_int32("-fullvar")) {
+	if (s3gau_write_full((const char *)cmd_ln_access("-dest_varfn"),
+			     (const vector_t ****)dest_fullvar,
+			     n_cb_dest,
+			     n_feat,
+			     n_gau,
+			     feat_vecsize()) != S3_SUCCESS) {
+	    return S3_ERROR;
+	}
+    }
+    else {
+	if (s3gau_write((const char *)cmd_ln_access("-dest_varfn"),
+			(const vector_t ***)dest_var,
+			n_cb_dest,
+			n_feat,
+			n_gau,
+			feat_vecsize()) != S3_SUCCESS) {
+	    return S3_ERROR;
+	}
     }
     
     return S3_SUCCESS;
