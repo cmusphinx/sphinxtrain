@@ -378,13 +378,19 @@ float32
 full_norm(vector_t *var,
 	  uint32 len)
 {
-    float64 log_det;
+    float64 det;
     float32 p;
 
-    log_det = log(fabs(determinant(var, len)));
+    det = determinant(var, len);
+    /* Require covariance matrices to be positive-definite. */
+    if (det <= 0) {
+	E_ERROR("Covariance matrix is not positive-definite: determinant is %g\n",
+		det);
+	assert(det > 0);
+    }
     p = len * log(2.0 * M_PI);
 
-    return - 0.5 * (log_det + p);
+    return - 0.5 * (log(det) + p);
 }
 
 void
@@ -416,18 +422,13 @@ gauden_floor_variance(gauden_t *g)
 {
     uint32 i, j, k;
 
+    /* Don't try to floor full covariances */
+    if (g->var == NULL)
+	return S3_SUCCESS;
     for (i = 0; i < g->n_mgau; i++) {
 	for (j = 0; j < g->n_feat; j++) {
 	    for (k = 0; k < g->n_density; k++) {
-		if (g->fullvar) {
-		    uint32 l;
-		    /* Only floor the diagonal. */
-		    for (l = 0; l < g->veclen[j]; ++l)
-			if (g->fullvar[i][j][k][l][l] < min_var)
-			    g->fullvar[i][j][k][l][l] = min_var;
-		}
-		else
-		    vector_floor(g->var[i][j][k], g->veclen[j], min_var);
+		vector_floor(g->var[i][j][k], g->veclen[j], min_var);
 	    }
 	}
     }
@@ -493,7 +494,7 @@ gauden_invert_variance_full(gauden_t *g)
 		/* Yes, this works in-place (we hope) */
 		if (invert(g->fullvar[i][j][k], g->fullvar[i][j][k],
 			   g->veclen[j]) != S3_SUCCESS) {
-		    /* This really is a fatal error, I think. */
+		    /* Shouldn't get here, due to the check in full_norm() */
 		    E_FATAL("Singular covariance matrix ([%d][%d][%d]), can't continue!\n",
 			    i, j, k);
 		}
