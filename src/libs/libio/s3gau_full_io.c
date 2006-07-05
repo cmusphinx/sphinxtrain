@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -466,8 +467,7 @@ s3gaucnt_write_full(const char *fn,
     }
 
     if (has_vars) {
-	floor_nz_1d(wt_var[0][0][0][0], n_elem * blk, MIN_POS_FLOAT32);
-
+	/* Don't floor full variances!!! */
 	if (s3write_1d((void *)wt_var[0][0][0][0], sizeof(float32),
 		       n_elem * blk, fp, &chksum) != S3_SUCCESS)
 	    return S3_ERROR;
