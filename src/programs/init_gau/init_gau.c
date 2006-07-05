@@ -162,7 +162,7 @@ init_gau(lexicon_t *lex,
 		       &r_n_ts,
 		       &r_n_feat,
 		       &r_n_density,
-		       &r_veclen) != S3_SUCCESS) {
+		       (const uint32 **)&r_veclen) != S3_SUCCESS) {
 	    E_FATAL_SYSTEM("Unable to open %s for reading\n", meanfn);
 	}
 
