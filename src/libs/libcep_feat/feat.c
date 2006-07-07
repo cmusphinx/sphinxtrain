@@ -68,7 +68,7 @@
 #include <assert.h>
 
 static uint32 fid = FEAT_ID_NONE;
-static int mfcc_len = 13;
+static unsigned int mfcc_len = 13;
 
 static char *__name2id[] = {
     "4s_12c_24d_3p_12dd",

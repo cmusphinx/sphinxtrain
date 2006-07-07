@@ -63,7 +63,12 @@ find the triphone list from the dictionary";
 
   const char examplestr[] = 
 "Example : \n\
-dict2tri -dictfn dict -basephnfn phonelist -btwtri yes";
+This compute both the cross-word triphones and internal triphones, \n\
+dict2tri -dictfn dict -basephnfn phonelist -btwtri yes \n\
+\n\
+This compute only the cross-word triphones, \n\
+dict2tri -dictfn dict -basephnfn phonelist -btwtri no \n\
+\n\";
 
     static arg_def_t defn[] = {
 	{ "-help",
