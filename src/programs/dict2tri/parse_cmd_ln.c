@@ -68,7 +68,7 @@ dict2tri -dictfn dict -basephnfn phonelist -btwtri yes \n\
 \n\
 This compute only the cross-word triphones, \n\
 dict2tri -dictfn dict -basephnfn phonelist -btwtri no \n\
-\n\";
+\n";
 
     static arg_def_t defn[] = {
 	{ "-help",
