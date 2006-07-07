@@ -17,19 +17,19 @@ my $match_wo_output = "${exec_resdir}/test.dict2tri.no_internaltriphones";
 #Testing with triphone computed
 system("$bin $args $w_triphones > $w_output");
 system("diff $w_output $match_w_output");
-if($! == 0){
+if($? == 0){
     printf("Test dict2tri compute internal triphones PASSED\n");
 }else{
-    printf("Test dict2tri compute internal triphones FAILED, exit at %d\n",$!);
+    printf("Test dict2tri compute internal triphones FAILED, exit at %d, msg\n",$?,$!);
 }
 
 system("$bin $args $wo_triphones > $wo_output");
 system("diff $wo_output $match_wo_output");
 
-if($! == 0){
+if($? == 0){
     printf("Test dict2tri wo compute internal triphones PASSED\n");
 }else{
-    printf("Test dict2tri wo compute internal triphones FAILED, exit at %d\n",$!);
+    printf("Test dict2tri wo compute internal triphones FAILED, exit at %d, msg %s\n",$?, $!);
 }
 
 
