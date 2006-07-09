@@ -210,7 +210,8 @@ accum_gauden(float32 ***denacc,
 	     int32 var_reest,
 	     int32 pass2var,
 	     float32 ***wacc,
-	     int32 var_is_full)
+	     int32 var_is_full,
+	     FILE *pdumpfh)
 {
     uint32 g_i, i, j, k, kk, l, mc=0;
 
@@ -283,6 +284,8 @@ accum_gauden(float32 ***denacc,
 #ifdef ACCUM_VERBOSE
 		printf("denacc[%u][%u][%3u] == %.3e\n", i, j, k, obs_cnt);
 #endif
+		if (pdumpfh)
+			fprintf(pdumpfh, "%u %u %u %g\n", lcl2gbl[i], j, k, obs_cnt);
 
 		m = macc[i][j][k];	/* the vector accumulator for mean (i,j,k) */
 
@@ -340,6 +343,9 @@ accum_gauden(float32 ***denacc,
 	    }
 	}
     }
+
+    if (pdumpfh)
+	    fputs("\n", pdumpfh);
 
     return S3_SUCCESS;
 }

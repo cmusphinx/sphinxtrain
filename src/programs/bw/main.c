@@ -534,6 +534,8 @@ main_reestimate(model_inventory_t *inv,
     uint32 sil_del;    /* if TRUE optionally delete silence at the end */
     char *trans;
     char* silence_str;
+    char *pdumpdir;
+    FILE *pdumpfh;
     uint32 in_veclen;
     timing_t *utt_timer = NULL;
     timing_t *upd_timer = NULL;
@@ -612,6 +614,7 @@ main_reestimate(model_inventory_t *inv,
     mllr_add = *(int32 *)cmd_ln_access("-mllradd");
     sil_del    = *(int32 *)cmd_ln_access("-sildel");
     silence_str = (char *)cmd_ln_access("-siltag");
+    pdumpdir = (char *)cmd_ln_access("-pdumpdir");
 
     if (cmd_ln_access("-ckptintv")) {
 	ckpt_intv = *(int32 *)cmd_ln_access("-ckptintv");
@@ -762,6 +765,25 @@ main_reestimate(model_inventory_t *inv,
 	/* Get the phone segmentation */
 	corpus_get_phseg(inv->acmod_set, &phseg);
 
+	/* Open a dump file if required. */
+	if (pdumpdir) {
+		char *pdumpfn, *uttid;
+
+		uttid = (outputfullpath ? corpus_utt_full_name() : corpus_utt());
+		pdumpfn = ckd_calloc(strlen(pdumpdir) + 1
+				     + strlen(uttid)
+				     + strlen(".pdump") + 1, 1);
+		strcpy(pdumpfn, pdumpdir);
+		strcat(pdumpfn, "/");
+		strcat(pdumpfn, uttid);
+		strcat(pdumpfn, ".pdump");
+		if ((pdumpfh = fopen(pdumpfn, "w")) == NULL)
+			E_FATAL_SYSTEM("Failed to open %s for wrigint", pdumpfn);
+		ckd_free(pdumpfn);
+	}
+	else
+		pdumpfh = NULL;
+
 	if (upd_timer)
 	    timing_start(upd_timer);
 	if (!viterbi) {
@@ -788,7 +810,8 @@ main_reestimate(model_inventory_t *inv,
 				  pass2var,
 				  mllr_mult,
 				  mllr_add,
-				  var_is_full
+				  var_is_full,
+				  pdumpfh
 				  ) == S3_SUCCESS) {
 		total_frames += n_frame;
 		total_log_lik += log_lik;
@@ -848,6 +871,8 @@ main_reestimate(model_inventory_t *inv,
 	if (upd_timer)
 	    timing_stop(upd_timer);
 
+	if (pdumpfh)
+		fclose(pdumpfh);
 	free(mfcc[0]);
 	ckd_free(mfcc);
 	feat_free(f);

@@ -661,7 +661,13 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_VALIDATION,
 	  "no",
 	  "Expect utterance id in transcript to be a suffix of the partial path in the control file" },
-	
+
+	{ "-pdumpdir",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Dump state/mixture posterior probabilities to files in this directory" },
+
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 

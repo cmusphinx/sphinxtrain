@@ -46,6 +46,8 @@
 #ifndef ACCUM_H
 #define ACCUM_H
 
+#include <stdio.h>
+
 #include <s3/prim_type.h>
 #include <s3/vector.h>
 #include <s3/gauden.h>
@@ -72,7 +74,8 @@ accum_gauden(float32 ***cbacc,
 	     int32 var_reest,
 	     int32 pass2var,
 	     float32 ***wacc,
-	     int32 var_is_full);
+	     int32 var_is_full,
+	     FILE *pdumpfh);
 
 int32
 accum_global(model_inventory_t *inv,

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -303,7 +304,8 @@ backward_update(float64 **active_alpha,
 		int32 pass2var,
 		int32 mllr_mult,
 		int32 mllr_add,
-		int32 var_is_full)
+		int32 var_is_full,
+		FILE *pdumpfh)
 {
     void *tt;			/* temp variable used to do
 				   pointer swapping */
@@ -1052,6 +1054,8 @@ backward_update(float64 **active_alpha,
 	    timing_start(rstf_timer);
 	if (mean_reest || var_reest) {
 	    /* Update the mean and variance reestimation accumulators */
+	    if (pdumpfh)
+		fprintf(pdumpfh, "time %d:\n", t+1);
 	    accum_gauden(denacc,
 			 cb_inv,
 			 n_lcl_cb,
@@ -1064,7 +1068,8 @@ backward_update(float64 **active_alpha,
 			 var_reest,
 			 pass2var,
 			 inv->l_mixw_acc,
-			 var_is_full);
+			 var_is_full,
+			 pdumpfh);
 	}
 
         if (mllr_mult || mllr_add) {
@@ -1210,6 +1215,8 @@ backward_update(float64 **active_alpha,
 	    timing_start(rstf_timer);
 	if (mean_reest || var_reest) {
 	    /* Update the mean and variance reestimation accumulators */
+	    if (pdumpfh)
+		fprintf(pdumpfh, "time %d:\n", t+1);
 	    accum_gauden(denacc,
 			 cb_inv,
 			 n_lcl_cb,
@@ -1222,7 +1229,8 @@ backward_update(float64 **active_alpha,
 			 var_reest,
 			 pass2var,
 			 wacc,
-			 var_is_full);
+			 var_is_full,
+			 pdumpfh);
 	}
 
         if (mllr_mult || mllr_add) {

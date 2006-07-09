@@ -73,7 +73,8 @@ backward_update(float64 **active_alpha,
 		int32 pass2var,
 		int32 mllr_mult,
 		int32 mllr_add,
-		int32 var_is_full);
+		int32 var_is_full,
+		FILE *pdumpfn);
 
 #endif /* BACKWARD_H */ 
 

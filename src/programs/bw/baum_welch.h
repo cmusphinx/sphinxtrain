@@ -46,6 +46,8 @@
 #ifndef BAUM_WELCH_H
 #define BAUM_WELCH_H
 
+#include <stdio.h>
+
 #include <s3/prim_type.h>
 #include <s3/vector.h>
 #include <s3/state.h>
@@ -72,7 +74,8 @@ baum_welch_update(float64 *log_forw_prob,
 		  int32 pass2var,
 		  int32 mllr_mult,
 		  int32 mllr_add,
-		  int32 var_is_full);
+		  int32 var_is_full,
+		  FILE *pdumpfh);
 
 #endif /* BAUM_WELCH_H */ 
 
