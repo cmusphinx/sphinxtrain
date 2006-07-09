@@ -1,5 +1,0 @@
-In this directory, we put all users-contributed scripts here. 
-
-A note of the scripts
-make_s4_model.pl create an s4 model out of SphinxTrain training. 
-augment_model.pl add more triphones to the dictionary. 
