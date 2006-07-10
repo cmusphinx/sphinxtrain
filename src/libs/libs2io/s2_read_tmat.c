@@ -101,8 +101,8 @@ static int
 rummage_hmm(float **tmat, FILE *fp)
 {
     int32 opdf_index;
-    int32 prob;
-    int32 from, to;
+    int32 prob = 0;
+    int32 from = 0, to = 0;
     int32 magic;
     int32 n_cw;
     int32 n_omatrix;

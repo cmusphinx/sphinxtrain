@@ -184,8 +184,8 @@ s2_read_seno_mapping_file(uint32 **smap,
     acmod_id_t right;
     word_posn_t posn;
     acmod_id_t triacmod_id;
-    uint32 state_id;
-    uint32 tying_class;
+    uint32 state_id = 0;
+    uint32 tying_class = 0;
     uint32 n_map = 0;
     
     fp = fopen(seno_mapping_file, "r");
