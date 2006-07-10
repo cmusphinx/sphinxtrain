@@ -25,7 +25,7 @@ my $mdefmatch ="printp/test_printp_mdef";
 
 system("$bin $tmatarg > $tmatout");
 if(-e "${tmatmatch}.gz"){
-    system("gzip -d $tmatmatch.gz");
+    system("gzip -f -d $tmatmatch.gz");
 }
 system("echo diff ${tmatmatch} ${tmatout}");
 system("diff ${tmatmatch} ${tmatout}");
