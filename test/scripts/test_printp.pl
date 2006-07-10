@@ -37,7 +37,7 @@ if($? == 0){
 
 system("$bin $mixwarg > $mixwout");
 if(-e "${mixwmatch}.gz"){
-    system("gzip -d $mixwmatch.gz");
+    system("gzip -f -d $mixwmatch.gz");
 }
 system("diff ${mixwmatch} ${mixwout}");
 if($?==0){
@@ -48,7 +48,7 @@ if($?==0){
 
 system("$bin $meanarg > $meanout");
 if(-e "${meanmatch}.gz"){
-    system("gzip -d $meanmatch.gz");
+    system("gzip -f -d $meanmatch.gz");
 }
 system("diff ${meanmatch} ${meanout}");
 if($?==0){
@@ -59,7 +59,7 @@ if($?==0){
 
 system("$bin $vararg > $varout");
 if(-e "${varmatch}.gz"){
-    system("gzip -d $varmatch.gz");
+    system("gzip -f -d $varmatch.gz");
 }
 system("diff ${varmatch} ${varout}");
 if($?==0){
