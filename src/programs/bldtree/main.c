@@ -712,28 +712,28 @@ init(model_def_t **out_mdef,
 
 int main(int argc, char *argv[])
 {
-    float32 ****mixw_occ;
-    float32 ****mixw;
+    float32 ****mixw_occ = NULL;
+    float32 ****mixw = NULL;
 /* ADDITIONS FOR CONTINUOUS_TREES: 18 May 98 */
-    float32 ****means;
-    float32 ****vars;
-    uint32  *veclen;
+    float32 ****means = NULL;
+    float32 ****vars = NULL;
+    uint32  *veclen = NULL;
 /* END ADDITIONS FOR CONTINUOUS_TREES */
     uint32 mixw_s;
-    uint32 n_model;
-    uint32 n_state;
-    uint32 n_stream;
-    uint32 n_density;
+    uint32 n_model = 0;
+    uint32 n_state = 0;
+    uint32 n_stream = 0;
+    uint32 n_density = 0;
     model_def_t *mdef;
     const char *phn;
-    pset_t *pset;
+    pset_t *pset = NULL;
     uint32 n_pset;
-    uint32 **dfeat;
-    quest_t *all_q;
-    uint32 n_all_q;
+    uint32 **dfeat = NULL;
+    quest_t *all_q = NULL;
+    uint32 n_all_q = 0;
     uint32 m;
     uint32 *id;
-    float32 *stwt;
+    float32 *stwt = NULL;
     uint32 state;
     dtree_t *tr;
     FILE *fp;

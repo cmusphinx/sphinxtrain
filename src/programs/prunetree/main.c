@@ -405,9 +405,9 @@ prune_tree(model_def_t *mdef,
 int
 main(int argc, char *argv[])
 {
-    model_def_t *mdef;
-    pset_t *pset;
-    uint32 n_pset;
+    model_def_t *mdef = NULL;
+    pset_t *pset = NULL;
+    uint32 n_pset = 0;
 
     parse_cmd_ln(argc, argv);
 
