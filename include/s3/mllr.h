@@ -53,8 +53,8 @@ int32 regmat_read (
 
 
 int32 compute_mllr (
-             float64 *****regl,
-             float64 ****regr,
+             float32 *****regl,
+             float32 ****regr,
              const uint32  *veclen,
              uint32  nclass,
              uint32  nfeat,
@@ -65,9 +65,9 @@ int32 compute_mllr (
             );
 
 int32 solve  (
-        float64 **regl,
-        float64 *regr,
-        float64 *x,
+        float32 **regl,
+        float32 *regr,
+        float32 *x,
         int32   len
        );
 

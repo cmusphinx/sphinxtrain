@@ -183,8 +183,8 @@ number of stream).
 
 int32
 compute_mllr (
-             float64 *****regl,
-             float64 ****regr,
+             float32 *****regl,
+             float32 ****regr,
              const uint32  *veclen,
              uint32  nclass,
              uint32  nfeat,
@@ -196,7 +196,7 @@ compute_mllr (
 {
     uint32  i,j,k,m,len;
     float32 ****Aloc, ***Bloc;
-    float64 *ABloc=NULL;
+    float32 *ABloc=NULL;
 
     Aloc = (float32 ****) ckd_calloc_2d(nclass, nfeat, sizeof(float32 ***));
     Bloc = (float32 ***) ckd_calloc_2d(nclass, nfeat, sizeof(float32 **));
@@ -216,7 +216,7 @@ compute_mllr (
 
 	    Aloc[m][i] = (float32 **) ckd_calloc_2d(len, len, sizeof(float32));
 	    Bloc[m][i] = (float32 *) ckd_calloc(len, sizeof(float32));
-	    ABloc = (float64 *) ckd_calloc(len+1, sizeof(float64));
+	    ABloc = (float32 *) ckd_calloc(len+1, sizeof(float64));
  
 	    if (mllrmult && !mllradd) {
 		/* Compute only multiplicative part of MLLR*/
@@ -298,10 +298,10 @@ compute_mllr (
 
 /* Solve x for equations Ax=b */
 int32
-solve  (float64 **A, /*Input : an n*n matrix A */
-        float64 *b,  /*Input : a n dimesion vector b */
-	float64 *x,  /*Output : a n dimesion vector x */
-	int32   n)
+solve(float32 **A, /*Input : an n*n matrix A */
+      float32 *b,  /*Input : a n dimesion vector b */
+      float32 *x,  /*Output : a n dimesion vector x */
+      int32   n)
 
 {
   float32 *tmp_l;
