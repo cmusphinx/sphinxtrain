@@ -208,8 +208,8 @@ init(model_def_t **out_mdef,
     uint32  l_nstates, t_nstates;
     uint32  t_nfeat, t_ndensity;
     vector_t  ***fullmean;
-    vector_t  ***fullvar;
-    vector_t  ****fullvar_full;
+    vector_t  ***fullvar = NULL;
+    vector_t  ****fullvar_full = NULL;
     float32   ****mean;
     float32   ****var;
     float32   varfloor;
