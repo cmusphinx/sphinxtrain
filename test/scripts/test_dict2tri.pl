@@ -1,9 +1,13 @@
 #!/usr/local/bin/perl
 
 use strict;
-my $bin="../bin.i686-pc-linux-gnu/dict2tri";
+require './scripts/testlib.pl';
+
+
+my $bindir="../bin.i686-pc-linux-gnu/";
 my $resdir="res/";
 my $exec_resdir="dict2tri";
+my $bin="$bindir$exec_resdir";
 
 my $args = "-dictfn $resdir/communicator.dic.cmu ";
 $args .= "-basephnfn $resdir/communicator.phone.cmu";
@@ -14,23 +18,17 @@ my $wo_triphones = "-btwtri no";
 my $match_w_output = "${exec_resdir}/test.dict2tri.internaltriphones";
 my $match_wo_output = "${exec_resdir}/test.dict2tri.no_internaltriphones";
 
+test_help($bindir,$exec_resdir);
+test_example($bindir,$exec_resdir);
+
 #Testing with triphone computed
-system("$bin $args $w_triphones > $w_output");
-system("diff $w_output $match_w_output");
-if($? == 0){
-    printf("Test dict2tri compute internal triphones PASSED\n");
-}else{
-    printf("Test dict2tri compute internal triphones FAILED, exit at %d, msg\n",$?,$!);
-}
+test_this("$bin $args $w_triphones > $w_output",$exec_resdir,"DRY RUN w/int triphones TEST");
+test_this("diff $w_output $match_w_output",$exec_resdir,"COMPUTE W INTERNAL TRIPHONES");
 
-system("$bin $args $wo_triphones > $wo_output");
-system("diff $wo_output $match_wo_output");
+#Testing wo triphone computed
+test_this("$bin $args $wo_triphones > $wo_output",$exec_resdir,"DRY RUN wo/int triphones TEST");
+test_this("diff $wo_output $match_wo_output",$exec_resdir,"COMPUTE WO INTERNAL TRIPHONES");
 
-if($? == 0){
-    printf("Test dict2tri wo compute internal triphones PASSED\n");
-}else{
-    printf("Test dict2tri wo compute internal triphones FAILED, exit at %d, msg %s\n",$?, $!);
-}
 
 
 

@@ -1,9 +1,13 @@
 #!/usr/local/bin/perl
 
 use strict;
-my $bin="../bin.i686-pc-linux-gnu/printp";
+require './scripts/testlib.pl';
+
+my $bindir="../bin.i686-pc-linux-gnu/";
 my $resdir="res/";
 my $exec_resdir="printp";
+my $bin="$bindir$exec_resdir";
+
 
 my $tmatarg="-tmatfn res/hmm/transition_matrices";
 my $mixwarg="-mixwfn res/hmm/mixture_weights";
@@ -11,59 +15,34 @@ my $meanarg="-gaufn  res/hmm/means";
 my $vararg="-gaufn  res/hmm/variances";
 my $mdefarg="-moddeffn ./res/hmm/RM.1000.mdef";
 
-my $tmatout="printp.tmat.txt";
-my $mixwout="printp.mixw.txt";
-my $meanout="printp.mean.txt";
-my $varout ="printp.var.txt";
-my $mdefout="printp.mdef.txt";
+my $tmatout="${exec_resdir}.tmat.txt";
+my $mixwout="${exec_resdir}.mixw.txt";
+my $meanout="${exec_resdir}.mean.txt";
+my $varout ="${exec_resdir}.var.txt";
+my $mdefout="${exec_resdir}.mdef.txt";
 
-my $tmatmatch="printp/test_printp_tmat";
-my $mixwmatch ="printp/test_printp_mixw";
-my $meanmatch="printp/test_printp_means";
-my $varmatch ="printp/test_printp_var";
-my $mdefmatch ="printp/test_printp_mdef";
+my $tmatmatch="${exec_resdir}/test_${exec_resdir}_tmat";
+my $mixwmatch ="${exec_resdir}/test_${exec_resdir}_mixw";
+my $meanmatch="${exec_resdir}/test_${exec_resdir}_means";
+my $varmatch ="${exec_resdir}/test_${exec_resdir}_var";
+my $mdefmatch ="${exec_resdir}/test_${exec_resdir}_mdef";
 
-system("$bin $tmatarg > $tmatout");
-if(-e "${tmatmatch}.gz"){
-    system("gzip -f -d $tmatmatch.gz");
-}
-system("echo diff ${tmatmatch} ${tmatout}");
-system("diff ${tmatmatch} ${tmatout}");
-if($? == 0){
-    printf("Test printp transition matrix printing PASSED\n");
-}else{
-    printf("Test printp transition matrix printing FAILED, signal $?, msgn $!\n");
-}
+test_help($bindir,$exec_resdir);
+test_example($bindir,$exec_resdir);
 
-system("$bin $mixwarg > $mixwout");
-if(-e "${mixwmatch}.gz"){
-    system("gzip -f -d $mixwmatch.gz");
-}
-system("diff ${mixwmatch} ${mixwout}");
-if($?==0){
-    printf("Test printp mixture weights printing PASSED\n");
-}else{
-    printf("Test printp mixture weights printing FAILED, signal $?, msgn $!\n");
-}
+test_this("$bin $tmatarg > $tmatout",$exec_resdir,"DRY RUN w/-tmat TEST");
+system("gzip -f -d $tmatmatch.gz") unless -e "${tmatmatch}";
+test_this("diff ${tmatmatch} ${tmatout}",$exec_resdir,"TRANSITION MATRIX PRINTING");
 
-system("$bin $meanarg > $meanout");
-if(-e "${meanmatch}.gz"){
-    system("gzip -f -d $meanmatch.gz");
-}
-system("diff ${meanmatch} ${meanout}");
-if($?==0){
-    printf("Test printp means printing PASSED\n");
-}else{
-    printf("Test printp means printing FAILED, signal $?, msgn $!\n");
-}
+test_this("$bin $mixwarg > $mixwout",$exec_resdir,"DRY RUN w/-mixw TEST");
+system("gzip -f -d $mixwmatch.gz") unless  -e "${mixwmatch}";
+test_this("diff ${mixwmatch} ${mixwout}",$exec_resdir,"MIXTURE WEIGHTS PRINTING");
 
-system("$bin $vararg > $varout");
-if(-e "${varmatch}.gz"){
-    system("gzip -f -d $varmatch.gz");
-}
-system("diff ${varmatch} ${varout}");
-if($?==0){
-    printf("Test printp variances printing PASSED\n");
-}else{
-    printf("Test printp variances printing FAILED, signal $?, msgn $!\n");
-}
+test_this("$bin $meanarg > $meanout",$exec_resdir,"DRY RUN w/-means TEST");
+system("gzip -f -d $meanmatch.gz") unless -e "${meanmatch}";
+test_this("diff ${meanmatch} ${meanout}",$exec_resdir,"MEANS PRINTING");
+
+test_this("$bin $vararg > $varout",$exec_resdir,"DRY RUN w/-vars TEST");
+system("gzip -f -d $varmatch.gz") unless -e "${varmatch}";
+test_this("diff ${varmatch} ${varout}",$exec_resdir,"VARS PRINTING");
+
