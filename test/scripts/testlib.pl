@@ -67,4 +67,64 @@ sub test_this
   }
 
 }
+
+sub compare_these_two
+{
+  my ($fn1,$fn2,,$exec,${testname},$tolerance)=@_;
+
+  if(! defined $tolerance){
+    $tolerance = 0.002;
+  }
+  
+  my $comparison = 0;
+
+  my $line1 = "";
+  my $line2 = "";
+  if ((open (FN1, "<$fn1")) and (open (FN2, "<$fn2"))) {
+    $comparison = 1;
+    while (($line1 = <FN1>) . ($line2 = <FN2>)) {
+      chomp($line1);
+      chomp($line2);
+      next if ($line1 eq $line2);
+      my @field1 = split /[,\s]+/, $line1;
+      my @field2 = split /[,\s]+/, $line2;
+      # If the number of tokens in each line is different, the lines,
+      # and therefore the files, don't match.
+      if ($#field1 != $#field2) {
+	$comparison = 0;
+	last;
+      }
+      for (my $i = 0; $i <= $#field1; $i++) {
+	if (($field1[$i] !~ m/^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?$/) or
+	    ($field2[$i] !~ m/^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?$/)) {
+	  # Check if any of the tokens in the line is a string rather
+	  # than a number, and compare the strings
+	  if ($field1[$i] ne $field2[$i]) {
+	    $comparison = 0;
+	    last;
+	  }
+	} elsif (abs($field1[$i] - $field2[$i]) > $tolerance) {
+	  # If the tokens are both numbers, check if they match within
+	  # a tolerance
+	  $comparison = 0;
+	  last;
+	}
+      }
+      # If there was a mismatch, we can skip to the end of the loop
+      last if ($comparison == 0);
+    }
+    # If the files don't have the same number of lines, one of the
+    # lines will be EOF, and the other won't.
+    $comparison = 0 if ($line1 != $line2);
+  }
+  
+  close(FN1);
+  close(FN2);
+
+  if($comparison){
+    printf("Test ${exec} ${testname} PASSED (comparing $fn1 and $fn2)\n");
+  }else{
+    printf("Test ${exec} ${testname} FAILED (comparing $fn1 and $fn2), signal $?, msg $!\n");
+  }
+}
 1;

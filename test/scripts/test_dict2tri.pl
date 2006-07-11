@@ -23,11 +23,12 @@ test_example($bindir,$exec_resdir);
 
 #Testing with triphone computed
 test_this("$bin $args $w_triphones > $w_output",$exec_resdir,"DRY RUN w/int triphones TEST");
-test_this("diff $w_output $match_w_output",$exec_resdir,"COMPUTE W INTERNAL TRIPHONES");
+compare_these_two($w_output,$match_w_output,,$exec_resdir,"COMPUTE W INTERNAL TRIPHONES");
 
 #Testing wo triphone computed
 test_this("$bin $args $wo_triphones > $wo_output",$exec_resdir,"DRY RUN wo/int triphones TEST");
-test_this("diff $wo_output $match_wo_output",$exec_resdir,"COMPUTE WO INTERNAL TRIPHONES");
+compare_these_two($wo_output,$match_wo_output,$exec_resdir,"COMPUTE WO INTERNAL TRIPHONES");
+
 
 
 

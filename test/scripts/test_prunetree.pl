@@ -54,6 +54,12 @@ system("rm -f $testdir/*");
 test_this($testcmd . "-nseno 1",$exec_resdir,"DRY RUN 1 SENONE TEST");
 test_this("diff -r --exclude=.svn ./test_${exec_resdir} $prunetreedir100",$exec_resdir,"TREES MATCH 1 SENONE TEST");
 
+
 system("rm -f $testdir/*");
 
 system("rm -rf $testdir/");
+
+#system("gzip -f -r  $unprunetreedir");
+#system("gzip -f -r  $prunetreedir2000");
+#system("gzip -f -r  $prunetreedir500");
+#system("gzip -f -r  $prunetreedir100");
