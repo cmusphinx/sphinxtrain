@@ -31,22 +31,14 @@ test_help($bindir,$exec_resdir);
 test_example($bindir,$exec_resdir);
 
 test_this("$bin $tmatarg > $tmatout",$exec_resdir,"DRY RUN w/-tmat TEST");
-system("gzip -f -d $tmatmatch.gz") unless -e "${tmatmatch}";
 compare_these_two($tmatmatch,$tmatout,,$exec_resdir,"TRANSITION MATRIX PRINTING");
-system("gzip -f  $tmatmatch.gz") unless -e "${tmatmatch}";
 
 test_this("$bin $mixwarg > $mixwout",$exec_resdir,"DRY RUN w/-mixw TEST");
-system("gzip -f -d $mixwmatch.gz") unless  -e "${mixwmatch}";
 compare_these_two(${mixwmatch},${mixwout},$exec_resdir,"MIXTURE WEIGHTS PRINTING");
-system("gzip -f  $tmatmatch.gz") unless -e "${tmatmatch}";
 
 test_this("$bin $meanarg > $meanout",$exec_resdir,"DRY RUN w/-means TEST");
-system("gzip -f -d $meanmatch.gz") unless -e "${meanmatch}";
 compare_these_two(${meanmatch},${meanout},$exec_resdir,"MEANS PRINTING");
-system("gzip -f  $tmatmatch.gz") unless -e "${tmatmatch}";
 
 test_this("$bin $vararg > $varout",$exec_resdir,"DRY RUN w/-vars TEST");
-system("gzip -f -d $varmatch.gz") unless -e "${varmatch}";
 compare_these_two(${varmatch},${varout},$exec_resdir,"VARS PRINTING");
-system("gzip -f  $tmatmatch.gz") unless -e "${tmatmatch}";
 
