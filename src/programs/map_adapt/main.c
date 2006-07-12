@@ -411,8 +411,11 @@ map_update(void)
 	for (i = 0; i < n_mixw; ++i) {
 	    for (j = 0; j < n_stream; ++j) {
 		float32 sum_si_mixw = 0.0f;
-		for (k = 0; k < n_density; ++k)
+		for (k = 0; k < n_density; ++k) {
+		    if (si_mixw[i][j][k] < mwfloor)
+			si_mixw[i][j][k] = mwfloor;
 		    sum_si_mixw += si_mixw[i][j][k];
+		}
 		for (k = 0; k < n_density; ++k)
 		    si_mixw[i][j][k] /= sum_si_mixw;
 	    }
