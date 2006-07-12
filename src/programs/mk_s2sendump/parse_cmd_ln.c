@@ -108,6 +108,12 @@ mk_s2sendump -moddeffn s3mdef -mixwfn s3mixw -tpfloor 0.0000001 \n\
 	      "0.0001",
 	      "Transition probability smoothing floor" },
 
+	{ "-mwfloor",
+	  CMD_LN_FLOAT32,
+	  CMD_LN_NO_VALIDATION,
+	  "0.00001",
+	  "Mixing weight smoothing floor" },
+
 	{ NULL,
 	      CMD_LN_UNDEF,
 	      CMD_LN_NO_VALIDATION,
