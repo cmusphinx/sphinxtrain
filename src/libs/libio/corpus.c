@@ -1640,8 +1640,8 @@ corpus_get_mfcc(vector_t **mfc,
 	    E_ERROR("MFCC read failed.  Retrying after sleep...\n");
 	    sleep(3);
 	    no_retries++;
-	    if(no_retries>10){ 
-	      E_FATAL("Failed to get the files after 10 retries of getting MFCC(about 30 seconds)\n ");
+	    if(no_retries>100){ 
+	      E_FATAL("Failed to get the files after 100 retries of getting MFCC(about 300 seconds)\n ");
 	    }
 	}
     } while (ret == S3_ERROR);
@@ -1735,8 +1735,8 @@ corpus_get_generic_featurevec(vector_t **mfc,
 	    E_ERROR("MFCC read failed.  Retrying after sleep...\n");
 	    no_retries++;
 	    sleep(3);
-	    if(no_retries>10){ 
-	      E_FATAL("Failed to get the files after 10 retries (about 30 seconds)\n ");
+	    if(no_retries>100){ 
+	      E_FATAL("Failed to get the files after 100 retries (about 300 seconds)\n ");
 	    }
 	}
     } while (ret == S3_ERROR);
