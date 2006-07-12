@@ -26,11 +26,6 @@ $testcmd .= "-otreedir $testdir ";
 $testcmd .= "-moddeffn $untiedmdef ";
 $testcmd .= " -psetfn $questionset ";
 
-system("gzip -f -r -d $unprunetreedir");
-system("gzip -f -r -d $prunetreedir2000");
-system("gzip -f -r -d $prunetreedir500");
-system("gzip -f -r -d $prunetreedir100");
-
 test_this($testcmd . "-nseno 2000",$exec_resdir,"DRY RUN 2000 SENONE TEST");
 test_this("diff -r --exclude=.svn ./test_${exec_resdir} $prunetreedir2000",$exec_resdir,"TREES MATCH 2000 SENONE TEST");
 
@@ -58,8 +53,3 @@ test_this("diff -r --exclude=.svn ./test_${exec_resdir} $prunetreedir100",$exec_
 system("rm -f $testdir/*");
 
 system("rm -rf $testdir/");
-
-#system("gzip -f -r  $unprunetreedir");
-#system("gzip -f -r  $prunetreedir2000");
-#system("gzip -f -r  $prunetreedir500");
-#system("gzip -f -r  $prunetreedir100");
