@@ -417,18 +417,47 @@ gauden_compute_norm(gauden_t *g)
     }
 }
 
+static void
+diag_and_floor(vector_t *fullvar, uint32 veclen, float32 floor)
+{
+    uint32 i, j;
+    for (i = 0; i < veclen; ++i) {
+	for (j = 0; j < veclen; ++j) {
+	    if (i != j)
+		fullvar[i][j] = 0.0;
+	    else {
+		if (fullvar[i][j] < floor)
+		    fullvar[i][j] = floor;
+	    }
+	}
+    }
+}
+
 int
 gauden_floor_variance(gauden_t *g)
 {
     uint32 i, j, k;
 
-    /* Don't try to floor full covariances */
-    if (g->var == NULL)
-	return S3_SUCCESS;
-    for (i = 0; i < g->n_mgau; i++) {
-	for (j = 0; j < g->n_feat; j++) {
-	    for (k = 0; k < g->n_density; k++) {
-		vector_floor(g->var[i][j][k], g->veclen[j], min_var);
+    if (g->fullvar != NULL) {
+	/* Don't try to "floor" full covariances since there's no easy
+	   way to do this.  If they are singular, discard the
+	   off-diagonals and floor the diagonals. */
+	for (i = 0; i < g->n_mgau; i++) {
+	    for (j = 0; j < g->n_feat; j++) {
+		for (k = 0; k < g->n_density; k++) {
+		    if (determinant(g->fullvar[i][j][k], g->veclen[j]) <= 0.0) {
+			diag_and_floor(g->fullvar[i][j][k], g->veclen[j], min_var);
+		    }
+		}
+	    }
+	}
+    }
+    if (g->var != NULL) {
+	for (i = 0; i < g->n_mgau; i++) {
+	    for (j = 0; j < g->n_feat; j++) {
+		for (k = 0; k < g->n_density; k++) {
+		    vector_floor(g->var[i][j][k], g->veclen[j], min_var);
+		}
 	    }
 	}
     }
