@@ -19,7 +19,6 @@ my $untiedmdef="./res/hmm/CFS3.untied.mdef";
 my $questionset="./res/linguistic_questions";
 my $testdir="./test_${exec_resdir}";
 my $fn;
-my @fnarray;
 mkdir "$testdir" || printf("$testdir is already built\n");
 
 my $testcmd="$bin ";
