@@ -18,6 +18,8 @@ my $prunetreedir100="./res/trees/CFS3.100/";
 my $untiedmdef="./res/hmm/CFS3.untied.mdef";
 my $questionset="./res/linguistic_questions";
 my $testdir="./test_${exec_resdir}";
+my $fn;
+my @fnarray;
 mkdir "$testdir" || printf("$testdir is already built\n");
 
 my $testcmd="$bin ";
@@ -29,27 +31,44 @@ $testcmd .= " -psetfn $questionset ";
 test_this($testcmd . "-nseno 2000",$exec_resdir,"DRY RUN 2000 SENONE TEST");
 test_this("diff -r --exclude=.svn ./test_${exec_resdir} $prunetreedir2000",$exec_resdir,"TREES MATCH 2000 SENONE TEST");
 
-system("rm -f $testdir/*");
+foreach $fn (glob("$testdir/*"))
+{
+    unlink $fn;
+}
 
 test_this($testcmd . "-nseno 500",$exec_resdir,"DRY RUN 500 SENONE TEST");
 test_this("diff -r --exclude=.svn ./test_${exec_resdir} $prunetreedir500",$exec_resdir,"TREES MATCH 500 SENONE TEST");
 
-system("rm -f $testdir/*");
+foreach $fn (glob("$testdir/*"))
+{
+    unlink $fn;
+}
+
 
 test_this($testcmd . "-nseno 100",$exec_resdir,"DRY RUN 100 SENONE TEST");
 test_this("diff -r --exclude=.svn ./test_${exec_resdir} $prunetreedir100",$exec_resdir,"TREES MATCH 100 SENONE TEST");
 
-system("rm -f $testdir/*");
+foreach $fn (glob("$testdir/*"))
+{
+    unlink $fn;
+}
+
 
 test_this($testcmd . "-nseno 10",$exec_resdir,"DRY RUN 10 SENONE TEST");
 test_this("diff -r --exclude=.svn ./test_${exec_resdir} $prunetreedir100",$exec_resdir,"TREES MATCH 10 SENONE TEST");
 
-system("rm -f $testdir/*");
+foreach $fn (glob("$testdir/*"))
+{
+    unlink $fn;
+}
+
 
 test_this($testcmd . "-nseno 1",$exec_resdir,"DRY RUN 1 SENONE TEST");
 test_this("diff -r --exclude=.svn ./test_${exec_resdir} $prunetreedir100",$exec_resdir,"TREES MATCH 1 SENONE TEST");
 
+foreach $fn (glob("$testdir/*"))
+{
+    unlink $fn;
+}
 
-system("rm -f $testdir/*");
-
-system("rm -rf $testdir/");
+rmdir "$testdir/";
