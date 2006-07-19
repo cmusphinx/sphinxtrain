@@ -110,7 +110,7 @@ int32 fe_convert_files(param_t *P)
     int32 process_utt_return_value;
     
     if ((FE = fe_init(P))==NULL){
-        E_ERROR("memory alloc failed...exiting\n");
+        E_ERROR("Initialization failed...exiting\n");
         return(FE_MEM_ALLOC_ERROR);
     }
 

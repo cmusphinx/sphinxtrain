@@ -287,7 +287,6 @@ int32 fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
 void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32 fftsize)
 {
     int32 j, wrap;
-    int32 fftorder;
     float64 *fft;
 
     if (NULL == (fft = (float64 *) calloc(fftsize,sizeof(float64)))) {
@@ -296,13 +295,12 @@ void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32
     wrap = (data_len < fftsize) ? data_len : fftsize;
     memcpy(fft, data, wrap*sizeof(float64));
     if (data_len > fftsize) { /*aliasing */
-        E_WARN("Aliasing. Consider using fft size (%d) < buffer size (%d)\n", fftsize, data_len);
+        E_WARN("Aliasing. Consider using fft size (%d) > buffer size (%d)\n", fftsize, data_len);
         for (wrap = 0, j = fftsize; j < data_len; wrap++,j++)
             fft[wrap] += data[j];
     }
-    for (fftorder = 0, j = fftsize; j>1; fftorder++, j>>= 1)
-            ;
-    fe_fft_real(fft, fftsize, fftorder);
+
+    fe_fft_real(fft, fftsize);
 
     /* zero is a special case. */
     spec[0] = fft[0]*fft[0];
@@ -489,13 +487,22 @@ int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert)
  * Transactions on Acoustics, Speech, and Signal Processing, vol. 35,
  * no.6.  Optimized to use a static array of sine/cosines.
  */
-int32 fe_fft_real(float64 *x, int n, int m)
+int32 fe_fft_real(float64 *x, int n)
 {
         int32 i, j, k, n1, n2, n4, i1, i2, i3, i4;
         float64 t1, t2, xt, cc, ss;
         static float64 *ccc = NULL, *sss = NULL;
         static int32 lastn = 0;
+	int m;
 
+	/* check fft size, compute fft order (log_2(n)) */
+	for (k = n, m = 0; k > 1; k >>= 1, m++)
+	  {
+	    if (((k % 2) != 0) || (n <= 0))
+	      {
+		E_FATAL("fft: number of points must be a power of 2 (is %d)\n", n);
+	      }
+	  }
         if (ccc == NULL || n != lastn) {
                 if (ccc != NULL) {
                         free(ccc);
