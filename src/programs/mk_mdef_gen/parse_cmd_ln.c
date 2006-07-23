@@ -84,8 +84,7 @@ Usually, this program is used in \n\
 1) generate CI mdef \n\
 2) generate CD mdef given dictionary and transcription \n\
 3) generate CD mdef given dictionary \n\
-Also see examples
-";
+Also see examples";
 
   const char examplestr[]=
 "Example: \n\
