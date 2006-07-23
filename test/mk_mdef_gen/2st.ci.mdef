@@ -1,0 +1,65 @@
+0.3
+55 n_base
+0 n_tri
+165 n_state_map
+110 n_tied_state
+110 n_tied_ci_state
+55 n_tied_tmat
+#
+# Columns definitions
+#base lft  rt p attrib tmat      ... state id's ...
++BACKGROUND+   -   - - filler    0    0    1    N
++BREATH+   -   - - filler    1    2    3    N
++CLICKS+   -   - - filler    2    4    5    N
++COUGH+   -   - - filler    3    6    7    N
++FEED+   -   - - filler    4    8    9    N
++LAUGH+   -   - - filler    5   10   11    N
++NOISE+   -   - - filler    6   12   13    N
++SMACK+   -   - - filler    7   14   15    N
+ +UH+   -   - - filler    8   16   17    N
++UHUH+   -   - - filler    9   18   19    N
+ +UM+   -   - - filler   10   20   21    N
+   AA   -   - -    n/a   11   22   23    N
+   AE   -   - -    n/a   12   24   25    N
+   AH   -   - -    n/a   13   26   27    N
+   AO   -   - -    n/a   14   28   29    N
+   AW   -   - -    n/a   15   30   31    N
+   AX   -   - -    n/a   16   32   33    N
+  AXR   -   - -    n/a   17   34   35    N
+   AY   -   - -    n/a   18   36   37    N
+    B   -   - -    n/a   19   38   39    N
+   CH   -   - -    n/a   20   40   41    N
+    D   -   - -    n/a   21   42   43    N
+   DH   -   - -    n/a   22   44   45    N
+   DX   -   - -    n/a   23   46   47    N
+   EH   -   - -    n/a   24   48   49    N
+   ER   -   - -    n/a   25   50   51    N
+   EY   -   - -    n/a   26   52   53    N
+    F   -   - -    n/a   27   54   55    N
+    G   -   - -    n/a   28   56   57    N
+   HH   -   - -    n/a   29   58   59    N
+   IH   -   - -    n/a   30   60   61    N
+   IY   -   - -    n/a   31   62   63    N
+   JH   -   - -    n/a   32   64   65    N
+    K   -   - -    n/a   33   66   67    N
+    L   -   - -    n/a   34   68   69    N
+    M   -   - -    n/a   35   70   71    N
+    N   -   - -    n/a   36   72   73    N
+   NG   -   - -    n/a   37   74   75    N
+   OW   -   - -    n/a   38   76   77    N
+   OY   -   - -    n/a   39   78   79    N
+    P   -   - -    n/a   40   80   81    N
+    R   -   - -    n/a   41   82   83    N
+    S   -   - -    n/a   42   84   85    N
+   SH   -   - -    n/a   43   86   87    N
+  SIL   -   - - filler   44   88   89    N
+    T   -   - -    n/a   45   90   91    N
+   TH   -   - -    n/a   46   92   93    N
+   TS   -   - -    n/a   47   94   95    N
+   UH   -   - -    n/a   48   96   97    N
+   UW   -   - -    n/a   49   98   99    N
+    V   -   - -    n/a   50  100  101    N
+    W   -   - -    n/a   51  102  103    N
+    Y   -   - -    n/a   52  104  105    N
+    Z   -   - -    n/a   53  106  107    N
+   ZH   -   - -    n/a   54  108  109    N

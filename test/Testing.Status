@@ -15,7 +15,7 @@ make_quests
 map_adapt
 mixw_interp
 mk_flat
-mk_mdef_gen
+mk_mdef_gen - Partially tested. 
 mk_mllr_class
 mk_model_def
 mk_s2cb
@@ -32,7 +32,7 @@ mllr_transform
 norm
 param_cnt
 printp - Partially tested
-prunetree
+prunetree - Fully tested. 
 QUICK_COUNT
 tiestate
 wave2feat

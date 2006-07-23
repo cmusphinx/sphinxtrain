@@ -1,0 +1,65 @@
+0.3
+55 n_base
+0 n_tri
+110 n_state_map
+55 n_tied_state
+55 n_tied_ci_state
+55 n_tied_tmat
+#
+# Columns definitions
+#base lft  rt p attrib tmat      ... state id's ...
++BACKGROUND+   -   - - filler    0    0    N
++BREATH+   -   - - filler    1    1    N
++CLICKS+   -   - - filler    2    2    N
++COUGH+   -   - - filler    3    3    N
++FEED+   -   - - filler    4    4    N
++LAUGH+   -   - - filler    5    5    N
++NOISE+   -   - - filler    6    6    N
++SMACK+   -   - - filler    7    7    N
+ +UH+   -   - - filler    8    8    N
++UHUH+   -   - - filler    9    9    N
+ +UM+   -   - - filler   10   10    N
+   AA   -   - -    n/a   11   11    N
+   AE   -   - -    n/a   12   12    N
+   AH   -   - -    n/a   13   13    N
+   AO   -   - -    n/a   14   14    N
+   AW   -   - -    n/a   15   15    N
+   AX   -   - -    n/a   16   16    N
+  AXR   -   - -    n/a   17   17    N
+   AY   -   - -    n/a   18   18    N
+    B   -   - -    n/a   19   19    N
+   CH   -   - -    n/a   20   20    N
+    D   -   - -    n/a   21   21    N
+   DH   -   - -    n/a   22   22    N
+   DX   -   - -    n/a   23   23    N
+   EH   -   - -    n/a   24   24    N
+   ER   -   - -    n/a   25   25    N
+   EY   -   - -    n/a   26   26    N
+    F   -   - -    n/a   27   27    N
+    G   -   - -    n/a   28   28    N
+   HH   -   - -    n/a   29   29    N
+   IH   -   - -    n/a   30   30    N
+   IY   -   - -    n/a   31   31    N
+   JH   -   - -    n/a   32   32    N
+    K   -   - -    n/a   33   33    N
+    L   -   - -    n/a   34   34    N
+    M   -   - -    n/a   35   35    N
+    N   -   - -    n/a   36   36    N
+   NG   -   - -    n/a   37   37    N
+   OW   -   - -    n/a   38   38    N
+   OY   -   - -    n/a   39   39    N
+    P   -   - -    n/a   40   40    N
+    R   -   - -    n/a   41   41    N
+    S   -   - -    n/a   42   42    N
+   SH   -   - -    n/a   43   43    N
+  SIL   -   - - filler   44   44    N
+    T   -   - -    n/a   45   45    N
+   TH   -   - -    n/a   46   46    N
+   TS   -   - -    n/a   47   47    N
+   UH   -   - -    n/a   48   48    N
+   UW   -   - -    n/a   49   49    N
+    V   -   - -    n/a   50   50    N
+    W   -   - -    n/a   51   51    N
+    Y   -   - -    n/a   52   52    N
+    Z   -   - -    n/a   53   53    N
+   ZH   -   - -    n/a   54   54    N

@@ -78,18 +78,25 @@ void parse_cmd_ln(int argc, char *argv[])
     Count triphones and triphone types in transcript \n\
     Adjust threshold according to min-occ and maxtriphones \n\
     Prune triphone list \n\
-    Make untied mdef ";
+    Make untied mdef \n\
+\n\
+Usually, this program is used in \n\
+1) generate CI mdef \n\
+2) generate CD mdef given dictionary and transcription \n\
+3) generate CD mdef given dictionary \n\
+Also see examples
+";
 
   const char examplestr[]=
 "Example: \n\
 Create CI model definition file \n\
 mk_mdef_gen -phnlstfn phonefile -ocimdef ci_mdeffile -n_state_pm 3\n\
 \n\
-Create untied CD model definition file \n\
+Create untied CD model definition file given dictionary and transcription\n\
 mk_mdef_gen -phnlstfn rawphonefile -dictfn dict -fdictfn filler_dict \n\
 -lsnfn transcription -ountiedmdef untie_mdef -n_state_pm 3 \n\
 -maxtriphones 10000 \n\
-Create tied CD model definition file \n\
+Create all CD model definition file given only the dictionary \n\
 mk_mdef_gen -phnlstfn rawphone -oalltphnmdef untie_mdef -dictfn dict \n\
  -fdictfn filler_dict -n_state_pm 3.";
 
