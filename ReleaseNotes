@@ -11,14 +11,29 @@ added by Arthur Chan.  The original intention might be distorted but
 we thought this is better than changing the admin messages after the
 fact.
 
+Summary of this release:
+
+From 2000, when SphinxTrain is first opened to the public, it was
+regarded as merely an auxillary tool for the decoders (such as Sphinx
+2, Sphinx3 and later Sphinx 4) .  However, many users in the forum
+asked about how training could be done and most of the time they would
+touch a lot of bugs in the software.  There is a great need to
+continue the support of SphinxTrain and increase its quality. 
+
+We hope that this release will
+
+1, fix significant amount of bugs of the code and the scripts. 
+2, improve the quality of the code and scripts 
+3, extend the functionalities of SphinxTrain. 
+4, ensure SphinxTrain is fully regression tested. 
+
 New Features:
 (r3566, 3567, 3731): mllr_solve, could be used to find the regression matrix
 for MLLR. 
-
 (r498, r714): Added the option "-input_endian" so that one can specify
-byte.  It follows the the compilation definition. 
-
+byte.  It follows the the compilation definition.  
 order of raw data as different from the machine native byte order.
+
 r580: Prints out links to log files in the html file generated during
 training, and creates possibly missing directories.
 
