@@ -205,7 +205,7 @@ mk_mdef_gen -phnlstfn rawphone -oalltphnmdef untie_mdef -dictfn dict \n\
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
+      exit(0);
     }
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
