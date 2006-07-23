@@ -1,3 +1,44 @@
+SphinxTrain 1.0 Release-Candidate I
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+(Draft)
+
+From initial check-in to SphinxTrain 1.0 RCI (Corresponds to Rev. 5826)
+
+The current revision is based on SVN. In the CVS time, development of
+SphinxTrain was very disorganized.  The list of changes was later
+added by Arthur Chan.  The original intention might be distorted but
+we thought this is better than changing the admin messages after the
+fact.
+
+New Features:
+(r3566, 3567, 3731): mllr_solve, could be used to find the regression matrix
+for MLLR. 
+
+(r498, r714): Added the option "-input_endian" so that one can specify
+byte.  It follows the the compilation definition. 
+
+order of raw data as different from the machine native byte order.
+r580: Prints out links to log files in the html file generated during
+training, and creates possibly missing directories.
+
+Bugs:
+r444: norm was requesting some parameters that it doesn't really need,
+like feature string definition and size of input vector. Removed the
+request.
+r496: add checking for wave2feat 
+r716: When transcription is empty, corpus.c wouldn't show abnormal
+behaviour now
+r816:819: Memory problems in wave2feat. 
+
+General Code Architecture Related:
+(r 58 to 82): Initial checkin by Prof. Alan Black.  That includes
+basic Makefiles, RickyH's perl scripts. 
+(r 83 to 162): Miscellaneous fixes of Ricky's perl script. 
+
+Developers:
+r579: check for return values in read/write. 
+
 Pre-release notes. 
 ^^^^^^^^^^^^^^^^^
 As at 2004-09-17, there was no official release of SphinxTrain by CMU
