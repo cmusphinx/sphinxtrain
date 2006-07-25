@@ -9,6 +9,7 @@ my $dir="make_topology";
 my $bin ="perl ${bindir}maketopology.pl";
 my $tmpfn="tmp.topo";
 
+#maketopology is a perl script so there is no example and help here. 
 #These two have the same topology. 
 test_this("$bin 1 yes > $tmpfn","Dry run make_topology.pl 1 state with skip");
 compare_these_two("$tmpfn","${dir}/1_sk.topo","make_topology.pl 1 state with skip");

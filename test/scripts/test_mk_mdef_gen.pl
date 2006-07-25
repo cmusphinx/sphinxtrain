@@ -59,7 +59,7 @@ for($i=1;$i<=6;$i++)
 #Testing for CD generate all triphone operation. 
 $dictfn="./res/communicator.dic.cmu";
 
-test_this("$bin -phnlstfn $phonelist -dictfn $dictfn -ountiedmdef 2.mdef -n_state_pm 2","DRY RUN mk_mdef_gen ALL with 2 states");
+test_this("$bin -phnlstfn $phonelist -dictfn $dictfn -oalltphnmdef 2.mdef -n_state_pm 2","DRY RUN mk_mdef_gen ALL with 2 states");
 
 open(TMP,"2.mdef")||die "can't read 2.mdef\n";
 my @tmp=<TMP>;
