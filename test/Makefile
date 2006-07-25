@@ -3,6 +3,7 @@ test:
 	perl ./scripts/test_dict2tri.pl
 	perl ./scripts/test_prunetree.pl
 	perl ./scripts/test_mk_mdef_gen.pl
+	perl ./scripts/test_make_topology.pl
 
 clean:
 	rm -f dict2tri.no_triphones

@@ -1,0 +1,16 @@
+#
+# 3-state Bakis topology HMM with non-emitting last state
+# These values are normalized so that rows sum to one.
+#
+# NO COMMENTS BETWEEN # OF STATES AND TRANSITION MATRIX
+#
+#
+#Version number
+0.1
+# Number of states per model followed by transition matrix
+4
+1.0	1.0	0.0	0.0	
+0.0	1.0	1.0	0.0	
+0.0	0.0	1.0	1.0	
+# Last state has no outgoing arcs unless
+# embedded in a sentence hmm structure
