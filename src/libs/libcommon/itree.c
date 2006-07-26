@@ -116,7 +116,7 @@ cell_index_t itree_add_sib(itree_t *t,
     cell_t *cell;
 
     if (t->n_cell == t->max_n_cell) {
-	E_FATAL("index cells exhausted\n");
+	E_FATAL("index cells exhausted (exceeded the allocated size %d)\n",t->max_n_cell);
     }
 
     new = itree_new_cell(t);

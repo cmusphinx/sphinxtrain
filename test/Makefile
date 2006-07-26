@@ -4,6 +4,7 @@ test:
 	perl ./scripts/test_prunetree.pl
 	perl ./scripts/test_mk_mdef_gen.pl
 	perl ./scripts/test_make_topology.pl
+	perl ./scripts/test_bugcase1.pl
 
 clean:
 	rm -f dict2tri.no_triphones

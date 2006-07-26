@@ -336,8 +336,26 @@ acmod_set_add_tri(acmod_set_t *acmod_set,
 	acmod_set->multi_idx = ckd_calloc(n_ci,
 					  sizeof(itree_t *));
 
-	for (i = 0; i < n_ci; i++) {
-	    acmod_set->multi_idx[i] = itree_new(n_ci * n_ci * N_WORD_POSN);
+	  /* HACK! In theory, n_ci * n_ci * N_WORD_POSN should be
+	     enough to store all possible triphones.  However, in
+	     practice, we have seen situation where, the number of
+	     cells allocated in itree is bigger than n_ci * n_ci *
+	     N_WORD_POSN.  This simply mean there might be something
+	     wrong within the itree module.
+
+	     One could follow this thread of discussion to further the
+	     investigation at
+	     http://sourceforge.net/forum/forum.php?thread_id=1541914&forum_id=5471
+	     
+	     The resource is checked in and could be found in test
+	     bugcase1. This will solve the immediate the problem which
+	     the user was suffering.  We should revisit this issue
+	     later on.
+	   */
+
+	for (i = 0; i < n_ci; i++) {	  
+	  acmod_set->multi_idx[i] = itree_new(n_ci * n_ci * N_WORD_POSN * 2); 
+	  /*  acmod_set->multi_idx[i] = itree_new(n_ci * n_ci * N_WORD_POSN ); */
 	}
     }
     

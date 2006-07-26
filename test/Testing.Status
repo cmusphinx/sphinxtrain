@@ -15,7 +15,7 @@ make_quests
 map_adapt
 mixw_interp
 mk_flat
-mk_mdef_gen - Partially tested. 
+mk_mdef_gen - Partially tested. The output phone and triphone count is yet to be tested. 
 mk_mllr_class
 mk_model_def
 mk_s2cb
@@ -31,8 +31,9 @@ mllr_solve
 mllr_transform
 norm
 param_cnt
-printp - Partially tested
+printp - Partially tested, only test the hmm parameters. 
 prunetree - Fully tested. 
 QUICK_COUNT
 tiestate
 wave2feat
+maketopology.pl - Fully tested
