@@ -153,7 +153,7 @@ mk_flat -moddeffn CFS3.ci.mdef -topo CFS3.topology -mixwfn mixture_weights  \n\
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
+      exit(0);
     }
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();

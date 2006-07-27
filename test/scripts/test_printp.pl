@@ -32,13 +32,17 @@ test_example($bindir,$exec_resdir);
 
 test_this("$bin $tmatarg > $tmatout",$exec_resdir,"DRY RUN w/-tmat TEST");
 compare_these_two($tmatmatch,$tmatout,,$exec_resdir,"TRANSITION MATRIX PRINTING");
+unlink($tmatout);
 
 test_this("$bin $mixwarg > $mixwout",$exec_resdir,"DRY RUN w/-mixw TEST");
 compare_these_two(${mixwmatch},${mixwout},$exec_resdir,"MIXTURE WEIGHTS PRINTING");
+unlink($mixwout);
 
 test_this("$bin $meanarg > $meanout",$exec_resdir,"DRY RUN w/-means TEST");
 compare_these_two(${meanmatch},${meanout},$exec_resdir,"MEANS PRINTING");
+unlink($meanout);
 
 test_this("$bin $vararg > $varout",$exec_resdir,"DRY RUN w/-vars TEST");
 compare_these_two(${varmatch},${varout},$exec_resdir,"VARS PRINTING");
+unlink($varout);
 

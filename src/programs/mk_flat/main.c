@@ -91,6 +91,10 @@ main(int argc, char *argv[])
     printf("%s(%d): %d models defined\n",
 	   __FILE__, __LINE__, mdef->n_defn);
 
+    if (!cmd_ln_access("-tmatfn") && ! cmd_ln_access("-mixwfn")){
+        E_FATAL("Both -tmatfn and -mixwfn were not specified, forced exit\n");
+    }
+
     if (cmd_ln_access("-tmatfn")) {
 	if (topo_read(&proto_tmat, &n_state_pm, cmd_ln_access("-topo")) != S3_SUCCESS)
 	    return 1;
@@ -142,12 +146,17 @@ main(int argc, char *argv[])
 	}
     }
 
-    if (s3mixw_write(cmd_ln_access("-mixwfn"),
-		     mixw,
-		     n_tied_state,
-		     n_stream,
-		     n_density) != S3_SUCCESS) {
-	retval = 2;
+    if (cmd_ln_access("-mixwfn")) {
+        if (s3mixw_write(cmd_ln_access("-mixwfn"),
+	  	         mixw,
+		         n_tied_state,
+		         n_stream,
+		         n_density) != S3_SUCCESS) {
+	  retval = 2;
+	}
+    } 
+    else {
+      E_INFO("No mixw file given; none generated\n");
     }
 
     ckd_free_3d((void ***)mixw);
