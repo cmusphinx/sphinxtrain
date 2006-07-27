@@ -9,7 +9,7 @@ my $resdir="res/";
 my $exec_resdir="mk_flat";
 my $printp_resdir="printp";
 my $bin="$bindir$exec_resdir";
-my $bin_printp="$bindir$printp_resdir";
+my $bin_printp="${bindir}${printp_resdir}";
 my $mdefopt="-moddeffn ";
 my $topoopt="-topo ";
 my $mixwopt="-mixwfn ";
@@ -58,10 +58,10 @@ for($i=1;$i<=5;$i+=2)
     my $cmd = $tmp ;
     $cmd .= "-nstream 1 -ndensity 1";
     test_this($cmd,$exec_resdir,"dry run $i state, stream 1, density 1 ");
-    test_this("$printp_resdir -tmatfn $tmat_bin >$tmat_txt",$exec_resdir,"Read $tmat_bin from output of $i state, stream 1, density 1");
-    test_this("$printp_resdir -mixwfn $mixw_bin >$mixw_txt",$exec_resdir,"Read $mixw_bin from output of $i state, stream 1, density 1");
-    test_this("$printp_resdir -tmatfn ${exec_resdir}/tmat_${i}st_1str_1den >$tmat_txt_match",$exec_resdir,"Read template $tmat_bin");
-    test_this("$printp_resdir -mixwfn ${exec_resdir}/mixw_${i}st_1str_1den >$mixw_txt_match",$exec_resdir,"Read template $mixw_bin");
+    test_this("$bin_printp -tmatfn $tmat_bin >$tmat_txt",$exec_resdir,"Read $tmat_bin from output of $i state, stream 1, density 1");
+    test_this("$bin_printp -mixwfn $mixw_bin >$mixw_txt",$exec_resdir,"Read $mixw_bin from output of $i state, stream 1, density 1");
+    test_this("$bin_printp -tmatfn ${exec_resdir}/tmat_${i}st_1str_1den >$tmat_txt_match",$exec_resdir,"Read template $tmat_bin");
+    test_this("$bin_printp -mixwfn ${exec_resdir}/mixw_${i}st_1str_1den >$mixw_txt_match",$exec_resdir,"Read template $mixw_bin");
     compare_these_two(${tmat_txt},${tmat_txt_match},$exec_resdir,"Transition matrices match $i state, stream 1, density 1");
     compare_these_two(${mixw_txt},${mixw_txt_match},$exec_resdir,"Mixture weight match $i state, stream 1, density 1");
 
@@ -70,15 +70,15 @@ for($i=1;$i<=5;$i+=2)
     $cmd = $tmp ;
     $cmd .= "-nstream 4 -ndensity 256";
     test_this($cmd,$exec_resdir,"mk_flat dry run $i state, stream 4, density 256");
-    test_this("$printp_resdir -tmatfn $tmat_bin >$tmat_txt",$exec_resdir,"Read $tmat_bin from output of $i state, stream 4, density 256");
-    test_this("$printp_resdir -mixwfn $mixw_bin >$mixw_txt",$exec_resdir,"Read $mixw_bin from output of $i state, stream 4, density 256");
+    test_this("$bin_printp -tmatfn $tmat_bin >$tmat_txt",$exec_resdir,"Read $tmat_bin from output of $i state, stream 4, density 256");
+    test_this("$bin_printp -mixwfn $mixw_bin >$mixw_txt",$exec_resdir,"Read $mixw_bin from output of $i state, stream 4, density 256");
     unlink($tmat_bin,$tmat_txt, $mixw_bin,$mixw_txt);
 
     $cmd = $tmp ;
     $cmd .= "-nstream 4 -ndensity 1024";
     test_this($cmd,$exec_resdir,"mk_flat dry run $i state, stream 4, density 1024");
-    test_this("$printp_resdir -tmatfn $tmat_bin >$tmat_txt",$exec_resdir,"Read $tmat_bin from output of $i state, stream 4, density 1024");
-    test_this("$printp_resdir -mixwfn $mixw_bin >$mixw_txt",$exec_resdir,"Read $mixw_bin from output of $i state, stream 4, density 1024");
+    test_this("$bin_printp -tmatfn $tmat_bin >$tmat_txt",$exec_resdir,"Read $tmat_bin from output of $i state, stream 4, density 1024");
+    test_this("$bin_printp -mixwfn $mixw_bin >$mixw_txt",$exec_resdir,"Read $mixw_bin from output of $i state, stream 4, density 1024");
     unlink($tmat_bin,$tmat_txt, $mixw_bin,$mixw_txt);
 
 }
