@@ -13,18 +13,21 @@ my $tmatarg="-tmatfn res/hmm/transition_matrices";
 my $mixwarg="-mixwfn res/hmm/mixture_weights";
 my $meanarg="-gaufn  res/hmm/means";
 my $vararg="-gaufn  res/hmm/variances";
+my $gaucntarg="-gaucntfn  ./printp/gauden_counts";
 my $mdefarg="-moddeffn ./res/hmm/RM.1000.mdef";
 
 my $tmatout="${exec_resdir}.tmat.txt";
 my $mixwout="${exec_resdir}.mixw.txt";
 my $meanout="${exec_resdir}.mean.txt";
 my $varout ="${exec_resdir}.var.txt";
+my $gaucntout="${exec_resdir}.gaucnt.txt";
 my $mdefout="${exec_resdir}.mdef.txt";
 
 my $tmatmatch="${exec_resdir}/test_${exec_resdir}_tmat";
 my $mixwmatch ="${exec_resdir}/test_${exec_resdir}_mixw";
 my $meanmatch="${exec_resdir}/test_${exec_resdir}_means";
 my $varmatch ="${exec_resdir}/test_${exec_resdir}_var";
+my $gaucntmatch="${exec_resdir}/test_${exec_resdir}_gaucnt.1gau";
 my $mdefmatch ="${exec_resdir}/test_${exec_resdir}_mdef";
 
 test_help($bindir,$exec_resdir);
@@ -45,4 +48,8 @@ unlink($meanout);
 test_this("$bin $vararg > $varout",$exec_resdir,"DRY RUN w/-vars TEST");
 compare_these_two(${varmatch},${varout},$exec_resdir,"VARS PRINTING");
 unlink($varout);
+
+test_this("$bin $gaucntarg > $gaucntout",$exec_resdir,"DRY RUN w/-gaucnts gaussian 1 TEST");
+compare_these_two(${gaucntmatch},${gaucntout},$exec_resdir,"GAUCNTS PRINTING");
+unlink($gaucntout);
 
