@@ -5,9 +5,9 @@ cdcn_norm
 cdcn_train
 cp_parm
 delint
-dict2tri  - Fully tested
+dict2tri - Fully tested
 inc_comp
-init_gau
+init_gau - Partially tested. -ceplen ? -feat?
 init_mixw
 kdtree
 kmeans_init
@@ -31,7 +31,7 @@ mllr_solve
 mllr_transform
 norm
 param_cnt
-printp - Partially tested, only test the hmm parameters. 
+printp - Partially tested, only test the hmm parameters and gaussian count. 
 prunetree - Fully tested. 
 QUICK_COUNT
 tiestate
