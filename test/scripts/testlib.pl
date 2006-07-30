@@ -63,7 +63,7 @@ sub test_this
   if($?==$sig){
     printf("Test ${exec} ${testname} PASSED\n");
   }else{
-    printf("Test ${exec} ${testname} FAILED, signal $?, msg $!\n");
+    printf("Test ${exec} ${testname} FAILED, signal $? (not equal to $signal) , msg $!\n");
   }
 
 }

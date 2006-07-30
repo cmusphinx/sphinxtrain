@@ -6,6 +6,7 @@ test:
 	perl ./scripts/test_mk_flat.pl
 	perl ./scripts/test_mk_mdef_gen.pl
 	perl ./scripts/test_bugcase1.pl
+	perl ./scripts/test_bugcase2.pl
 
 clean:
 	rm -f dict2tri.no_triphones

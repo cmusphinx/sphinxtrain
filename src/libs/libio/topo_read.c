@@ -141,7 +141,34 @@ topo_read(float32 ***tmat,
 	goto error;
     }
 
-    sscanf(buf, "%d", &n_state);
+    sscanf(buf, "%d\n", &n_state);
+
+    /* Support Request 1504066: robust reading of topo file in
+       SphinxTrain
+	   
+       When user put 
+       0.1
+       1.0 1.0 1.0 0.0
+       1.0 1.0 1.0 0.0
+       1.0 1.0 1.0 1.0 
+       
+       instead of 
+       
+       0.1
+       4
+       1.0 1.0 1.0 0.0
+       1.0 1.0 1.0 0.0
+       1.0 1.0 1.0 1.0
+       
+       topo_read will misread 1.0 into n_state as 1.  And the 
+       generated transition matrix will corrupt bw as well. This 
+       problem is now fixed. 
+    */
+
+    if(n_state==1) {
+        E_ERROR("n_state =1, if you are using a transition matrix with more than 1 state, this error might show that there is format issue in your input topology file.  You are recommended to use perl/make_topology.pl to generate the topo file instead.\n");
+	goto error;
+    }
 
     out = (float **)ckd_calloc_2d(n_state-1, n_state, sizeof(float32));
 
