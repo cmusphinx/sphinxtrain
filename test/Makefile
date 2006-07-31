@@ -3,6 +3,7 @@ test:
 	perl ./scripts/test_init_gau.pl
 	perl ./scripts/test_printp.pl
 	perl ./scripts/test_prunetree.pl
+	perl ./scripts/test_norm.pl
 	perl ./scripts/test_make_topology.pl
 	perl ./scripts/test_mk_flat.pl
 	perl ./scripts/test_mk_mdef_gen.pl

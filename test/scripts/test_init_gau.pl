@@ -1,6 +1,7 @@
 #!/usr/local/bin/perl
 
 use strict;
+use File::Copy;
 require './scripts/testlib.pl';
 
 my $bindir="../bin.i686-pc-linux-gnu/";
@@ -38,7 +39,7 @@ foreach my $i (@params)
 	compare_these_two($gd_out,$gd_match,$exec_resdir,"Gau count generation for 100 utterance. Check duplicates with printp");
     }
     compare_these_two($gd_out,$matchfn,$exec_resdir,"Gau count generation for $i utterances");
-#    system("cp ./gauden_counts ./gauden_counts.$i");
+    copy("./gauden_counts","./init_gau/gauden_counts.$i");
 }
 
 unlink($gd_cnt,$gd_out);
