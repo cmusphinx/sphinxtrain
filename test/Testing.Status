@@ -7,7 +7,7 @@ cp_parm
 delint
 dict2tri - Fully tested
 inc_comp
-init_gau - Partially tested. -ceplen ? -feat?
+init_gau - Partially tested. -ceplen ? -feat? (not if initial mean is loaded in)
 init_mixw
 kdtree
 kmeans_init
@@ -29,7 +29,7 @@ mk_s3tmat
 mk_ts2cb
 mllr_solve
 mllr_transform
-norm
+norm   - Partially tested, (works only with single globalmean)
 param_cnt
 printp - Partially tested, only test the hmm parameters and gaussian count. 
 prunetree - Fully tested. 
