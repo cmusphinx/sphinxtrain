@@ -92,7 +92,7 @@ time-stamp :
 	@ hostname >>.time-stamp
 	@ date >>.time-stamp
 
-test:	
+check:
 	@ $(MAKE) -C test test
 #	@ $(MAKE) --no-print-directory -C testsuite test
 
