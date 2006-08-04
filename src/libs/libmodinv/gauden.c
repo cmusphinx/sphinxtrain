@@ -1247,6 +1247,7 @@ gauden_compute(float64 **den,		/* density array for a mixture Gaussian */
 
     /* Top-N computation not (yet) possible for full covariances */
     if (g->fullvar) {
+	assert(g->n_top == g->n_density);
 	for (j = 0; j < g->n_feat; j++) {
 	    log_full_densities_full(den[j],
 			       den_idx[j],
@@ -1322,6 +1323,7 @@ gauden_compute_log(float64 **den,		/* density array for a mixture Gaussian */
 
     /* Top-N computation not (yet) possible for full covariances */
     if (g->fullvar) {
+	assert(g->n_top == g->n_density);
 	for (j = 0; j < g->n_feat; j++) {
 	    log_full_densities_full(den[j],
 			       den_idx[j],
