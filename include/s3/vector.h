@@ -68,6 +68,22 @@ int32
 vector_normalize(vector_t v, uint32 dim);
 
 void
+vector_add(vector_t a, const vector_t b, uint32 dim);
+
+void
+vector_sub(vector_t a, const vector_t b, uint32 dim);
+
+void
+vector_scale(vector_t a, float32 b, uint32 dim);
+
+void
+vector_cross(vector_t a, const vector_t b, uint32 dim);
+
+float64
+vector_dot(const vector_t a, const vector_t b, uint32 dim);
+/* See matrix.h for outer product. */
+
+void
 vector_print(vector_t v, uint32 dim);
 
 #endif /* VECTOR_H */ 

@@ -256,6 +256,92 @@ invert(vector_t *ainv, vector_t *a, int32 n)
     return S3_SUCCESS;
 }
 
+int32
+eigenvectors(float32 **a,
+	     float32 *out_ur, float32 *out_ui,
+	     float32 **out_vr, float32 **out_vi,
+	     int32 len)
+{
+    float32 *tmp_a, *vr, *work, lwork;
+    int32 one, info, ilwork, all_real, i, j;
+    char no, yes;
+
+    /* Transpose A to FORTRAN format. */
+    tmp_a = ckd_calloc(len * len, sizeof(float32));
+    for (i = 0; i < len; i++)
+        for (j = 0; j < len; j++)
+            tmp_a[len * j + i] = a[i][j];
+
+    /* Right eigenvectors. */
+    vr = ckd_calloc(len * len, sizeof(float32));
+
+    /* Find the optimal workspace. */
+    one = 1;
+    no = 'N';
+    yes = 'V';
+    ilwork = -1;
+    sgeev_(&no, &yes, &len, tmp_a, &len, out_ur, out_ui, NULL,
+	   &one, vr, &len, &lwork, &ilwork, &info);
+    if (info != 0)
+	E_FATAL("Failed to get workspace from SGEEV: %d\n", info);
+
+    /* Allocate workspace. */
+    ilwork = (int)lwork;
+    work = ckd_calloc(ilwork, sizeof(float32));
+
+    /* Actually calculate the eigenvectors. */
+    sgeev_(&no, &yes, &len, tmp_a, &len, out_ur, out_ui, NULL,
+	   &one, vr, &len, work, &ilwork, &info);
+    ckd_free(work);
+    ckd_free(tmp_a);
+
+    /* Reconstruct the outputs. */
+    /* Check if all eigenvalues are real. */
+    all_real = 1;
+    for (i = 0; i < len; i++) {
+	if (out_ui[i] != 0.0) {
+	    all_real = 0;
+	    break;
+	}
+    }
+
+    if (all_real) {
+	/* Then all eigenvectors are real. */
+	memset(out_vi[0], 0, sizeof(float32) * len * len);
+	/* We don't need to do anything because LAPACK places the
+	 * eigenvectors in the columns in FORTRAN order, which puts
+	 * them in the rows for us. */
+	memcpy(out_vr[0], vr, sizeof(float32) * len * len);
+    }
+    else {
+	for (i = 0; i < len; ++i) {
+	    if (out_ui[i] == 0.0) {
+		for (j = 0; j < len; ++j) {
+		    /* Again, see above: FORTRAN column order. */
+		    out_vr[i][j] = vr[i * len + j];
+		}
+	    }
+	    else {
+		/* There is a complex conjugate pair here. */
+		if (i < len-1) {
+		    for (j = 0; j < len; ++j) {
+			out_vr[i][j] = vr[i * len + j];
+			out_vi[i][j] = vr[(i + 1) * len + j];
+			out_vr[i+1][j] = vr[i * len + j];
+			out_vi[i+1][j] = -vr[(i+1) * len + j];
+		    }
+		    ++i;
+		}
+		else {
+		    E_FATAL("Complex eigenvalue at final index %d?!\n", len-1);
+		}
+	    }
+	}
+    }
+    ckd_free(vr);
+    return info;
+}
+
 void
 outerproduct(vector_t *a, vector_t x, vector_t y, int32 len)
 {

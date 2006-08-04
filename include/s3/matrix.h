@@ -97,6 +97,12 @@ invert(vector_t *ainv, vector_t *a, int32 len);
 void
 outerproduct(vector_t *a, vector_t x, vector_t y, int32 len);
 
+int32
+eigenvectors(float32 **a,
+	     float32 *out_ur, float32 *out_ui,
+	     float32 **out_vr, float32 **out_vi,
+	     int32 len);
+
 void
 matrixmultiply(vector_t *c, /* = */
 	       vector_t *a, /* * */ vector_t *b,

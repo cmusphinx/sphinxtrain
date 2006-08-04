@@ -115,6 +115,48 @@ vector_print(vector_t v,
 	printf("%e ", v[i]);
 }
 
+void
+vector_add(vector_t a, const vector_t b, uint32 dim)
+{
+	uint32 i;
+	for (i = 0; i < dim; ++i)
+		a[i] += b[i];
+}
+
+void
+vector_sub(vector_t a, const vector_t b, uint32 dim)
+{
+	uint32 i;
+	for (i = 0; i < dim; ++i)
+		a[i] -= b[i];
+}
+
+void
+vector_scale(vector_t a, float32 b, uint32 dim)
+{
+	uint32 i;
+	for (i = 0; i < dim; ++i)
+		a[i] *= b;
+}
+
+void
+vector_cross(vector_t a, const vector_t b, uint32 dim)
+{
+	uint32 i;
+	for (i = 0; i < dim; ++i)
+		a[i] *= b[i];
+}
+
+float64
+vector_dot(const vector_t a, const vector_t b, uint32 dim)
+{
+	uint32 i;
+	float64 p;
+
+	for (i = 0; i < dim; ++i)
+		p += a[i] * b[i];
+}
+
 /*
  * Log record.  Maintained by RCS.
  *
