@@ -257,6 +257,7 @@ main_initialize(int argc,
 						    g->fullvar[i][j][k][l][l];
 	    gauden_free_param_full(g->fullvar);
 	    g->fullvar = NULL;
+	    gauden_floor_variance(g);
     }
     
     if (gauden_eval_precomp(inv->gauden) != S3_SUCCESS) {
