@@ -154,7 +154,7 @@ lda_train -ceplen 13 -feat 1s_c_d_dd -dim 29 -cepdir cep -stsegdir stseg \n\
 	{ "-agc",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  "max",
+	  "none",
 	  "Controls automatic gain control."},
 	{ "-feat",
 	  CMD_LN_STRING,
@@ -166,11 +166,11 @@ lda_train -ceplen 13 -feat 1s_c_d_dd -dim 29 -cepdir cep -stsegdir stseg \n\
 	  CMD_LN_NO_VALIDATION,
 	  "13",
 	  "# of components in cepstrum vector"},
-	{ "-dim",
-	  CMD_LN_INT32,
+	{ "-outfn",
+	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  "29",
-	  "# of components in LDA output features"},
+	  CMD_LN_NO_DEFAULT,
+	  "Output file containing LDA transformation matrix"},
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 

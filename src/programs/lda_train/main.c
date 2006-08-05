@@ -5,6 +5,7 @@
 #include <s3/cmd_ln.h>
 #include <s3/ckd_alloc.h>
 #include <s3/feat.h>
+#include <s3/s3io.h>
 #include <s3/matrix.h>
 #include <s3/clapack_lite.h>
 #include <s3/vector.h>
@@ -14,6 +15,8 @@
 #include <s3/s3.h>
 
 #include <string.h>
+
+#define MATRIX_FILE_VERSION "0.1"
 
 static void
 calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
@@ -57,17 +60,17 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
     /* Per-class frame count */
     class_n_frame = ckd_calloc(n_class, sizeof(uint32));
     /* Per-class mean */
-    mean = ckd_calloc_2d(n_class, featlen, sizeof(float32));
+    mean = (float32 **)ckd_calloc_2d(n_class, featlen, sizeof(float32));
     /* Global mean */
     globalmean = ckd_calloc(featlen, sizeof(float32));
     /* Per-class covariance (I think) */
-    scatter = ckd_calloc_3d(n_class, featlen, featlen, sizeof(float32));
+    scatter = (float32 ***)ckd_calloc_3d(n_class, featlen, featlen, sizeof(float32));
     /* Within-class covariance */
-    sw = ckd_calloc_2d(featlen, featlen, sizeof(float32));
+    sw = (float32 **)ckd_calloc_2d(featlen, featlen, sizeof(float32));
     /* Between-class covariance */
-    sb = ckd_calloc_2d(featlen, featlen, sizeof(float32));
+    sb = (float32 **)ckd_calloc_2d(featlen, featlen, sizeof(float32));
     /* Temporary accumulator for outer-product */
-    op = ckd_calloc_2d(featlen, featlen, sizeof(float32));
+    op = (float32 **)ckd_calloc_2d(featlen, featlen, sizeof(float32));
 
     /* Accumulate for means */
     E_INFO("Accumulating for means...\n");
@@ -153,14 +156,13 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
 
     /* Sb = sum_i (mean_i - globalmean) (mean_i - globalmean)^T */
     for (i = 0; i < n_class; ++i) {
-        uint32 ii;
         vector_sub(mean[i], globalmean, featlen);
         outerproduct(op, mean[i], mean[i], featlen);
         matrixadd(sb, op, featlen, featlen);
     }
-    ckd_free_3d(scatter);
-    ckd_free_2d(mean);
-    ckd_free_2d(op);
+    ckd_free_3d((void ***)scatter);
+    ckd_free_2d((void **)mean);
+    ckd_free_2d((void **)op);
     ckd_free(globalmean);
 
     if (out_sw) *out_sw = sw;
@@ -168,10 +170,25 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
     if (out_featlen) *out_featlen = featlen;
 }
 
-static float32 **
-lda_compute(float32 **sw, float32 **sb, uint32 featlen)
+static int eigen_sort(const void *a, const void *b)
 {
-    float32 **swinv, **ba, *ur, *ui, **vr, **vi;
+    const float32 *aa = a, *bb = b;
+
+    /* Sort descending. */
+    if (bb[0] > aa[0])
+        return -1;
+    else if (bb[0] < aa[0])
+        return 1;
+    else
+        return 0;
+}
+
+static void
+lda_compute(float32 **sw, float32 **sb,
+            float32 **out_u, float32 ***out_v,
+            uint32 featlen)
+{
+    float32 **swinv, **ba, *ur, *ui, **vr, **vi, **eigen;
     uint32 i, j;
 
 #if 0
@@ -194,36 +211,61 @@ lda_compute(float32 **sw, float32 **sb, uint32 featlen)
     printf("\n");
 #endif
 
-    /* Solve the eigenproblem B-1Av = \lambdav */
-    swinv = ckd_calloc_2d(featlen, featlen, sizeof(float32));
+    /* Solve the eigenproblem B^{-1}Av = uv (this isn't the most
+     * efficient way to do this but the matrix is pretty small so it
+     * doesn't matter) */
+    swinv = (float32 **)ckd_calloc_2d(featlen, featlen, sizeof(float32));
     if (invert(swinv, sw, featlen) < 0) {
         E_FATAL("Singular Sw matrix!! Argh!\n");
     }
-    ba = ckd_calloc_2d(featlen, featlen, sizeof(float32));
-    vr = ckd_calloc_2d(featlen, featlen, sizeof(float32));
-    vi = ckd_calloc_2d(featlen, featlen, sizeof(float32));
+    ba = (float32 **)ckd_calloc_2d(featlen, featlen, sizeof(float32));
+    vr = (float32 **)ckd_calloc_2d(featlen, featlen, sizeof(float32));
+    vi = (float32 **)ckd_calloc_2d(featlen, featlen, sizeof(float32));
     ur = ckd_calloc(featlen, sizeof(float32));
     ui = ckd_calloc(featlen, sizeof(float32));
 
     matrixmultiply(ba, swinv, sb, featlen, featlen, featlen);
     eigenvectors(ba, ur, ui, vr, vi, featlen);
 
-    /* Construct the LDA transformation. */
+    /* Discard the imaginary parts (they will be zero because B^{-1}A
+     * is symmetric).  Yes, we could have used SSYGV... */
+    ckd_free_2d((void **)vi);
+    ckd_free(ui);
+
+    /* Construct the LDA transformation. LAPACK is supposed to return
+     * the eigenvalues in sorted order but that doesn't actually
+     * always happen, so we will sort them to be sure here.  */
+    /* Concatenate eigenvalues/eigenvectors. */
+    eigen = (float32 **)ckd_calloc_2d(featlen, featlen+1, sizeof(float32));
     for (i = 0; i < featlen; ++i) {
-        printf("Eigenvalue %d: %f\n", i, ur[i]);
+        eigen[i][0] = ur[i];
+        memcpy(&eigen[i][1], vr[i], featlen * sizeof(float32));
+    }
+    qsort(eigen, featlen, sizeof(float32 *), eigen_sort);
+    /* Copy the eigenvalues/vectors back to ur, vr */
+    for (i = 0; i < featlen; ++i) {
+        ur[i] = eigen[i][0];
+        memcpy(vr[i], &eigen[i][1], featlen * sizeof(float32));
+    }
+    
+    for (i = 0; i < featlen; ++i) {
+        printf("Eigenvalue %d: %f\n", i, eigen[i][0]);
         printf("Eigenvector %d: \n", i);
         for (j = 0; j < featlen; ++j) {
-            printf("%f ", vr[i][j]);
+            printf("%f ", eigen[i][j+1]);
         }
         printf("\n");
     }
-    return NULL;
+
+    ckd_free_2d((void **)eigen);
+    if (out_u) *out_u = ur;
+    if (out_v) *out_v = vr;
 }
 
 int
 main(int argc, char *argv[])
 {
-    float32 **sw, **sb;
+    float32 **sw, **sb, **lda;
     uint32 featlen;
 
     /* Get arguments. */
@@ -242,7 +284,28 @@ main(int argc, char *argv[])
     calc_scatter(&sw, &sb, &featlen);
 
     /* Do eigen decomposition to find LDA matrix. */
-    lda_compute(sw, sb, featlen);
+    lda_compute(sw, sb, NULL, &lda, featlen);
 
+    /* Write out the matrix. */
+    if (cmd_ln_access("-outfn") != NULL) {
+        FILE *outfh;
+        uint32 val, chksum = 0;
+
+        s3clr_fattr();
+        s3add_fattr("version", MATRIX_FILE_VERSION, TRUE);
+        s3add_fattr("chksum0", "yes", TRUE);
+        if ((outfh = s3open(cmd_ln_access("-outfn"), "wb", NULL)) == NULL) {
+            E_FATAL_SYSTEM("Failed to open %s for writing", cmd_ln_access("-outfn"));
+        }
+        val = 1; /* Number of transformations */
+        s3write(&val, sizeof(val), 1, outfh, &chksum);
+        s3write_2d((void **)lda, sizeof(float32), featlen, featlen, outfh, &chksum);
+        s3write(&chksum, sizeof(chksum), 1, outfh, &val);
+        s3close(outfh);
+    }
+
+    ckd_free_2d((void **)sw);
+    ckd_free_2d((void **)sb);
+    ckd_free_2d((void **)lda);
     return 0;
 }
