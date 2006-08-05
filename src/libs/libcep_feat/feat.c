@@ -58,10 +58,12 @@
 #include "v8_feat.h"
 
 #include "cep_frame.h"
+#include "lda.h"
 
 #include <s3/feat.h>
 #include <s3/err.h>
 #include <s3/s3.h>
+#include <s3/ckd_alloc.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -69,6 +71,9 @@
 
 static uint32 fid = FEAT_ID_NONE;
 static unsigned int mfcc_len = 13;
+
+static float32 ***lda;
+static uint32 n_lda, lda_rows, lda_cols, lda_dim;
 
 static char *__name2id[] = {
     "4s_12c_24d_3p_12dd",
@@ -236,6 +241,20 @@ feat_set_in_veclen(uint32 len)
     }
 }
 
+int32
+feat_read_lda(const char *ldafile, uint32 dim)
+{
+    if (lda != NULL)
+	ckd_free_3d((void ***)lda);
+    lda = lda_read(ldafile, &n_lda, &lda_rows, &lda_cols);
+    if (lda == NULL)
+	return S3_ERROR;
+    lda_dim = dim;
+
+    assert(lda_cols == feat_conf[fid].blksize());
+    return S3_SUCCESS;
+}
+
 uint32
 feat_mfcc_len()
 {
@@ -291,7 +310,10 @@ feat_n_stream()
 uint32
 feat_blksize()
 {
-    if (fid <= FEAT_ID_MAX) {
+    if (lda != NULL) {
+	return lda_dim;
+    }
+    else if (fid <= FEAT_ID_MAX) {
 	return feat_conf[fid].blksize();
     }
     else if (fid == FEAT_ID_NONE) {
@@ -307,7 +329,10 @@ feat_blksize()
 const uint32 *
 feat_vecsize()
 {
-    if (fid <= FEAT_ID_MAX) {
+    if (lda != NULL) {
+	return &lda_dim;
+    }
+    else if (fid <= FEAT_ID_MAX) {
 	return feat_conf[fid].vecsize();
     }
     else if (fid == FEAT_ID_NONE) {
@@ -384,8 +409,13 @@ vector_t **
 feat_compute(vector_t *mfcc,
 	     uint32 *inout_n_frame)
 {
+    vector_t **feat;
+
     if (fid <= FEAT_ID_MAX) {
-	return feat_conf[fid].compute(mfcc, inout_n_frame);
+	feat = feat_conf[fid].compute(mfcc, inout_n_frame);
+	if (lda)
+	    lda_transform(feat, *inout_n_frame, lda, lda_dim);
+	return feat;
     }
     else if (fid == FEAT_ID_NONE) {
 	E_FATAL("feat module must be configured w/ a valid ID\n");

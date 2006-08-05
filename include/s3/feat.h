@@ -89,6 +89,9 @@ feat_doc(void);
 void
 feat_set_in_veclen(uint32 len);
 
+int32
+feat_read_lda(const char *ldafile, uint32 dim);
+
 uint32
 feat_mfcc_len(void);
 

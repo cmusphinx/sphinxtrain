@@ -92,6 +92,11 @@ initialize(lexicon_t **out_lex,
 
 	return S3_ERROR;
     }
+    if (cmd_ln_access("-ldafn") != NULL) {
+	if (feat_read_lda(cmd_ln_access("-ldafn"), cmd_ln_int32("-ldadim"))) {
+	    E_FATAL("Failed to read LDA matrix\n");
+	}
+    }
 
     if (cmd_ln_access("-segdir"))
 	corpus_set_seg_dir(cmd_ln_access("-segdir"));

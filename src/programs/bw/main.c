@@ -175,6 +175,15 @@ main_initialize(int argc,
     else {
 	E_FATAL("You need to set a feature extraction config using -feat\n");
     }
+    if (cmd_ln_access("-ceplen") == NULL) {
+	E_FATAL("Input vector length must be specified\n");
+    }
+    feat_set_in_veclen(cmd_ln_int32("-ceplen"));
+    if (cmd_ln_access("-ldafn") != NULL) {
+	if (feat_read_lda(cmd_ln_access("-ldafn"), cmd_ln_int32("-ldadim"))) {
+	    E_FATAL("Failed to read LDA matrix\n");
+	}
+    }
 
     /* create a new model inventory structure */
     *out_inv = inv = mod_inv_new();
@@ -616,6 +625,7 @@ main_reestimate(model_inventory_t *inv,
     sil_del    = *(int32 *)cmd_ln_access("-sildel");
     silence_str = (char *)cmd_ln_access("-siltag");
     pdumpdir = (char *)cmd_ln_access("-pdumpdir");
+    in_veclen = cmd_ln_int32("-ceplen");
 
     if (cmd_ln_access("-ckptintv")) {
 	ckpt_intv = *(int32 *)cmd_ln_access("-ckptintv");
@@ -624,14 +634,6 @@ main_reestimate(model_inventory_t *inv,
     if ((mllr_mult || mllr_add) && (inv->gauden->mllr_idx == NULL)) {
 	E_FATAL("Specify MLLR class map using -cb2mllrfn\n");
     }
-
-    if (cmd_ln_access("-ceplen") == NULL) {
-	E_FATAL("Input vector length must be specified\n");
-    }
-	
-    in_veclen = *(int32 *)cmd_ln_access("-ceplen");
-
-    feat_set_in_veclen(in_veclen);
 
     if (cmd_ln_access("-accumdir") == NULL) {
 	E_WARN("NO ACCUMDIR SET.  No counts will be written; assuming debug\n");

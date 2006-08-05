@@ -602,6 +602,17 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_DEFAULT,
 	  "This argument selects the derived feature computation to use."},
 
+	{ "-ldafn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "File containing an LDA transformation matrix."},
+	{ "-ldadim",
+	  CMD_LN_INT32,
+	  CMD_LN_NO_VALIDATION,
+	  "29",
+	  "# of output dimensions for LDA"},
+
 	{ "-timing",
 	  CMD_LN_BOOLEAN,
 	  CMD_LN_NO_VALIDATION,

@@ -217,6 +217,16 @@ init_gau -accumdir accumdir -ctlfn controlfn -part 1 -npart 1 -cepdir cepdir -fe
 	  CMD_LN_NO_VALIDATION,
 	  "13",
 	  "# of components in cepstrum vector"},
+	{ "-ldafn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "File containing an LDA transformation matrix."},
+	{ "-ldadim",
+	  CMD_LN_INT32,
+	  CMD_LN_NO_VALIDATION,
+	  "29",
+	  "# of output dimensions for LDA"},
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 

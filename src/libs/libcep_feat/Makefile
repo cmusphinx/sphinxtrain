@@ -55,6 +55,7 @@ SRCS = \
   del_sil_seg.c \
   feat.c \
   live_norm.c \
+  lda.c \
   norm.c \
   r_agc_noise.c \
   s2_cep.c \
@@ -79,6 +80,7 @@ H = \
   ddcep_frame.h \
   del_sil_seg.h \
   feat_config.h \
+  lda.h \
   live_norm.h \
   norm.h \
   r_agc_noise.h \
