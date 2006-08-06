@@ -18,6 +18,24 @@
 
 #define MATRIX_FILE_VERSION "0.1"
 
+static int
+lda_save(const char *outfile, float32 ***lda, int32 nlda, int32 featlen)
+{
+        FILE *outfh;
+        uint32 val, chksum = 0;
+
+        s3clr_fattr();
+        s3add_fattr("version", MATRIX_FILE_VERSION, TRUE);
+        s3add_fattr("chksum0", "yes", TRUE);
+        if ((outfh = s3open(cmd_ln_access("-outfn"), "wb", NULL)) == NULL) {
+            E_FATAL_SYSTEM("Failed to open %s for writing", cmd_ln_access("-outfn"));
+        }
+        s3write_3d((void ***)lda, sizeof(float32), nlda, featlen, featlen, outfh, &chksum);
+        s3write(&chksum, sizeof(chksum), 1, outfh, &val);
+        s3close(outfh);
+        return 0;
+}
+
 static void
 calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
 {
@@ -115,9 +133,12 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
     printf("\n");
     /* Normalize for class and global means */
     for (i = 0; i < n_class; ++i) {
-        vector_scale(mean[i], 1.0/class_n_frame[i], featlen);
+        if (class_n_frame[i] != 0.0) {
+            vector_scale(mean[i], 1.0/class_n_frame[i], featlen);
+        }
     }
-    vector_scale(globalmean, 1.0/n_frame, featlen);
+    if (n_frame != 0.0)
+        vector_scale(globalmean, 1.0/n_frame, featlen);
 
     /* Accumulate for covariances */
     corpus_reset();
@@ -156,6 +177,7 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
 
     /* Sb = sum_i (mean_i - globalmean) (mean_i - globalmean)^T */
     for (i = 0; i < n_class; ++i) {
+        vector_print(mean[i], featlen);
         vector_sub(mean[i], globalmean, featlen);
         outerproduct(op, mean[i], mean[i], featlen);
         matrixadd(sb, op, featlen, featlen);
@@ -288,20 +310,7 @@ main(int argc, char *argv[])
 
     /* Write out the matrix. */
     if (cmd_ln_access("-outfn") != NULL) {
-        FILE *outfh;
-        uint32 val, chksum = 0;
-
-        s3clr_fattr();
-        s3add_fattr("version", MATRIX_FILE_VERSION, TRUE);
-        s3add_fattr("chksum0", "yes", TRUE);
-        if ((outfh = s3open(cmd_ln_access("-outfn"), "wb", NULL)) == NULL) {
-            E_FATAL_SYSTEM("Failed to open %s for writing", cmd_ln_access("-outfn"));
-        }
-        val = 1; /* Number of transformations */
-        s3write(&val, sizeof(val), 1, outfh, &chksum);
-        s3write_2d((void **)lda, sizeof(float32), featlen, featlen, outfh, &chksum);
-        s3write(&chksum, sizeof(chksum), 1, outfh, &val);
-        s3close(outfh);
+        lda_save(cmd_ln_access("-outfn"), &lda, 1, featlen);
     }
 
     ckd_free_2d((void **)sw);
