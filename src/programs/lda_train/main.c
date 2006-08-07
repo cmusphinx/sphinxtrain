@@ -133,11 +133,14 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
     printf("\n");
     /* Normalize for class and global means */
     for (i = 0; i < n_class; ++i) {
-        if (class_n_frame[i] != 0.0) {
+        if (class_n_frame[i] != 0) {
             vector_scale(mean[i], 1.0/class_n_frame[i], featlen);
         }
+        else {
+            E_WARN("Empty class %d\n", i);
+        }
     }
-    if (n_frame != 0.0)
+    if (n_frame != 0)
         vector_scale(globalmean, 1.0/n_frame, featlen);
 
     /* Accumulate for covariances */
@@ -169,17 +172,21 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
 
     /* Sw = sum_i p_i scatter_i */
     for (i = 0; i < n_class; ++i) {
+#if 0 /* Xiang Li's code doesn't normalize the covariances... */
         /* Normalize scatter_i:
            (class_n_frame[i]/n_frame) * (1/class_n_frame[i]) = 1/n_frame */
         scalarmultiply(scatter[i], 1.0/n_frame, featlen, featlen);
+#endif
         matrixadd(sw, scatter[i], featlen, featlen);
     }
 
     /* Sb = sum_i (mean_i - globalmean) (mean_i - globalmean)^T */
     for (i = 0; i < n_class; ++i) {
-        vector_print(mean[i], featlen);
         vector_sub(mean[i], globalmean, featlen);
         outerproduct(op, mean[i], mean[i], featlen);
+#if 1 /* Xiang Li's code puts a normalization here.  Does it make a difference? */
+        scalarmultiply(op, class_n_frame[i], featlen, featlen);
+#endif
         matrixadd(sb, op, featlen, featlen);
     }
     ckd_free_3d((void ***)scatter);
@@ -194,26 +201,26 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
 
 static int eigen_sort(const void *a, const void *b)
 {
-    const float32 *aa = a, *bb = b;
+    float32 *const *aa = a;
+    float32 *const *bb = b;
 
     /* Sort descending. */
-    if (bb[0] > aa[0])
-        return -1;
-    else if (bb[0] < aa[0])
+    if ((*aa)[0] < (*bb)[0])
         return 1;
+    else if ((*aa)[0] > (*bb)[0])
+        return -1;
     else
         return 0;
 }
 
 static void
-lda_compute(float32 **sw, float32 **sb,
-            float32 **out_u, float32 ***out_v,
-            uint32 featlen)
+lda_compute_inv(float32 **sw, float32 **sb,
+                float32 **out_u, float32 ***out_v,
+                uint32 featlen)
 {
-    float32 **swinv, **ba, *ur, *ui, **vr, **vi, **eigen;
+    float32 **swinv, **ba, *ur, *ui, **vr, **vi, **eigen, *tmp;
     uint32 i, j;
 
-#if 0
     printf("Sw:\n");
     for (i = 0; i < featlen; ++i) {
         for (j = 0; j < featlen; ++j) {
@@ -231,11 +238,15 @@ lda_compute(float32 **sw, float32 **sb,
         printf("\n");
     }
     printf("\n");
-#endif
 
     /* Solve the eigenproblem B^{-1}Av = uv (this isn't the most
      * efficient way to do this but the matrix is pretty small so it
      * doesn't matter) */
+    /* Note that the eigenvectors we get from this are quite different
+     * from the ones we get from solving the generalized eigenproblem
+     * directly with SGGEV (QR-factorization).  This does not seem to
+     * affect accuracy.  SphinxBase will have the generalized routine
+     * in it and we may wish to switch at that point. */
     swinv = (float32 **)ckd_calloc_2d(featlen, featlen, sizeof(float32));
     if (invert(swinv, sw, featlen) < 0) {
         E_FATAL("Singular Sw matrix!! Argh!\n");
@@ -250,7 +261,7 @@ lda_compute(float32 **sw, float32 **sb,
     eigenvectors(ba, ur, ui, vr, vi, featlen);
 
     /* Discard the imaginary parts (they will be zero because B^{-1}A
-     * is symmetric).  Yes, we could have used SSYGV... */
+     * is symmetric). */
     ckd_free_2d((void **)vi);
     ckd_free(ui);
 
@@ -263,6 +274,8 @@ lda_compute(float32 **sw, float32 **sb,
         eigen[i][0] = ur[i];
         memcpy(&eigen[i][1], vr[i], featlen * sizeof(float32));
     }
+    /* Save the old base pointer so we can free it. */
+    tmp = eigen[0];
     qsort(eigen, featlen, sizeof(float32 *), eigen_sort);
     /* Copy the eigenvalues/vectors back to ur, vr */
     for (i = 0; i < featlen; ++i) {
@@ -272,6 +285,9 @@ lda_compute(float32 **sw, float32 **sb,
     
     for (i = 0; i < featlen; ++i) {
         printf("Eigenvalue %d: %f\n", i, eigen[i][0]);
+    }
+    printf("\n");
+    for (i = 0; i < featlen; ++i) {
         printf("Eigenvector %d: \n", i);
         for (j = 0; j < featlen; ++j) {
             printf("%f ", eigen[i][j+1]);
@@ -279,9 +295,13 @@ lda_compute(float32 **sw, float32 **sb,
         printf("\n");
     }
 
-    ckd_free_2d((void **)eigen);
+    ckd_free(tmp);
+    ckd_free(eigen);
+
     if (out_u) *out_u = ur;
+    else ckd_free(ur);
     if (out_v) *out_v = vr;
+    else ckd_free_2d((void **)vr);
 }
 
 int
@@ -306,7 +326,7 @@ main(int argc, char *argv[])
     calc_scatter(&sw, &sb, &featlen);
 
     /* Do eigen decomposition to find LDA matrix. */
-    lda_compute(sw, sb, NULL, &lda, featlen);
+    lda_compute_inv(sw, sb, NULL, &lda, featlen);
 
     /* Write out the matrix. */
     if (cmd_ln_access("-outfn") != NULL) {
