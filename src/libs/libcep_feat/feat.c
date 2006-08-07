@@ -414,7 +414,7 @@ feat_compute(vector_t *mfcc,
     if (fid <= FEAT_ID_MAX) {
 	feat = feat_conf[fid].compute(mfcc, inout_n_frame);
 	if (lda)
-	    lda_transform(feat, *inout_n_frame, lda, lda_dim);
+	    lda_transform(feat, *inout_n_frame, lda, lda_cols, lda_dim);
 	return feat;
     }
     else if (fid == FEAT_ID_NONE) {

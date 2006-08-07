@@ -50,6 +50,6 @@ float32 ***lda_read(const char *ldafile, uint32 *out_n_lda,
 		    uint32 *out_m, uint32 *out_n);
 
 void lda_transform(float32 ***inout_feat, uint32 nfr,
-		   float32 ***lda, uint32 dim);
+		   float32 ***lda, uint32 veclen, uint32 dim);
 
 #endif /* LDA_H */

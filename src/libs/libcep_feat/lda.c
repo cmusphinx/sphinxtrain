@@ -108,25 +108,23 @@ lda_read(const char *ldafile, uint32 *out_n_lda, uint32 *out_m, uint32 *out_n)
 
 void
 lda_transform(float32 ***inout_feat, uint32 nfr,
-              float32 ***lda, uint32 dim)
+              float32 ***lda, uint32 veclen, uint32 dim)
 {
     float32 *tmp;
     uint32 i, j, k;
-    const uint32 *veclen;
 
-    veclen = feat_vecsize();
-    tmp = ckd_calloc(veclen[0], sizeof(float32));
+    tmp = ckd_calloc(veclen, sizeof(float32));
     for (i = 0; i < nfr; ++i) {
         /* Do the matrix multiplication inline here since fcb->lda
          * is transposed (eigenvectors in rows not columns). */
         /* FIXME: In the future we ought to use the BLAS. */
-        memset(tmp, 0, sizeof(float32)*veclen[0]);
+        memset(tmp, 0, sizeof(float32)*veclen);
         for (j = 0; j < dim; ++j) {
-            for (k = 0; k < veclen[0]; ++k) {
+            for (k = 0; k < veclen; ++k) {
                 tmp[j] += inout_feat[i][0][k] * lda[0][j][k];
             }
         }
-        memcpy(inout_feat[i][0], tmp, veclen[0] * sizeof(float32));
+        memcpy(inout_feat[i][0], tmp, veclen * sizeof(float32));
     }
     ckd_free(tmp);
 }
