@@ -2,6 +2,7 @@ test:
 	perl ./scripts/test_cp_parm.pl
 	perl ./scripts/test_dict2tri.pl
 	perl ./scripts/test_init_gau.pl
+	perl ./scripts/test_lda_train.pl
 	perl ./scripts/test_printp.pl
 	perl ./scripts/test_prunetree.pl
 	perl ./scripts/test_norm.pl
