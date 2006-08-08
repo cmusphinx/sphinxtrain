@@ -11,6 +11,7 @@ init_gau - Partially tested. -ceplen ? -feat? (not if initial mean is loaded in)
 init_mixw
 kdtree
 kmeans_init
+lda_train - Partially tested. -ceplen, -feat, -cmn, etc.
 make_quests
 map_adapt
 mixw_interp
