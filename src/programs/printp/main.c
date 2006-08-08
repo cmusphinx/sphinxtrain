@@ -57,6 +57,7 @@
 #include <s3/s3mixw_io.h>
 #include <s3/s3lamb_io.h>
 #include <s3/s3regmat_io.h>
+#include <s3/s3io.h>
 
 #include <sys_compat/file.h>
 
@@ -107,6 +108,37 @@ print_lambda(const char *fn, float32 min, float32 max)
 	    printf("%u: %0.4f\n", i, lmb[i]);
     }
 
+    return S3_SUCCESS;
+}
+
+int
+print_lda(const char *fn)
+{
+    FILE *fh;
+    float32 ***lda;
+    uint32 n_lda, m, n;
+    uint32 i, j, k, swap, chksum;
+
+    E_INFO("Reading %s\n",  fn);
+    
+    if ((fh = s3open(fn, "rb", &swap)) == NULL)
+	return S3_ERROR;
+    if (s3read_3d((void ****)&lda, sizeof(float32),
+		  &n_lda, &m, &n, fh, swap, &chksum) < 0)
+	return S3_ERROR;
+
+    printf("lda %u %u %u\n", n_lda, m, n);
+
+    for (i = 0; i < n_lda; i++) {
+	printf("lda %u\n", i);
+	for (j = 0; j < m; j++) {
+	    for (k = 0; k < n; k++) {
+		printf("%e ", lda[i][j][k]);
+	    }
+	    printf("\n");
+	}
+	printf("\n");
+    }
     return S3_SUCCESS;
 }
 
@@ -499,9 +531,14 @@ print()
 			    *(float32 *)cmd_ln_access("-lambdamax")) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
+
+    fn = (const char *)cmd_ln_access("-ldafn");
+    if (fn && (print_lda(fn) != S3_SUCCESS)) {
+	ret_val = S3_ERROR;
+    }
     
     if(ret_val != S3_SUCCESS){
-      E_FATAL("Please specify input by either -tmatfn, -mixwfn, -gaufn, -gaucntfn, -regmatcntfn or -lambdafn\n");
+      E_FATAL("Please specify input by either -tmatfn, -mixwfn, -gaufn, -gaucntfn, -regmatcntfn, -ldafn or -lambdafn\n");
     }
     return ret_val;
 }

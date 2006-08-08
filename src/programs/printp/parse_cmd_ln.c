@@ -102,6 +102,9 @@ printp -gaucntfn gaucnt: \n\
 Print the mixture weights: \n\
 printp -mixw mixw\n\
 \n\
+Print the LDA transformation matrix(es): \n\
+printp -ldafn lda\n\
+\n\
 Print the interpolation weight: \n\
 printp -lambdafn lambda ";
 
@@ -165,6 +168,12 @@ printp -lambdafn lambda ";
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
 	  "MLLR regression matrix count file"},
+
+	{ "-ldafn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "An LDA transformation file name"},
 
 	{ "-moddeffn",
 	  CMD_LN_STRING,
