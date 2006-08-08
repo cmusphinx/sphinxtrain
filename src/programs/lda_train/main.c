@@ -170,23 +170,22 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
     }
     printf("\n");
 
-    /* Sw = sum_i p_i scatter_i */
     for (i = 0; i < n_class; ++i) {
-#if 0 /* Xiang Li's code doesn't normalize the covariances... */
-        /* Normalize scatter_i:
-           (class_n_frame[i]/n_frame) * (1/class_n_frame[i]) = 1/n_frame */
-        scalarmultiply(scatter[i], 1.0/n_frame, featlen, featlen);
-#endif
+        /* We are "supposed" to normalize scatter_i here:
+         * (class_n_frame[i]/n_frame) * (1/class_n_frame[i]) = 1/n_frame
+         * scalarmultiply(scatter[i], 1.0/n_frame, featlen, featlen);
+         * however it seems to work slightly better to scale up the
+         * individual classes in Sb instead as noted below. */
         matrixadd(sw, scatter[i], featlen, featlen);
     }
 
-    /* Sb = sum_i (mean_i - globalmean) (mean_i - globalmean)^T */
     for (i = 0; i < n_class; ++i) {
         vector_sub(mean[i], globalmean, featlen);
         outerproduct(op, mean[i], mean[i], featlen);
-#if 1 /* Xiang Li's code puts a normalization here.  Does it make a difference? */
+        /* This is slightly different than the "classic" LDA formula,
+         * in that we weight the between-class variances according to
+         * their counts.  It seems to work better. */
         scalarmultiply(op, class_n_frame[i], featlen, featlen);
-#endif
         matrixadd(sb, op, featlen, featlen);
     }
     ckd_free_3d((void ***)scatter);
