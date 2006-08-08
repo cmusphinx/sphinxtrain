@@ -113,6 +113,7 @@ cp_mixw(uint32 o,
 
     printf("mixw %u <= %u\n", o, i);
 
+
     for (j = 0; j < n_stream; j++) {
 	for (k = 0; k < n_density; k++) {
 	    omixw[o][j][k] = imixw[i][j][k];
@@ -295,19 +296,44 @@ wr_gau_full(const char *fn)
 static int
 rd_parm()
 {
+    if(cmd_ln_access("-imixwfn")   ==NULL&&
+       cmd_ln_access("-igaufn")    ==NULL&&
+       cmd_ln_access("-ifullgaufn")==NULL&&
+       cmd_ln_access("-itmatfn")   ==NULL
+       ) {
+      E_INFO("Please specify one of the following: -imixwfn, -igaufn, -ifullgaufn, -itmatfn\n");
+      return S3_ERROR;
+    }
+
     if (cmd_ln_access("-imixwfn")) {
+        if(cmd_ln_access("-nmixwout")==NULL){
+	    E_INFO("Please specify -nmixwout\n");
+	    return S3_ERROR;
+        }
 	rd_mixw((const char *)cmd_ln_access("-imixwfn"),
 		*(uint32 *)cmd_ln_access("-nmixwout"));
     }
     if (cmd_ln_access("-igaufn")) {
+        if(cmd_ln_access("-ncbout")==NULL){
+	    E_INFO("Please specify -ncbout\n");
+	    return S3_ERROR;
+        }
 	rd_gau((const char *)cmd_ln_access("-igaufn"),
 		*(uint32 *)cmd_ln_access("-ncbout"));
     }
     if (cmd_ln_access("-ifullgaufn")) {
+        if(cmd_ln_access("-ncbout")==NULL){
+	    E_INFO("Please specify -ncbout\n");
+	    return S3_ERROR;
+        }
 	rd_gau_full((const char *)cmd_ln_access("-ifullgaufn"),
 		*(uint32 *)cmd_ln_access("-ncbout"));
     }
     if (cmd_ln_access("-itmatfn")) {
+        if(cmd_ln_access("-ntmatout")==NULL){
+	    E_INFO("Please specify -ntmatout\n");
+	    return S3_ERROR;
+        }
 	rd_tmat((const char *)cmd_ln_access("-itmatfn"),
 		*(uint32 *)cmd_ln_access("-ntmatout"));
     }
@@ -319,13 +345,59 @@ cp_parm()
 {
     FILE *fp;
     uint32 i, o;
+    uint32 max=0;
 
+    /* Open the file first to see whether command-line parameters
+       match
+     */
+    
+    if(cmd_ln_access("-cpopsfn")==NULL) {
+        E_INFO("Please specify -cpopsfn\n");
+	return S3_ERROR;
+    }
     fp = fopen((char *)cmd_ln_access("-cpopsfn"), "r");
     if (fp == NULL) {
-	E_ERROR_SYSTEM("Unable to open cpops file");
+	E_INFO("Unable to open cpops file\n");
 
 	return S3_ERROR;
     }
+    while (fscanf(fp, "%u %u", &o, &i) == 2) {
+        if(o+1>max) {
+            max=o+1;
+	}
+    }
+
+    if (omixw) {
+        if(max != n_mixw_o) {
+	    E_INFO("Mismatch between cp operation file (max out %d) and -nmixout (%d)\n",max, n_mixw_o);
+	    return S3_ERROR;
+	}
+    }
+
+    if (ogau) {
+        if(max != n_cb_o) {
+	    E_INFO("Mismatch between cp operation file (max out %d) and -ncbout (%d)\n",max, n_cb_o);
+	    return S3_ERROR;
+	}
+    }
+
+    if (ogau_full) {
+        if(max != n_cb_o) {
+	    E_INFO("Mismatch between cp operation file (max out %d) and -ncbout (%d)\n",max, n_cb_o);
+	    return S3_ERROR;
+	}
+    }
+	
+    if (otmat) {
+        if(max != n_tmat_o) {
+	    E_INFO("Mismatch between cp operation file (max out %d) and -ntmatout (%d)\n",max, n_tmat_o);
+	    return S3_ERROR;
+	}
+    }
+    
+    fclose(fp);
+    
+    fp = fopen((char *)cmd_ln_access("-cpopsfn"), "r");
     while (fscanf(fp, "%u %u", &o, &i) == 2) {
 	if (omixw) {
 	    cp_mixw(o, i);
@@ -349,15 +421,31 @@ static int
 wr_parm()
 {
     if (omixw) {
+        if(cmd_ln_access("-omixwfn") == NULL) {
+	    E_INFO("Please specify -omixwfn\n");
+	    return S3_ERROR;
+        }
 	wr_mixw((const char *)cmd_ln_access("-omixwfn"));
     }
     if (ogau) {
+        if(cmd_ln_access("-ogaufn") == NULL) {
+	    E_INFO("Please specify -ogaufn\n");
+	    return S3_ERROR;
+	}
 	wr_gau((const char *)cmd_ln_access("-ogaufn"));
     }
     if (ogau_full) {
+        if(cmd_ln_access("-ofullgaufn") == NULL) {
+	    E_INFO("Please specify -ofullgaufn\n");
+	    return S3_ERROR;
+	}
 	wr_gau_full((const char *)cmd_ln_access("-ofullgaufn"));
     }
     if (otmat) {
+        if(cmd_ln_access("-otmatfn") == NULL) {
+	    E_INFO("Please specify -otmatfn\n");
+	    return S3_ERROR;
+	}
 	wr_tmat((const char *)cmd_ln_access("-otmatfn"));
     }
     return S3_SUCCESS;
@@ -377,9 +465,15 @@ main(int argc, char *argv[])
 	E_FATAL("You need to set a feature extraction config using -feat\n");
     }
 
-    rd_parm();
-    cp_parm();
-    wr_parm();
+    if(rd_parm()==S3_ERROR) {
+	E_FATAL("Problem in reading input parameters.\n");
+    }
+    if(cp_parm()==S3_ERROR) {
+	E_FATAL("Problem in copying parameters.\n");
+    }
+    if(wr_parm()==S3_ERROR) {
+	E_FATAL("Problem in writing output parameters.\n");
+    }
 
     return 0;
 }
