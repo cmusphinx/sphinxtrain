@@ -41,10 +41,10 @@ foreach my $i (@params)
 	      $exec_resdir,"printp LDA for $i utterances");
     if($i==100){
 	compare_these_two($lda_out,$lda_match,$exec_resdir,
-			  "LDA training for 100 utterance. Check duplicates with printp");
+			  "LDA training for 100 utterance. Check duplicates with printp",0.002,1);
     }
     compare_these_two($lda_out,$matchfn,$exec_resdir,
-		      "LDA training for $i utterances");
+		      "LDA training for $i utterances", 0.002, 1);
     copy("./lda.mat","./lda_train/lda.mat.$i");
 }
 

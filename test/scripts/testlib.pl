@@ -70,12 +70,12 @@ sub test_this
 
 sub compare_these_two
 {
-  my ($fn1,$fn2,,$exec,${testname},$tolerance)=@_;
+  my ($fn1,$fn2,$exec,${testname},$tolerance,$absval)=@_;
 
   if(! defined $tolerance){
     $tolerance = 0.002;
   }
-  
+
   my $comparison = 0;
 
   my $line1 = "";
@@ -103,11 +103,18 @@ sub compare_these_two
 	    $comparison = 0;
 	    last;
 	  }
-	} elsif (abs($field1[$i] - $field2[$i]) > $tolerance) {
-	  # If the tokens are both numbers, check if they match within
-	  # a tolerance
-	  $comparison = 0;
-	  last;
+	} else {
+	  if ($absval) {
+	    # Only consider the absolute values if $absval is true
+	    $field1[$i] = abs($field1[$i]);
+	    $field2[$i] = abs($field2[$i]);
+	  }
+	  if (abs($field1[$i] - $field2[$i]) > $tolerance) {
+	    # If the tokens are both numbers, check if they match within
+	    # a tolerance
+	    $comparison = 0;
+	    last;
+	  }
 	}
       }
       # If there was a mismatch, we can skip to the end of the loop
@@ -124,7 +131,7 @@ sub compare_these_two
   if($comparison){
     printf("Test ${exec} ${testname} PASSED (comparing $fn1 and $fn2)\n");
   }else{
-    printf("Test ${exec} ${testname} FAILED (comparing $fn1 and $fn2), signal $?, msg $!\n");
+    printf("Test ${exec} ${testname} FAILED (comparing $fn1 and $fn2)\n");
   }
 }
 1;
