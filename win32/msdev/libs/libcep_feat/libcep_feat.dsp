@@ -121,6 +121,10 @@ SOURCE=..\..\..\..\src\libs\libcep_feat\feat.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\src\libs\libcep_feat\lda.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\src\libs\libcep_feat\live_norm.c
 # End Source File
 # Begin Source File
@@ -218,6 +222,10 @@ SOURCE=..\..\..\..\src\libs\libcep_feat\del_sil_seg.h
 # Begin Source File
 
 SOURCE=..\..\..\..\src\libs\libcep_feat\feat_config.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\libs\libcep_feat\lda.h
 # End Source File
 # Begin Source File
 
