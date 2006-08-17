@@ -111,21 +111,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "count_3phone"=.\win32\msdev\programs\count_3phone\count_3phone.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name libcommon
-    End Project Dependency
-}}}
-
-###############################################################################
-
 Project: "cp_parm"=.\win32\msdev\programs\cp_parm\cp_parm.dsp - Package Owner=<4>
 
 Package=<5>
@@ -634,42 +619,6 @@ Package=<4>
 ###############################################################################
 
 Project: "mk_mllr_class"=.\win32\msdev\programs\mk_mllr_class\mk_mllr_class.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcommon
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libclust
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libmllr
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libs2io
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libio
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "mk_model_def"=.\win32\msdev\programs\mk_model_def\mk_model_def.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

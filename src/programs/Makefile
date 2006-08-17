@@ -47,7 +47,6 @@ BUILD_DIRS = agg_seg \
 	bw \
 	cdcn_train \
 	cdcn_norm \
-	count_3phone \
 	cp_parm \
 	delint \
 	dict2tri \
@@ -63,7 +62,6 @@ BUILD_DIRS = agg_seg \
 	mk_flat \
 	mk_mdef_gen \
 	mk_mllr_class \
-	mk_model_def \
 	mk_s2cb \
 	mk_s2hmm \
 	mk_s2sendump \
