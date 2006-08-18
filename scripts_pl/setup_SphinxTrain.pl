@@ -162,14 +162,18 @@ opendir(DIR, "$scriptdir") or die "Can't open $scriptdir\n";
 closedir(DIR);
 
 push @dirlist, ".";
+opendir(DIR, "$scriptdir/lib") or die "Can't open $scriptdir\n";
+push @dirlist, map "lib/$_", grep {-d "$scriptdir/lib/$_" and !/^\./ } readdir DIR;
+closedir(DIR);
 
 # Copy the directory tree. We do so by creating each directory, and
 # then copying it to the correct location here. We also set the permissions.
 foreach my $directory (@dirlist) {
+    print "$directory\n";
   mkdir "scripts_pl/$directory" unless -d "scripts_pl/$directory";
   opendir(SUBDIR, "$scriptdir/$directory") or 
     die "Can't open subdir $directory\n";
-  my @subdirlist = grep /\.pl$/, readdir SUBDIR;
+  my @subdirlist = grep /\.p[lm]$/, readdir SUBDIR;
   closedir(SUBDIR);
   foreach my $executable (@subdirlist) {
     replace_file("$scriptdir/$directory/$executable",
