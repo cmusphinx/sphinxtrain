@@ -143,7 +143,7 @@ if ($ST::CFG_HMM_TYPE eq ".semi.") {
   HTML_Print ("\t" . FormatURL("$logfile_senone", "Log File") . " ");
   $return_value = RunTool('mk_s2sendump', $logfile_senone, 0,
 			  -moddeffn => $s3mdef,
-			  -mix2fn => $s3mixw,
+			  -mixwfn => $s3mixw,
 			  -mwfloor => 0.0000001,
 			  -feattype => 's2_4x',
 			  -sendumpfn => catfile($s2dir, 'sendump'));
