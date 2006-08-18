@@ -89,14 +89,14 @@ HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
 $| = 1;
 
 exit RunTool('kmeans_init', $logfile, 0,
-	     -gthobj => single,
+	     -gthobj => 'single',
 	     -stride => 1,
 	     -ntrial => 1,
 	     -minratio => 0.001,
 	     -ndensity => $ST::CFG_INITIAL_NUM_DENSITIES,
 	     -meanfn => "$outhmm/means",
 	     -varfn => "$outhmm/variances",
-	     -reest => no,
+	     -reest => 'no',
 	     -segdmpdirs => $segdmpdir,
 	     -segdmpfn => $dumpfile,
 	     -ceplen => $ST::CFG_VECTOR_LENGTH,
