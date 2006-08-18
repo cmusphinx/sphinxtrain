@@ -43,8 +43,14 @@ BUILD_DIRS = 00.verify 01.vector_quantize 02.ci_schmm 03.makeuntiedmdef \
 ALL_DIRS= $(BUILD_DIRS)
 FESTIVAL_SCRIPTS = make_dict.festival
 TMPSCRIPTS=setup_SphinxTrain.pl maketopology.pl make_feats.pl setup_tutorial.pl
+MODULES = lib/Queue/POSIX.pm			\
+	lib/Queue/Job.pm			\
+	lib/Queue/PBS.pm			\
+	lib/SphinxTrain/Config.pm		\
+	lib/SphinxTrain/Util.pm			\
+	lib/Queue.pm
 FILES = Makefile RunAll.pl $(TMPSCRIPTS) \
-        $(FESTIVAL_SCRIPTS)
+        $(FESTIVAL_SCRIPTS) $(MODULES)
 
 ALL = make_dict
 
