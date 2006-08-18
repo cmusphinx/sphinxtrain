@@ -227,7 +227,7 @@ sub RunTool {
   my $processed_counter = 0;
   my $printed = 0;
 
-  my $pid = open PIPE, "-|";
+  my $pid = open PIPE, "$cmd @_ 2>&1 |";
   die "Failed to fork: $!" unless defined($pid);
   if ($pid == 0) {
       open STDERR, ">&STDOUT";
