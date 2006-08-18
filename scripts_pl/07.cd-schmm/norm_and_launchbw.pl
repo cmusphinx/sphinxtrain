@@ -38,43 +38,36 @@
 ## Author: Ricky Houghton 
 ##
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
+use strict;
+use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
+use File::Path;
 
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 #*******************************************************************
 #*******************************************************************
 $| = 1; # Turn on autoflushing
 
-die "USAGE: $0 <ngau> <iter> <n_parts>" if ($#ARGV != $index+2);
+die "USAGE: $0 <ngau> <iter> <n_parts>" if (@ARGV != 3);
 
-$n_gau = $ARGV[$index];
-$iter = $ARGV[$index+1];
-$n_parts = $ARGV[$index+2];
+my ($n_gau, $iter, $n_parts) = @ARGV;
 
-$processname="07.cd-schmm";
+my $processname="07.cd-schmm";
 
-$logdir ="$CFG_LOG_DIR/$processname";
+my $logdir ="$ST::CFG_LOG_DIR/$processname";
 mkdir ($logdir,0777) unless -d $logdir;
-$log = "$logdir/${CFG_EXPTNAME}.$n_gau.$iter.norm.log";
-$scriptdir = "$CFG_SCRIPT_DIR/$processname";
+my $log = "$logdir/${ST::CFG_EXPTNAME}.$n_gau.$iter.norm.log";
 
 # Check the number and list of parts done. Compute avg likelihood per frame
-$num_done = 0; $tot_lkhd = 0; $tot_frms = 0;
-for ($i=1;$i<=$n_parts;$i++){
+my $num_done = 0; my $tot_lkhd = 0; my $tot_frms = 0;
+my @done;
+for (my $i=1;$i<=$n_parts;$i++){
     $done[$i] = 0;
-    $input_log = "${logdir}/${CFG_EXPTNAME}.${n_gau}.${iter}-${i}.bw.log";
+    my $input_log = "${logdir}/${ST::CFG_EXPTNAME}.${n_gau}.${iter}-${i}.bw.log";
     next if (! -s $input_log);
     open LOG,$input_log;
     while (<LOG>) {
@@ -83,7 +76,7 @@ for ($i=1;$i<=$n_parts;$i++){
             $done[$i] = 1;
         }
         if (/.*(overall>).*/){
-            ($jnk,$jnk,$nfrms,$jnk,$jnk,$lkhd) = split(/ /);
+            my (undef, undef, $nfrms, undef, undef, $lkhd) = split(/ /);
             $tot_lkhd = $tot_lkhd + $lkhd;
             $tot_frms = $tot_frms + $nfrms;
         }
@@ -95,7 +88,7 @@ if ($num_done != $n_parts) {
     open OUTPUT,">$log";
     print OUTPUT "Only $num_done parts of $n_parts of Baum Welch were successfully completed\n";
     print "Parts ";
-    for ($i=1;$i<=$n_parts;$i++) {
+    for (my $i=1;$i<=$n_parts;$i++) {
         print OUTPUT "$i " if ($done[$i] == 0);
     }
     print OUTPUT "failed to run!\n";
@@ -110,39 +103,40 @@ if ($tot_frms == 0) {
     exit (0);
 }
 
-$lkhd_per_frame = $tot_lkhd/$tot_frms;
+my $lkhd_per_frame = $tot_lkhd/$tot_frms;
 
-$previter = $iter - 1;
-$prev_norm = "${logdir}/${CFG_EXPTNAME}.${n_gau}.${previter}.norm.log";
+my $previter = $iter - 1;
+my $prev_norm = "${logdir}/${ST::CFG_EXPTNAME}.${n_gau}.${previter}.norm.log";
 if (! -s $prev_norm) {
     # Either iter == 1 or we are starting from an intermediate iter value
-    system ("perl \"$scriptdir/norm.pl\" $n_gau $iter");
+    RunScript('norm.pl', $n_gau, $iter);
     open OUTPUT, ">> $log";
     print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
     close OUTPUT;
-    &Launch_BW();
+    Launch_BW($n_gau, $iter);
     exit (0);
 }
 
 # Find the likelihood from the previous iteration
-open LOG,$prev_norm; $prevlkhd = -99999999;
+open LOG, $prev_norm; my $prevlkhd = -99999999;
 while (<LOG>) {
    if (/.*(Current Overall Likelihood Per Frame).*/){
-      ($jnk,$jnk,$jnk,$jnk,$jnk,$jnk,$prevlkhd) = split(/ /);
+      (undef,undef,undef,undef,undef,undef,$prevlkhd) = split(/ /);
    }
 }
 close LOG;
 
 if ($prevlkhd == -99999999) {
     # Some error with previous norm.log. Continue Baum Welch
-    system ("perl \"$scriptdir/norm.pl\" $n_gau $iter");
+    RunScript('norm.pl', $n_gau, $iter);
     open OUTPUT, ">> $log";
     print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
     close OUTPUT;
-    &Launch_BW();
+    Launch_BW($n_gau, $iter);
     exit (0);
 }
 
+my ($convg_ratio, $absprev);
 if ($prevlkhd == 0) {
     $convg_ratio = 0;
     $convg_ratio = 1 if ($lkhd_per_frame > 0);
@@ -153,65 +147,70 @@ else {
     $absprev = -$absprev if ($prevlkhd < 0);
     $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
-system ("perl \"$scriptdir/norm.pl\" $n_gau $iter ");
+RunScript('norm.pl', $n_gau, $iter);
 
 open OUTPUT, ">> $log";
 print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
-print OUTPUT "Convergence ratio = $convg_ratio\n";
+if (defined($convg_ratio)) {
+    print OUTPUT "Convergence ratio = $convg_ratio\n";
+}
 
 if ($convg_ratio < 0) {
     print OUTPUT "*WARNING*: NEGATIVE CONVERGENCE RATIO! CHECK YOUR DATA AND TRASNCRIPTS\n";
     print "*WARNING*: NEGATIVE CONVERGENCE RATIO AT ITER ${iter}! CHECK BW AND NORM LOGFILES\n";
 }
+close OUTPUT;
 
-if ($convg_ratio > $CFG_CONVERGENCE_RATIO && $iter >= $CFG_MAX_ITERATIONS) {
-    &Launch_SplitGaussian();
+if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO && $iter >= $ST::CFG_MAX_ITERATIONS) {
+    Launch_SplitGaussian($n_gau);
     open OUTPUT, ">> $log";
-    print OUTPUT "Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating training iteration\n";
+    print OUTPUT "Maximum desired iterations $ST::CFG_MAX_ITERATIONS performed. Terminating training iteration\n";
     print OUTPUT "******************************TRAINING COMPLETE*************************\n";
-    $date = localtime;
+    my $date = localtime;
     print OUTPUT "$date\n";
-    print "Maximum desired iterations $CFG_MAX_ITERATIONS performed. Terminating CD training\n";
+    print "Maximum desired iterations $ST::CFG_MAX_ITERATIONS performed. Terminating CD training\n";
     close OUTPUT;
     exit (0);
 }
 
-if ($convg_ratio > $CFG_CONVERGENCE_RATIO) {
-    &Launch_BW();
+if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO) {
+    Launch_BW($n_gau, $iter);
     exit (0);
 }
 else {
-    &Launch_SplitGaussian();
+    print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+    Launch_SplitGaussian($n_gau);
     open OUTPUT, ">> $log";
     print OUTPUT "Likelihoods have converged! Baum Welch training completed\!\n";
     print OUTPUT "******************************TRAINING COMPLETE*************************\n";
-    $date = localtime;
+    my $date = localtime;
     print OUTPUT "$date\n";
     close OUTPUT;
     exit (0);
 }
 
-sub Launch_BW () {
-    $newiter = $iter + 1;
-    system ("perl \"$scriptdir/slave_convg.pl\" $n_gau $newiter $n_parts");
+sub Launch_BW {
+    my ($n_gau, $iter) = @_;
+    my $newiter = $iter + 1;
+    print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+    print "        Convergence Ratio = $convg_ratio\n" if defined $convg_ratio;
+    RunScript('slave_convg.pl', $n_gau, $newiter, $n_parts);
 }
 
-sub Launch_SplitGaussian() {
-    print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
-    if ($n_gau < $CFG_FINAL_NUM_DENSITIES && $CFG_HMM_TYPE ne ".semi.") {
+sub Launch_SplitGaussian {
+    my $n_gau = shift;
+
+    if ($n_gau < $ST::CFG_FINAL_NUM_DENSITIES && $ST::CFG_HMM_TYPE ne ".semi.") {
 # Do stuff
-        if ($CFG_FINAL_NUM_DENSITIES >= 2 * $n_gau) {
+	my $n_split;
+        if ($ST::CFG_FINAL_NUM_DENSITIES >= 2 * $n_gau) {
 	    $n_split = $n_gau;
         } else {
-	    $n_split = $CFG_FINAL_NUM_DENSITIES - $n_gau;
+	    $n_split = $ST::CFG_FINAL_NUM_DENSITIES - $n_gau;
         }
-        system ("perl \"$scriptdir/split_gaussians.pl\" $n_gau $n_split");
+        RunScript('split_gaussians.pl', $n_gau, $n_split);
 
-# Launch_BW exits
-	$iter = 0;
-	$n_gau = $n_gau + $n_split;
-        &Launch_BW();
-      } elsif ($n_gau == $CFG_FINAL_NUM_DENSITIES || $CFG_HMM_TYPE eq ".semi.") {
-	system("perl \"$scriptdir/split_gaussians.pl\" $CFG_FINAL_NUM_DENSITIES 0");
-      }
+        Launch_BW($n_gau + $n_split, 0);
+	exit 0;
+    }
 }

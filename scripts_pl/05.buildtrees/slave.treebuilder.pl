@@ -37,22 +37,15 @@
 ## Author: Ricky Houghton
 ##
 
+use strict;
+use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
 use File::Path;
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
-
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 #*************************************************************************
 # This script runs the build_tree script for each state of each basephone
@@ -60,94 +53,50 @@ require "$CFG_SCRIPT_DIR/util/utils.pl";
 
 my ($phone,$state);
 my $return_value = 0;
-my $scriptdir = "$CFG_SCRIPT_DIR/05.buildtrees";
-my $logdir = "${CFG_LOG_DIR}/05.buildtrees";
-&ST_Log ("MODULE: 05 Build Trees\n");
-&ST_Log ("    Cleaning up old log files...\n");
+my $scriptdir = "$ST::CFG_SCRIPT_DIR/05.buildtrees";
+my $logdir = "${ST::CFG_LOG_DIR}/05.buildtrees";
+Log ("MODULE: 05 Build Trees\n");
+Log ("    Cleaning up old log files...\n");
 rmtree ("$logdir");
 mkdir ($logdir,0777) unless -d $logdir;
 
 $| = 1; # Turn on autoflushing
-if (system("perl $scriptdir/make_questions.pl -cfg \"$cfg_file\"")) {
+if (RunScript('make_questions.pl')) {
   $return_value = 1;
   exit ($return_value);
 }
 
-&ST_Log ("    Tree building\n");
+Log ("    Tree building\n");
 
-my $mdef_file       = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
-my $mixture_wt_file = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied/mixture_weights";
-my $tree_base_dir   = "${CFG_BASE_DIR}/trees";
-my $unprunedtreedir = "$tree_base_dir/${CFG_EXPTNAME}.unpruned";
+my $mdef_file       = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef";
+my $mixture_wt_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied/mixture_weights";
+my $tree_base_dir   = "${ST::CFG_BASE_DIR}/trees";
+my $unprunedtreedir = "$tree_base_dir/${ST::CFG_EXPTNAME}.unpruned";
 mkdir ($tree_base_dir,0777) unless -d $tree_base_dir;
 mkdir ($unprunedtreedir,0777) unless -d $unprunedtreedir;
 
 # For every phone submit each possible state
-&ST_Log ("\tProcessing each phone with each state\n");
-open INPUT,"${CFG_RAWPHONEFILE}";
+Log ("\tProcessing each phone with each state\n");
+open INPUT,"${ST::CFG_RAWPHONEFILE}";
+my @jobs;
 foreach $phone (<INPUT>) {
     chomp $phone;
     if (($phone =~ m/^(\+).*(\+)$/) || ($phone =~ m/^SIL$/)) {
-	&ST_Log ("        Skipping $phone\n");
+	Log ("        Skipping $phone\n");
 	next;
     }
 
-    if ($MC)   # do multi-machine 
-    {
-        $job_command = "\"$scriptdir/buildtree.pl\" -cfg \"$cfg_file\" $phone";
-	$job_name = "no_job";
-	while ($job_name eq "no_job")
-        {
-	    open rrr,"scripts_pl/mc/mc_run.pl $job_command |";
-	    while ($line = <rrr>)
-	    {
-		chomp($line);
-#	    print "mc_run: ".$line."\n";
-		@fff=split(/\s+/,$line);
-		if ($fff[0] eq "MC")
-		{
-		    $job_name = $fff[1];
-		    last;
-		}
-#            print "waiting for mc_run to say something\n";
-		sleep 3;
-	    }
-	    close rrr;
-	    if ($job_name eq "no_job")
-	    {
-		print "waiting for machine for job $phone\n";
-		sleep 30;
-	    }
-	}
-	print "running job $phone on $job_name \n";
-	$phones{$phone} = $job_name;
-    }
-    else
-    {
-      if (system("perl \"$scriptdir/buildtree.pl\"  -cfg \"$cfg_file\" \"$phone\"")) {
-	$return_value = 1;
-	last;
-      }
-    }
-    close INPUT;
+    push @jobs, [$phone => LaunchScript("tree.$phone", ['buildtree.pl', $phone])];
 }
+close INPUT;
 
-if ($MC)       # wait for all the sub tasks to finish
-{
-    $jobs_still_todo = 1;
-    while ($jobs_still_todo)
-    {
-	$jobs_still_todo = 0;
-	for my $k (keys %phones)
-        {
-	    if ( -f $phones{$k} )
-	    {
-		print "waiting for $k on ".$phones{$k}."\n";
-		$jobs_still_todo = 1;
-	    }
-	}
-	sleep 30;
-    }
+# Wait for all the phones to finish
+# It doesn't really matter what order we do this in
+foreach (@jobs) {
+    my ($phone,$job) = @$_;
+    WaitForScript($job);
+    print "$phone ";
 }
+print "\n";
 
 exit ($return_value);

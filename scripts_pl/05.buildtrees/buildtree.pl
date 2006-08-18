@@ -39,48 +39,43 @@
 ## Pulled this out of slace.treebuilder to allow this to run on
 ## multiple machines
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
+use strict;
+use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
+use File::Path;
 
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 #*************************************************************************
 # This script runs the build_tree script for each state of each basephone
 #*************************************************************************
 
-die "USAGE: $0 <phone> " if ($#ARGV != $index);
+die "USAGE: $0 <phone> " if @ARGV != 1;
 
-$phone = $ARGV[$index];
+my $phone = shift;
 
-my $scriptdir = "{$CFG_SCRIPT_DIR}/05.buildtrees";
-my $logdir = "${CFG_LOG_DIR}/05.buildtrees";
+my $scriptdir = "{$ST::CFG_SCRIPT_DIR}/05.buildtrees";
+my $logdir = "${ST::CFG_LOG_DIR}/05.buildtrees";
 mkdir ($logdir,0777) unless -d $logdir;
 
 $| = 1; # Turn on autoflushing
 
-my $mdef_file       = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
-my $mixture_wt_file = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied/mixture_weights";
-my $means_file = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied/means";
-my $variances_file = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied/variances";
-my $tree_base_dir   = "${CFG_BASE_DIR}/trees";
-my $unprunedtreedir = "$tree_base_dir/${CFG_EXPTNAME}.unpruned";
+my $mdef_file       = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef";
+my $mixture_wt_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied/mixture_weights";
+my $means_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied/means";
+my $variances_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied/variances";
+my $tree_base_dir   = "${ST::CFG_BASE_DIR}/trees";
+my $unprunedtreedir = "$tree_base_dir/${ST::CFG_EXPTNAME}.unpruned";
 mkdir ($tree_base_dir,0777) unless -d $tree_base_dir;
 mkdir ($unprunedtreedir,0777) unless -d $unprunedtreedir;
 
-$state = 0;
+my $state = 0;
 my $return_value = 0;
-while ( $state < $CFG_STATESPERHMM) {
-    if ($return_value = &BuildTree ($phone,$state)) {
+while ( $state < $ST::CFG_STATESPERHMM) {
+    if ($return_value = BuildTree ($phone,$state)) {
         last;
     }
     $state++;
@@ -90,21 +85,15 @@ exit $return_value;
 
 
 # SubRoutine created from build_tree.pl
-sub BuildTree ()
+sub BuildTree
 {
     my $phn = shift;
     my $stt = shift;
 
-    my $logfile = "$logdir/${CFG_EXPTNAME}.buildtree.${phn}.${stt}.log";
+    my $logfile = "$logdir/${ST::CFG_EXPTNAME}.buildtree.${phn}.${stt}.log";
 
-    &ST_Log ("\t\t${phn} ${stt} ");
-    &ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . " ");
-
-    #$mach = `~/51..tools/machine_type.csh`;
-    #$BUILDTREE = "/net/alf19/usr2/eht/s3/bin.$mach/bldtree";
-    #$BUILDTREE = "~rsingh/09..sphinx3code/trees_cont/bin.$mach/bldtree";
-    
-    $BUILDTREE = "${CFG_BIN_DIR}/bldtree";
+    Log ("\t\t${phn} ${stt} ");
+    HTML_Print (FormatURL("$logfile", "Log File") . " ");
 
     # RAH 7.21.2000 - These were other possible values for these
     # variables, I'm not sure the circumstance that would dictate
@@ -115,25 +104,39 @@ sub BuildTree ()
     #	-ssplitthr 8e-4 \
     #	-csplitthr 1e-5 \
 
-    if ($CFG_STATESPERHMM == 5) {
-      $stwt = "1.0 0.3 0.1 0.01 0.001";
-    } elsif  ($CFG_STATESPERHMM == 4) {
-      $stwt = "1.0 0.1 0.0 0.0";
-    } elsif  ($CFG_STATESPERHMM == 3) {
-      $stwt = "1.0 0.05 0.0";
-    } elsif  ($CFG_STATESPERHMM == 2) {
-      $stwt = "1.0 0.025";
-    } elsif  ($CFG_STATESPERHMM == 1) {
-      $stwt = "1";
+    my @stwt;
+    if ($ST::CFG_STATESPERHMM == 5) {
+      @stwt = qw(1.0 0.3 0.1 0.01 0.001);
+    } elsif  ($ST::CFG_STATESPERHMM == 4) {
+      @stwt = qw(1.0 0.1 0.0 0.0);
+    } elsif  ($ST::CFG_STATESPERHMM == 3) {
+      @stwt = qw(1.0 0.05 0.0);
+    } elsif  ($ST::CFG_STATESPERHMM == 2) {
+      @stwt = qw(1.0 0.025);
+    } elsif  ($ST::CFG_STATESPERHMM == 1) {
+      @stwt = qw(1);
     }
 
-    if ($CFG_HMM_TYPE eq ".semi.") {
-      $gauflag = "";
-    } else {
-      $gauflag = "-meanfn \"$means_file\" -varfn \"$variances_file\"";
+    my @gauflag;
+    if ($ST::CFG_HMM_TYPE eq ".cont.") {
+	@gauflag = (-meanfn => $means_file,  -varfn => $variances_file);
     }
 
-    my $cmd = "\"$BUILDTREE\" ${gauflag} -treefn \"$unprunedtreedir/$phn-$stt.dtree\" -moddeffn \"$mdef_file\" -mixwfn \"$mixture_wt_file\" -ts2cbfn ${CFG_HMM_TYPE} -mwfloor 1e-30 -psetfn \"${CFG_QUESTION_SET}\" -phone \"$phn\" -state $stt -stwt $stwt -ssplitmin 1 -ssplitmax 5 -ssplitthr 0 -csplitmin 1 -csplitmax 500 -csplitthr 0";
-
-    return (RunTool($cmd, $logfile, 0));
+    return RunTool('bldtree', $logfile, 0,
+		   -treefn => "$unprunedtreedir/$phn-$stt.dtree",
+		   -moddeffn => "$mdef_file",
+		   -mixwfn => "$mixture_wt_file",
+		   -ts2cbfn => $ST::CFG_HMM_TYPE,
+		   -mwfloor => 1e-30,
+		   -psetfn => $ST::CFG_QUESTION_SET,
+		   -phone => $phn,
+		   -state => $stt,
+		   -stwt => @stwt,
+		   @gauflag,
+		   -ssplitmin => 1,
+		   -ssplitmax => 5,
+		   -ssplitthr => 0,
+		   -csplitmin => 1,
+		   -csplitmax => 500,
+		   -csplitthr => 0);
 }

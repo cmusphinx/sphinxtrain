@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ## ====================================================================
 ##
-## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
+## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights
 ## reserved.
 ##
 ## Redistribution and use in source and binary forms, with or without
@@ -9,111 +9,103 @@
 ## are met:
 ##
 ## 1. Redistributions of source code must retain the above copyright
-##    notice, this list of conditions and the following disclaimer. 
+##    notice, this list of conditions and the following disclaimer.
 ##
 ## 2. Redistributions in binary form must reproduce the above copyright
 ##    notice, this list of conditions and the following disclaimer in
 ##    the documentation and/or other materials provided with the
 ##    distribution.
 ##
-## This work was supported in part by funding from the Defense Advanced 
-## Research Projects Agency and the National Science Foundation of the 
+## This work was supported in part by funding from the Defense Advanced
+## Research Projects Agency and the National Science Foundation of the
 ## United States of America, and the CMU Sphinx Speech Consortium.
 ##
-## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
-## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 ## THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
 ## PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
 ## NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-## SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
-## LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-## DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
-## THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-## (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+## SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+## LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+## DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+## THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+## (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ## OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton 
+## Author: Ricky Houghton
+## Author: David Huggins-Daines
 ##
 
+use strict;
 use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
+use File::Path;
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
-
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
-
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 #************************************************************************
-# this script performs baum-welch training using s3 code for a 
+# this script performs baum-welch training using s3 code for a
 # continuous mdef file.
 # it needs as inputs an initial set of semicont models in s3 format
 # a mdef file and cepstra with transcription files.
 #************************************************************************
+
 $| = 1; # Turn on autoflushing
 
-die "USAGE: $0 <iter> <part> <npart>" if ($#ARGV != ($index + 2));
+die "USAGE: $0 <iter> <part> <npart>" if @ARGV != 3;
+my ($iter, $part, $npart) = @ARGV;
 
-$iter   = $ARGV[$index];
-$part   = $ARGV[$index+1];
-$npart  = $ARGV[$index+2];
+my $modelinitialname="${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied";
+my $modelname="$modelinitialname";  # same for both in the case
+my $mdefname="${ST::CFG_EXPTNAME}.untied.mdef";
+my $processname="04.cd_schmm_untied";
 
-$modelinitialname="${CFG_EXPTNAME}.cd_${CFG_DIRLABEL}_untied";
-$modelname="$modelinitialname";  # same for both in the case
-$mdefname="${CFG_EXPTNAME}.untied.mdef";
-$processname="04.cd_schmm_untied";
-
-$output_buffer_dir = "$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_${part}";
+my $output_buffer_dir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_${part}";
 mkdir ($output_buffer_dir,0777) unless -d $output_buffer_dir;
 
+my ($hmm_dir, $var2pass);
 if ($iter == 1) {
-    $hmm_dir  = "$CFG_BASE_DIR/model_parameters/$modelinitialname";
+    $hmm_dir  = "$ST::CFG_BASE_DIR/model_parameters/$modelinitialname";
     $var2pass	 = "no";
 } else {
-    $hmm_dir      = "$CFG_BASE_DIR/model_parameters/$modelname";
+    $hmm_dir      = "$ST::CFG_BASE_DIR/model_parameters/$modelname";
     $var2pass	  = "yes";
 }
 
 
-$moddeffn    = "$CFG_BASE_DIR/model_architecture/$mdefname";
-$statepdeffn = $CFG_HMM_TYPE; # indicates the type of HMMs
-$mixwfn  = "$hmm_dir/mixture_weights";
-$mwfloor = 1e-8;
-$tmatfn  = "$hmm_dir/transition_matrices";
-$meanfn  = "$hmm_dir/means";
-$varfn   = "$hmm_dir/variances";
-$minvar  = 1e-4;
+my $moddeffn    = "$ST::CFG_BASE_DIR/model_architecture/$mdefname";
+my $statepdeffn = $ST::CFG_HMM_TYPE; # indicates the type of HMMs
+my $mixwfn  = "$hmm_dir/mixture_weights";
+my $mwfloor = 1e-8;
+my $tmatfn  = "$hmm_dir/transition_matrices";
+my $meanfn  = "$hmm_dir/means";
+my $varfn   = "$hmm_dir/variances";
+my $minvar  = 1e-4;
 
 
 # aligned transcripts and the list of aligned files is obtained as a result
 # of (03.) forced alignment
-
-if ( $CFG_FORCEDALIGN eq "no" ) {
-    $listoffiles = $CFG_LISTOFFILES;
-    $transcriptfile = $CFG_TRANSCRIPTFILE;
+my ($listoffiles, $transcriptfile);
+if ( $ST::CFG_FORCEDALIGN eq "no" ) {
+    $listoffiles = $ST::CFG_LISTOFFILES;
+    $transcriptfile = $ST::CFG_TRANSCRIPTFILE;
 } else {
-    $listoffiles   = "$CFG_BASE_DIR/generated/${CFG_EXPTNAME}.alignedfiles";
-    $transcriptfile  = "$CFG_BASE_DIR/generated/${CFG_EXPTNAME}.alignedtranscripts";
+    $listoffiles   = "$ST::CFG_BASE_DIR/generated/${ST::CFG_EXPTNAME}.alignedfiles";
+    $transcriptfile  = "$ST::CFG_BASE_DIR/generated/${ST::CFG_EXPTNAME}.alignedtranscripts";
 }
 
-$topn     = 4;
-$logdir   = "$CFG_LOG_DIR/$processname";
-$logfile  = "$logdir/${CFG_EXPTNAME}.$iter-$part.bw.log";
+my $topn     = 4;
+my $logdir   = "$ST::CFG_LOG_DIR/$processname";
+my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$part.bw.log";
 mkdir ($logdir,0777) unless -d $logdir;
 
-$ctl_counter = 0;
-open INPUT,"${CFG_LISTOFFILES}";
+my $ctl_counter = 0;
+open INPUT,"${ST::CFG_LISTOFFILES}";
 while (<INPUT>) {
     $ctl_counter++;
 }
@@ -121,48 +113,48 @@ close INPUT;
 $ctl_counter = int ($ctl_counter / $npart) if $npart;
 $ctl_counter = 1 unless ($ctl_counter);
 
-copy "$CFG_GIF_DIR/green-ball.gif", "$CFG_BASE_DIR/.04.bw.$iter.$part.state.gif";
-&ST_HTML_Print ("\t" . &ST_ImgSrc("$CFG_BASE_DIR/.04.bw.$iter.$part.state.gif") . " ");        
-&ST_Log ("    Baum welch starting for iteration: $iter ($part of $npart) ");
-&ST_HTML_Print (&ST_FormatURL("$logfile", "Log File") . "\n");
+copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.04.bw.$iter.$part.state.gif";
+HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.04.bw.$iter.$part.state.gif") . " ");
+Log ("    Baum welch starting for iteration: $iter ($part of $npart) ");
+HTML_Print (FormatURL("$logfile", "Log File") . "\n");
 
-$BW   = "$CFG_BIN_DIR/bw";
-my $cmd = "\"$BW\" " .
-  "-moddeffn \"$moddeffn\" " .
-  "-ts2cbfn \"$statepdeffn\" " .
-  "-mixwfn \"$mixwfn\" " .
-  "-mwfloor $mwfloor " .
-  "-tmatfn \"$tmatfn\" " .
-  "-meanfn \"$meanfn\" " .
-  "-varfn \"$varfn\" " .
-  "-ltsoov $CFG_LTSOOV " .
-  "-dictfn \"$CFG_DICTIONARY\" " .
-  "-fdictfn \"$CFG_FILLERDICT\" " .
-  "-ctlfn \"$CFG_LISTOFFILES\" " .
-  "-part $part " .
-  "-npart $npart " .
-  "-cepdir \"$CFG_FEATFILES_DIR\" " .
-  "-cepext $CFG_FEATFILE_EXTENSION " .
-  "-lsnfn \"$CFG_TRANSCRIPTFILE\" " .
-  "-accumdir \"$output_buffer_dir\" " .
-  "-varfloor $minvar " .
-  "-topn $topn " .
-  "-abeam 1e-90 " .
-  "-bbeam 1e-40 " .
-  "-agc $CFG_AGC " .
-  "-cmn $CFG_CMN " .
-  "-meanreest yes " .
-  "-varreest yes " .
-  "-2passvar $var2pass " .
-  "-tmatreest yes " .
-  "-feat $CFG_FEATURE " .
-  "-ceplen $CFG_VECTOR_LENGTH " .
-  "-timing no";
+my $return_value = RunTool
+    ('bw', $logfile, $ctl_counter,
+     -moddeffn => $moddeffn,
+     -ts2cbfn => $statepdeffn,
+     -mixwfn => $mixwfn,
+     -mwfloor => $mwfloor,
+     -tmatfn => $tmatfn,
+     -meanfn => $meanfn,
+     -varfn => $varfn,
+     -ltsoov => $ST::CFG_LTSOOV,
+     -dictfn => $ST::CFG_DICTIONARY,
+     -fdictfn => $ST::CFG_FILLERDICT,
+     -ctlfn => $ST::CFG_LISTOFFILES,
+     -part => $part,
+     -npart => $npart,
+     -cepdir => $ST::CFG_FEATFILES_DIR,
+     -cepext => $ST::CFG_FEATFILE_EXTENSION,
+     -lsnfn => $ST::CFG_TRANSCRIPTFILE,
+     -accumdir => $output_buffer_dir,
+     -varfloor => $minvar,
+     -topn => $topn,
+     -abeam => 1e-90,
+     -bbeam => 1e-40,
+     -agc => $ST::CFG_AGC,
+     -cmn => $ST::CFG_CMN,
+     -varnorm => $ST::CFG_VARNORM,
+     -meanreest => "yes",
+     -varreest => "yes",
+     '-2passvar' => $var2pass,
+     -tmatreest => "yes",
+     -feat => $ST::CFG_FEATURE,
+     -ceplen => $ST::CFG_VECTOR_LENGTH,
+     -timing => "no");
 
-$return_value = RunTool($cmd, $logfile, 1);
 
 if ($return_value) {
-  copy "$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.04.bw.$iter.$part.state.gif";
-  &ST_LogError ("\t$BW failed\n");
+  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.04.bw.$iter.$part.state.gif";
+  LogError ("\tbw failed\n");
 }
 exit ($return_value);

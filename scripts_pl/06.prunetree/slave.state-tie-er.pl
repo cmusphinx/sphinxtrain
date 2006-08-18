@@ -40,47 +40,41 @@
 #  Author: Alan W Black (awb@cs.cmu.edu)
 #
 
+use strict;
+use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
 use File::Path;
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
-
-my $scriptdir = "$CFG_SCRIPT_DIR/06.prunetree";
-
-my $logdir = "$CFG_LOG_DIR/06.prunetree";
+my $logdir = "$ST::CFG_LOG_DIR/06.prunetree";
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("MODULE: 06 Prune Trees\n");
-&ST_Log ("    Cleaning up old log files...\n");
+Log ("MODULE: 06 Prune Trees\n");
+Log ("    Cleaning up old log files...\n");
 rmtree ($logdir) unless ! -d $logdir;
 mkdir ($logdir,0777);
 
 # Build all triphone model
-my $logfile = "$logdir/$CFG_EXPTNAME.build.alltriphones.mdef.log";
-$MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
-$modarchdir          = "$CFG_BASE_DIR/model_architecture";
-$ALLTRIPHONESMDDEF = "$modarchdir/$CFG_EXPTNAME.alltriphones.mdef";
-$phonefile           = "$modarchdir/$CFG_EXPTNAME.phonelist";
+my $logfile = "$logdir/$ST::CFG_EXPTNAME.build.alltriphones.mdef.log";
+my $modarchdir          = "$ST::CFG_BASE_DIR/model_architecture";
+my $ALLTRIPHONESMDDEF = "$modarchdir/$ST::CFG_EXPTNAME.alltriphones.mdef";
+my $phonefile           = "$modarchdir/$ST::CFG_EXPTNAME.phonelist";
 
-&ST_HTML_Print ("\t\tmk_mdef_gen " . &ST_FormatURL("$logfile", "Log File") . " ");
+HTML_Print ("\t\tmk_mdef_gen " . FormatURL("$logfile", "Log File") . " ");
 
-my $cmd = "\"$MAKE_MDEF\" -phnlstfn \"$phonefile\" -oalltphnmdef \"$ALLTRIPHONESMDDEF\" -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -n_state_pm $CFG_STATESPERHMM";
+my $status = RunTool('mk_mdef_gen', $logfile, 0,
+		  -phnlstfn => $phonefile,
+		  -oalltphnmdef => $ALLTRIPHONESMDDEF,
+		  -dictfn => $ST::CFG_DICTIONARY,
+		  -fdictfn => $ST::CFG_FILLERDICT,
+		  -n_state_pm => $ST::CFG_STATESPERHMM);
+exit $status if $status;
 
-$status = RunTool($cmd, $logfile, 0);
-
-$status = (system("perl \"$scriptdir/prunetree.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES") or system("perl \"$scriptdir/tiestate.pl\" -cfg \"$cfg_file\" $CFG_N_TIED_STATES")) unless ($status);
-
-exit ($status != 0);
+$status = RunScript('prunetree.pl', $ST::CFG_N_TIED_STATES)
+    or RunScript('tiestate.pl', $ST::CFG_N_TIED_STATES);
+exit $status;
 

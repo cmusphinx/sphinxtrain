@@ -43,20 +43,12 @@
 ## Author: Ricky Houghton 
 ##
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
-
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
+use strict;
+use File::Basename;
+use File::Spec::Functions;
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 #***************************************************************************
 # Script to find the VQ codebooks for the training set.
@@ -70,32 +62,48 @@ require "$CFG_SCRIPT_DIR/util/utils.pl";
 my ($hmmdir,$outhmm,$segdmpdir,$dumpfile,$logfile);
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("   KMeans ");
+Log ("   KMeans ");
 
 # Definitions
-$hmmdir = "$CFG_BASE_DIR/model_parameters";
+$hmmdir = "$ST::CFG_BASE_DIR/model_parameters";
 mkdir ($hmmdir,0777) unless -d $hmmdir;
 
-$outhmm  = "$hmmdir/${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}_flatinitial";
+$outhmm  = "$hmmdir/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
 mkdir ($outhmm,0777) unless -d $outhmm;
 
-$segdmpdir = "$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_1";
+$segdmpdir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_1";
 mkdir ($segdmpdir,0777) unless -d $segdmpdir;
 
-$dumpfile = "$segdmpdir/${CFG_EXPTNAME}.dmp";
+$dumpfile = "$segdmpdir/${ST::CFG_EXPTNAME}.dmp";
 
-$logdir = "$CFG_LOG_DIR/01.vector_quantize";
+my $logdir = "$ST::CFG_LOG_DIR/01.vector_quantize";
 mkdir ($logdir,0777) unless -d $logdir;
-$logfile = "$logdir/${CFG_EXPTNAME}.kmeans.log";
+$logfile = "$logdir/${ST::CFG_EXPTNAME}.kmeans.log";
 
-&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
+HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
 
 #set VQ = ~rsingh/09..sphinx3code/trainer/bin.alpha/kmeans_init
-#$VQ = "$CFG_BIN_DIR/kmeans_init";
+#$VQ = "$ST::CFG_BIN_DIR/kmeans_init";
 # -grandvar   yes   
 
 $| = 1;
-my $cmd = "\"${CFG_BIN_DIR}/kmeans_init\" -gthobj single -stride 1 -ntrial 1 -minratio 0.001 -ndensity $CFG_INITIAL_NUM_DENSITIES -meanfn \"$outhmm/means\" -varfn \"$outhmm/variances\" -reest no -segdmpdirs \"$segdmpdir\" -segdmpfn \"$dumpfile\" -ceplen ${CFG_VECTOR_LENGTH} -feat ${CFG_FEATURE} -agc $CFG_AGC -cmn ${CFG_CMN}";
 
-exit (RunTool($cmd, $logfile, 0));
+exit RunTool('kmeans_init', $logfile, 0,
+	     -gthobj => single,
+	     -stride => 1,
+	     -ntrial => 1,
+	     -minratio => 0.001,
+	     -ndensity => $ST::CFG_INITIAL_NUM_DENSITIES,
+	     -meanfn => "$outhmm/means",
+	     -varfn => "$outhmm/variances",
+	     -reest => no,
+	     -segdmpdirs => $segdmpdir,
+	     -segdmpfn => $dumpfile,
+	     -ceplen => $ST::CFG_VECTOR_LENGTH,
+	     -feat => $ST::CFG_FEATURE,
+	     -agc => $ST::CFG_AGC,
+	     -cmn => $ST::CFG_CMN,
+	     -varnorm => $ST::CFG_VARNORM);
+
+
 

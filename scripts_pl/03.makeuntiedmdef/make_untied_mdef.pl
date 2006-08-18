@@ -38,20 +38,12 @@
 ##
 ##
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
-
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
+use strict;
+use File::Basename;
+use File::Spec::Functions;
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 #***************************************************************************
 # This script generates an mdef file for all the triphones occuring in the
@@ -70,29 +62,29 @@ require "$CFG_SCRIPT_DIR/util/utils.pl";
 #***************************************************************************
 use File::Path;
 
-$logdir = "$CFG_LOG_DIR/03.makeuntiedmdef";
-$logfile = "$logdir/${CFG_EXPTNAME}.make_alltriphonelist.log";
+my $logdir = "$ST::CFG_LOG_DIR/03.makeuntiedmdef";
+my $logfile = "$logdir/${ST::CFG_EXPTNAME}.make_alltriphonelist.log";
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("MODULE: 03 Make Untied mdef\n");
-&ST_Log ("    Cleaning up old log files...\n");
+Log ("MODULE: 03 Make Untied mdef\n");
+Log ("    Cleaning up old log files...\n");
 rmtree($logdir) unless ! -d $logdir;
 mkdir ($logdir,0777);
 
-$untiedmdef = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.untied.mdef";
+my $untiedmdef = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef";
 
 ## awb: replace with
 ##  mk_mdef_gen -phnlstfn $phonelist TRANSCRIPTFILE DICTIONARY -ountiedmdef ..  n_states .. 
 # -minocc       1         Min occurances of a triphone must occur for inclusion in mdef file
 
-&ST_HTML_Print ("\t\tmk_untied_mdef " . &ST_FormatURL("$logfile", "Log File") . " ");
+HTML_Print ("\t\tmk_untied_mdef " . FormatURL("$logfile", "Log File") . " ");
 
-$MAKE_MDEF = "$CFG_BIN_DIR/mk_mdef_gen";
-my $cmd = "\"$MAKE_MDEF\" -phnlstfn \"$CFG_RAWPHONEFILE\" -dictfn \"$CFG_DICTIONARY\" -fdictfn \"$CFG_FILLERDICT\" -lsnfn \"$CFG_TRANSCRIPTFILE\" -ountiedmdef \"$untiedmdef\" -n_state_pm  $CFG_STATESPERHMM -maxtriphones 10000";
-
-$return_value = RunTool($cmd, $logfile, 0);
-
-exit ($return_value);
-
-
+exit RunTool('mk_mdef_gen', $logfile, 0,
+	     -phnlstfn => $ST::CFG_RAWPHONEFILE,
+	     -dictfn => $ST::CFG_DICTIONARY,
+	     -fdictfn => $ST::CFG_FILLERDICT,
+	     -lsnfn => $ST::CFG_TRANSCRIPTFILE,
+	     -ountiedmdef => $untiedmdef,
+	     -n_state_pm => $ST::CFG_STATESPERHMM,
+	     -maxtriphones => 10000);
 

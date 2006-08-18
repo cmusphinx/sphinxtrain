@@ -67,8 +67,8 @@ if (defined $ctl) {
   require $cfg_file;
 
   system("bin/wave2feat -verbose yes -c \"$ctl\" -nist yes " .
-	 "-di wav -ei sph -do \"$CFG_FEATFILES_DIR\" " .
-	 "-eo \"$CFG_FEATFILE_EXTENSION\"");
+	 "-di wav -ei sph -do \"$ST::CFG_FEATFILES_DIR\" " .
+	 "-eo \"$ST::CFG_FEATFILE_EXTENSION\"");
 } else {
   system("bin/wave2feat @ARGV");
 }

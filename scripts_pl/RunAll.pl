@@ -37,39 +37,33 @@
 ## Author: Ricky Houghton
 ##
 
-# RAH Force passage of config file, or look for it in the current directory
-if (lc($ARGV[0]) eq '-cfg') {
-  $cfg_file = $ARGV[1];
-  die "-cfg specified, but unable to find file \"$ARGV[1]\"\n" unless (-s $cfg_file);
-  require $cfg_file;
-} else {
-  $cfg_file = "./etc/sphinx_train.cfg";
-  die "Must specify -cfg or create default file ./etc/sphinx_train.cfg\n" unless (-s  $cfg_file);
-  require ("./etc/sphinx_train.cfg");
-}
+use strict;
+use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
+use File::Path;
 
-require "$CFG_SCRIPT_DIR/util/utils.pl";
-&ST_LogWarning ("Using the configuration file \"$cfg_file\"\n");
+use lib catdir(dirname($0), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 # What pieces would you like to compute.
 
-@sample_steps = ("\"$CFG_SCRIPT_DIR/00.verify/verify_all.pl\" -cfg \"$cfg_file\"",
-		 "\"$CFG_SCRIPT_DIR/01.vector_quantize/slave.VQ.pl\" -cfg \"$cfg_file\"",
-		 "\"$CFG_SCRIPT_DIR/02.ci_schmm/slave_convg.pl\" -cfg \"$cfg_file\" 1",
-		 "\"$CFG_SCRIPT_DIR/03.makeuntiedmdef/make_untied_mdef.pl\" -cfg \"$cfg_file\"",
-		 "\"$CFG_SCRIPT_DIR/04.cd_schmm_untied/slave_convg.pl\" -cfg \"$cfg_file\" 1",
-		 "\"$CFG_SCRIPT_DIR/05.buildtrees/slave.treebuilder.pl\" -cfg \"$cfg_file\"",
-		 "\"$CFG_SCRIPT_DIR/06.prunetree/slave.state-tie-er.pl\" -cfg \"$cfg_file\"",
-		 "\"$CFG_SCRIPT_DIR/07.cd-schmm/slave_convg.pl\" -cfg \"$cfg_file\" 1",
-		 "\"$CFG_SCRIPT_DIR/08.deleted-interpolation/deleted_interpolation.pl\" -cfg \"$cfg_file\"",
-		 "\"$CFG_SCRIPT_DIR/09.make_s2_models/make_s2_models.pl\" -cfg \"$cfg_file\""
-		);
+my@sample_steps =
+    ("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
+     "$ST::CFG_SCRIPT_DIR/01.vector_quantize/slave.VQ.pl",
+     "$ST::CFG_SCRIPT_DIR/02.ci_schmm/slave_convg.pl",
+     "$ST::CFG_SCRIPT_DIR/03.makeuntiedmdef/make_untied_mdef.pl",
+     "$ST::CFG_SCRIPT_DIR/04.cd_schmm_untied/slave_convg.pl",
+     "$ST::CFG_SCRIPT_DIR/05.buildtrees/slave.treebuilder.pl",
+     "$ST::CFG_SCRIPT_DIR/06.prunetree/slave.state-tie-er.pl",
+     "$ST::CFG_SCRIPT_DIR/07.cd-schmm/slave_convg.pl",
+     "$ST::CFG_SCRIPT_DIR/08.deleted-interpolation/deleted_interpolation.pl",
+     "$ST::CFG_SCRIPT_DIR/09.make_s2_models/make_s2_models.pl",
+    );
 
 
-for $step (@sample_steps) {
-  $ret_value = system ("perl $step");
-  die "Something failed: ($step)\n" if $ret_value;
+foreach my $step (@sample_steps) {
+    my $ret_value = RunScript($step);
+    die "Something failed: ($step)\n" if $ret_value;
 }
-
-
-

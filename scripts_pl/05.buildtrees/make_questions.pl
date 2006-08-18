@@ -37,44 +37,41 @@
 ## Author: Ricky Houghton 
 ##
 
+use strict;
+use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
+use File::Path;
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
-
-my $mdeffn   = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.ci.mdef";
-my $hmm_dir  = "${CFG_BASE_DIR}/model_parameters/${CFG_EXPTNAME}.ci_${CFG_DIRLABEL}";
+my $mdeffn   = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.ci.mdef";
+my $hmm_dir  = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}";
 my $meanfn   = "$hmm_dir/means";
 my $varfn    = "$hmm_dir/variances";
 my $mixwfn   = "$hmm_dir/mixture_weights";
 my $tmp_str = time();
-#my $tempfn   = "${CFG_BASE_DIR}/tmp/questions.$tmp_str";
-#my $questfn  = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.tree_questions";
-my $questfn = ${CFG_QUESTION_SET};
+#my $tempfn   = "${ST::CFG_BASE_DIR}/tmp/questions.$tmp_str";
+#my $questfn  = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.tree_questions";
+my $questfn = ${ST::CFG_QUESTION_SET};
 
-my $logdir = "${CFG_LOG_DIR}/05.buildtrees";
+my $logdir = "${ST::CFG_LOG_DIR}/05.buildtrees";
 mkdir ($logdir,0777) unless -d $logdir;
-my $logfile = "$logdir/${CFG_EXPTNAME}.make_questions.log";
-
-#$MAKE_QUEST = "~rsingh/09..sphinx3code/trainer/bin.alpha/make_quests";
-my $MAKE_QUEST = "${CFG_BIN_DIR}/make_quests";
+my $logfile = "$logdir/${ST::CFG_EXPTNAME}.make_questions.log";
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("    Make Questions\n");
-&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
+Log ("    Make Questions\n");
+HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
 
-my $cmd = "\"$MAKE_QUEST\" -moddeffn \"$mdeffn\" -meanfn \"$meanfn\" -varfn \"$varfn\" -mixwfn \"$mixwfn\" -npermute 8 -niter 1 -qstperstt 20  -questfn \"$questfn\" -type ${CFG_HMM_TYPE}";
-
-exit (RunTool($cmd, $logfile, 0));
-
+exit RunTool('make_quests', $logfile, 0,
+	     -moddeffn => $mdeffn,
+	     -meanfn => $meanfn,
+	     -varfn => $varfn,
+	     -mixwfn => $mixwfn,
+	     -npermute => 8,
+	     -niter => 1,
+	     -qstperstt => 20,
+	     -questfn => $questfn,
+	     -type => $ST::CFG_HMM_TYPE);

@@ -37,68 +37,60 @@
 ## Author: Ricky Houghton
 ##
 
+use strict;
 use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
 use File::Path;
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
-
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
-
-# If we're creating continous models, we don't need this
-if ($CFG_HMM_TYPE eq ".cont.") {
-  &ST_Log ("MODULE: 08 deleted interpolation\n");
-  &ST_Log("    Step skipped for continuous models\n");
-  exit(0);
-}
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 # this script runs deleted interpolation on a bunch of semi-cont
 # hmm buffers. You need 2 or more buffers to run this!!
 
-my $nsenones = "$CFG_N_TIED_STATES";
+my $nsenones = "$ST::CFG_N_TIED_STATES";
 
-my $INTERP = "$CFG_BIN_DIR/delint";
 my $cilambda = 0.9;
 
 # up to 99 buffers
-my $cd_hmmdir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_"."$CFG_N_TIED_STATES";
-$bwaccumdir 	     = "";
-for (glob("${CFG_BASE_DIR}/bwaccumdir/${CFG_EXPTNAME}_buff_*")) {
-    $bwaccumdir .= " \"$_\"";
-}
+my $cd_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_"."$ST::CFG_N_TIED_STATES";
+my $bwaccumdir 	     = "${ST::CFG_BASE_DIR}/bwaccumdir";
+opendir(ACCUMDIR, $bwaccumdir)
+    or die "Could not open $bwaccumdir: $!";
+my @bwaccumdirs = map catdir($bwaccumdir, $_),
+    grep /^${ST::CFG_EXPTNAME}_buff_/, readdir(ACCUMDIR);
+closedir(ACCUMDIR);
 
-my $hmm_dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_"."$CFG_N_TIED_STATES"."_delinterp";
-mkdir ($hmm_dir,0777) unless -d $hmm_dir;
+my $hmm_dir = "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_"
+    . $ST::CFG_N_TIED_STATES . "_delinterp";
+mkdir ($hmm_dir,0777);
 
 copy "$cd_hmmdir/means", "$hmm_dir/means";
 copy "$cd_hmmdir/variances", "$hmm_dir/variances";
 copy "$cd_hmmdir/transition_matrices", "$hmm_dir/transition_matrices";
 my $mixwfn = "$hmm_dir/mixture_weights";
 
-my $moddeffn = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
+my $moddeffn = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.$ST::CFG_N_TIED_STATES.mdef";
 
-my $logdir = "$CFG_BASE_DIR/logdir/08.deleted_interpolation";
-my $logfile = "$logdir/$CFG_EXPTNAME.deletedintrep-${nsenones}.log";
+my $logdir = "$ST::CFG_BASE_DIR/logdir/08.deleted_interpolation";
+my $logfile = "$logdir/$ST::CFG_EXPTNAME.deletedintrep-${nsenones}.log";
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("MODULE: 08 deleted interpolation\n");
-&ST_Log ("    Cleaning up directories: logs...\n");
-rmtree ($logdir) unless ! -d $logdir;
-mkdir ($logdir,0777);
+Log ("MODULE: 08 deleted interpolation\n");
+Log ("    Cleaning up directories: logs...\n");
+rmtree($logdir, 0, 1);
+mkdir($logdir,0777);
 
-&ST_Log ("    Doing interpolation...\n");
-&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
+Log ("    Doing interpolation...\n");
+HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
 
-my $cmd = "\"$INTERP\" -accumdirs $bwaccumdir -moddeffn \"$moddeffn\" -mixwfn \"$mixwfn\" -cilambda $cilambda -feat $CFG_FEATURE -ceplen $CFG_VECTOR_LENGTH -maxiter 4000";
-
-exit (RunTool($cmd, $logfile, 0));
+exit RunTool('delint', $logfile, 0,
+	     -accumdirs => @bwaccumdirs,
+	     -moddeffn => $moddeffn,
+	     -mixwfn => $mixwfn,
+	     -cilambda => $cilambda,
+	     -feat => $ST::CFG_FEATURE,
+	     -ceplen => $ST::CFG_VECTOR_LENGTH,
+	     -maxiter => 4000);

@@ -43,28 +43,19 @@
 ## Author: Ricky Houghton 
 ##
 
-
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
-
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
+use strict;
+use File::Basename;
+use File::Spec::Functions;
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 my ($AGG_SEG,$len,$stride,$segdmpdir,$dumpfile,$logfile);
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("    AggSeg ");
+Log ("    AggSeg ");
 
-$AGG_SEG  = "$CFG_BIN_DIR/agg_seg";
+$AGG_SEG  = "$ST::CFG_BIN_DIR/agg_seg";
 
 #unlimit
 #limit core 0k
@@ -74,7 +65,7 @@ $AGG_SEG  = "$CFG_BIN_DIR/agg_seg";
 # 1000*10*100 = 1 mil
 
 #Instead of calling wc let's open the file. (Note on WIN32, wc may not exist)
-open CTL,"$CFG_LISTOFFILES";
+open CTL,"$ST::CFG_LISTOFFILES";
 $len =0;
 while (<CTL>) {
     $len++;
@@ -83,19 +74,27 @@ close CTL;
 
 $stride = 1 unless int($stride = $len/2500);
 
-$logdir = "$CFG_LOG_DIR/01.vector_quantize";
+my $logdir = "$ST::CFG_LOG_DIR/01.vector_quantize";
 mkdir ($logdir,0777) unless -d $logdir;
 
-$segdmpdir = "$CFG_BASE_DIR/bwaccumdir/${CFG_EXPTNAME}_buff_1";
+$segdmpdir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_1";
 mkdir ($segdmpdir,0777) unless -d $segdmpdir;
 
-$dumpfile = "$segdmpdir/${CFG_EXPTNAME}.dmp";
-$logfile = "$logdir/${CFG_EXPTNAME}.vq.agg_seg.log";
-&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile", "Log File") . " ");
+$dumpfile = "$segdmpdir/${ST::CFG_EXPTNAME}.dmp";
+$logfile = "$logdir/${ST::CFG_EXPTNAME}.vq.agg_seg.log";
+HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
 
 # run it here 
-#system ("$AGG_SEG -segdmpdirs $segdmpdir -segdmpfn $dumpfile  -segtype all -ctlfn $CFG_LISTOFFILES -cepdir $CFG_FEATFILES_DIR -cepext $CFG_FEATFILE_EXTENSION -ceplen $CFG_VECTOR_LENGTH -agc $CFG_AGC -cmn $CFG_CMN -feat $CFG_FEATURE -stride $stride");
-
-my $cmd = "\"$AGG_SEG\" -segdmpdirs \"$segdmpdir\" -segdmpfn \"$dumpfile\"  -segtype all -ctlfn \"$CFG_LISTOFFILES\" -cepdir \"$CFG_FEATFILES_DIR\" -cepext $CFG_FEATFILE_EXTENSION -ceplen $CFG_VECTOR_LENGTH -agc $CFG_AGC -cmn $CFG_CMN -feat $CFG_FEATURE -stride $stride";
-
-exit (RunTool($cmd, $logfile, 0));
+exit RunTool('agg_seg',, $logfile, 0,
+	     -segdmpdirs => $segdmpdir,
+	     -segdmpfn => $dumpfile,
+	     -segtype => 'all',
+	     -ctlfn => $ST::CFG_LISTOFFILES,
+	     -cepdir => $ST::CFG_FEATFILES_DIR,
+	     -cepext => $ST::CFG_FEATFILE_EXTENSION,
+	     -ceplen => $ST::CFG_VECTOR_LENGTH,
+	     -agc => $ST::CFG_AGC,
+	     -cmn => $ST::CFG_CMN,
+	     -varnorm => $ST::CFG_VARNORM,
+	     -feat => $ST::CFG_FEATURE,
+	     -stride => $stride);

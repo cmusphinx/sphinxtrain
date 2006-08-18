@@ -119,12 +119,12 @@ $ret_value = 0;
 # Get the current task name from the directory name
 
 # Setup the trainer
-$SphinxTrain_dir = $CFG_SPHINXTRAIN_DIR;
+$SphinxTrain_dir = $ST::CFG_SPHINXTRAIN_DIR;
 system("perl \"$SphinxTrain_dir/scripts_pl/setup_SphinxTrain.pl\" " .
        "$replace_option -sphinxtraindir \"$SphinxTrain_dir\" " .
        "-task $task_name");
 # The original base dir is the trainer's, initially.
-my $BASE_DIR = $CFG_BASE_DIR;
+my $BASE_DIR = $ST::CFG_BASE_DIR;
 
 # Setup the decoder
 if (defined $DEC_CFG_SPHINXDECODER_DIR) {
@@ -134,7 +134,7 @@ if (defined $DEC_CFG_SPHINXDECODER_DIR) {
 
  $langmodel = $DEC_CFG_LANGUAGEMODEL;
  $langmodel =~ s/.*[\\\/]([^\\\/]+)$/$1/;
- $langmodel =~ s/$CFG_DB_NAME/$task_name/;
+ $langmodel =~ s/$ST::CFG_DB_NAME/$task_name/;
 
  system("perl " .
         "\"$sphinx_decoder_dir/scripts/setup_$sphinx_decoder_version.pl\" " .
@@ -153,12 +153,12 @@ if (defined $DEC_CFG_SPHINXDECODER_DIR) {
 # Copy the etc/* files, changing the task name appropriately
 opendir(DIR, "$BASE_DIR/etc") 
   or die "Can't open directory \"$BASE_DIR/etc\"";
-my @etc_dir_list = grep /^$CFG_DB_NAME/i, readdir DIR;
+my @etc_dir_list = grep /^$ST::CFG_DB_NAME/i, readdir DIR;
 closedir(DIR);
 
 foreach my $old_task_etc_file (@etc_dir_list) {
   my $new_task_etc_file = $old_task_etc_file;
-  $new_task_etc_file =~ s/$CFG_DB_NAME/$task_name/gi;
+  $new_task_etc_file =~ s/$ST::CFG_DB_NAME/$task_name/gi;
   replace_file("$BASE_DIR/etc/$old_task_etc_file",
                "etc/$new_task_etc_file", 
                $replace_mode);

@@ -41,42 +41,39 @@
 #   Author: Alan W Black (awb@cs.cmu.edu)
 #
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
+use strict;
+use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
+use File::Path;
 
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
-die "USAGE: $0 <iteration number>" if (($#ARGV != ($index)));
+die "USAGE: $0 <number of tied states>" if @ARGV != 1;
 
-my $n_tied_states = $ARGV[$index];
+my $n_tied_states = shift;
 my $occurance_threshold = 0;
 
-my $mdef_file = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.alltriphones.mdef";
+my $mdef_file = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.alltriphones.mdef";
 
-my $unprunedtreedir = "$CFG_BASE_DIR/trees/$CFG_EXPTNAME.unpruned";
-my $prunedtreedir  = "$CFG_BASE_DIR/trees/$CFG_EXPTNAME.$n_tied_states";
+my $unprunedtreedir = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.unpruned";
+my $prunedtreedir  = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.$n_tied_states";
 mkdir ($prunedtreedir,0777) unless -d $prunedtreedir;
 
-my $PRUNETREE = "$CFG_BIN_DIR/prunetree";
-
-my $logdir = "$CFG_LOG_DIR/06.prunetree";
+my $logdir = "$ST::CFG_LOG_DIR/06.prunetree";
 mkdir ($logdir,0777) unless -d $logdir;
-my $logfile = "$logdir/$CFG_EXPTNAME.prunetree.$n_tied_states.log";
+my $logfile = "$logdir/$ST::CFG_EXPTNAME.prunetree.$n_tied_states.log";
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("    Prune trees\n");
-&ST_HTML_Print ("\t\t" . &ST_FormatURL("$logfile", "Log File") . " ");
+Log ("    Prune trees\n");
+HTML_Print ("\t\t" . FormatURL("$logfile", "Log File") . " ");
 
-my $cmd = "\"$PRUNETREE\" -itreedir \"$unprunedtreedir\" -nseno $n_tied_states -otreedir \"$prunedtreedir\" -moddeffn \"$mdef_file\" -psetfn \"$CFG_QUESTION_SET\" -minocc $occurance_threshold";
-
-exit (RunTool($cmd, $logfile, 0));
+exit RunTool('prunetree', $logfile, 0,
+	     -itreedir => $unprunedtreedir,
+	     -nseno => $n_tied_states,
+	     -otreedir => $prunedtreedir,
+	     -moddeffn => $mdef_file,
+	     -psetfn => $ST::CFG_QUESTION_SET,
+	     -minocc => $occurance_threshold);

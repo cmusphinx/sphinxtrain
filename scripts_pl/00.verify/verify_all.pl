@@ -35,32 +35,23 @@
 ## ====================================================================
 ##
 ## Author: Ricky Houghton (converted from scripts by Rita Singh)
+## Author: David Huggins-Daines (converted from scripts by Rita Singh)
 ##
+use strict;
 use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
-
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
-
-$ret_value = 0;
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 $| = 1;				# Turn on autoflushing
+my $ret_value = 0;
 
 # My test files for OS case sensitivity
-$lowercase_file = "tmp_case_sensitive_test";
-$uppercase_file = "TMP_CASE_SENSITIVE_TEST";
+my $lowercase_file = "tmp_case_sensitive_test";
+my $uppercase_file = "TMP_CASE_SENSITIVE_TEST";
 # Just in case, clean up both cases
 unlink $uppercase_file;
 unlink $lowercase_file;
@@ -68,48 +59,50 @@ unlink $lowercase_file;
 open (TEST, ">$lowercase_file");
 close(TEST);
 # Now, try to open with uppercase name
+my $is_case_sensitive;
 if (open(TEST, "<$uppercase_file")) {
 # If successful, the OS is case insensitive, and we have to check for
 # phones in a case insensitive manner
     $is_case_sensitive = 0;
     close(TEST);
-    &ST_Log("O.S. is case insensitive (\"A\" == \"a\").\n" .
-	    "Phones will be treated as case insensitive.\n");
+    Log("O.S. is case insensitive (\"A\" == \"a\").\n" .
+	   "Phones will be treated as case insensitive.\n");
 } else {
 # If unsuccessful, the OS is case sensitive, and we have to check for
 # phones in a case sensitive manner
     $is_case_sensitive = 1;
-    &ST_Log("O.S. is case sensitive (\"A\" != \"a\").\n" .
-	    "Phones will be treated as case sensitive.\n");
+    Log("O.S. is case sensitive (\"A\" != \"a\").\n" .
+	   "Phones will be treated as case sensitive.\n");
 }
 # Clean up the mess
 unlink $lowercase_file;
 unlink $uppercase_file;
 
-&ST_Log ("MODULE: 00 verify training files\n");
+Log ("MODULE: 00 verify training files\n");
 
 # PHASE 1: Check to see if the phones in the dictionary are listed in the phonelist file
 # PHASE 2: Check to make sure there are not duplicate entries in the dictionary
+my %phonelist_hash;
 {
-    open DICT,"$CFG_DICTIONARY" or die "Can not open the dictionary ($CFG_DICTIONARY)";
+    open DICT,"$ST::CFG_DICTIONARY" or die "Can not open the dictionary ($ST::CFG_DICTIONARY)";
 
-    %dict_phone_hash = ();
-    %dict_hash = ();
+    my %dict_phone_hash = ();
+    my %dict_hash = ();
 
-    &ST_Log ("    Phase 1: DICT - Checking to see if the dict and filler dict agrees with the phonelist file\n");
+    Log ("    Phase 1: DICT - Checking to see if the dict and filler dict agrees with the phonelist file\n");
     # This is rather ugly, but it's late and I'm just trying to get the pieces together
     # Clean it up later
 
     # Read the dictionary and stick phones into dict_phone_hash
-    $counter =0;
+    my $counter =0;
     while (<DICT>) {
 	if (/^(\S+)\s(.*)$/) {
 	    $dict_hash{$1}++;
-	    $phonetic = $2;
+	    my $phonetic = $2;
 	    # Aggregate the non-space characters and store the results
 	    # in @phone
-	    @phones = ($phonetic =~ m/(\S+)/g);
-	    for $phone (@phones) {
+	    my @phones = ($phonetic =~ m/(\S+)/g);
+	    for my $phone (@phones) {
 	      if ($is_case_sensitive) {
 		$dict_phone_hash{$phone}++;
 	      } else {
@@ -121,13 +114,13 @@ unlink $uppercase_file;
     }
     close DICT;
 
-    open DICT,"$CFG_FILLERDICT" or die "Can not open filler dict ($CFG_FILLERDICT)\n";
+    open DICT,"$ST::CFG_FILLERDICT" or die "Can not open filler dict ($ST::CFG_FILLERDICT)\n";
     while (<DICT>) {
 	if (/^(\S+)\s(.*)$/) {
 	    $dict_hash{$1}++;
-	    $phonetic = $2;
-	    @phones = ($phonetic =~ m/(\S+)/g);
-	    for $phone (@phones) {
+	    my $phonetic = $2;
+	    my @phones = ($phonetic =~ m/(\S+)/g);
+	    for my $phone (@phones) {
 	      if ($is_case_sensitive) {
 		$dict_phone_hash{$phone}++;
 	      } else {
@@ -139,16 +132,15 @@ unlink $uppercase_file;
     }
     close DICT;
 
-    
     # Read the phonelist and stick phones into phonelist_hash
-    open PHONE,"$CFG_RAWPHONEFILE" or die "Can not open phone list ($CFG_RAWPHONEFILE)\n";
+    open PHONE,"$ST::CFG_RAWPHONEFILE" or die "Can not open phone list ($ST::CFG_RAWPHONEFILE)\n";
     my $has_SIL = 0;
     while (<PHONE>) {
 	chomp;
 	if (m/\s/) {
-	  $status = 'FAILED';
+	  my $status = 'FAILED';
 	  $ret_value = -1;
-	  &ST_LogWarning("Phone \"$_\" has extra white spaces\n")
+	  LogWarning("Phone \"$_\" has extra white spaces\n")
 	}
 	$has_SIL = 1 if m/^SIL$/;
 	if ($is_case_sensitive) {
@@ -160,52 +152,52 @@ unlink $uppercase_file;
     close PHONE;
 
     unless ($has_SIL) {
-        $status = 'FAILED';
+	my $status = 'FAILED';
 	$ret_value = -1;
-	&ST_LogWarning ("The phonelist ($CFG_RAWPHONEFILE) does not define the phone SIL (required!)\n");
+	LogWarning ("The phonelist ($ST::CFG_RAWPHONEFILE) does not define the phone SIL (required!)\n");
       }
     
-    @keys = keys %dict_phone_hash;
-    &ST_Log ("        Found $counter words using $#keys phones\n");
+    my @keys = keys %dict_phone_hash;
+    Log ("        Found $counter words using $#keys phones\n");
     
-    $status = 'passed';
-    for $key (sort (keys %dict_phone_hash)){
+    my $status = 'passed';
+    for my $key (sort (keys %dict_phone_hash)){
 	if (defined($phonelist_hash{$key})) {
 	    $phonelist_hash{$key} = 1;
 	} else {
-	    $status = 'FAILED';
+	    my $status = 'FAILED';
 	    $ret_value = -1;
-	    copy("$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.00.1.state.gif");
-	    &ST_LogWarning ("This phone ($key) occurs in the dictionary ($CFG_DICTIONARY), but not in the phonelist ($CFG_RAWPHONEFILE)\n");
+	    copy("$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.00.1.state.gif");
+	    LogWarning ("This phone ($key) occurs in the dictionary ($ST::CFG_DICTIONARY), but not in the phonelist ($ST::CFG_RAWPHONEFILE)\n");
 	}
     }
 
-    for $key (sort (keys %phonelist_hash)) {
+    for my $key (sort (keys %phonelist_hash)) {
       if ($phonelist_hash{$key} == 0) {
-	    $status = 'FAILED';
+	    my $status = 'FAILED';
 	    $ret_value = -1;
-	    copy("$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.00.1.state.gif");
-	    &ST_LogWarning ("This phone ($key) occurs in the phonelist ($CFG_RAWPHONEFILE), but not in the dictionary ($CFG_DICTIONARY)\n");
+	    copy("$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.00.1.state.gif");
+	    LogWarning ("This phone ($key) occurs in the phonelist ($ST::CFG_RAWPHONEFILE), but not in the dictionary ($ST::CFG_DICTIONARY)\n");
 	}
     }
 
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> $status </font>\n") if ($status eq 'passed');
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> $status </font>\n") if ($status eq 'FAILED');
-#    &ST_Log("\t\t$status\n");
+    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if ($status eq 'passed');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if ($status eq 'FAILED');
+#    Log("\t\t$status\n");
 
-    &ST_Log("    Phase 2: DICT - Checking to make sure there are not duplicate entries in the dictionary\n");
-    $duplicate_status = 'passed';
-    for $key (keys %dict_hash) {
+    Log("    Phase 2: DICT - Checking to make sure there are not duplicate entries in the dictionary\n");
+    my $duplicate_status = 'passed';
+    for my $key (keys %dict_hash) {
 	if ($dict_hash{$key} > 1) {
 	    $ret_value = -2;
 	    $duplicate_status = 'FAILED';
-	    copy("$CFG_GIF_DIR/red-ball.gif", "$CFG_BASE_DIR/.00.2.state.gif");
-	    &ST_LogWarning("This word ($key) has duplicate entries in ($CFG_DICTIONARY)\n");
+	    copy("$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.00.2.state.gif");
+	    LogWarning("This word ($key) has duplicate entries in ($ST::CFG_DICTIONARY)\n");
 	}
     }
-#    &ST_Log ("\t\t$duplicate_status\n");
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> $duplicate_status </font>\n") if($duplicate_status eq 'passed');
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> $duplicate_status </font>\n") if($duplicate_status eq 'FAILED');
+#    Log ("\t\t$duplicate_status\n");
+    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $duplicate_status </font>\n") if($duplicate_status eq 'passed');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $duplicate_status </font>\n") if($duplicate_status eq 'FAILED');
 }
 
 
@@ -216,16 +208,16 @@ unlink $uppercase_file;
 {
     my ($status,@ctl_lines,$ctl_line,$file,$start,$end,$number_ctl_lines,$number_lines_transcript);
     
-    open CTL,"$CFG_LISTOFFILES" or die "Can not open listoffiles ($CFG_LISTOFFILES)";
+    open CTL,"$ST::CFG_LISTOFFILES" or die "Can not open listoffiles ($ST::CFG_LISTOFFILES)";
     @ctl_lines = <CTL>;		# We are going to iterate over this several times
     close CTL;
 
     # 3.) Check that each utterance specified in the .ctl file has a positive length
     #     Verify that the files listed are available and are not of size 0
 
-    &ST_Log("    Phase 3: CTL - Check general format; utterance length (must be positive); files exist\n");
+    Log("    Phase 3: CTL - Check general format; utterance length (must be positive); files exist\n");
     $status = 'passed';
-    $estimated_training_data = 0;
+    my $estimated_training_data = 0;
     for $ctl_line (@ctl_lines) {
         chomp($ctl_line);
 	# Accept: filename int int possible_comment
@@ -233,65 +225,65 @@ unlink $uppercase_file;
 	    $file = $1;
 	    $start = $2;
 	    $end = $3;
-	    if ((defined $start)&& (defined $file)) {
+	    if ((defined $start) and (defined $file)) {
 		if ($end <= $start) {
 		    warn "Utterance length is <= 0: $start -> $end ($ctl_line)";
 		    $status = 'FAILED';
 		    $ret_value = -3;
 		}
 
-		if (! -s "$CFG_FEATFILES_DIR/$file.$CFG_FEATFILE_EXTENSION") {
+		if (! -s "$ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION") {
 		    $ret_value = -4;
 		    $status = 'FAILED';
-		    &ST_LogWarning ("This file, $CFG_FEATFILES_DIR/$file.$CFG_FEATFILE_EXTENSION, does not exist\n");
+		    LogWarning ("This file, $ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION, does not exist\n");
 		}
 	    }
 	} else {
 	    # Accepts only the file name and possible comment on line by itself..no start/send markers
 	    if ($ctl_line =~ m/^(\S+)(\s.*)?$/) {
 		$file = $1;
-		$size = -s "$CFG_FEATFILES_DIR/$file.$CFG_FEATFILE_EXTENSION";
+		my $size = -s "$ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION";
 		# 1 frame = 13 floating point numbers = 13*4bytes = 52 bytes (only valid for MFC files)
-		$estimated_training_data += ($size / 52) if (lc($CFG_FEATFILE_EXTENSION) eq 'mfc');
+		$estimated_training_data += ($size / 52) if (lc($ST::CFG_FEATFILE_EXTENSION) eq 'mfc');
 		if (! $size) {
 		    $ret_value = -4;
 		    $status = 'FAILED';
-		    &ST_LogWarning ("CTL file, $CFG_FEATFILES_DIR/$file.$CFG_FEATFILE_EXTENSION, does not exist\n");
+		    LogWarning ("CTL file, $ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION, does not exist\n");
 		}
 	    } else {
 		$status = 'FAILED';
 		$ret_value = -5;
-		&ST_LogWarning ("CTL line does not parse correctly:\n$ctl_line\n");
+		LogWarning ("CTL line does not parse correctly:\n$ctl_line\n");
 	    }
 	}
     }
 
-#    &ST_Log ("\t\t$status\n");
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
+#    Log ("\t\t$status\n");
+    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
     
     $number_ctl_lines = $#ctl_lines + 1;
 
     
     # 4) Check number of lines in the transcript and in ctl - they should be the same\n";
-    &ST_Log ("    Phase 4: CTL - Checking number of lines in the transcript should match lines in control file\n");
-    open TRN,"$CFG_TRANSCRIPTFILE" or die "Can not open Transcript file ($CFG_TRANSCRIPTFILE)";
-    $number_transcript_lines = 0;
+    Log ("    Phase 4: CTL - Checking number of lines in the transcript should match lines in control file\n");
+    open TRN,"$ST::CFG_TRANSCRIPTFILE" or die "Can not open Transcript file ($ST::CFG_TRANSCRIPTFILE)";
+    my $number_transcript_lines = 0;
     while (<TRN>) {
 	$number_transcript_lines++;
     }
     close TRN;
     
     $status = ($number_ctl_lines == $number_transcript_lines) ? 'passed' : 'FAILED';
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
 
 
     # 5) Should already have estimates on the total training time, 
 
-    &ST_Log ("    Phase 5: CTL - Determine amount of training data, see if n_tied_states seems reasonable.\n");
+    Log ("    Phase 5: CTL - Determine amount of training data, see if n_tied_states seems reasonable.\n");
     $status = 'passed';
-    $total_training_data = 0;
+    my $total_training_data = 0;
     for $ctl_line (@ctl_lines) {
 	# Accept: filename int int possible_comment
 	#($file,$start,$end) = map /(.+)\s(\d+)\s(\d+).*/,$ctl_line;
@@ -306,44 +298,45 @@ unlink $uppercase_file;
     $total_training_data = $estimated_training_data if ($total_training_data == 0) ;
 
     if ($total_training_data) {
-	$total_training_hours = ($total_training_data / 3600)/100;
-	&ST_Log("\t\tTotal Hours Training: $total_training_hours\n");
-	$estimated_n_tied_states = 1000;
+	my $total_training_hours = ($total_training_data / 3600)/100;
+	Log("\t\tTotal Hours Training: $total_training_hours\n");
+	my $estimated_n_tied_states = 1000;
 	if ($total_training_hours < 10) {
-	    $status = WARNING;
-	    &ST_Log("\t\tThis is a small amount of data, no comment at this time\n");
+	    $status = 'WARNING';
+	    Log("\t\tThis is a small amount of data, no comment at this time\n");
 	} else {
 	    if ($total_training_hours < 100) {
-		$status = WARNING;
-		$estimated_n_tied_states = 3000 if ($CFG_HMM_TYPE eq '.cont.'); # Likely bogus 
-		$estimated_n_tied_states = 4000 if ($CFG_HMM_TYPE eq '.semi.'); # 
-		&ST_Log("\t\tRule of thumb suggests $estimated_n_tied_states, however there is no correct answer\n");
+		$status = 'WARNING';
+		$estimated_n_tied_states = 3000 if ($ST::CFG_HMM_TYPE eq '.cont.'); # Likely bogus 
+		$estimated_n_tied_states = 4000 if ($ST::CFG_HMM_TYPE eq '.semi.'); # 
+		Log("\t\tRule of thumb suggests $estimated_n_tied_states, however there is no correct answer\n");
 	    } else {
 		$estimated_n_tied_states = 8000;
 		$status = 'passed';
-		&ST_Log("\t\t100+ hours of training data is goodly amount of data.\n");
-		&ST_Log("\t\tRule of thumb suggests $estimated_n_tied_states for 100 hours, you can adjust accordingly.\n");
+		Log("\t\t100+ hours of training data is goodly amount of data.\n");
+		Log("\t\tRule of thumb suggests $estimated_n_tied_states for 100 hours, you can adjust accordingly.\n");
 	    }
 	}
     }
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_WARNING_COLOR\"> $status </font>\n") if($status eq 'WARNING');
-#    &ST_Log("\t\t$status\n");
+    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_WARNING_COLOR\"> $status </font>\n") if($status eq 'WARNING');
+#    Log("\t\t$status\n");
     @ctl_lines = ();
 }
 
-%transcript_phonelist_hash = ();
+my %transcript_phonelist_hash = ();
 
 # Verify that all transcription words are in the dictionary, and all
 # phones are covered
 {
-    &ST_Log("    Phase 6: TRANSCRIPT - Checking that all the words in the transcript are in the dictionary\n");
-    open DICT,"$CFG_DICTIONARY" or die "Can not open the dictionary ($CFG_DICTIONARY)";
-    @dict = <DICT>;
+    Log("    Phase 6: TRANSCRIPT - Checking that all the words in the transcript are in the dictionary\n");
+    open DICT,"$ST::CFG_DICTIONARY" or die "Can not open the dictionary ($ST::CFG_DICTIONARY)";
+    my @dict = <DICT>;
     close DICT;
-    &ST_Log("        Words in dictionary: $#dict\n");
-    
+    Log("        Words in dictionary: $#dict\n");
+
+    my %d;
     for (@dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
 	if ($is_case_sensitive) {
@@ -353,10 +346,10 @@ unlink $uppercase_file;
 	}
     }
     
-    open DICT,"$CFG_FILLERDICT" or die "Can not open filler dict ($CFG_FILLERDICT)\n";
-    @fill_dict = <DICT>;
+    open DICT,"$ST::CFG_FILLERDICT" or die "Can not open filler dict ($ST::CFG_FILLERDICT)\n";
+    my @fill_dict = <DICT>;
     close DICT;
-    &ST_Log ("        Words in filler dictionary: $#fill_dict\n");
+    Log ("        Words in filler dictionary: $#fill_dict\n");
     
     for (@fill_dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
@@ -370,21 +363,21 @@ unlink $uppercase_file;
     @dict = undef;			# not needed
     @fill_dict = undef;		# not needed
     
-    open TRN,"$CFG_TRANSCRIPTFILE" or die "Can not open the transcript file ($CFG_TRANSCRIPTFILE)"; 
+    open TRN,"$ST::CFG_TRANSCRIPTFILE" or die "Can not open the transcript file ($ST::CFG_TRANSCRIPTFILE)"; 
     
-    $status = 'passed';
+    my $status = 'passed';
     while (<TRN>) {
-	($text) = m/(.*)\s*\(.*\)$/;
+	my ($text) = m/(.*)\s*\(.*\)$/;
 	if ($text) {
-	    @words = split /\s+/,$text;
-	    for $word (@words) {
+	    my @words = split /\s+/,$text;
+	    for my $word (@words) {
 		if (! $d{$word} && ($word =~ m/\S+/)) {
-		    &ST_LogWarning ("This word: $word was in the transcript file, but is not in the dictionary ($text). Do cases match?\n");
+		    LogWarning ("This word: $word was in the transcript file, but is not in the dictionary ($text). Do cases match?\n");
 		    $status = 'FAILED';
 		    $ret_value = -5;
 		} else {
-		    @phones = ($d{$word} =~ m/(\S+)/g);
-		    for $phone (@phones) {
+		    my @phones = ($d{$word} =~ m/(\S+)/g);
+		    for my $phone (@phones) {
 		        $transcript_phonelist_hash{$phone} = 1;
 		    }
 		}
@@ -393,32 +386,32 @@ unlink $uppercase_file;
     }
     close TRN;
 
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_WARNING_COLOR\"> $status </font>\n") if($status eq 'WARNING');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_WARNING_COLOR\"> $status </font>\n") if($status eq 'WARNING');
 
 }
 
 {
-    &ST_Log("    Phase 7: TRANSCRIPT - Checking that all the phones in the transcript are in the phonelist, and all phones in the phonelist appear at least once\n");
-    $status = 'passed';
+    Log("    Phase 7: TRANSCRIPT - Checking that all the phones in the transcript are in the phonelist, and all phones in the phonelist appear at least once\n");
+    my $status = 'passed';
 
-    for $phone (sort keys %phonelist_hash) {
+    for my $phone (sort keys %phonelist_hash) {
       if (!defined $transcript_phonelist_hash{$phone}) {
-	    &ST_LogWarning ("This phone ($phone) occurs in the phonelist ($CFG_RAWPHONEFILE), but not in any word in the transcription ($CFG_TRANSCRIPTFILE)\n");
+	    LogWarning ("This phone ($phone) occurs in the phonelist ($ST::CFG_RAWPHONEFILE), but not in any word in the transcription ($ST::CFG_TRANSCRIPTFILE)\n");
 	    $status = 'FAILED';
       }
     }
 
 
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
-    &ST_HTML_Print ("\t\t<font color=\"$CFG_WARNING_COLOR\"> $status </font>\n") if($status eq 'WARNING');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
+    HTML_Print ("\t\t<font color=\"$ST::CFG_WARNING_COLOR\"> $status </font>\n") if($status eq 'WARNING');
 
   }
 
-mkdir ($CFG_LOG_DIR,0755) unless -d $CFG_LOG_DIR;
-mkdir ("$CFG_BASE_DIR/bwaccumdir",0755) unless -d "$CFG_LOG_DIR/bwaccumdir";
+mkdir ($ST::CFG_LOG_DIR,0755) unless -d $ST::CFG_LOG_DIR;
+mkdir ("$ST::CFG_BASE_DIR/bwaccumdir",0755) unless -d "$ST::CFG_LOG_DIR/bwaccumdir";
 
     
 exit ($ret_value);

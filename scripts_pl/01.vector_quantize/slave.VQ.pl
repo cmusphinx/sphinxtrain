@@ -43,23 +43,15 @@
 ## Author: Ricky Houghton 
 ##
 
+use strict;
+use File::Copy;
+use File::Basename;
+use File::Spec;
 use File::Path;
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
-
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
+use lib File::Spec->catdir(dirname($0), File::Spec->updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 #*****************************************************************************
 # The agg_seg script aggregates all the training feature vectors into a 
@@ -68,21 +60,21 @@ require "$CFG_SCRIPT_DIR/util/utils.pl";
 #*****************************************************************************
 
 #Clean up from previous runs
-$logdir = "$CFG_LOG_DIR/01.vector_quantize";
+my $logdir = "$ST::CFG_LOG_DIR/01.vector_quantize";
 
 rmtree($logdir) unless ! -d $logdir;
 mkdir ($logdir,0777);
 
 $| = 1; # Turn on autoflushing
 # No error checking
-&ST_Log ("MODULE: 01 Vector Quantization\n");
-$scriptdir="$CFG_BASE_DIR/scripts_pl/01.vector_quantize";
-$return_value = 0;
-if ($CFG_HMM_TYPE eq ".semi.") {
-  $return_value = (system ("perl \"$scriptdir/agg_seg.pl\" -cfg \"$cfg_file\"") or system ("perl \"$scriptdir/kmeans.pl\" -cfg \"$cfg_file\""));
+Log ("MODULE: 01 Vector Quantization\n");
+my $return_value = 0;
+if ($ST::CFG_HMM_TYPE eq ".semi.") {
+  $return_value = (RunScript('agg_seg.pl')
+		   or RunScript('kmeans.pl'));
 } else {
-  &ST_Log("    Skipped for continuous models\n");
+  Log("    Skipped for continuous models\n");
 }
-&ST_Log ("\n");
+Log ("\n");
 exit ($return_value != 0);
 

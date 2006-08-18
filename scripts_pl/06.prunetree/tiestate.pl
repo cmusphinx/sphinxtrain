@@ -40,41 +40,35 @@
 #
 # Author: Alan W Black (awb@cs.cmu.edu)
 #
+use strict;
+use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
+use File::Path;
 
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
+die "USAGE: $0 <number of tied states>" if @ARGV != 1;
 
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
+my $n_tied_states = shift;
 
-die "USAGE: $0 <iteration number>" if (($#ARGV != ($index)));
+my $untied_mdef_file = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.alltriphones.mdef";
+my $prunedtreedir = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.$n_tied_states";
+my $tied_mdef_file = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.$n_tied_states.mdef";
 
-my $n_tied_states = $ARGV[$index];
-
-my $untied_mdef_file = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.alltriphones.mdef";
-my $prunedtreedir = "$CFG_BASE_DIR/trees/$CFG_EXPTNAME.$n_tied_states";
-my $tied_mdef_file = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$n_tied_states.mdef";
-
-my $logdir = "$CFG_LOG_DIR/06.prunetree";
+my $logdir = "$ST::CFG_LOG_DIR/06.prunetree";
 mkdir ($logdir,0777) unless -d $logdir;
-my $logfile = "$logdir/$CFG_EXPTNAME.tiestate.$n_tied_states.log";
-
-my $TIESTATE = "$CFG_BIN_DIR/tiestate";
+my $logfile = "$logdir/$ST::CFG_EXPTNAME.tiestate.$n_tied_states.log";
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("    Tie states\n");
-&ST_HTML_Print ("\t\t" . &ST_FormatURL("$logfile", "Log File") . " ");
+Log ("    Tie states\n");
+HTML_Print ("\t\t" . FormatURL("$logfile", "Log File") . " ");
 
-my $cmd = "\"$TIESTATE\" -imoddeffn \"$untied_mdef_file\" -omoddeffn \"$tied_mdef_file\" -treedir \"$prunedtreedir\" -psetfn \"$CFG_QUESTION_SET\"";
+exit RunTool('tiestate', $logfile, 0,
+	     -imoddeffn => $untied_mdef_file,
+	     -omoddeffn => $tied_mdef_file,
+	     -treedir => $prunedtreedir,
+	     -psetfn => $ST::CFG_QUESTION_SET);
 
-exit (RunTool($cmd, $logfile, 0));

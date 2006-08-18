@@ -32,18 +32,20 @@
 #
 # ====================================================================
 
-if (($#ARGV < 0) || ($#ARGV > 1)) {
-  print "Usage: $0 <no of states per hmm> (allow skips yes/no)\n";
+if (@ARGV < 2) {
+  print "Usage: $0 <no of states per hmm> (allow skips yes/no) <output file>\n";
   print "\tDefault: allow skips yes\n";
   exit -1;
 }
 
-$nstates = $ARGV[0];
-if ( $#ARGV == 0) {
-  $allowskips = "yes";
+$nstates = shift;
+if (@ARGV > 1) {
+  $allowskips = shift;
 } else {
-  $allowskips = $ARGV[1];
+  $allowskips = "yes";
 }
+$outfile = shift;
+open STDOUT, ">$outfile" or die "Failed to open $outfile: $!";
 print "#\n";
 print "# ${nstates}-state Bakis topology HMM with non-emitting last state\n";
 print "# These values are normalized so that rows sum to one.\n";

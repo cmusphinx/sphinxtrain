@@ -40,112 +40,123 @@
 #  Author: Alan W Black (awb@cs.cmu.edu)
 #
 
-use File::Path;
+use strict;
 use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
+use File::Path;
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_train.cfg";
-}
-
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
-    exit -3;
-}
-require $cfg_file;
-require "$CFG_SCRIPT_DIR/util/utils.pl";
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 # If we want to use sphinx2, either we created semi continuous models,
 # or we created continuous models, but with some restrictions, which
 # we have to check.
-unless  (($CFG_HMM_TYPE eq ".semi.") or 
-     (($CFG_HMM_TYPE eq ".cont.") and 
-      ($CFG_STATESPERHMM == 5) and 
-      (($CFG_FEATURE eq "1s_12c_12d_3p_12dd") or 
-       ($CFG_FEATURE eq "s3_1x39")))) {
-  &ST_Log ("MODULE: 09 Convert to Sphinx2 format models\n");
-  &ST_Log("    Can not create models used by Sphinx-II.\n");
-  &ST_Log("    If you intend to create models to use with Sphinx-II models, please rerun with:\n" .
-	  "\$CFG_HMM_TYPE = '.semi.' or\n" .
-	  "\$CFG_HMM_TYPE = '.cont' and \$CFG_FEATURE = '1s_12c_12d_3p_12dd' and \$CFG_STATESPERHMM = '5'\n");
+unless  (($ST::CFG_HMM_TYPE eq ".semi.") or
+     (($ST::CFG_HMM_TYPE eq ".cont.") and
+      ($ST::CFG_STATESPERHMM == 5) and
+      (($ST::CFG_FEATURE eq "1s_12c_12d_3p_12dd") or
+       ($ST::CFG_FEATURE eq "s3_1x39")))) {
+  Log ("MODULE: 09 Convert to Sphinx2 format models\n");
+  Log("    Can not create models used by Sphinx-II.\n");
+  Log("    If you intend to create models to use with Sphinx-II models, please rerun with:\n" .
+	  "\$ST::CFG_HMM_TYPE = '.semi.' or\n" .
+	  "\$ST::CFG_HMM_TYPE = '.cont' and \$ST::CFG_FEATURE = '1s_12c_12d_3p_12dd' and \$ST::CFG_STATESPERHMM = '5'\n");
   exit(0);
 }
 
 my $scriptdir = "scripts_pl/09.make_s2_models";
-my $logdir = "$CFG_LOG_DIR/09.make_s2_models";
+my $logdir = "$ST::CFG_LOG_DIR/09.make_s2_models";
 
 $| = 1; # Turn on autoflushing
-&ST_Log ("MODULE: 09 Convert to Sphinx2 format models\n");
-&ST_Log ("    Cleaning up old log files...\n");
+Log ("MODULE: 09 Convert to Sphinx2 format models\n");
+Log ("    Cleaning up old log files...\n");
 rmtree ($logdir) unless ! -d $logdir;
 mkdir ($logdir,0777);
 
 my $return_value;
 
-my $logfile_cb = "$logdir/${CFG_EXPTNAME}.mk_s2cb.log";
-my $logfile_chmm = "$logdir/${CFG_EXPTNAME}.mk_s2chmm.log";
-my $logfile_senone = "$logdir/${CFG_EXPTNAME}.mk_s2sendump.log";
-my $logfile_s2phonemap = "$logdir/${CFG_EXPTNAME}.mk_s2phonemap.log";
+my $logfile_cb = "$logdir/${ST::CFG_EXPTNAME}.mk_s2cb.log";
+my $logfile_chmm = "$logdir/${ST::CFG_EXPTNAME}.mk_s2chmm.log";
+my $logfile_senone = "$logdir/${ST::CFG_EXPTNAME}.mk_s2sendump.log";
+my $logfile_s2phonemap = "$logdir/${ST::CFG_EXPTNAME}.mk_s2phonemap.log";
 
-$s3mdef = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.$CFG_N_TIED_STATES.mdef";
+my $s3mdef = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.$ST::CFG_N_TIED_STATES.mdef";
 
-if ($CFG_HMM_TYPE eq ".semi.") {
-  $s3hmmdir="$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_$CFG_N_TIED_STATES"."_delinterp";
-  $s2dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}.s2models";
+my ($s3hmmdir, $s2dir);
+if ($ST::CFG_HMM_TYPE eq ".semi.") {
+  $s3hmmdir="$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_$ST::CFG_N_TIED_STATES"."_delinterp";
+  $s2dir = "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}.s2models";
 } else {
-  $s3hmmdir="$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_$CFG_N_TIED_STATES"."_$CFG_FINAL_NUM_DENSITIES";
-  $s2dir = "$CFG_BASE_DIR/model_parameters/$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}_$CFG_FINAL_NUM_DENSITIES.s2models";
+  $s3hmmdir="$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_$ST::CFG_N_TIED_STATES"."_$ST::CFG_FINAL_NUM_DENSITIES";
+  $s2dir = "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}_$ST::CFG_FINAL_NUM_DENSITIES.s2models";
 }
 mkdir ($s2dir,0777) unless -d $s2dir;
-$s3mixw = "$s3hmmdir/mixture_weights";
-$s3mean = "$s3hmmdir/means";
-$s3var = "$s3hmmdir/variances";
-$s3tmat = "$s3hmmdir/transition_matrices";
+my $s3mixw = "$s3hmmdir/mixture_weights";
+my $s3mean = "$s3hmmdir/means";
+my $s3var = "$s3hmmdir/variances";
+my $s3tmat = "$s3hmmdir/transition_matrices";
 
-if ($CFG_HMM_TYPE eq ".semi.") {
-  &ST_Log ("    Make codebooks\n");
-  &ST_HTML_Print ("\t" . &ST_FormatURL("$logfile_cb", "Log File") . " ");
-  my $cmd = "\"$CFG_BIN_DIR/mk_s2cb\" -meanfn \"$s3mean\" -varfn \"$s3var\" -cbdir \"$s2dir\" -varfloor 0.00001";
-  $return_value = RunTool($cmd, $logfile_cb, 0);
+if ($ST::CFG_HMM_TYPE eq ".semi.") {
+  Log ("    Make codebooks\n");
+  HTML_Print ("\t" . FormatURL("$logfile_cb", "Log File") . " ");
+  $return_value = RunTool('mk_s2cb', $logfile_cb, 0,
+			  -meanfn => $s3mean,
+			  -varfn => $s3var,
+			  -cbdir => $s2dir,
+			  -varfloor => 0.00001);
 warn "$return_value\n";
-  #&ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
+  #HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> completed </font>\n");
   exit ($return_value != 0) if ($return_value);
 } else {
-  &ST_Log ("    Copying means, vars, mix_weights\n");
-  $s2mixw = "$s2dir/mixture_weights";
+  Log ("    Copying means, vars, mix_weights\n");
+  my $s2mixw = "$s2dir/mixture_weights";
   copy($s3mixw, $s2mixw);
-  $s2mean = "$s2dir/means";
+  my $s2mean = "$s2dir/means";
   copy($s3mean, $s2mean);
-  $s2var = "$s2dir/variances";
+  my $s2var = "$s2dir/variances";
   copy($s3var, $s2var);
 }
 
-&ST_Log ("    Make chmm files\n");
-&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile_chmm", "Log File") . " ");
-if ($CFG_HMM_TYPE eq ".semi.") {
-  $cmd = "\"$CFG_BIN_DIR/mk_s2hmm\" -moddeffn \"$s3mdef\" -mixwfn \"$s3mixw\" -tmatfn \"$s3tmat\" -hmmdir \"$s2dir\"";
+Log ("    Make chmm files\n");
+HTML_Print ("\t" . FormatURL("$logfile_chmm", "Log File") . " ");
+my $return_value;
+if ($ST::CFG_HMM_TYPE eq ".semi.") {
+    $return_value = RunTool('mk_s2hmm', $logfile_chmm, 0,
+			    -moddeffn => $s3mdef,
+			    -mixwfn => $s3mixw,
+			    -tmatfn => $s3tmat,
+			    -hmmdir => $s2dir)
 } else {
-  $cmd = "\"$CFG_BIN_DIR/mk_s2hmm\" -moddeffn \"$s3mdef\" -tmatfn \"$s3tmat\" -hmmdir \"$s2dir\" -mtype fchmm";
+    $return_value = RunTool('mk_s2hmm', $logfile_chmm, 0,
+			    -moddeffn => $s3mdef,
+			    -tmatfn => $s3tmat,
+			    -hmmdir => $s2dir,
+			    -mtype => 'fchmm');
 }
-$return_value = RunTool($cmd, $logfile_chmm, 0);
-#&ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
-exit ($return_value != 0) if ($return_value);
+#HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> completed </font>\n");
+exit $return_value if ($return_value);
 
-if ($CFG_HMM_TYPE eq ".semi.") {
-  &ST_Log ("    Make senone file\n");
-  &ST_HTML_Print ("\t" . &ST_FormatURL("$logfile_senone", "Log File") . " ");
-  $cmd = "\"$CFG_BIN_DIR/mk_s2sendump\" -moddeffn \"$s3mdef\" -mixwfn \"$s3mixw\" -mwfloor 0.0000001 -feattype s2_4x -sendumpfn \"$s2dir/sendump\"";
-  $return_value = RunTool($cmd, $logfile_senone, 0);
-  #&ST_HTML_Print ("\t\t<font color=\"$CFG_OKAY_COLOR\"> completed </font>\n");
-  exit ($return_value != 0) if ($return_value);
+if ($ST::CFG_HMM_TYPE eq ".semi.") {
+  Log ("    Make senone file\n");
+  HTML_Print ("\t" . FormatURL("$logfile_senone", "Log File") . " ");
+  $return_value = RunTool('mk_s2sendump', $logfile_senone, 0,
+			  -moddeffn => $s3mdef,
+			  -mix2fn => $s3mixw,
+			  -mwfloor => 0.0000001,
+			  -feattype => 's2_4x',
+			  -sendumpfn => catfile($s2dir, 'sendump'));
+  #HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> completed </font>\n");
+  exit $return_value if ($return_value);
 }
 
-&ST_Log ("    Make phone and map files\n");
-&ST_HTML_Print ("\t" . &ST_FormatURL("$logfile_s2phonemap", "Log File") . " ");
+Log ("    Make phone and map files\n");
+HTML_Print ("\t" . FormatURL("$logfile_s2phonemap", "Log File") . " ");
 
-$cmd = "\"$CFG_BIN_DIR/mk_s2phonemap\" -moddeffn \"$s3mdef\" -phonefn \"$s2dir/phone\" -mapfn \"$s2dir/map\"";
-$return_value = RunTool($cmd, $logfile_s2phonemap, 0);
-exit ($return_value != 0);
+$return_value = RunTool('mk_s2phonemap', $logfile_s2phonemap, 0,
+			-moddeffn => $s3mdef,
+			-phonefn => catfile($s2dir, 'phone'),
+			-mapfn => catfile($s2dir, 'map'));
+exit $return_value;
+
