@@ -57,8 +57,8 @@ Log("    Cleaning up old log files...\n");
 rmtree($logdir, 0, 1);
 mkdir($logdir,0777);
 
-my $moddeffn = defined($ST::FORCE_ALIGN_MDEF)
-    ? $ST::FORCE_ALIGN_MDEF
+my $moddeffn = defined($ST::CFG_FORCE_ALIGN_MDEF)
+    ? $ST::CFG_FORCE_ALIGN_MDEF
     : "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.ci.mdef";
 my $listoffiles = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
 

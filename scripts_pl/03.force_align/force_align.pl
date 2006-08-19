@@ -51,11 +51,11 @@ use SphinxTrain::Util;
 die "Usage: $0 <part> <nparts>\n" unless @ARGV == 2;
 my ($part, $npart) = @ARGV;
 
-my $hmm_dir = defined($ST::FORCE_ALIGN_MODELDIR)
-    ? $ST::FORCE_ALIGN_MODELDIR
+my $hmm_dir = defined($ST::CFG_FORCE_ALIGN_MODELDIR)
+    ? $ST::CFG_FORCE_ALIGN_MODELDIR
     : "$ST::CFG_MODEL_DIR/$ST::CFG_EXPTNAME.ci_$ST::CFG_DIRLABEL";
-my $mdef = defined($ST::FORCE_ALIGN_MDEF)
-    ? $ST::FORCE_ALIGN_MDEF
+my $mdef = defined($ST::CFG_FORCE_ALIGN_MDEF)
+    ? $ST::CFG_FORCE_ALIGN_MDEF
     : "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.ci.mdef";
 my $logdir = "$ST::CFG_LOG_DIR/03.force_align";
 my $outdir = "$ST::CFG_BASE_DIR/falignout";
