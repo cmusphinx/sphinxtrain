@@ -206,22 +206,6 @@ sub Converged
   return 2 if ($iter > $ST::CFG_MAX_ITERATIONS);
 }
 
-# Safe pipe open for Windows, from
-# http://www.xav.com/perl/lib/Pod/perlfork.html (sort of)
-sub pipe_from_fork {
-    my ($parent, $child);
-    pipe $parent, $child or die "pipe failed: $!";
-    my $pid = fork();
-    die "fork() failed: $!" unless defined $pid;
-    if ($pid) {
-	close $child;
-    } else {
-	close $parent;
-	open(STDOUT, ">&=" . fileno($child)) or die;
-    }
-    return ($pid, $parent);
-}
-
 sub RunTool {
   my $cmd = shift;
   my $logfile = shift;
@@ -243,7 +227,19 @@ sub RunTool {
   my $processed_counter = 0;
   my $printed = 0;
 
-  my ($pid, $pipe) = pipe_from_fork();
+  my ($pid, $pipe);
+  if ($^O eq 'MSWin32') {
+      # Win32 can't do -|, so quote all the arguments and do a simple
+      # pipe open.
+      foreach (@_) {
+	  $_ = qq{"$_"};
+      }
+      $pid = open $pipe, "$cmd @_ 2>&1 |";
+  }
+  else {
+      $pid = open $pipe, "-|";
+      die "Failed to open pipe: $!" unless defined($pid);
+  }
   if ($pid == 0) {
       open STDERR, ">&STDOUT";
       exec $cmd, @_;
