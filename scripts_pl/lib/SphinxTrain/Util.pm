@@ -267,7 +267,6 @@ sub RunTool {
       }
     }
     close $pipe;
-    waitpid $pid, 0;
     if (($error_count > 0) or ($warning_count > 0)) {
       LogError ("\n\t\tThis step had $error_count ERROR messages and " .
 		    "$warning_count WARNING messages.\n" .
