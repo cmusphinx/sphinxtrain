@@ -234,7 +234,7 @@ sub RunTool {
       foreach (@_) {
 	  $_ = qq{"$_"};
       }
-      $pid = open $pipe, "$cmd @_ 2>&1 |";
+      $pid = open $pipe, qq{"$cmd" @_ 2>&1 |};
   }
   else {
       $pid = open $pipe, "-|";
