@@ -181,9 +181,11 @@ sub query_job {
     my $pid = open QSTAT, "-|";
     die "Failed to fork: $!" unless defined $pid;
     if ($pid) {
+	# FIXME: There is actually a way to get the exit status of a job
 	while (<QSTAT>) {
 	    return 1 if /Unknown/;
 	    return 1 if /\bC\b/;
+	    return -1 if /\bE\b/;
 	}
 	close QSTAT;
     }
@@ -200,8 +202,11 @@ sub waitfor_job {
     my $elapsed = 0;
     $interval = 5 unless defined($interval);
     while (1) {
-	return 1 if $self->query_job($jobid);
-	return 0 if defined($timeout) and $elapsed > $timeout;
+	my $rv = $self->query_job($jobid);
+	# FIXME: There is actually a way to get the exit status of a job
+	return 0 if $rv == 1; # 0 = success
+	return 1 if $rv == -1; # 1 = failure
+	return -1 if defined($timeout) and $elapsed > $timeout;
 	sleep $interval;
 	$elapsed += $interval;
     }

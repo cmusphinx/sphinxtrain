@@ -95,8 +95,8 @@ if ( $ST::CFG_FORCEDALIGN eq "no" ) {
     $listoffiles = $ST::CFG_LISTOFFILES;
     $transcriptfile = $ST::CFG_TRANSCRIPTFILE;
 } else {
-    $listoffiles   = "$ST::CFG_BASE_DIR/generated/${ST::CFG_EXPTNAME}.alignedfiles";
-    $transcriptfile  = "$ST::CFG_BASE_DIR/generated/${ST::CFG_EXPTNAME}.alignedtranscripts";
+    $listoffiles   = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
+    $transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedtranscripts";
 }
 
 my $topn     = 4;

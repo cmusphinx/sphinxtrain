@@ -49,7 +49,7 @@ use SphinxTrain::Util;
 
 # What pieces would you like to compute.
 
-my@sample_steps =
+my @sample_steps =
     ("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
      "$ST::CFG_SCRIPT_DIR/01.vector_quantize/slave.VQ.pl",
      "$ST::CFG_SCRIPT_DIR/02.ci_schmm/slave_convg.pl",
@@ -61,7 +61,6 @@ my@sample_steps =
      "$ST::CFG_SCRIPT_DIR/08.deleted-interpolation/deleted_interpolation.pl",
      "$ST::CFG_SCRIPT_DIR/09.make_s2_models/make_s2_models.pl",
     );
-
 
 foreach my $step (@sample_steps) {
     my $ret_value = RunScript($step);

@@ -90,7 +90,6 @@ if ($iter == 1) {
 # Call baum_welch with iter part and n_parts,
 # once done call norm_and_lauchbw.pl
 my @deps;
-Log("    Baum-Welch iteration $iter\n");
 for (my $i=1; $i<=$n_parts; $i++)
 {
     push @deps, LaunchScript("bw.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts])
