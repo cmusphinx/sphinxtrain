@@ -87,6 +87,13 @@ my $meanfn  = "$hmm_dir/means";
 my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 
+# if there is an LDA transformation, use it
+my @lda_args;
+if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
+    push(@lda_args,
+	 -ldafn => $ST::CFG_LDA_TRANSFORM,
+	 -ldadim => $ST::CFG_LDA_DIMENSION);
+}
 
 # aligned transcripts and the list of aligned files is obtained as a result
 # of (03.) forced alignment
@@ -150,6 +157,7 @@ my $return_value = RunTool
      -tmatreest => "yes",
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
+     @lda_args,
      -timing => "no");
 
 

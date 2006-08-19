@@ -57,7 +57,6 @@ Log("    Cleaning up old log files...\n");
 rmtree($logdir, 0, 1);
 mkdir($logdir,0777);
 
-my $ldafn = "$ST::CFG_MODEL_DIR/$ST::CFG_EXPTNAME.lda";
 my $moddeffn = defined($ST::FORCE_ALIGN_MDEF)
     ? $ST::FORCE_ALIGN_MDEF
     : "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.ci.mdef";
@@ -76,4 +75,4 @@ exit RunTool('lda_train', $logfile, 0,
 	     -varnorm => $ST::CFG_VARNORM,
 	     -feat => $ST::CFG_FEATURE,
 	     -ceplen => $ST::CFG_VECTOR_LENGTH,
-	     -outfn => $ldafn);
+	     -outfn => $ST::CFG_LDA_TRANSFORM);

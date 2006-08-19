@@ -153,6 +153,13 @@ sub copyci2cd2initialize ()
 
     HTML_Print (FormatURL("$logfile", "Log File") . " ");
 
+    # if there is an LDA transformation, use it
+    my @feat;
+    if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
+	@feat = (-feat => '1s_c', -ceplen => $ST::CFG_LDA_DIMENSION);
+    } else {
+	@feat = (-feat => $ST::CFG_FEATURE, -ceplen => $ST::CFG_VECTOR_LENGTH);
+    }
     return RunTool('init_mixw', $logfile, 0,
 		   -src_moddeffn => $src_moddeffn,
 		   -src_ts2cbfn => $ST::CFG_HMM_TYPE,
@@ -166,7 +173,6 @@ sub copyci2cd2initialize ()
 		   -dest_meanfn => $dest_meanfn,
 		   -dest_varfn => $dest_varfn,
 		   -dest_tmatfn => $dest_tmatfn,
-		   -feat => $ST::CFG_FEATURE,
-		   -ceplen => $ST::CFG_VECTOR_LENGTH);
+		   @feat);
 }
 

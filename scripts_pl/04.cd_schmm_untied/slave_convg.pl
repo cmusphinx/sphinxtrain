@@ -94,7 +94,6 @@ if ($iter == 1) {
 # Call baum_welch with iter part and n_parts,
 # once done call norm_and_lauchbw.pl
 my @deps;
-Log("    Baum-Welch iteration $iter\n");
 for (my $i=1; $i<=$n_parts; $i++)
 {
     push @deps, LaunchScript("bw.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts])
@@ -123,9 +122,28 @@ sub Initialize () {
 
   my $COPY_CI_TO_CD = "${ST::CFG_BIN_DIR}/init_mixw";
 
-  my $cmd = "\"$COPY_CI_TO_CD\" -src_moddeffn \"${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.ci.mdef\" -src_ts2cbfn ${ST::CFG_HMM_TYPE} -src_mixwfn \"$cihmmdir/mixture_weights\" -src_meanfn \"$cihmmdir/means\" -src_varfn \"$cihmmdir/variances\" -src_tmatfn \"$cihmmdir/transition_matrices\" -dest_moddeffn \"${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef\" -dest_ts2cbfn ${ST::CFG_HMM_TYPE} -dest_mixwfn \"$cdhmmdir/mixture_weights\" -dest_meanfn \"$cdhmmdir/means\" -dest_varfn \"$cdhmmdir/variances\" -dest_tmatfn \"$cdhmmdir/transition_matrices\" -feat ${ST::CFG_FEATURE} -ceplen ${ST::CFG_VECTOR_LENGTH}";
-
-  return (RunTool($cmd, $logfile, 0));
+  # if there is an LDA transformation, use it
+  my @feat;
+  if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
+      @feat = (-feat => '1s_c', -ceplen => $ST::CFG_LDA_DIMENSION);
+  } else {
+      @feat = (-feat => $ST::CFG_FEATURE, -ceplen => $ST::CFG_VECTOR_LENGTH);
+  }
+  return RunTool
+      ('init_mixw', $logfile, 0,
+       -src_moddeffn => "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.ci.mdef",
+       -src_ts2cbfn => $ST::CFG_HMM_TYPE,
+       -src_mixwfn => "$cihmmdir/mixture_weights",
+       -src_meanfn => "$cihmmdir/means",
+       -src_varfn => "$cihmmdir/variances",
+       -src_tmatfn => "$cihmmdir/transition_matrices",
+       -dest_moddeffn => "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef",
+       -dest_ts2cbfn => $ST::CFG_HMM_TYPE,
+       -dest_mixwfn => "$cdhmmdir/mixture_weights",
+       -dest_meanfn => "$cdhmmdir/means",
+       -dest_varfn => "$cdhmmdir/variances",
+       -dest_tmatfn => "$cdhmmdir/transition_matrices",
+       @feat);
 }
 
 

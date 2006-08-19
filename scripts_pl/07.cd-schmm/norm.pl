@@ -83,6 +83,14 @@ HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.07.norm.${n_gau}.$iter.state.gif")
 Log ("    Normalization for iteration: $iter ");
 HTML_Print (FormatURL("$logfile", "Log File") . " ");
 
+# if there is an LDA transformation, use it
+my @feat;
+if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
+    @feat = (-feat => '1s_c', -ceplen => $ST::CFG_LDA_DIMENSION);
+}
+else {
+    @feat = (-feat => $ST::CFG_FEATURE, -ceplen => $ST::CFG_VECTOR_LENGTH);
+}
 my $return_value = RunTool
     ('norm', $logfile, 0,
      -accumdir => @bwaccumdirs,
@@ -90,8 +98,7 @@ my $return_value = RunTool
      -tmatfn => $transition_matrices,
      -meanfn => $means,
      -varfn => $variances,
-     -feat => $ST::CFG_FEATURE,
-     -ceplen => $ST::CFG_VECTOR_LENGTH,
+     @feat
     );
 
 if ($return_value) {

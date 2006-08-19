@@ -204,7 +204,13 @@ sub FlatInitialize ()
     my $output_buffer_dir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_1";
     mkdir ($output_buffer_dir,0777) unless -d $output_buffer_dir;
 
-
+    # if there is an LDA transformation, use it
+    my @lda_args;
+    if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
+	push(@lda_args,
+	     -ldafn => $ST::CFG_LDA_TRANSFORM,
+	     -ldadim => $ST::CFG_LDA_DIMENSION);
+    }
     if ($return_value = RunTool('init_gau', $logfile, 0,
 				-ctlfn => $ST::CFG_LISTOFFILES,
 				-part => 1, -npart => 1,
@@ -216,6 +222,7 @@ sub FlatInitialize ()
 				-varnorm => $ST::CFG_VARNORM,
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
+				@lda_args
 			       )) {
       return $return_value;
     }
@@ -253,6 +260,7 @@ sub FlatInitialize ()
 				-varnorm => $ST::CFG_VARNORM,
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
+				@lda_args
 			       )) {
       return $return_value;
     }
@@ -293,12 +301,19 @@ sub FlatInitialize ()
     $logfile = "$logdir/${ST::CFG_EXPTNAME}.cpmean_cihmm.log";
     HTML_Print ("\t\tcp_mean " . FormatURL("$logfile", "Log File") . " ");
 
+    my @feat;
+    if (@lda_args) {
+	@feat = (-feat => '1s_c', -ceplen => $ST::CFG_LDA_DIMENSION);
+    }
+    else {
+	@feat = (-feat => $ST::CFG_FEATURE, -ceplen => $ST::CFG_VECTOR_LENGTH);
+    }
     if ($return_value = RunTool('cp_parm', $logfile, 0,
 				-cpopsfn => $ST::CFG_CP_OPERATION,
 				-igaufn => catfile($outhmm, 'globalmean'),
 				-ncbout => $NUM_CI_STATES,
 				-ogaufn => catfile($outhmm, 'means'),
-				-feat => $ST::CFG_FEATURE,
+				@feat
 			       )) {
       return $return_value;
     }
@@ -315,7 +330,7 @@ sub FlatInitialize ()
 				-igaufn => catfile($outhmm, 'globalvar'),
 				-ncbout => $NUM_CI_STATES,
 				-ogaufn => catfile($outhmm, 'variances'),
-				-feat => $ST::CFG_FEATURE,
+				@feat
 			       )) {
       return $return_value;
     }

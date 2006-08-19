@@ -66,7 +66,7 @@ my $mdefname="${ST::CFG_EXPTNAME}.ci.mdef";
 my $processname ="02.ci_schmm";
 
 my $output_buffer_dir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_${part}";
-mkdir ($output_buffer_dir,0777) unless -d $output_buffer_dir;
+mkdir ($output_buffer_dir,0777);
 
 my ($hmm_dir, $var2pass);
 if ($iter == 1) {
@@ -87,6 +87,13 @@ my $meanfn  = "$hmm_dir/means";
 my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 
+# if there is an LDA transformation, use it
+my @lda_args;
+if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
+    push(@lda_args,
+	 -ldafn => $ST::CFG_LDA_TRANSFORM,
+	 -ldadim => $ST::CFG_LDA_DIMENSION);
+}
 
 # aligned transcripts and the list of aligned files is obtained as a result
 # of (03.) forced alignment
@@ -102,7 +109,7 @@ if ( $ST::CFG_FORCEDALIGN eq "no" ) {
 my $topn     = 4;
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$part.bw.log";
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 
 my $ctl_counter = 0;
 open INPUT,"${ST::CFG_LISTOFFILES}";
@@ -150,6 +157,7 @@ my $return_value = RunTool
      -tmatreest => "yes",
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
+     @lda_args,
      -timing => "no");
 
 

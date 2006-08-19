@@ -348,6 +348,7 @@ sub WaitForConvergence {
     my $maxiter = 0;
     while (1) {
 	my $iter;
+	my $likeli;
 	for ($iter = 1; $iter <= $ST::CFG_MAX_ITERATIONS; ++$iter) {
 	    my $norm_log = File::Spec->catfile($logdir, "$ST::CFG_EXPTNAME.$iter.norm.log");
 	    open LOG, "<$norm_log" or last;
@@ -360,12 +361,15 @@ sub WaitForConvergence {
 		    Log("Training completed after $iter iterations\n");
 		    return 0;
 		}
+		elsif (/Likelihood Per Frame = (\S+)/) {
+		    $likeli = $1;
+		}
 	    }
 	    close LOG;
 	}
 	--$iter;
 	if ($iter > $maxiter) {
-	    Log("    Baum-Welch iteration $iter\n");
+	    Log("    Baum-Welch iteration $iter Average log-likelihood $likeli\n");
 	    $maxiter = $iter;
 	}
 	sleep $interval;
@@ -380,7 +384,7 @@ sub TiedWaitForConvergence {
     # Wait for training to complete (FIXME: This needs to be more robust)
     my ($maxngau, $maxiter, $lastngau, $lastiter) = (0,0,0,0);
     while (1) {
-	my ($ngau, $iter);
+	my ($ngau, $iter, $likeli);
 
 	$ngau = 1;
     NGAU:
@@ -397,6 +401,9 @@ sub TiedWaitForConvergence {
 		    } elsif (/COMPLETE/) {
 			Log("Training for $ngau Gaussian(s) completed after $iter iterations\n");
 			return 0;
+		    }
+		    elsif (/Likelihood Per Frame = (\S+)/) {
+			$likeli = $1;
 		    }
 		}
 		close LOG;
@@ -420,7 +427,7 @@ sub TiedWaitForConvergence {
 	    }
 	}
 	if ($maxngau > $lastngau or $maxiter > $lastiter) {
-	    Log("Baum-Welch gaussians $maxngau iteration $maxiter\n");
+	    Log("Baum-Welch gaussians $maxngau iteration $maxiter Average log-likelihood $likeli\n");
 	    $lastngau = $maxngau;
 	    $lastiter = $maxiter;
 	}
