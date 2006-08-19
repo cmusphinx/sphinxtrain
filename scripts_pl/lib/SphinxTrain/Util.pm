@@ -206,6 +206,22 @@ sub Converged
   return 2 if ($iter > $ST::CFG_MAX_ITERATIONS);
 }
 
+# Safe pipe open for Windows, from
+# http://www.xav.com/perl/lib/Pod/perlfork.html (sort of)
+sub pipe_from_fork {
+    my ($parent, $child);
+    pipe $parent, $child or die "pipe failed: $!";
+    my $pid = fork();
+    die "fork() failed: $!" unless defined $pid;
+    if ($pid) {
+	close $child;
+    } else {
+	close $parent;
+	open(STDOUT, ">&=" . fileno($child)) or die;
+    }
+    return ($pid, $parent);
+}
+
 sub RunTool {
   my $cmd = shift;
   my $logfile = shift;
@@ -215,10 +231,10 @@ sub RunTool {
       # TODO: Handle architecture-specific directories here
       $cmd = File::Spec->catfile($ST::CFG_BIN_DIR, $cmd);
   }
+  local (*LOG, $_);
   open LOG,">$logfile";
 
-  my $pipe = $|;
-  $| = 1;				# Turn on autoflushing
+  local $| = 1;	# Turn on autoflushing
 
   my $returnvalue = 0;
   my $error_count = 0;
@@ -227,14 +243,13 @@ sub RunTool {
   my $processed_counter = 0;
   my $printed = 0;
 
-  my $pid = open PIPE, "$cmd @_ 2>&1 |";
-  die "Failed to fork: $!" unless defined($pid);
+  my ($pid, $pipe) = pipe_from_fork();
   if ($pid == 0) {
       open STDERR, ">&STDOUT";
       exec $cmd, @_;
   }
   else {
-    while (<PIPE>) {
+    while (<$pipe>) {
       print LOG "$_";
       if (/(FATAL).*/) {
 	LogError ($_ . "\n");
@@ -255,8 +270,8 @@ sub RunTool {
 	}
       }
     }
-    close PIPE;
-    $| = $pipe;
+    close $pipe;
+    waitpid $pid, 0;
     if (($error_count > 0) or ($warning_count > 0)) {
       LogError ("\n\t\tThis step had $error_count ERROR messages and " .
 		    "$warning_count WARNING messages.\n" .
@@ -332,6 +347,8 @@ sub WaitForScript {
 
 sub WaitForConvergence {
     my $logdir = shift;
+    my $interval = shift;
+    $interval = 5 unless defined($interval);
     # Wait for training to complete (FIXME: This needs to be more robust)
     my $maxiter = 0;
     while (1) {
@@ -356,13 +373,15 @@ sub WaitForConvergence {
 	    Log("    Baum-Welch iteration $iter\n");
 	    $maxiter = $iter;
 	}
-	sleep 1;
+	sleep $interval;
     }
     return 0;
 }
 
 sub TiedWaitForConvergence {
     my $logdir = shift;
+    my $interval = shift;
+    $interval = 5 unless defined($interval);
     # Wait for training to complete (FIXME: This needs to be more robust)
     my ($maxngau, $maxiter, $lastngau, $lastiter) = (0,0,0,0);
     while (1) {
@@ -410,7 +429,7 @@ sub TiedWaitForConvergence {
 	    $lastngau = $maxngau;
 	    $lastiter = $maxiter;
 	}
-	sleep 1;
+	sleep $interval;
     }
     return 0;
 }
