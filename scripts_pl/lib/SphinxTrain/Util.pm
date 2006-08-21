@@ -213,14 +213,16 @@ sub RunTool {
       # TODO: Handle architecture-specific directories here
       $cmd = File::Spec->catfile($ST::CFG_BIN_DIR, $cmd);
 
-      # Apparently Windows needs the .exe suffix
+      # Windows needs the .exe suffix, but all OSes need to verify if
+      # the file exists. The right test here would be "-x", but this
+      # doesn't work in Windows. We use the next best thing, "-e"
       foreach ("", ".exe") {
-	  if (-x "$cmd$_") {
+	  if (-e "$cmd$_") {
 	      $cmd .= $_;
 	      last;
 	  }
       }
-      die "Could not find executable for $cmd" unless -x $cmd;
+      die "Could not find executable for $cmd" unless -e $cmd;
   }
   local (*LOG, $_);
   open LOG,">$logfile";
