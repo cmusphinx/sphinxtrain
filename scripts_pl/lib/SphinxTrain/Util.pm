@@ -233,6 +233,7 @@ sub RunTool {
     next unless (-e "$cmd$_");
     $cmd .= $_;
     $returnvalue = 0;
+    last;
   }
 
   my ($pid, $pipe);
