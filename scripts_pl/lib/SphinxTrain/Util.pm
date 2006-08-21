@@ -227,14 +227,23 @@ sub RunTool {
   my $processed_counter = 0;
   my $printed = 0;
 
+  my @extension = ("", ".exe");
+  $returnvalue = 1;
+  foreach (@extension) {
+    next unless (-e "$cmd$_");
+    $cmd .= $_;
+    $returnvalue = 0;
+  }
+
   my ($pid, $pipe);
   if ($^O eq 'MSWin32') {
       # Win32 can't do -|, so quote all the arguments and do a simple
       # pipe open.
+      my $arg = "";
       foreach (@_) {
-	  $_ = qq{"$_"};
+	  $arg .= qq{"$_"} . " ";
       }
-      $pid = open $pipe, qq{"$cmd" @_ 2>&1 |};
+      $pid = open $pipe, "\"$cmd\" $arg 2>&1 |";
   }
   else {
       $pid = open $pipe, "-|";
@@ -272,10 +281,10 @@ sub RunTool {
 		    "$warning_count WARNING messages.\n" .
 		    "\t\tPlease check the log file for details.\n");
     }
-    my $date = localtime;
-    print LOG "$date\n";
-    close LOG;
   }
+  my $date = localtime;
+  print LOG "$date\n";
+  close LOG;
   if ($returnvalue) {
     HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> FAILED </font>\n");
   } else {
