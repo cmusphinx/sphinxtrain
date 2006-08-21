@@ -207,13 +207,20 @@ sub Converged
 }
 
 sub RunTool {
-  my $cmd = shift;
-  my $logfile = shift;
-  my $ctl_counter = shift;
+  my ($cmd, $logfile, $ctl_counter, @args) = @_;
 
   unless ($cmd =~ / / or File::Spec->file_name_is_absolute($cmd)) {
       # TODO: Handle architecture-specific directories here
       $cmd = File::Spec->catfile($ST::CFG_BIN_DIR, $cmd);
+
+      # Apparently Windows needs the .exe suffix
+      foreach ("", ".exe") {
+	  if (-x "$cmd$_") {
+	      $cmd .= $_;
+	      last;
+	  }
+      }
+      die "Could not find executable for $cmd" unless -x $cmd;
   }
   local (*LOG, $_);
   open LOG,">$logfile";
@@ -227,32 +234,23 @@ sub RunTool {
   my $processed_counter = 0;
   my $printed = 0;
 
-  my @extension = ("", ".exe");
-  $returnvalue = 1;
-  foreach (@extension) {
-    next unless (-e "$cmd$_");
-    $cmd .= $_;
-    $returnvalue = 0;
-    last;
-  }
-
   my ($pid, $pipe);
   if ($^O eq 'MSWin32') {
       # Win32 can't do -|, so quote all the arguments and do a simple
       # pipe open.
-      my $arg = "";
-      foreach (@_) {
-	  $arg .= qq{"$_"} . " ";
+      foreach (@args) {
+	  $_ = qq{"$_"};
       }
-      $pid = open $pipe, "\"$cmd\" $arg 2>&1 |";
+      $pid = open $pipe, "\"$cmd\" @args 2>&1 |";
   }
   else {
       $pid = open $pipe, "-|";
       die "Failed to open pipe: $!" unless defined($pid);
   }
+
   if ($pid == 0) {
       open STDERR, ">&STDOUT";
-      exec $cmd, @_;
+      exec $cmd, @args;
   }
   else {
     while (<$pipe>) {
