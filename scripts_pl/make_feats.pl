@@ -34,6 +34,13 @@
 
 use Getopt::Long;
 use Pod::Usage;
+use File::Basename;
+use File::Spec::Functions;
+
+use lib catdir(dirname($0), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
+
 
 if ($#ARGV == -1) {
   pod2usage(2);
