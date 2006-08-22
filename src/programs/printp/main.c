@@ -340,7 +340,7 @@ print_gau_cnt(const char *fn)
 
     if (wt_var) {
 	ckd_free(wt_var[0][0][0]);
-	ckd_free_3d((void ***)wt_mean);
+	ckd_free_3d((void ***)wt_var);
     }
     return S3_SUCCESS;
 }
