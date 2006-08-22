@@ -58,8 +58,6 @@ int32
 baum_welch_update(float64 *log_forw_prob,
 		  vector_t **feature,
 		  uint32 n_obs,
-		  float32 ****spkr_xfrm_ainv,
-		  float32  ***spkr_xfrm_b,
 		  state_t *state,
 		  uint32 n_state,
 		  model_inventory_t *inv,
@@ -72,8 +70,6 @@ baum_welch_update(float64 *log_forw_prob,
 		  int32 mean_reest,
 		  int32 var_reest,
 		  int32 pass2var,
-		  int32 mllr_mult,
-		  int32 mllr_add,
 		  int32 var_is_full,
 		  FILE *pdumpfh);
 

@@ -66,8 +66,6 @@ accum_gauden(float32 ***cbacc,
 	     uint32 *lcl2gbl,
 	     uint32 n_lcl2gbl,
 	     vector_t *frame,
-	     float32 ****spkr_xfrm_a,
-	     float32  ***spkr_xfrm_b,
 	     uint32 ***den_idx,
 	     gauden_t *g,
 	     int32 mean_reest,
@@ -85,8 +83,6 @@ accum_global(model_inventory_t *inv,
 	     int32 tmat_reest,
 	     int32 mean_reest,
 	     int32 var_reest,
-	     int32 mllr_mult,
- 	     int32 mllr_add,
 	     int32 var_is_full);
 
 int32
@@ -97,8 +93,6 @@ accum_dump(const char *out_dir,
 	   int32 mean_reest,
 	   int32 var_reest,
 	   int32 pass2var,
-	   int32 mllr_mult,
-	   int32 mllr_add,
 	   int32 var_is_full,
 	   int ckpt);
 
@@ -115,12 +109,6 @@ accum_viterbi(uint32 *vit_sseq,
 	      int32 tmat_reest,
 	      int32 mean_reest,
 	      int32 var_reest);
-
-int
-accum_regmat(float32 ***cbacc,
-	     model_inventory_t *inv,
-	     vector_t *frame,
-	     uint32 ***den_idx);
 
 void
 accum_global_gauden(vector_t ***acc,
@@ -149,12 +137,6 @@ accum_global_tmat(model_inventory_t *inv,
 		  state_t *state,
 		  uint32 n_state);
 
-void
-accum_global_regmat(float32 ****regr_acc,
-                    float32 ****l_regr_acc,
-                    float32 *****regl_acc,
-                    float32 *****l_regl_acc,
-                    gauden_t *g);
 #endif /* ACCUM_H */ 
 
 

@@ -98,7 +98,6 @@
 #include <s3/s3gau_io.h>
 #include <s3/s3mixw_io.h>
 #include <s3/s3tmat_io.h>
-#include <s3/s3regmat_io.h>
 #include <s3/corpus.h>
 
 #include <s3/model_inventory.h>
@@ -133,26 +132,6 @@ accum_den_terms(float32 **acc,
 	    acc[j][k] += den_terms[j][kk];
 	}
     }
-}
-
-static float32 *
-xfrm_feat(float32 **ainv,
-	  float32 *b,
-	  float32 *f,
-	  uint32 len)
-{
-    uint32 i, k;
-    float32 *o;
-
-    o = ckd_calloc(len, sizeof(float32));
-
-    for (i = 0; i < len; i++) {
-	for (k = 0; k < len; k++) {
-	    o[i] += ainv[i][k] * (f[k] - b[k]);
-	}
-    }
-
-    return o;
 }
 
 /*********************************************************************
@@ -202,8 +181,6 @@ accum_gauden(float32 ***denacc,
 	     uint32 *lcl2gbl,
 	     uint32 n_lcl2gbl,
 	     vector_t *frame,
-	     float32 ****spkr_xfrm_ainv,
-	     float32  ***spkr_xfrm_b,
 	     uint32 ***den_idx,
 	     gauden_t *g,
 	     int32 mean_reest,
@@ -213,7 +190,7 @@ accum_gauden(float32 ***denacc,
 	     int32 var_is_full,
 	     FILE *pdumpfh)
 {
-    uint32 g_i, i, j, k, kk, l, mc=0;
+    uint32 g_i, i, j, k, kk, l;
 
     vector_t ***macc = g->l_macc;	/* local to utt */
     vector_t m;
@@ -233,15 +210,11 @@ accum_gauden(float32 ***denacc,
     float32 diff;
     float32 obs_cnt;
     vector_t feat = NULL;
-    vector_t xfeat = NULL;
 
     /* for each density family found in the utterance */
     for (i = 0; i < n_lcl2gbl; i++) {
 
 	g_i = lcl2gbl[i];
-
-	if (g->mllr_idx)
-	    mc = g->mllr_idx[g_i];	/* set MLLR class, if any */
 
 	/* for each feature */
 	for (j = 0; j < gauden_n_feat(g); j++) {
@@ -255,19 +228,6 @@ accum_gauden(float32 ***denacc,
 		dvec = ckd_calloc(g->veclen[j], sizeof(float32));
 	    }
 
-	    if (spkr_xfrm_ainv || spkr_xfrm_b) {
-		/* If there is a speaker MLLR inverse transform
-		   in effect, do it */
-		if (xfeat) ckd_free((void *)xfeat);
-
-		xfeat = xfrm_feat(spkr_xfrm_ainv[mc][j], spkr_xfrm_b[mc][j],
-				  feat, g->veclen[j]);
-	    }
-	    else {
-		/* i.e. do no transform */
-		xfeat = feat;
-	    }
-	    
 	    /* for each density in the mixture density */
 	    for (kk = 0; kk < gauden_n_top(g); kk++) {
 		
@@ -314,14 +274,12 @@ accum_gauden(float32 ***denacc,
 		}
 		for (l = 0; l < g->veclen[j]; l++) {
 		    if (mean_reest) {
-			/* Reest means based on transformed features; if any */
-
-			m[l] += obs_cnt * xfeat[l];
+			m[l] += obs_cnt * feat[l];
 		    }
 
 		    if (var_reest && !var_is_full) {
 			/* Always reest vars on untransformed features for now */
-
+		        /* This does NOT work with -2passvar no (for pretty obvious reasons) */
 			if (!pass2var)
 			    v[l] += obs_cnt * feat[l] * feat[l];
 			else {
@@ -563,8 +521,6 @@ accum_global(model_inventory_t *inv,
 	     int32 tmat_reest,
 	     int32 mean_reest,
 	     int32 var_reest,
-             int32 mllr_mult,    /* MLLR: accumulate A of Ax + B */
-             int32 mllr_add,     /* MLLR: accumulate B of Ax + B */
 	     int32 var_is_full)
 {
     gauden_t *g;
@@ -601,12 +557,6 @@ accum_global(model_inventory_t *inv,
 				 inv->cb_inverse, inv->n_cb_inverse);
     }
     
-    if (mllr_mult || mllr_add) {
-        accum_global_regmat(g->regr_acc, g->l_regr_acc,
-                            g->regl_acc, g->l_regl_acc,
-                            g);
-    }
-
     return S3_SUCCESS;
 }
 
@@ -692,8 +642,6 @@ mk_bkp(int32 mixw_reest,
        int32 tmat_reest,
        int32 mean_reest,
        int32 var_reest,
-       int32 mllr_mult,
-       int32 mllr_add,
        const char *out_dir)
 {
     char fn[MAXPATHLEN+1];
@@ -739,19 +687,6 @@ mk_bkp(int32 mixw_reest,
 	    }
 	}
     }
-    if (mllr_mult || mllr_add) {
-	sprintf(fn, "%s/regmat_counts", out_dir);
-	sprintf(fn_bkp, "%s/regmat_counts.bkp", out_dir);
-
-	fp = fopen(fn, "rb");
-	if (fp != NULL) {
-	    fclose(fp);
-	    if (rename(fn, fn_bkp) < 0) {
-		E_ERROR_SYSTEM("Couldn't backup %s\n", fn);
-		return S3_ERROR;
-	    }
-	}
-    }
 
     return S3_SUCCESS;
 }
@@ -760,8 +695,6 @@ revert_bkp(int32 mixw_reest,
 	   int32 tmat_reest,
 	   int32 mean_reest,
 	   int32 var_reest,
-	   int32 mllr_mult,
-	   int32 mllr_add,
 	   const char *out_dir)
 {
     char fn[MAXPATHLEN+1];
@@ -795,15 +728,6 @@ revert_bkp(int32 mixw_reest,
 	    return S3_ERROR;
 	}
     }
-    if (mllr_mult || mllr_add) {
-	sprintf(fn, "%s/regmat_counts", out_dir);
-	sprintf(fn_bkp, "%s/regmat_counts.bkp", out_dir);
-
-	if (rename(fn_bkp, fn) < 0) {
-	    E_ERROR_SYSTEM("Couldn't revert to backup of %s\n", fn);
-	    return S3_ERROR;
-	}
-    }
 
     return S3_SUCCESS;
 }
@@ -813,8 +737,6 @@ commit(int32 mixw_reest,
        int32 tmat_reest,
        int32 mean_reest,
        int32 var_reest,
-       int32 mllr_mult,
-       int32 mllr_add,
        int32 ckpt,
        const char *out_dir)
 {
@@ -836,11 +758,6 @@ commit(int32 mixw_reest,
     if (mean_reest || var_reest) {
 	sprintf(fn_bkp, "%s/gauden_counts.bkp", out_dir);
 
-
-	unlink(fn_bkp);
-    }
-    if (mllr_mult || mllr_add) {
-	sprintf(fn_bkp, "%s/regmat_counts.bkp", out_dir);
 
 	unlink(fn_bkp);
     }
@@ -915,8 +832,6 @@ accum_dump(const char *out_dir,
 	   int32 mean_reest,
 	   int32 var_reest,
 	   int32 pass2var,
-	   int32 mllr_mult, /* MLLR: dump A accumulators */
-	   int32 mllr_add,  /* MLLR: dump B accumulators */
 	   int32 var_is_full,
 	   int ckpt)  	    /* checkpoint dump flag */
 {
@@ -929,7 +844,7 @@ accum_dump(const char *out_dir,
 
     g = inv->gauden;
 
-    mk_bkp(mixw_reest, tmat_reest, mean_reest, var_reest, mllr_mult, mllr_add, out_dir);
+    mk_bkp(mixw_reest, tmat_reest, mean_reest, var_reest, out_dir);
 
     if (mixw_reest) {
 	sprintf(fn, "%s/mixw_counts", out_dir);
@@ -944,8 +859,6 @@ accum_dump(const char *out_dir,
 		       tmat_reest,
 		       mean_reest,
 		       var_reest,
-		       mllr_mult,
-		       mllr_add,
 		       out_dir);
 
 	    return S3_ERROR;
@@ -969,8 +882,6 @@ accum_dump(const char *out_dir,
 		       tmat_reest,
 		       mean_reest,
 		       var_reest,
-		       mllr_mult,
-		       mllr_add,
 		       out_dir);
 
 	    return S3_ERROR;
@@ -1012,8 +923,6 @@ accum_dump(const char *out_dir,
 		       tmat_reest,
 		       mean_reest,
 		       var_reest,
-		       mllr_mult,
-		       mllr_add,
 		       out_dir);
 
 	    return S3_ERROR;
@@ -1025,41 +934,11 @@ accum_dump(const char *out_dir,
 		   "No %s/gauden_counts produced.\n",
 		   out_dir);
     }
-
-    if (mllr_mult || mllr_add) {
-        sprintf(fn, "%s/regmat_counts", out_dir);
-        if (s3regmatcnt_write(fn,
-			      g->regr_acc,
-			      g->regl_acc,
-			      g->n_mllr_class,
-			      g->n_feat,
-			      g->veclen,
-			      mllr_mult,
-			      mllr_add) != S3_SUCCESS) {
-	    revert_bkp(mixw_reest,
-		       tmat_reest,
-		       mean_reest,
-		       var_reest,
-		       mllr_mult,
-		       mllr_add,
-		       out_dir);
-
-            return S3_ERROR;
-	}
-    }
-    else {
-	if (!ckpt)
-	    E_INFO("MLLR regmat not reestimated.  "
-		   "No %s/regmat_counts produced.\n",
-		   out_dir);
-    }
     
     return commit(mixw_reest,
 		  tmat_reest,
 		  mean_reest,
 		  var_reest,
-		  mllr_mult,
-		  mllr_add,
 		  ckpt,
 		  out_dir);
 }
@@ -1079,210 +958,6 @@ accum_viterbi(uint32 *vit_sseq,
 	      int32 var_reest)
 {
 	return S3_SUCCESS;
-}
-/*****************************************************************************
- *
- * ADDITION BY BIXA AND VIPUL: July 10, 1996
- * (Basic code by Eric)
- *
- * Function: accum_regmat
- *
- * Description:
- *
- * Function Inputs:
- *      float32 ***denacc -
- *              contains probability of observing the top N codewords
- *              for the given time.  Major index for the array ranges over
- *              all codewords, but only the top N codewords have non-zero
- *              values.
- *
- *      vector_t *frame -
- *              All feature vectors for the current time.
- *
- *      uint32 ***den_idx -
- *              Top N density indices for all feature streams for time t.
- *
- *      gauden_t *g -
- *              Pointer to a structure containing the initial mean/var
- *              estimates for the iteration and mean/var reestimation
- *              numerators and denominators.
- *
- * Global Inputs:
- *      None
- *
- * Return Values:
- *      S3_SUCCESS - if accumulation was successful.
- *
- *      Currently this is the only return value, but may,
- *      want error conditions in the future.
- *
- * Global Outputs:
- *      None
- *
- * Errors:
- *      None
- *
- *********************************************************************/
-int
-accum_regmat(float32 ***denacc,
-	     model_inventory_t *inv,
-	     vector_t *frame,
-	     uint32 ***den_idx)
-{
-    uint32 g_i, i, j, k, kk, l, p, q, veclen, mc;
-    static uint32 p_veclen = 0;
-
-    vector_t ***mean = NULL;
-    vector_t m;
-    static float32 **mprod = NULL;
-
-    vector_t ***var = NULL;
-    vector_t v;
-
-    float32 *****regl = NULL;
-    float32 ****regr = NULL;
-
-    float32 xxx,yyy;	/* the tata of the late 90's */
-    float32 obs_cnt;
-    vector_t feat;
-
-    uint32 *lcl2gbl;
-    uint32 n_lcl2gbl;
-    gauden_t *g;
-    model_def_t *mdef;
-
-    if (denacc == NULL) {
-        E_FATAL ("denacc = NULL; Regression matrix accumulator update failed\n");
-    }
-
-    g = inv->gauden;
-    mean = g->mean;
-    var = g->var;
-    regl = g->l_regl_acc;
-    regr = g->l_regr_acc;
-
-    lcl2gbl = inv->cb_inverse;
-    n_lcl2gbl = inv->n_cb_inverse;
-
-    mdef = inv->mdef;
-
-    /* for each density family found in the frame */
-    for (i = 0; i < n_lcl2gbl; i++) {
-	g_i = lcl2gbl[i];
-
-	mc = g->mllr_idx[g_i];
-
-	/* for each feature */
-	for (j = 0; j < gauden_n_feat(g); j++) {
-
-	    feat = frame[j];	/* The jth independent feature stream */
-	    veclen = g->veclen[j];
-	    
-	    if (p_veclen != veclen) {
-		if (mprod) {
-		    ckd_free(mprod);
-		    mprod = NULL;
-		}
-		mprod = (float32 **)ckd_calloc_2d(veclen, veclen, sizeof(float32));
-
-		p_veclen = veclen;
-	    }
-	    else {
-		memset((void *)&mprod[0][0], 0, veclen*veclen*sizeof(float32));
-	    }
-		
-	    /* for each density in the mixture density */
-	    for (kk = 0; kk < gauden_n_top(g); kk++) {
-		
-		k = den_idx[i][j][kk];	/* i.e. density k is one of the n_top densities */
-
-		obs_cnt = denacc[i][j][k];	/* observation count for density (k) at this time frame given the model */
-
-		/* don't bother adding a bunch of essentially zero values */
-		if (obs_cnt <= MIN_IEEE_NORM_POS_FLOAT32)
-		    continue;
-
-#ifdef ACCUM_VERBOSE
-		printf("denacc[%u][%u][%3u] == %.3e\n", i, j, k, obs_cnt);
-#endif
-
-		m = mean[g_i][j][k];	/* the mean (i,j,k) */
-		v = var[g_i][j][k];		/* 1 / (2 * var (i,j,k)) */
-
-		/* factor out (partial) outer product of means */
-		for (p = 0; p < veclen; p++) {
-		    for (q = p; q < veclen; q++) {
-			mprod[p][q] = m[p] * m[q];
-		    }
-		}
-
-		for (l = 0; l < veclen; l++) {
-		    xxx = obs_cnt * v[l];
-		    for (p = 0; p < veclen; p++) {
-			for (q = p; q < veclen; q++) {
-			    /* since regl matrices are symmetric, compute
-			       only the upper triangular matrix + diagonal */
-			    regl[mc][j][l][p][q] += xxx * mprod[p][q];
-			}
-			yyy = xxx * m[p];
-			regl[mc][j][l][p][veclen] += yyy;
-			regr[mc][j][l][p] += yyy * feat[l];
-		    }
-		    regl[mc][j][l][veclen][veclen] += xxx;
-		    regr[mc][j][l][veclen] += xxx * feat[l];
-		}
-	    }
-	}
-    }
-/*********DDDDD BIXA & VIPUL, DEBUGGER ********/
-/*    printf("ACHTUNG: regr[0][0][0][39] = %f feat = %f\n",regr[0][0][0][39],feat[0]); */
-/******************** End debug **************/
-
-    return S3_SUCCESS;
-}
-
-
-/*
- * ADDED BY BIXA AND VIPUL: July 10 1996
- * (Basic code by Eric)
- * 
- * Accumulates local MLLR regression matrix accumulators
- * into a global regression matrix accumulator
- */
-void
-accum_global_regmat(float32 ****regr_acc,
-                    float32 ****l_regr_acc,
-                    float32 *****regl_acc,
-                    float32 *****l_regl_acc,
-                    gauden_t *g)
-{
-    uint32 f, i, j, k, l, m;
-
-    for (m = 0; m < g->n_mllr_class; m++) {
-	for (f = 0; f < g->n_feat; f++) {
-	    l = g->veclen[f];
-	    for (i = 0; i < l; i++) {
-		for (j = 0; j <= l; j++) {
-
-		    regr_acc[m][f][i][j] += l_regr_acc[m][f][i][j];
-
-		    for (k = 0; k < j; k++) {
-			/* accumulate the upper triangular part to the
-			   lower triangular part */
-			regl_acc[m][f][i][j][k] += l_regl_acc[m][f][i][k][j];
-		    }
-		    for (k = j; k <= l; k++) {
-			/* Accumulate diagonal and upper triangular part as is */
-			regl_acc[m][f][i][j][k] += l_regl_acc[m][f][i][j][k];
-		    }
-		}
-	    }
-	}
-    }
-    
-/*********DDDDD BIXA & VIPUL, DEBUGGER ********/
-/*    printf("ACHTUNG: regr[0][0][0][39] = %f\n",regr_acc[0][0][0][39]); */
-/******************** End debug **************/
 }
 
 /*

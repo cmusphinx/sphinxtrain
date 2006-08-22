@@ -351,3 +351,53 @@ solve(float32 **A, /*Input : an n*n matrix A */
 
     return S3_SUCCESS;
 }
+
+/* Transform means using MLLR. */
+int32
+mllr_transform_mean(vector_t ***mean,
+		    vector_t ***var, /* NOT USED */
+		    uint32 gau_begin,
+		    uint32 n_mgau,
+		    uint32 n_feat,
+		    uint32 n_density,
+		    const uint32 *veclen,
+		    float32 ****A,
+		    float32 ***B,
+		    int32 *cb2mllr,
+		    uint32 n_mllr_class)
+{
+    uint32 i, j, k, l, m;
+    float32 *tmean;
+
+    for (i = gau_begin; i < n_mgau; i++) {
+	int32 mc;
+
+	if (cb2mllr)
+	    mc = cb2mllr[i];
+	else
+	    mc = 0;
+	if (mc < 0) continue;	/* skip */
+
+	for (j = 0; j < n_feat; j++) {
+	    tmean = (float32 *)ckd_calloc(veclen[j],sizeof(float32));
+
+	    for (k = 0; k < n_density; k++) {
+		for (l = 0; l < veclen[j]; l++) {
+		    tmean[l] = 0;
+		    for (m = 0; m < veclen[j]; m++) {
+			tmean[l] += A[mc][j][l][m] * mean[i][j][k][m];
+
+		    }
+		    tmean[l] += B[mc][j][l];
+		}
+
+		/* Write back the transformed mean vector */
+		for (l = 0; l < veclen[j]; l++) 
+		    mean[i][j][k][l] = tmean[l];
+		
+	    }
+	    ckd_free(tmean);
+	}
+    }
+    return S3_SUCCESS;
+}

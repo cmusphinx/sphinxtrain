@@ -69,6 +69,17 @@ need to specify a model definition using -moddeffn.";
 	  CMD_LN_NO_DEFAULT,
 	  "Output Gaussian mean file name"},
 
+	{ "-ingaucntfn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Input Gaussian accumulation count file name"},
+
+	{ "-outgaucntfn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Output Gaussian accumulation count file name"},
 
 	{ "-mllrmat",
 	  CMD_LN_STRING,
@@ -88,11 +99,11 @@ need to specify a model definition using -moddeffn.";
           "no",
           "Use CD senones only. -moddeffn must be given."},
 
-        { "-varfloor",
-          CMD_LN_FLOAT32,
+        { "-inverse",
+          CMD_LN_BOOLEAN,
 	  CMD_LN_NO_VALIDATION,
-          "1e-2",
-          "Value of the variance floor. Mainly for smoothing the mean."},
+          "no",
+          "Apply the inverse transform (for speaker adaptive training)."},
 
         { "-moddeffn",
           CMD_LN_STRING,
@@ -104,8 +115,13 @@ need to specify a model definition using -moddeffn.";
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
-	  "Gaussian variance file name. For smoothing."},
+	  "Variance (baseline-var, or error-var) file (NOT USED!!!)"},
 
+        { "-varfloor",
+          CMD_LN_FLOAT32,
+	  CMD_LN_NO_VALIDATION,
+          "1e-3",
+          "Variance floor value (NOT USED!!!)"},
 
         { NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION,    CMD_LN_NO_DEFAULT, NULL }
     };

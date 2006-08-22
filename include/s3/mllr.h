@@ -71,5 +71,17 @@ int32 solve  (
         int32   len
        );
 
+int32 mllr_transform_mean(vector_t ***mean,
+			  vector_t ***var, /* NOT USED */
+			  uint32 gau_begin,
+			  uint32 n_mgau,
+			  uint32 n_feat,
+			  uint32 n_density,
+			  const uint32 *veclen,
+			  float32 ****A,
+			  float32 ***B,
+			  int32 *cb2mllr,
+			  uint32 n_mllr_class);
+
 #endif
 

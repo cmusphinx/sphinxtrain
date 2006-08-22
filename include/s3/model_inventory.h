@@ -143,9 +143,7 @@ mod_inv_restore_acc(model_inventory_t *minv,
 		    int mixw_reest,
 		    int mean_reest,
 		    int var_reest,
-		    int tmat_reest,
-		    int mllr_mult,
-		    int mllr_add);
+		    int tmat_reest);
 
 #endif /* MODEL_INVENTORY_H */ 
 

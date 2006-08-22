@@ -132,8 +132,6 @@ int32
 baum_welch_update(float64 *log_forw_prob,
 		  vector_t **feature,
 		  uint32 n_obs,
-		  float32 ****spkr_xfrm_ainv,
-		  float32  ***spkr_xfrm_b,
 		  state_t *state,
 		  uint32 n_state,
 		  model_inventory_t *inv,
@@ -146,8 +144,6 @@ baum_welch_update(float64 *log_forw_prob,
 		  int32 mean_reest,
 		  int32 var_reest,
 		  int32 pass2var,
-		  int32 mllr_mult, /* MLLR: accumulate multiplicative term */
-		  int32 mllr_add,  /* MLLR: accumulate additive term */
 		  int32 var_is_full,
 		  FILE *pdumpfh)
 {
@@ -228,11 +224,11 @@ baum_welch_update(float64 *log_forw_prob,
 #endif
 
     ret = backward_update(active_alpha, active_astate, n_active_astate, scale, dscale,
-			  feature, n_obs, spkr_xfrm_ainv, spkr_xfrm_b,
+			  feature, n_obs,
 			  state, n_state,
 			  inv, b_beam, spthresh,
 			  mixw_reest, tmat_reest, mean_reest, var_reest, pass2var,
-			  mllr_mult, mllr_add, var_is_full, pdumpfh);
+			  var_is_full, pdumpfh);
     if (bwd_timer)
 	timing_stop(bwd_timer);
 
@@ -255,7 +251,7 @@ baum_welch_update(float64 *log_forw_prob,
 	timing_start(rstu_timer);
     accum_global(inv, state, n_state,
 		 mixw_reest, tmat_reest, mean_reest, var_reest,
-		 mllr_mult, mllr_add, var_is_full);
+		 var_is_full);
     if (rstu_timer)
 	timing_stop(rstu_timer);
 

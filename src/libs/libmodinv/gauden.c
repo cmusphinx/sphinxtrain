@@ -601,8 +601,6 @@ alloc_acc_full(gauden_t *g, uint32 n_id)
 void
 gauden_free_acc(gauden_t *g)
 {
-    uint32 f, m;
-
     if (g->macc) {
 	gauden_free_param(g->macc);
     }
@@ -622,26 +620,11 @@ gauden_free_acc(gauden_t *g)
 	ckd_free_3d((void ***)g->dnom);
     }
     g->dnom = NULL;
-
-    if (g->regr_acc && g->regl_acc) {
-	for (m = 0; m < g->n_mllr_class; m++) {
-	    for (f = 0; f < g->n_feat; f++) {
-		ckd_free_3d((void ***)g->regl_acc[m][f]);
-		ckd_free_2d((void **)g->regr_acc[m][f]);
-	    }
-	}
-	ckd_free_2d((void **)g->regl_acc);
-	ckd_free_2d((void **)g->regr_acc);
-    }
-    g->regl_acc = NULL;
-    g->regr_acc = NULL;
 }
 
 int32
 gauden_alloc_acc(gauden_t *g)
 {
-    uint32 f, m;
-
     if (*(int32 *)cmd_ln_access("-meanreest") == TRUE) {
 	g->macc = alloc_acc(g, g->n_mgau);
     }
@@ -658,23 +641,6 @@ gauden_alloc_acc(gauden_t *g)
 					       g->n_density,
 					       sizeof(float32));
     }
-    if ((*(int32 *)cmd_ln_access("-mllrmult") == TRUE) ||
-        (*(int32 *)cmd_ln_access("-mllradd") == TRUE)) {
-        g->regr_acc = (float32 ****) ckd_calloc_2d(g->n_mllr_class, g->n_feat, sizeof(float32 **));
-	g->regl_acc = (float32 *****) ckd_calloc_2d(g->n_mllr_class, g->n_feat, sizeof(float32 ***));
-
-	for (m = 0; m < g->n_mllr_class; m++) {
-	    for (f = 0; f < g->n_feat; f++) {
-		g->regr_acc[m][f] = (float32 **) ckd_calloc_2d(g->veclen[f],
-							       g->veclen[f]+1,
-							       sizeof(float32));
-		g->regl_acc[m][f] = (float32 ***) ckd_calloc_3d(g->veclen[f],
-								g->veclen[f]+1,
-								g->veclen[f]+1,
-								sizeof(float32));
-	    }
-	}
-    }
     
     return S3_SUCCESS;
 }
@@ -682,8 +648,6 @@ gauden_alloc_acc(gauden_t *g)
 void
 gauden_free_l_acc(gauden_t *g)
 {
-    uint32 f, m;
-
     if (g->l_macc) {
 	gauden_free_param(g->l_macc);
     }
@@ -703,31 +667,14 @@ gauden_free_l_acc(gauden_t *g)
 	ckd_free_3d((void ***)g->l_dnom);
     }
     g->l_dnom = NULL;
-
-    if (g->l_regr_acc && g->l_regl_acc) {
-	for (m = 0; m < g->n_mllr_class; m++) {
-	    for (f = 0; f < g->n_feat; f++) {
-		ckd_free_3d((void ***)g->l_regl_acc[m][f]);
-		ckd_free_2d((void **)g->l_regr_acc[m][f]);
-	    }
-	}
-	ckd_free_2d((void **)g->l_regl_acc);
-	ckd_free_2d((void **)g->l_regr_acc);
-    }
-    g->l_regl_acc = NULL;
-    g->l_regr_acc = NULL;
 }
 
 int32
 gauden_alloc_l_acc(gauden_t *g, uint32 n_lcl,
 		   int32 mean_reest,
 		   int32 var_reest,
-		   int32 mllr_mult,
-		   int32 mllr_add,
 		   int32 fullvar)
 {
-    uint32 f, m;
-
     /* free any local accumulators from the prior utterance */
     gauden_free_l_acc(g);
 
@@ -756,26 +703,6 @@ gauden_alloc_l_acc(gauden_t *g, uint32 n_lcl,
 						 sizeof(float32));
     }
 
-    if (mllr_mult || mllr_add) {
-	/* MLLR matrix accumulators */
-	assert(g->l_regr_acc == NULL);
-	g->l_regr_acc = (float32 ****) ckd_calloc_2d(g->n_mllr_class, g->n_feat, sizeof(float32 **));
-	assert(g->l_regl_acc == NULL);
-	g->l_regl_acc = (float32 *****) ckd_calloc_2d(g->n_mllr_class, g->n_feat, sizeof(float32 ***));
-
-	for (m = 0; m < g->n_mllr_class; m++) {
-	    for (f = 0; f < g->n_feat; f++) {
-		g->l_regr_acc[m][f] = (float32 **) ckd_calloc_2d(g->veclen[f],
-								 g->veclen[f]+1,
-								 sizeof(float32));
-		g->l_regl_acc[m][f] = (float32 ***) ckd_calloc_3d(g->veclen[f],
-								  g->veclen[f]+1,
-								  g->veclen[f]+1,
-								  sizeof(float32));
-	    }
-	}
-    }
-    
     return S3_SUCCESS;
 }
 

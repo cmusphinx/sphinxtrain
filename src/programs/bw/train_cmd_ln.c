@@ -572,23 +572,17 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  "yes",
 	  "Reestimate transition probability matrices"},
 
-	{ "-spkrxfrm",
+	{ "-mllrmat",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
-	  "A speaker transform to use for SAT modelling"},
+	  "An MLLR transformation file to apply to the means of the model"},
 
-	{ "-mllrmult",
-	  CMD_LN_BOOLEAN,
+	{ "-cb2mllrfn",
+	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  "no",
-	  "Reestimate multiplicative term of MLLR adatpation of means"},
-
-	{ "-mllradd",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
-	  "no",
-	  "Reestimate shift term of MLLR adaptation of means"},
+	  ".1cls.",
+	  "Codebook-to-MLLR-class mapping file name" },
 
 	{ "-ts2cbfn",
 	  CMD_LN_STRING,
@@ -636,12 +630,6 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
 	  "File which specifies frames of background 'silence' to delete" },
-
-	{ "-cb2mllrfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
-	  "Codebook-to-MLLR-class mapping file name" },
 
 	{ "-spthresh",
 	  CMD_LN_FLOAT32,

@@ -77,15 +77,6 @@ typedef struct {
     vector_t ***l_vacc;
     vector_t ****l_fullvacc;
     float32  ***l_dnom;
-
-    int32 *mllr_idx;		/* MLLR class for each mixture Gaussian */
-    uint32 n_mllr_class;	/* Total # of MLLR classes */
-
-    float32  ****l_regr_acc;
-    float32  *****l_regl_acc;
-
-    float32  ****regr_acc;
-    float32  *****regl_acc;
 } gauden_t;
 
 #define MAX_LOG_DEN	10.0
@@ -247,8 +238,6 @@ int32
 gauden_alloc_l_acc(gauden_t *g, uint32 n_lcl,
 		   int32 mean_reest,
 		   int32 var_reest,
-		   int32 mllr_mult,
-		   int32 mllr_add,
 		   int32 fullvar);
 
 void

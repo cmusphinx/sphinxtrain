@@ -420,9 +420,7 @@ mod_inv_restore_acc(model_inventory_t *minv,
 		    int mixw_reest,
 		    int mean_reest,
 		    int var_reest,
-		    int tmat_reest,
-		    int mllr_mult,
-		    int mllr_add)
+		    int tmat_reest)
 {
     char fn[MAXPATHLEN+1];
     uint32 n_mixw;
@@ -435,12 +433,9 @@ mod_inv_restore_acc(model_inventory_t *minv,
     uint32 n_cb;
     const uint32 *veclen, *rd_veclen;
 
-    uint32 mult, add;
-
     int ret = S3_SUCCESS;
 
     uint32 i;
-    uint32 n_class;
     int32 pass2var;
     
     veclen = feat_vecsize();
@@ -496,7 +491,7 @@ mod_inv_restore_acc(model_inventory_t *minv,
 	    ret = S3_ERROR;
 	}
     }
-    if (mean_reest || var_reest || mllr_mult || mllr_add) {
+    if (mean_reest || var_reest) {
 	gauden_free_acc(minv->gauden);
 
 	sprintf(fn, "%s/gauden_counts", accumdir);
@@ -535,47 +530,6 @@ mod_inv_restore_acc(model_inventory_t *minv,
 	    }
 	}
 	ckd_free((void *)rd_veclen);
-    }
-
-    if (mllr_mult || mllr_add) {
-	if (s3regmatcnt_read(fn,
-			     &(minv->gauden->regr_acc),
-			     &(minv->gauden->regl_acc),
-			     &n_class,
-			     &n_feat,
-			     &rd_veclen,
-			     &mult,
-			     &add) != S3_SUCCESS) {
-	    return S3_ERROR;
-	}
-	
-	if (n_feat != minv->n_feat) {
-	    E_ERROR("Checkpointed n_feat=%u inconsistent w/ trainer config=%u\n",
-		    n_feat, minv->n_feat);
-	    ret = S3_ERROR;
-	}
-
-	for (i = 0; i < n_feat; i++) {
-	    if (veclen[i] != rd_veclen[i]) {
-		E_ERROR("Checkpointed veclen[%u]=%u inconsistent w/ trainer config veclen[%u]=%u\n",
-			i, rd_veclen[i], i, veclen[i]);
-		ret = S3_ERROR;
-	    }
-	}
-	ckd_free((void *)rd_veclen);
-
-	if ((mllr_mult && !mult) ||
-	    (!mllr_mult && mult)) {
-	    E_ERROR("Checkpointed mllr_mult=%u inconsistent with trainer config=%u\n",
-		    mult, mllr_mult);
-	    ret = S3_ERROR;
-	}
-	if ((mllr_add && !add) ||
-	    (!mllr_add && add)) {
-	    E_ERROR("Checkpointed mllr_add=%u inconsistent with trainer config=%u\n",
-		    add, mllr_add);
-	    ret = S3_ERROR;
-	}
     }
 
     return ret;

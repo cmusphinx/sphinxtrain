@@ -174,7 +174,7 @@ ctl -cepdir cepdir -cepext .mfc -ceplen 13 -stride 10 ";
 	{ "-cb2mllrfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ".1cls.",
 	  "codebook to MLLR class mapping file (may be '.1cls.')"},
 	{ "-dictfn",
 	  CMD_LN_STRING,

@@ -138,9 +138,7 @@ main_initialize(int argc,
 		char *argv[],
 		model_inventory_t **out_inv,
 		lexicon_t **out_lex,
-		model_def_t **out_mdef,
-		float32 *****out_sxfrm_ainv,	/* per-"speaker" MLLR transform (A^(-1) of Ax + B)*/
-		float32 ****out_sxfrm_b)	/* per-"speaker" MLLR transform (B of Ax + B)*/
+		model_def_t **out_mdef)
 {
     model_inventory_t *inv;	/* the model inventory */
     lexicon_t *lex;		/* the lexicon to be returned to the caller */
@@ -155,14 +153,15 @@ main_initialize(int argc,
     int mean_reest;
     int var_reest;
     int sil_del;
-    int mllr_mult;
-    int mllr_add;
     int did_restore = FALSE;
     const char *fn;
     char* silence_str;
+    /* dhuggins@cs, 2006-08: Note these are forward transforms for use
+       in training.  The inverse transform of the accumulators is now
+       done externally by mllr_transform. */
     float32 ****sxfrm_a = NULL;
-    float32 ****sxfrm_ainv = NULL;
     float32 ***sxfrm_b = NULL;
+    int32 *mllr_idx = NULL;
     
     E_INFO("Compiled on %s at %s\n", __DATE__, __TIME__);
 
@@ -279,34 +278,10 @@ main_initialize(int argc,
 	printf("# of codebooks in mean/var files, %u, inconsistent with ts2cb mapping %u\n", inv->gauden->n_mgau, n_cb);
     }
 
-    fn = cmd_ln_access("-cb2mllrfn");
-    if (fn != NULL) {
-	if (strcmp(fn, ".1cls.") == 0) {
-	    inv->gauden->mllr_idx = ckd_calloc(inv->gauden->n_mgau, sizeof(int32));
-	    n_mllr = 1;
-	    n_map = inv->gauden->n_mgau;
-	}
-	else if (s3cb2mllr_read((const char *)cmd_ln_access("-cb2mllrfn"),
-				&inv->gauden->mllr_idx,
-				&n_map,
-				&n_mllr) != S3_SUCCESS) {
-	    return S3_ERROR;
-	}
-	if (n_map != inv->gauden->n_mgau) {
-	    E_FATAL("cb2mllr maps %u cb, but read %u cb from files\n",
-		    n_map, inv->gauden->n_mgau);
-	}
-
-	inv->gauden->n_mllr_class = n_mllr;
-    }
-	
-
     mixw_reest = *(int32 *)cmd_ln_access("-mixwreest");
     mean_reest = *(int32 *)cmd_ln_access("-meanreest");
     var_reest  = *(int32 *)cmd_ln_access("-varreest");
     tmat_reest = *(int32 *)cmd_ln_access("-tmatreest");
-    mllr_mult  = *(int32 *)cmd_ln_access("-mllrmult");
-    mllr_add   = *(int32 *)cmd_ln_access("-mllradd");
     sil_del    = *(int32 *)cmd_ln_access("-sildel");
 
     E_INFO("Will %sreestimate mixing weights.\n",
@@ -315,10 +290,6 @@ main_initialize(int argc,
 	   (mean_reest ? "" : "NOT "));
     E_INFO("Will %sreestimate variances.\n",
 	   (var_reest ? "" : "NOT "));
-    E_INFO("Will %sreestimate MLLR multiplicative term.\n",
-	   (mllr_mult ? "" : "NOT "));
-    E_INFO("Will %sreestimate MLLR additive term.\n",
-	   (mllr_add ? "" : "NOT "));
     E_INFO("WIll %soptionally delete silence in Baum Welch or Viterbi. \n",
 	   (sil_del ? "" : "NOT "));
 
@@ -427,9 +398,7 @@ main_initialize(int argc,
 				    mixw_reest,
 				    mean_reest,
 				    var_reest,
-				    tmat_reest,
-				    mllr_mult,
-				    mllr_add) != S3_SUCCESS) {
+				    tmat_reest) != S3_SUCCESS) {
 		E_FATAL("Unable to restore checkpoint information\n");
 	    }
 
@@ -457,56 +426,65 @@ main_initialize(int argc,
        configuration */
     corpus_init();
 
-    if (cmd_ln_access("-spkrxfrm")) {
+    if (cmd_ln_access("-mllrmat")) {
 	const uint32 *tmp_veclen, *feat_veclen;
 	uint32 tmp_n_mllrcls;
 	uint32 tmp_n_stream;
-	uint32 m, j;
+	uint32 j;
 
-	if (read_reg_mat(cmd_ln_access("-spkrxfrm"),
+	if (read_reg_mat(cmd_ln_access("-mllrmat"),
 			 &tmp_veclen,
 			 &tmp_n_mllrcls,
 			 &tmp_n_stream,
 			 &sxfrm_a, &sxfrm_b) != S3_SUCCESS) {
-	    E_FATAL("Unable to read %s\n", cmd_ln_access("-spkrxfrm"));
+	    E_FATAL("Unable to read %s\n", cmd_ln_access("-mllrmat"));
 	}
 
 	if (feat_n_stream() != tmp_n_stream) {
-	    E_FATAL("# feature streams in -spkrxfrm %s != # feature streams configured on cmd ln\n");
+	    E_FATAL("# feature streams in -mllrmat %s != # feature streams configured on cmd ln\n");
 	}
 	
 	feat_veclen = feat_vecsize();
 	for (j = 0; j < tmp_n_stream; j++) {
 	    if (feat_veclen[j] != tmp_veclen[j]) {
-		E_FATAL("# components of stream %u in -spkrxfrm inconsistent w/ -feat config (%u != %u)\n",
+		E_FATAL("# components of stream %u in -mllrmat inconsistent w/ -feat config (%u != %u)\n",
 			j, tmp_veclen[j], feat_veclen[j]);
 	    }
 	}
-	
-	/* Compute A^(-1) for speaker transform */
-	sxfrm_ainv = (float32 ****)ckd_calloc_2d(tmp_n_mllrcls, tmp_n_stream, sizeof(float32 **));
-	for (m = 0; m < tmp_n_mllrcls; m++) {
-	    for (j = 0; j < tmp_n_stream; j++) {
-		sxfrm_ainv[m][j] = (float32 **)ckd_calloc_2d(tmp_veclen[j], tmp_veclen[j], sizeof(float32));
-		
-		invert(sxfrm_ainv[m][j], sxfrm_a[m][j], tmp_veclen[j]);
-	    }
-	}
-
-	/* Free A since it is not needed now */
-	for (m = 0; m < tmp_n_mllrcls; m++) {
-	    for (j = 0; j < tmp_n_stream; j++) {
-		ckd_free_2d((void **)sxfrm_a[m][j]);
-	    }
-	}
-
-	ckd_free_2d((void **)sxfrm_a);
 	ckd_free((void *)tmp_veclen);
+
+	fn = cmd_ln_access("-cb2mllrfn");
+	if (fn != NULL) {
+	    if (strcmp(fn, ".1cls.") == 0) {
+		mllr_idx = ckd_calloc(inv->gauden->n_mgau, sizeof(int32));
+		n_mllr = 1;
+		n_map = inv->gauden->n_mgau;
+	    }
+	    else if (s3cb2mllr_read((const char *)cmd_ln_access("-cb2mllrfn"),
+				    &mllr_idx,
+				    &n_map,
+				    &n_mllr) != S3_SUCCESS) {
+		return S3_ERROR;
+	    }
+	    if (n_map != inv->gauden->n_mgau) {
+		E_FATAL("cb2mllr maps %u cb, but read %u cb from files\n",
+			n_map, inv->gauden->n_mgau);
+	    }
+	}
+
+	/* Transform the means using the speaker transform if available. */
+	mllr_transform_mean(inv->gauden->mean,
+			    inv->gauden->var,
+			    0, inv->gauden->n_mgau,
+			    inv->gauden->n_feat,
+			    inv->gauden->n_density,
+			    inv->gauden->veclen,
+			    sxfrm_a, sxfrm_b,
+			    mllr_idx, n_mllr);
+	ckd_free(mllr_idx);
+	free_mllr_A(sxfrm_a, n_mllr, tmp_n_stream);
+	free_mllr_B(sxfrm_b, n_mllr, tmp_n_stream);
     }
-
-    *out_sxfrm_ainv = sxfrm_ainv;
-
-    *out_sxfrm_b = sxfrm_b;
 
     return S3_SUCCESS;
 }
@@ -515,8 +493,6 @@ void
 main_reestimate(model_inventory_t *inv,
 		lexicon_t *lex,
 		model_def_t *mdef,
-		float32 ****spkr_xfrm_ainv,
-		float32 ***spkr_xfrm_b,
 		int32 viterbi)
 {
     vector_t *mfcc;	/* utterance cepstra */	
@@ -539,8 +515,6 @@ main_reestimate(model_inventory_t *inv,
     uint32 tmat_reest;	/* if TRUE, reestimate transition probability matrices */
     uint32 mean_reest;	/* if TRUE, reestimate means */
     uint32 var_reest;	/* if TRUE, reestimate variances */
-    uint32 mllr_mult;  /* if TRUE estimate multiplicative term of MLLR */
-    uint32 mllr_add;   /* if TRUE estimate additive term of MLLR */
     uint32 sil_del;    /* if TRUE optionally delete silence at the end */
     char *trans;
     char* silence_str;
@@ -620,8 +594,6 @@ main_reestimate(model_inventory_t *inv,
     var_reest = *(int32 *)cmd_ln_access("-varreest");
     pass2var = *(int32 *)cmd_ln_access("-2passvar");
     var_is_full = *(int32 *)cmd_ln_access("-fullvar");
-    mllr_mult = *(int32 *)cmd_ln_access("-mllrmult");
-    mllr_add = *(int32 *)cmd_ln_access("-mllradd");
     sil_del    = *(int32 *)cmd_ln_access("-sildel");
     silence_str = (char *)cmd_ln_access("-siltag");
     pdumpdir = (char *)cmd_ln_access("-pdumpdir");
@@ -631,16 +603,11 @@ main_reestimate(model_inventory_t *inv,
 	ckpt_intv = *(int32 *)cmd_ln_access("-ckptintv");
     }
 
-    if ((mllr_mult || mllr_add) && (inv->gauden->mllr_idx == NULL)) {
-	E_FATAL("Specify MLLR class map using -cb2mllrfn\n");
-    }
-
     if (cmd_ln_access("-accumdir") == NULL) {
 	E_WARN("NO ACCUMDIR SET.  No counts will be written; assuming debug\n");
     }
 
-    if (!mixw_reest && !tmat_reest && !mean_reest && !var_reest &&
-	(!mllr_mult && !mllr_add)) {
+    if (!mixw_reest && !tmat_reest && !mean_reest && !var_reest) {
 	E_WARN("No reestimation specified!  None done.\n");
 	
 	return;
@@ -798,8 +765,6 @@ main_reestimate(model_inventory_t *inv,
 
 	    if (baum_welch_update(&log_lik,
 				  f, n_frame,
-				  spkr_xfrm_ainv,
-				  spkr_xfrm_b,
 				  state_seq, n_state,
 				  inv,
 				  a_beam,
@@ -811,8 +776,6 @@ main_reestimate(model_inventory_t *inv,
 				  mean_reest,
 				  var_reest,
 				  pass2var,
-				  mllr_mult,
-				  mllr_add,
 				  var_is_full,
 				  pdumpfh
 				  ) == S3_SUCCESS) {
@@ -935,8 +898,6 @@ main_reestimate(model_inventory_t *inv,
 			      mean_reest,
 			      var_reest,
 			      pass2var,
-			      mllr_mult,
-			      mllr_add,
 			      var_is_full,
 			      TRUE) != S3_SUCCESS) {
 		static int notified = FALSE;
@@ -992,8 +953,6 @@ main_reestimate(model_inventory_t *inv,
 		      mean_reest,
 		      var_reest,
 		      pass2var,
-		      mllr_mult,
-		      mllr_add,
 		      var_is_full,
 		      FALSE) != S3_SUCCESS) {
 	static int notified = FALSE;
@@ -1038,17 +997,15 @@ int main(int argc, char *argv[])
     model_inventory_t *inv;
     lexicon_t *lex = NULL;
     model_def_t *mdef = NULL;
-    float32 ****spkr_xfrm_ainv = NULL;
-    float32 ***spkr_xfrm_b = NULL;
     
     (void) prefetch_init();	/* should do this BEFORE any allocations */
 
     if (main_initialize(argc, argv,
-			&inv, &lex, &mdef, &spkr_xfrm_ainv, &spkr_xfrm_b) != S3_SUCCESS) {
+			&inv, &lex, &mdef) != S3_SUCCESS) {
 	E_FATAL("initialization failed\n");
     }
 
-    main_reestimate(inv, lex, mdef, spkr_xfrm_ainv, spkr_xfrm_b, *(int32 *)cmd_ln_access("-viterbi"));
+    main_reestimate(inv, lex, mdef, *(int32 *)cmd_ln_access("-viterbi"));
 		    
     return 0;
 }

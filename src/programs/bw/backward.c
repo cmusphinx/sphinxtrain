@@ -258,14 +258,6 @@ den_terms(float64 **d_term,
  *		A boolean indicating whether or not to do variance
  *		reestimation.
  *
- *     int32 mllr_mult
- *           A boolean indicating whether or not to compute the
- *           multiplicative term for MLLR adaptation of means
- *
- *     int32 mllr_add
- *           A boolean indicating whether or not to compute the
- *           additive term for MLLR adaptation of means
- * 
  * Global Inputs: 
  *	None
  * 
@@ -290,8 +282,6 @@ backward_update(float64 **active_alpha,
 		float64 **dscale,
 		vector_t **feature,
 		uint32 n_obs,
-		float32 ****spkr_xfrm_ainv,
-		float32  ***spkr_xfrm_b,
 		state_t *state_seq,
 		uint32 n_state,
 		model_inventory_t *inv,
@@ -302,8 +292,6 @@ backward_update(float64 **active_alpha,
 		int32 mean_reest,
 		int32 var_reest,
 		int32 pass2var,
-		int32 mllr_mult,
-		int32 mllr_add,
 		int32 var_is_full,
 		FILE *pdumpfh)
 {
@@ -494,7 +482,7 @@ backward_update(float64 **active_alpha,
     /* Allocate local accumulators for mean, variance or mllr
        matrix reestimation sums if necessary */
     gauden_alloc_l_acc(g, n_lcl_cb,
-		       mean_reest, var_reest, mllr_mult, mllr_add,
+		       mean_reest, var_reest,
 		       var_is_full);
 
     if (tmat_reest) {
@@ -527,7 +515,7 @@ backward_update(float64 **active_alpha,
 					     n_top,
 					     sizeof(uint32));
 
-    if (mean_reest || var_reest || mllr_mult || mllr_add) {
+    if (mean_reest || var_reest) {
 	/* allocate space for the per frame density counts */
 	denacc = (float32 ***)ckd_calloc_3d(n_lcl_cb,
 					    n_feat,
@@ -880,7 +868,7 @@ backward_update(float64 **active_alpha,
 		    
 		    /* accumulate the probability for each density in the 
 		     * density reestimation accumulators */
-		    if (mean_reest || var_reest || mllr_mult || mllr_add) {
+		    if (mean_reest || var_reest) {
 			accum_den_terms(denacc[l_cb], d_term,
 					now_den_idx[l_cb], n_feat, n_top);
 			if (l_cb != l_ci_cb) {
@@ -1060,8 +1048,6 @@ backward_update(float64 **active_alpha,
 			 cb_inv,
 			 n_lcl_cb,
 			 feature[t+1],
-			 spkr_xfrm_ainv,
-			 spkr_xfrm_b,
 			 now_den_idx,
 			 g,
 			 mean_reest,
@@ -1072,15 +1058,7 @@ backward_update(float64 **active_alpha,
 			 pdumpfh);
 	}
 
-        if (mllr_mult || mllr_add) {
-	    /* Update the MLLR matrices accumulators */
-	    accum_regmat(denacc,
-			 inv,
-			 feature[t+1],
-			 now_den_idx);
-        }
-
-	if (mean_reest || var_reest || mllr_mult || mllr_add)
+	if (mean_reest || var_reest)
 	    memset(&denacc[0][0][0], 0, denacc_size);
 
 	if (rstf_timer)
@@ -1202,7 +1180,7 @@ backward_update(float64 **active_alpha,
 	}
 	
 	
-	if (mean_reest || var_reest || mllr_mult || mllr_add) {
+	if (mean_reest || var_reest) {
 	    accum_den_terms(denacc[l_cb], d_term,
 			    now_den_idx[l_cb], n_feat, n_top);
 	    if (l_cb != l_ci_cb) {
@@ -1221,8 +1199,6 @@ backward_update(float64 **active_alpha,
 			 cb_inv,
 			 n_lcl_cb,
 			 feature[0],
-			 spkr_xfrm_ainv,
-			 spkr_xfrm_b,
 			 now_den_idx,
 			 g,
 			 mean_reest,
@@ -1233,13 +1209,6 @@ backward_update(float64 **active_alpha,
 			 pdumpfh);
 	}
 
-        if (mllr_mult || mllr_add) {
-	    /* Update the MLLR matrices accumulators */
-	    accum_regmat(denacc,
-			 inv,
-			 feature[0],
-			 now_den_idx);
-        }
 	if (rstf_timer)
 	    timing_stop(rstf_timer);
     }
