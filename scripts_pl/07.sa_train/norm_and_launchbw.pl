@@ -62,12 +62,12 @@ my $logdir ="$ST::CFG_LOG_DIR/$processname";
 mkdir ($logdir,0777) unless -d $logdir;
 my $log = "$logdir/${ST::CFG_EXPTNAME}.$iter.norm.log";
 
-my (@parts);
+my @speakers;
 # Read list of speakers
 open SPEAKER, "<$ST::CFG_SPEAKERLIST" or die "Failed to open $ST::CFG_SPEAKERLIST: $!";
-chomp(@parts = <SPEAKER>);
+chomp(@speakers = <SPEAKER>);
 close SPEAKER;
-@parts = map "$iter-$_-sa", @parts;
+my @parts = map "$iter-$_", @speakers;
 
 # Check the number and list of parts done. Compute avg likelihood per frame
 my $num_done = 0; my $tot_lkhd = 0; my $tot_frms = 0;
@@ -108,6 +108,68 @@ if ($tot_frms == 0) {
     print OUTPUT "Baum welch ran successfully for only 0 frames! Aborting..\n";
     close OUTPUT;
     exit (0);
+}
+
+my $hmmdir = catdir($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.sat_$ST::CFG_DIRLABEL");
+
+# Inverse-transform Gaussian occupancy counts using previous iteration's MLLR
+if ($iter > 1) {
+    Log("Inverse transform of Gaussian counts... ");
+
+    foreach my $speaker (@speakers) {
+	Log(" $speaker");
+	my $mllrfile = catfile($hmmdir, "$ST::CFG_EXPTNAME.$speaker.mllr");
+	my $bwaccumdir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_${speaker}";
+	my $gaucntfn = catfile($bwaccumdir, 'gauden_counts');
+	my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$speaker.mllr_transform.log";
+	my $rv = RunTool
+	    ('mllr_transform', $logfile, 0,
+	     -ingaucntfn => $gaucntfn,
+	     -outgaucntfn => "$gaucntfn.new",
+	     -inverse => 'yes',
+	     -mllrmat => $mllrfile);
+	# FIXME: Support multi-class MLLR
+	exit $rv if $rv;
+    }
+    Log("\n");
+}
+
+# Estimate new MLLR transformations
+Log("Estimating speaker MLLR transforms... ");
+foreach my $speaker (@speakers) {
+    # Run mllr_solve
+    Log(" $speaker");
+    my $inmodeldir = ($iter == 1) ?
+	catfile($ST::CFG_MODEL_DIR,
+		"${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}")
+	    : $hmmdir;
+    my $mllrfile = catfile($hmmdir, "$ST::CFG_EXPTNAME.$speaker.mllr");
+    my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$speaker.mllr_solve.log";
+    # FIXME: Support multi-class MLLR
+    my $rv = RunTool
+	('mllr_solve', $logfile, 0,
+	 -outmllrfn => $mllrfile,
+	 -accumdir => catfile($ST::CFG_BASE_DIR,
+			      'bwaccumdir', "${ST::CFG_EXPTNAME}_buff_${speaker}"),
+	 -meanfn => catfile($inmodeldir, 'means'),
+	 -varfn => catfile($inmodeldir, 'variances'));
+    exit $rv if $rv;
+}
+Log("\n");
+
+# Now overwrite the old Gaussian counts with the inverse-transform ones
+if ($iter > 1) {
+    Log("Updating Gaussian count files... ");
+    foreach my $speaker (@speakers) {
+	Log(" $speaker");
+	my $mllrfile = catfile($hmmdir, "$ST::CFG_EXPTNAME.$speaker.mllr");
+	my $bwaccumdir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_${speaker}";
+	my $gaucntfn = catfile($bwaccumdir, 'gauden_counts');
+	unlink($gaucntfn) or die "Failed to remove $gaucntfn: $!";
+	rename("$gaucntfn.new", $gaucntfn)
+	    or die "Failed to rename $gaucntfn.new to $gaucntfn: $!";
+    }
+    Log("\n");
 }
 
 my $lkhd_per_frame = $tot_lkhd/$tot_frms;

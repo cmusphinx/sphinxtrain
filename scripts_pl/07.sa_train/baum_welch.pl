@@ -49,8 +49,8 @@ use SphinxTrain::Util;
 
 $| = 1; # Turn on autoflushing
 
-die "USAGE: $0 <iter> <speaker> <type>" if @ARGV != 3;
-my ($iter, $speaker, $type) = @ARGV;
+die "USAGE: $0 <iter> <speaker>" if @ARGV != 2;
+my ($iter, $speaker) = @ARGV;
 
 my $modelinitialname="${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}";
 my $modelname="${ST::CFG_EXPTNAME}.sat_${ST::CFG_DIRLABEL}";
@@ -91,22 +91,14 @@ if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
 my ($listoffiles, $transcriptfile, $logfile);
 $listoffiles = catfile($ST::CFG_LIST_DIR, "$speaker.ctl");
 $transcriptfile = catfile($ST::CFG_LIST_DIR, "$speaker.lsn");
-# Always use the adapted mean for estimation (if available)
-unless ($iter == 1 and $type eq 'si') {
-    $meanfn = catfile($ST::CFG_MODEL_DIR, $modelname,
-		      "$ST::CFG_EXPTNAME.$speaker.means");
-}
-# FIXME: We currently have to run two separate passes because the
-# inverse transform is done internally to bw.  Once we have an
-# external tool to do it this will go away.  The 'sa' type does
-# the transform, while 'si' doesn't.
 my @mllr_args;
-if ($type eq 'sa') {
-    # And inverse-transform statistics back to the SA model
-    @mllr_args = (-spkrxfrm => catfile($ST::CFG_MODEL_DIR, $modelname,
-				       "$ST::CFG_EXPTNAME.$speaker.mllr"));
+# If we have an MLLR transform, apply it in Baum-Welch
+if ($iter > 1) {
+    # FIXME: Support multi-class MLLR
+    @mllr_args = (-mllrmat => catfile($ST::CFG_MODEL_DIR, $modelname,
+				      "$ST::CFG_EXPTNAME.$speaker.mllr"));
 }
-$logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$speaker-$type.bw.log";
+$logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$speaker.bw.log";
 
 my $ctl_counter = 0;
 open INPUT,"<$listoffiles" or die "Failed to open $listoffiles: $!";
@@ -116,9 +108,9 @@ while (<INPUT>) {
 close INPUT;
 $ctl_counter = 1 unless ($ctl_counter);
 
-copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.07.sa.bw.$iter.$speaker.$type.state.gif";
-HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.07.sa.bw.$iter.$speaker.$type.state.gif") . " ");
-Log ("    Baum welch starting for iteration: $iter speaker: $speaker ($type) ");
+copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.07.sa.bw.$iter.$speaker.state.gif";
+HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.07.sa.bw.$iter.$speaker.state.gif") . " ");
+Log ("    Baum welch starting for iteration: $iter speaker: $speaker ");
 HTML_Print (FormatURL("$logfile", "Log File") . "\n");
 
 my $return_value = RunTool
@@ -157,7 +149,7 @@ my $return_value = RunTool
 
 
 if ($return_value) {
-  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.07.sa.bw.$iter.$speaker.$type.state.gif";
+  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.07.sa.bw.$iter.$speaker.state.gif";
   LogError ("\tbw failed\n");
 }
 exit ($return_value);

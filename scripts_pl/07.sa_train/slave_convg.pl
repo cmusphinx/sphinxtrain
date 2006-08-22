@@ -83,6 +83,7 @@ if ($iter == 1) {
     mkdir ($hmmdir,0777);
 
     exit ($return_value) if ($return_value);
+    Log("    Training speaker-adaptive models...\n");
 }
 
 # Read list of speakers
@@ -91,50 +92,8 @@ chomp(my @speakers = <SPEAKER>);
 close SPEAKER;
 
 my @deps;
-# Run baum_welch twice:
-# First to calculate MLLR transform based on previous SA model
-# (this is actually kind of bogus, but whatever...)
-Log("    Accumulating for speaker MLLR transforms...");
 foreach (@speakers) {
-    push @deps, [$_ => LaunchScript("bw.$iter.si.$_", ['baum_welch.pl', $iter, $_, 'si'])];
-}
-# Now estimate and transform means
-foreach (@deps) {
-    my ($speaker, $job) = @$_;
-    WaitForScript($job);
-
-    # Run mllr_solve
-    Log(" $speaker");
-    my $inmodeldir = ($iter == 1) ?
-	catfile($ST::CFG_MODEL_DIR,
-		"${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}")
-	    : $hmmdir;
-    my $mllrfile = catfile($hmmdir, "$ST::CFG_EXPTNAME.$speaker.mllr");
-    my $mllrmeans = catfile($hmmdir, "$ST::CFG_EXPTNAME.$speaker.means");
-    my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$speaker.mllr_solve.log";
-    my $rv = RunTool
-	('mllr_solve', $logfile, 0,
-	 -outmllrfn => $mllrfile,
-	 -accumdir => catfile($ST::CFG_BASE_DIR,
-			      'bwaccumdir', "${ST::CFG_EXPTNAME}_buff_${speaker}"),
-	 -meanfn => catfile($inmodeldir, 'means'),
-	 -varfn => catfile($inmodeldir, 'variances'));
-    exit $rv if $rv;
-
-    my $rv = RunTool
-	('mllr_transform', $logfile, 0,
-	 -inmeanfn => catfile($inmodeldir, 'means'),
-	 -outmeanfn => $mllrmeans,
-	 -mllrmat => $mllrfile,
-	 -varfn => catfile($inmodeldir, 'variances'));
-    exit $rv if $rv;
-}
-
-# Second to train new SA model with speaker transforms
-@deps = ();
-Log("\n    Training Speaker-Adaptive model...\n");
-foreach (@speakers) {
-    push @deps, LaunchScript("bw.$iter.sa.$_", ['baum_welch.pl', $iter, $_, 'sa'])
+    push @deps, LaunchScript("bw.$iter.$_", ['baum_welch.pl', $iter, $_]);
 }
 LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
 
