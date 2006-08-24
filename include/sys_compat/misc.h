@@ -47,7 +47,9 @@
 #ifndef MISC_H
 #define MISC_H
 
-/* Nothing so far for Unix type machines */
+#ifndef M_PI
+#define M_PI       (3.14159265358979323846)
+#endif
 
 #if (defined(WIN32) && !defined(__CYGWIN__))
 

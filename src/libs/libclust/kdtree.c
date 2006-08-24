@@ -49,6 +49,7 @@
 
 #include <s3/common.h>
 #include <s3/kdtree.h>
+#include <sys_compat/misc.h>
 #include <string.h>
 #include <math.h>
 
