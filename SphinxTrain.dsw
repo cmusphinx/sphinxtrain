@@ -327,7 +327,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "kmeans_init"=.\win32\msdev\programs\kdtree\kdtree.dsp - Package Owner=<4>
+Project: "kdtree"=.\win32\msdev\programs\kdtree\kdtree.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -399,7 +399,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "kmeans_init"=.\win32\msdev\programs\lda_train\lda_train.dsp - Package Owner=<4>
+Project: "lda_train"=.\win32\msdev\programs\lda_train\lda_train.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -582,7 +582,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "kmeans_init"=.\win32\msdev\programs\map_adapt\map_adapt.dsp - Package Owner=<4>
+Project: "map_adapt"=.\win32\msdev\programs\map_adapt\map_adapt.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
