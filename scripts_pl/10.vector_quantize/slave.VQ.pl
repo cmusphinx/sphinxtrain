@@ -16,9 +16,15 @@
 ##    the documentation and/or other materials provided with the
 ##    distribution.
 ##
-## This work was supported in part by funding from the Defense Advanced 
-## Research Projects Agency and the National Science Foundation of the 
-## United States of America, and the CMU Sphinx Speech Consortium.
+## 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
+##    endorse or promote products derived from this software without
+##    prior written permission. To obtain permission, contact 
+##    sphinx@cs.cmu.edu.
+##
+## 4. Redistributions of any form whatsoever must retain the following
+##    acknowledgment:
+##    "This product includes software developed by Carnegie
+##    Mellon University (http://www.speech.cs.cmu.edu/)."
 ##
 ## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
 ## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -34,33 +40,41 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton
+## Author: Ricky Houghton 
 ##
 
 use strict;
 use File::Copy;
 use File::Basename;
-use File::Spec::Functions;
+use File::Spec;
 use File::Path;
 
-use lib catdir(dirname($0), 'lib');
+use lib File::Spec->catdir(dirname($0), File::Spec->updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-# What pieces would you like to compute.
+#*****************************************************************************
+# The agg_seg script aggregates all the training feature vectors into a 
+# single dump file and the kmeans script uses the contents of this dump
+# file to compute the vq centroids in the vector space 
+#*****************************************************************************
 
-my @sample_steps =
-    ("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
-     "$ST::CFG_SCRIPT_DIR/10.vector_quantize/slave.VQ.pl",
-     "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
-     "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/90.deleted-interpolation/deleted_interpolation.pl",
-     "$ST::CFG_SCRIPT_DIR/99.make_s2_models/make_s2_models.pl",
-    );
+#Clean up from previous runs
+my $logdir = "$ST::CFG_LOG_DIR/10.vector_quantize";
 
-foreach my $step (@sample_steps) {
-    my $ret_value = RunScript($step);
-    die "Something failed: ($step)\n" if $ret_value;
+rmtree($logdir) unless ! -d $logdir;
+mkdir ($logdir,0777);
+
+$| = 1; # Turn on autoflushing
+# No error checking
+Log ("MODULE: 10 Vector Quantization\n");
+my $return_value = 0;
+if ($ST::CFG_HMM_TYPE eq ".semi.") {
+  $return_value = (RunScript('agg_seg.pl')
+		   or RunScript('kmeans.pl'));
+} else {
+  Log("    Skipped for continuous models\n");
 }
+Log ("\n");
+exit ($return_value != 0);
+

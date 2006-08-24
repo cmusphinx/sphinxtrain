@@ -34,7 +34,7 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton
+## Author: Ricky Houghton 
 ##
 
 use strict;
@@ -43,24 +43,35 @@ use File::Basename;
 use File::Spec::Functions;
 use File::Path;
 
-use lib catdir(dirname($0), 'lib');
+use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-# What pieces would you like to compute.
+my $mdeffn   = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.ci.mdef";
+my $hmm_dir  = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}";
+my $meanfn   = "$hmm_dir/means";
+my $varfn    = "$hmm_dir/variances";
+my $mixwfn   = "$hmm_dir/mixture_weights";
+my $tmp_str = time();
+#my $tempfn   = "${ST::CFG_BASE_DIR}/tmp/questions.$tmp_str";
+#my $questfn  = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.tree_questions";
+my $questfn = ${ST::CFG_QUESTION_SET};
 
-my @sample_steps =
-    ("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
-     "$ST::CFG_SCRIPT_DIR/10.vector_quantize/slave.VQ.pl",
-     "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
-     "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/90.deleted-interpolation/deleted_interpolation.pl",
-     "$ST::CFG_SCRIPT_DIR/99.make_s2_models/make_s2_models.pl",
-    );
+my $logdir = "${ST::CFG_LOG_DIR}/40.buildtrees";
+mkdir ($logdir,0777) unless -d $logdir;
+my $logfile = "$logdir/${ST::CFG_EXPTNAME}.make_questions.log";
 
-foreach my $step (@sample_steps) {
-    my $ret_value = RunScript($step);
-    die "Something failed: ($step)\n" if $ret_value;
-}
+$| = 1; # Turn on autoflushing
+Log ("    Make Questions\n");
+HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
+
+exit RunTool('make_quests', $logfile, 0,
+	     -moddeffn => $mdeffn,
+	     -meanfn => $meanfn,
+	     -varfn => $varfn,
+	     -mixwfn => $mixwfn,
+	     -npermute => 8,
+	     -niter => 1,
+	     -qstperstt => 20,
+	     -questfn => $questfn,
+	     -type => $ST::CFG_HMM_TYPE);

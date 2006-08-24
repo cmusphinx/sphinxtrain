@@ -56,6 +56,24 @@ my $logdir = "$ST::CFG_LOG_DIR/03.force_align";
 my $outdir = "$ST::CFG_BASE_DIR/falignout";
 
 Log("MODULE: 03 Force-aligning transcripts\n");
+unless (-x catdir($ST::CFG_BIN_DIR, "sphinx3_align")
+	or -x catdir($ST::CFG_BIN_DIR, "sphinx3_align.exe")) {
+    Log("    Skipped: No sphinx3_align(.exe) found in $ST::CFG_BIN_DIR\n");
+    Log("    If you wish to do force-alignment, please copy or link the\n");
+    Log("    sphinx3_align binary from Sphinx 3 to $ST::CFG_BIN_DIR\n");
+    Log("    and either define \$CFG_MODEL_DIR in sphinx_train.cfg or\n");
+    Log("    run context-independent training first.\n");
+    exit 0;
+}
+
+unless (defined($ST::CFG_FORCE_ALIGN_MODELDIR)
+	or -f "$ST::CFG_MODEL_DIR/$ST::CFG_EXPTNAME.ci_$ST::CFG_DIRLABEL/means") {
+    Log("    Skipped: No acoustic models available for force alignment\n");
+    Log("    If you wish to do force-alignment, please define \$CFG_MODEL_DIR\n");
+    Log("    in sphinx_train.cfg or run context-independent training first.\n");
+    exit 0;
+}
+
 Log("    Cleaning up directories: logs...");
 rmtree($logdir, 0, 1);
 mkdir($logdir,0777);
@@ -68,9 +86,10 @@ mkdir($ST::CFG_QMGR_DIR,0777);
 Log("s2stseg...");
 rmtree($ST::CFG_STSEG_DIR, 0, 1);
 mkdir($ST::CFG_STSEG_DIR,0777);
+Log("\n");
 
 # Build state segmentation directories
-Log("    Building state segmentation directories: ");
+Log("    Building state segmentation directories...");
 open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
 my %dirs;
 while (<INPUT>) {
@@ -81,7 +100,6 @@ while (<INPUT>) {
     next if $basedir eq ".";
     unless ($dirs{$basedir}) {
 	$dirs{$basedir}++;
-	Log("$basedir ");
 	mkpath(catdir($ST::CFG_STSEG_DIR, $basedir), 0, 0777);
     }
 }
