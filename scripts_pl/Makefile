@@ -36,21 +36,58 @@
 # ====================================================================
 TOP=..
 DIRNAME=scripts_pl
-BUILD_DIRS = 00.verify 01.vector_quantize 02.ci_schmm 03.makeuntiedmdef \
-             04.cd_schmm_untied 05.buildtrees \
-             06.prunetree 07.cd-schmm 08.deleted-interpolation \
-             09.make_s2_models mc
-ALL_DIRS= $(BUILD_DIRS)
+BUILD_DIRS=
+ALL_DIRS=
 FESTIVAL_SCRIPTS = make_dict.festival
-TMPSCRIPTS=setup_SphinxTrain.pl maketopology.pl make_feats.pl setup_tutorial.pl
 MODULES = lib/Queue/POSIX.pm			\
 	lib/Queue/Job.pm			\
 	lib/Queue/PBS.pm			\
 	lib/SphinxTrain/Config.pm		\
 	lib/SphinxTrain/Util.pm			\
 	lib/Queue.pm
+SCRIPTS = 00.verify/verify_all.pl				\
+	03.force_align/force_align.pl				\
+	03.force_align/slave_align.pl				\
+	03.makeuntiedmdef/make_untied_mdef.pl			\
+	05.lda_train/lda_train.pl				\
+	10.vector_quantize/agg_seg.pl				\
+	10.vector_quantize/kmeans.pl				\
+	10.vector_quantize/slave.VQ.pl				\
+	20.ci_hmm/baum_welch.pl					\
+	20.ci_hmm/norm_and_launchbw.pl				\
+	20.ci_hmm/norm.pl					\
+	20.ci_hmm/slave_convg.pl				\
+	30.cd_hmm_untied/baum_welch.pl				\
+	30.cd_hmm_untied/norm_and_launchbw.pl			\
+	30.cd_hmm_untied/norm.pl				\
+	30.cd_hmm_untied/slave_convg.pl				\
+	40.buildtrees/buildtree.pl				\
+	40.buildtrees/make_questions.pl				\
+	40.buildtrees/prunetree.pl				\
+	40.buildtrees/slave.treebuilder.pl			\
+	40.buildtrees/tiestate.pl				\
+	50.cd_hmm_tied/baum_welch.pl				\
+	50.cd_hmm_tied/norm_and_launchbw.pl			\
+	50.cd_hmm_tied/norm.pl					\
+	50.cd_hmm_tied/slave_convg.pl				\
+	50.cd_hmm_tied/split_gaussians.pl			\
+	60.sa_train/baum_welch.pl				\
+	60.sa_train/norm_and_launchbw.pl			\
+	60.sa_train/norm.pl					\
+	60.sa_train/slave_convg.pl				\
+	90.deleted_interpolation/deleted_interpolation.pl	\
+	99.make_s2_models/make_s2_models.pl			\
+	copy_setup.pl						\
+	make_feats.pl						\
+	maketopology.pl						\
+	RunAll.pl						\
+	setup_SphinxTrain.pl					\
+	setup_tutorial.pl					\
+	texFormat.pl
+
 FILES = Makefile RunAll.pl $(TMPSCRIPTS) \
-        $(FESTIVAL_SCRIPTS) $(MODULES)
+        $(FESTIVAL_SCRIPTS) $(MODULES) \
+	$(SCRIPTS)
 
 ALL = make_dict
 

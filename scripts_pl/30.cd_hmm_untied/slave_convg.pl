@@ -71,7 +71,7 @@ mkdir ("$logdir",0777) unless -d $logdir;
 my $return_value = 0;
 if ($iter == 1) {
    # Clean up junk from earlier runs
-   Log ("MODULE: 04 Training Context Dependent models\n");
+   Log ("MODULE: 30 Training Context Dependent models\n");
    Log ("    Cleaning up directories: accumulator...");
 
     rmtree ($ST::CFG_BWACCUM_DIR, 0, 1);
