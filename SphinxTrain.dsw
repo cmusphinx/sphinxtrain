@@ -327,7 +327,79 @@ Package=<4>
 
 ###############################################################################
 
+Project: "kmeans_init"=.\win32\msdev\programs\kdtree\kdtree.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "kmeans_init"=.\win32\msdev\programs\kmeans_init\kmeans_init.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "kmeans_init"=.\win32\msdev\programs\lda_train\lda_train.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -475,6 +547,42 @@ Package=<4>
 ###############################################################################
 
 Project: "make_quests"=.\win32\msdev\programs\make_quests\make_quests.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libclust
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmllr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmodinv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name librpcc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs2io
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libio
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "kmeans_init"=.\win32\msdev\programs\map_adapt\map_adapt.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -89,6 +89,10 @@ SOURCE=..\..\..\..\src\libs\libclust\div.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\src\libs\libclust\kdtree.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\src\libs\libclust\kmeans.c
 # End Source File
 # Begin Source File
