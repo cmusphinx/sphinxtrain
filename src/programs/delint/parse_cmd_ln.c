@@ -150,6 +150,11 @@ terms, and then does the division. ";
 	  CMD_LN_NO_VALIDATION,
 	  "13",
 	  "Input feature vector length (e.g. MFCC)"},
+	{ "-cepwin",
+	  CMD_LN_INT32,
+	  CMD_LN_NO_VALIDATION,
+	  "0",
+	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 

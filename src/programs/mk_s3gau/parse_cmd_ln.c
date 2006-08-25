@@ -156,6 +156,12 @@ mk_s3gau -meanfn s3mean -varfn s3var -cbdir s2dir -feat 4s_12c_24d_3p_12dd ";
 	  "13",
 	  "Defines the input feature vector (e.g. MFCC) len" },
 
+	{ "-cepwin",
+	  CMD_LN_INT32,
+	  CMD_LN_NO_VALIDATION,
+	  "0",
+	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
+
 	{ NULL,
 	  CMD_LN_UNDEF,
 	  CMD_LN_NO_VALIDATION,

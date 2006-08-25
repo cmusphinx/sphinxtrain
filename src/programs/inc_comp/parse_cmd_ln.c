@@ -159,13 +159,18 @@ inc_comp \n\
           "13",
           "The length of the input feature (e.g. MFCC) vectors"},
  
-
 	{ "-feat",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
 	  "Defines the acoustic feature set."},
 
+	{ "-cepwin",
+	  CMD_LN_INT32,
+	  CMD_LN_NO_VALIDATION,
+	  "0",
+	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
+	  
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 

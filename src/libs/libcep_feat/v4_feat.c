@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1995-2006 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,7 @@
 static uint32 n_feat = N_FEAT;
 static uint32 vecsize[1];
 static uint32 mfcc_len;
+static int32 window_size;
 
 const char *
 v4_feat_doc()
@@ -105,8 +106,9 @@ void
 v4_feat_set_in_veclen(uint32 veclen)
 {
     mfcc_len = veclen;
+    window_size = cmd_ln_int32("-cepwin");
 
-    vecsize[0] = veclen;
+    vecsize[0] = veclen * (window_size * 2 + 1);
 
     cmn_set_veclen(veclen);
     agc_set_veclen(veclen);
@@ -161,7 +163,7 @@ v4_feat_compute(vector_t *mfcc,
     uint32 svd_n_frame;
     uint32 n_frame;
     const char *comp_type = cmd_ln_access("-silcomp");
-    uint32 i;
+    int32 i, j;
     uint32 mfcc_len;
     void v4_mfcc_print(vector_t *mfcc, uint32 n_frame);
     
@@ -178,8 +180,24 @@ v4_feat_compute(vector_t *mfcc,
 
     out = v4_feat_alloc(n_frame);
 
-    for (i = 0; i < n_frame; i++) {
-	memcpy(out[i][0], mfcc[i], mfcc_len * sizeof(float32));
+    for (i = 0; i < n_frame; ++i) {
+	uint32 spos = 0;
+
+	for (j = -window_size; j <= window_size; ++j) {
+	    int32 ii;
+
+	    /* Duplicate the first and last frames for out-of-bounds
+	       window indices. */
+	    if (i + j < 0)
+		ii = -j;
+	    else if (i + j >= n_frame)
+		ii = n_frame - j - 1;
+	    else
+		ii = i;
+
+	    memcpy(out[i][0] + spos, mfcc[(int32)ii + j], mfcc_len * sizeof(float32));
+	    spos += mfcc_len;
+	}
     }
 
     *inout_n_frame = n_frame;

@@ -163,12 +163,17 @@ cp_parm -cpopsfn  cp_op \n\
 	  "c[1..L-1]d[1..L-1]c[0]d[0]dd[0]dd[1..L-1]",
 	  "Feature set to use" },
 
+	{ "-cepwin",
+	  CMD_LN_INT32,
+	  CMD_LN_NO_VALIDATION,
+	  "0",
+	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
+	  
 	{ "-ceplen",
 	  CMD_LN_INT32,
 	  CMD_LN_NO_VALIDATION,
 	  "13",
 	  "# of components in base feature vector"},
-
 	  
     { NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };

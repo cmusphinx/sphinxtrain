@@ -257,6 +257,11 @@ ctl -cepdir cepdir -cepext .mfc -ceplen 13 -stride 10 ";
 	  CMD_LN_NO_VALIDATION,
 	  "13",
 	  "# of coefficients per cepstrum frame"},
+	{ "-cepwin",
+	  CMD_LN_INT32,
+	  CMD_LN_NO_VALIDATION,
+	  "0",
+	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
 
 	{ "-agc",
 	  CMD_LN_STRING,

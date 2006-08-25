@@ -95,6 +95,8 @@ static char *name2id[] = {
     "c/0..L-1/d/0..L-1/",
     "c/0..L-1/",
     "c/0..L-1/dd/0..L-1/",
+    "d/0..L-1/",
+    "dd/0..L-1/",
     NULL
 };
 
@@ -195,6 +197,12 @@ int
 feat_set(const char *id_name)
 {
     uint32 i;
+
+    /* HACK: "s2_4x" is an alias for sphinx-II features. */
+    if (strcmp(id_name, "s2_4x") == 0) {
+	fid = FEAT_ID_SPHINX_II_STD;
+	return S3_SUCCESS;
+    }
 
     for (i = 0; name2id[i]; i++) {
 	if (strcmp(id_name, name2id[i]) == 0) {

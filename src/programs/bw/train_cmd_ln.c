@@ -499,6 +499,12 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  "13",
 	  "The length of the input feature (e.g. MFCC) vectors"},
 
+	{ "-cepwin",
+	  CMD_LN_INT32,
+	  CMD_LN_NO_VALIDATION,
+	  "0",
+	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
+
 	{ "-agc",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
