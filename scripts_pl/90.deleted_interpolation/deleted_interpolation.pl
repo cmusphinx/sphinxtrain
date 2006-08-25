@@ -47,6 +47,11 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
+if ($ST::CFG_HMM_TYPE eq ".cont.") {
+  Log("    Skipped for continuous models\n");
+  exit(0);
+}
+
 # this script runs deleted interpolation on a bunch of semi-cont
 # hmm buffers. You need 2 or more buffers to run this!!
 
