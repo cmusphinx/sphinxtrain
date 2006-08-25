@@ -126,6 +126,7 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
         }
         n_frame += utt_n_frame;
 
+        ckd_free(seg);
         feat_free(feat);
         ckd_free(mfcc[0]);
         ckd_free(mfcc);
@@ -164,6 +165,7 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
             matrixadd(scatter[class], op, featlen, featlen);
         }
 
+        ckd_free(seg);
         feat_free(feat);
         ckd_free(mfcc[0]);
         ckd_free(mfcc);
