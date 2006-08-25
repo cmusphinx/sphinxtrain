@@ -147,7 +147,7 @@ vector_cross(vector_t a, const vector_t b, uint32 dim)
 		a[i] *= b[i];
 }
 
-void
+float64
 vector_dot(const vector_t a, const vector_t b, uint32 dim)
 {
 	uint32 i;
@@ -155,6 +155,7 @@ vector_dot(const vector_t a, const vector_t b, uint32 dim)
 
 	for (i = 0; i < dim; ++i)
 		p += a[i] * b[i];
+	return p;
 }
 
 /*
