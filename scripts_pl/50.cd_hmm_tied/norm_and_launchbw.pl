@@ -212,5 +212,10 @@ sub Launch_SplitGaussian {
 
         Launch_BW($n_gau + $n_split, 0);
 	exit 0;
-    }
+      } elsif ($n_gau == $ST::CFG_FINAL_NUM_DENSITIES) {
+# If we finally reached the desired number of densities, we still have
+# to copy the models to their final destination. The split gaussian
+# script below will do just that
+        RunScript('split_gaussians.pl', $ST::CFG_FINAL_NUM_DENSITIES, 0);
+      }
 }
