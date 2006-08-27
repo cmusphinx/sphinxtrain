@@ -130,6 +130,7 @@ sub submit_job {
     else {
 	$qsubbin = 'qsub';
     }
+    push @pbsargs, -q => $ST::CFG_QUEUE_NAME if defined $ST::CFG_QUEUE_NAME;
     push @pbsargs, -e => $job->{errfile} if defined $job->{errfile};
     push @pbsargs, -o => $job->{outfile} if defined $job->{outfile};
     push @pbsargs, -N => substr($job->{name}, 0, 15) if defined $job->{name};
