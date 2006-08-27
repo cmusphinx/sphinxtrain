@@ -112,7 +112,7 @@ my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$part.bw.log";
 mkdir ($logdir,0777);
 
 my $ctl_counter = 0;
-open INPUT,"${ST::CFG_LISTOFFILES}";
+open INPUT,"<$listoffiles" or die "Failed to open $listoffiles: $!";
 while (<INPUT>) {
     $ctl_counter++;
 }
@@ -137,12 +137,12 @@ my $return_value = RunTool
      -ltsoov => $ST::CFG_LTSOOV,
      -dictfn => $ST::CFG_DICTIONARY,
      -fdictfn => $ST::CFG_FILLERDICT,
-     -ctlfn => $ST::CFG_LISTOFFILES,
+     -ctlfn => $listoffiles,
      -part => $part,
      -npart => $npart,
      -cepdir => $ST::CFG_FEATFILES_DIR,
      -cepext => $ST::CFG_FEATFILE_EXTENSION,
-     -lsnfn => $ST::CFG_TRANSCRIPTFILE,
+     -lsnfn => $transcriptfile,
      -accumdir => $output_buffer_dir,
      -varfloor => $minvar,
      -topn => $topn,
