@@ -107,7 +107,7 @@ if (($iter == 1) && (($n_gau == 1) || ($ST::CFG_HMM_TYPE eq ".semi."))) {
 my @deps;
 for (my $i=1; $i<=$n_parts; $i++)
 {
-    push @deps, LaunchScript("bw.$iter.$i", ['baum_welch.pl', $n_gau, $iter, $i, $n_parts]);
+    push @deps, LaunchScript("bw.$n_gau.$iter.$i", ['baum_welch.pl', $n_gau, $iter, $i, $n_parts]);
 }
 LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $n_gau, $iter, $n_parts], \@deps);
 # For the first iteration (i.e. the one that was called from the
