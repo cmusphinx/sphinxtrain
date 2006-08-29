@@ -306,9 +306,7 @@ main_initialize(int argc,
     }
 
     if (*(int32 *)cmd_ln_access("-meanreest") ||
-	*(int32 *)cmd_ln_access("-varreest") ||
-	*(int32 *)cmd_ln_access("-mllrmult") ||
-	*(int32 *)cmd_ln_access("-mllradd")) {
+	*(int32 *)cmd_ln_access("-varreest")) {
 	if (mod_inv_alloc_gauden_acc(inv) != S3_SUCCESS)
 	    return S3_ERROR;
     }
