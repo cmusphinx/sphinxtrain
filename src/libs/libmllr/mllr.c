@@ -325,7 +325,7 @@ solve(float32 **A, /*Input : an n*n matrix A */
 
     for (i = 0; i < N; i++) 
       for (j = 0; j < N; j++) 
-	tmp_l[j+N*i] = A[i][j]; 
+	tmp_l[j*N+i] = A[i][j]; 
 
     tmp_r = (float32*) ckd_calloc(N, sizeof(float32));
 
