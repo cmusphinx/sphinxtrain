@@ -43,7 +43,7 @@ use vars qw(@ISA @EXPORT);
 @ISA=qw(Exporter);
 @EXPORT=qw(DateStr CreateHeader Log HTML_Print FormatURL
            ImgSrc LogWarning LogError Converged RunTool
-           RunScript LaunchScript WaitForScript
+           RunScript LaunchScript WaitForScript GetLists
 	   WaitForConvergence TiedWaitForConvergence);
 
 use Sys::Hostname;
@@ -353,6 +353,12 @@ sub WaitForScript {
 sub WaitForConvergence {
     my $logdir = shift;
     my $interval = shift;
+
+    # For some reason (probably due to stupidity of system()), we
+    # can't do this globally or in Queue::POSIX, but we need it here
+    # (hopefully it does nothing on Windows)
+    local $SIG{CHLD} = sub { wait; };
+
     $interval = 5 unless defined($interval);
     # Wait for training to complete (FIXME: This needs to be more robust)
     my $maxiter = 0;
@@ -390,6 +396,12 @@ sub WaitForConvergence {
 sub TiedWaitForConvergence {
     my $logdir = shift;
     my $interval = shift;
+
+    # For some reason (probably due to stupidity of system()), we
+    # can't do this globally or in Queue::POSIX, but we need it here
+    # (hopefully it does nothing on Windows)
+    local $SIG{CHLD} = sub { wait; };
+
     $interval = 5 unless defined($interval);
     # Wait for training to complete (FIXME: This needs to be more robust)
     my ($maxngau, $maxiter, $lastngau, $lastiter) = (0,0,0,0);
@@ -444,6 +456,18 @@ sub TiedWaitForConvergence {
 	sleep $interval;
     }
     return 0;
+}
+
+sub GetLists {
+    my ($listoffiles, $transcriptfile);
+    if ( $ST::CFG_FORCEDALIGN eq "no" ) {
+	$listoffiles = $ST::CFG_LISTOFFILES;
+	$transcriptfile = $ST::CFG_TRANSCRIPTFILE;
+    } else {
+	$listoffiles   = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
+	$transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedtranscripts";
+    }
+    return ($listoffiles, $transcriptfile);
 }
 
 1;

@@ -40,7 +40,7 @@ use strict;
 
 package Queue::POSIX;
 use Queue::Job;
-use POSIX qw(_exit WNOHANG);
+use POSIX qw(_exit setsid);
 
 sub new {
     my $this = shift;
@@ -56,15 +56,13 @@ sub submit_job {
     # Create a job object from arguments (not so elegant really)
     my $job = Queue::Job->new(@_);
 
-    # Don't create zombies or hang forever on bogus SIGCHLD (where the
-    # hell does it come from?)
-    $SIG{CHLD} = sub { waitpid -1, WNOHANG };
-
     die "Failed to fork: $!" unless defined(my $pid = fork());
     if ($pid) {
 	return $pid;
     }
     else {
+	# Detach from parent process
+	setsid();
 	if (defined($job->{outfile})) {
 	    open STDOUT, ">$job->{outfile}" or die "Failed to open $job->{outfile}: $!";
 	}
