@@ -52,6 +52,10 @@ my $logdir = "$ST::CFG_LOG_DIR/55.sa_cluster";
 
 # Clean everything up
 Log ("MODULE: 55 Doing MLLR-based speaker clustering\n");
+unless ($ST::CFG_CLUSTER eq 'yes') {
+    Log("    Skipped (set \$CFG_CLUSTER to yes to enable)\n");
+    exit 0;
+}
 Log ("    Cleaning up directories: accumulator...");
 rmtree ($ST::CFG_BWACCUM_DIR, 0, 1);
 mkdir ($ST::CFG_BWACCUM_DIR,0777);
