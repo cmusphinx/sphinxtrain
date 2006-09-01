@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ## ====================================================================
 ##
-## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights
+## Copyright (c) 2006 Carnegie Mellon University.  All rights
 ## reserved.
 ##
 ## Redistribution and use in source and binary forms, with or without
@@ -47,59 +47,41 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-my ($iter, $n_parts) = @ARGV;
-$iter = 1 unless defined $iter;
-$n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
-
-my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
-mkdir ($modeldir,0777) unless -d $modeldir;
-
 $| = 1; # Turn on autoflushing
-my $logdir = "$ST::CFG_LOG_DIR/60.sa_train";
-my $return_value = 0;
 
-unless (defined($ST::CFG_SPEAKERLIST) and -r $ST::CFG_SPEAKERLIST) {
-    Log("MODULE: 60 Training Speaker Adaptive models\n");
-    Log("    Skipped (no speaker list defined in config)\n");
-    exit 0;
+die "USAGE: $0 <clustdir> <iter> <clust>" if @ARGV != 3;
+my ($clustdir, $iter, $clust) = @ARGV;
+
+my $modelname="${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_$ST::CFG_N_TIED_STATES";
+my $processpart="55.sa_cluster";
+
+opendir(ACCUMDIR, $clustdir) or die "Could not open $clustdir: $!";
+my @bwaccumdirs = map catdir($clustdir, $_),
+    grep /^${ST::CFG_EXPTNAME}\.buff_${clust}_/, readdir(ACCUMDIR);
+closedir(ACCUMDIR);
+my $hmmdir              = "${ST::CFG_BASE_DIR}/model_parameters/$modelname";
+mkdir ($hmmdir,0777) unless -d $hmmdir;
+my $means               = "$hmmdir/means";
+my $variances           = "$hmmdir/variances";
+my $mllr                = catfile($clustdir, "clust.$clust.$iter.mllr");
+
+my $logfile = "$clustdir/${ST::CFG_EXPTNAME}.${clust}.${iter}.mllr.log";
+
+copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.55.mllr.${clust}.$iter.state.gif";
+HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.55.mllr.${clust}.$iter.state.gif") . " ");
+Log ("    MLLR estimation for cluster: $clust iteration: $iter ");
+HTML_Print (FormatURL("$logfile", "Log File") . " ");
+
+my $return_value = RunTool
+    ('mllr_solve', $logfile, 0,
+     -accumdir => @bwaccumdirs,
+     -meanfn => $means,
+     -varfn => $variances,
+     -outmllrfn => $mllr
+    );
+
+if ($return_value) {
+  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.55.mllr.${clust}.$iter.state.gif";
+  LogError ("\tFailed to start mllr_solve \n");
 }
-
-my $hmmdir = "$modeldir/${ST::CFG_EXPTNAME}.sat_$ST::CFG_DIRLABEL";
-
-# We have to clean up and run flat initialize if it is the first iteration
-if ($iter == 1) {
-    Log ("MODULE: 60 Training Speaker Adaptive models\n");
-    Log ("    Cleaning up directories: accumulator...");
-    rmtree($ST::CFG_BWACCUM_DIR, 0, 1);
-    mkdir ($ST::CFG_BWACCUM_DIR,0777);
-    Log ("logs...");
-    rmtree($logdir, 0, 1);
-    mkdir ($logdir,0777);
-    Log ("qmanager...");
-    rmtree ($ST::CFG_QMGR_DIR, 0, 1);
-    mkdir ($ST::CFG_QMGR_DIR,0777);
-    Log ("models...\n");
-    rmtree($hmmdir, 0, 1);
-    mkdir ($hmmdir,0777);
-
-    exit ($return_value) if ($return_value);
-    Log("    Training speaker-adaptive models...\n");
-}
-
-# Read list of speakers
-open SPEAKER, "<$ST::CFG_SPEAKERLIST" or die "Failed to open $ST::CFG_SPEAKERLIST: $!";
-chomp(my @speakers = <SPEAKER>);
-close SPEAKER;
-
-my @deps;
-foreach (@speakers) {
-    push @deps, LaunchScript("bw.$iter.$_", ['baum_welch.pl', $iter, $_]);
-}
-LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
-
-# For the first iteration (i.e. the one that was called from the
-# command line or a parent script), wait until completion or error
-if ($iter == 1) {
-    $return_value = WaitForConvergence($logdir);
-}
-exit $return_value;
+exit ($return_value);

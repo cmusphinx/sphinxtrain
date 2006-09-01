@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ## ====================================================================
 ##
-## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights
+## Copyright (c) 2006 Carnegie Mellon University.  All rights
 ## reserved.
 ##
 ## Redistribution and use in source and binary forms, with or without
@@ -47,59 +47,43 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-my ($iter, $n_parts) = @ARGV;
-$iter = 1 unless defined $iter;
-$n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
-
-my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
-mkdir ($modeldir,0777) unless -d $modeldir;
-
-$| = 1; # Turn on autoflushing
-my $logdir = "$ST::CFG_LOG_DIR/60.sa_train";
-my $return_value = 0;
-
-unless (defined($ST::CFG_SPEAKERLIST) and -r $ST::CFG_SPEAKERLIST) {
-    Log("MODULE: 60 Training Speaker Adaptive models\n");
-    Log("    Skipped (no speaker list defined in config)\n");
-    exit 0;
+sub get_leaves {
+    my $dir = shift;
+    my $clist = catfile($dir, "clusters.txt");
+    my @leafs;
+    local ($_, *CLIST);
+    open CLIST, "<$clist" or return ();
+    while (<CLIST>) {
+	chomp;
+	my $subdir = catdir($dir, $_);
+	my @subleafs = get_leaves($subdir);
+	if (@subleafs) {
+	    push @leafs, @subleafs;
+	}
+	else {
+	    push @leafs, catfile($dir, $_);
+	}
+    }
+    return @leafs;
 }
 
-my $hmmdir = "$modeldir/${ST::CFG_EXPTNAME}.sat_$ST::CFG_DIRLABEL";
+my $clustdir = catdir($ST::CFG_BASE_DIR, 'cluster');
+my $outdir = catdir($clustdir, 'output');
 
-# We have to clean up and run flat initialize if it is the first iteration
-if ($iter == 1) {
-    Log ("MODULE: 60 Training Speaker Adaptive models\n");
-    Log ("    Cleaning up directories: accumulator...");
-    rmtree($ST::CFG_BWACCUM_DIR, 0, 1);
-    mkdir ($ST::CFG_BWACCUM_DIR,0777);
-    Log ("logs...");
-    rmtree($logdir, 0, 1);
-    mkdir ($logdir,0777);
-    Log ("qmanager...");
-    rmtree ($ST::CFG_QMGR_DIR, 0, 1);
-    mkdir ($ST::CFG_QMGR_DIR,0777);
-    Log ("models...\n");
-    rmtree($hmmdir, 0, 1);
-    mkdir ($hmmdir,0777);
-
-    exit ($return_value) if ($return_value);
-    Log("    Training speaker-adaptive models...\n");
+Log("Collecting leaf nodes in $outdir... ");
+my @leafs = get_leaves($clustdir);
+rmtree($outdir, 0, 1);
+mkdir($outdir, 0777);
+my $base = catfile($outdir, "clust");
+my $outlist = catfile($outdir, "clusters.txt");
+open CLIST, ">$outlist" or die "Failed to open $outlist: $!";
+my $i = 1;
+foreach (@leafs) {
+    copy("$_.ctl", "$base.$i.ctl");
+    copy("$_.lsn", "$base.$i.lsn");
+    copy("$_.mllr", "$base.$i.mllr");
+    print CLIST "clust.$i\n";
+    ++$i;
 }
-
-# Read list of speakers
-open SPEAKER, "<$ST::CFG_SPEAKERLIST" or die "Failed to open $ST::CFG_SPEAKERLIST: $!";
-chomp(my @speakers = <SPEAKER>);
-close SPEAKER;
-
-my @deps;
-foreach (@speakers) {
-    push @deps, LaunchScript("bw.$iter.$_", ['baum_welch.pl', $iter, $_]);
-}
-LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
-
-# For the first iteration (i.e. the one that was called from the
-# command line or a parent script), wait until completion or error
-if ($iter == 1) {
-    $return_value = WaitForConvergence($logdir);
-}
-exit $return_value;
+close CLIST;
+Log("done\n");
