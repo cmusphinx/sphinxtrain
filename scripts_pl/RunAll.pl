@@ -56,7 +56,7 @@ my @sample_steps =
      "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
      "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/90.deleted-interpolation/deleted_interpolation.pl",
+     "$ST::CFG_SCRIPT_DIR/90.deleted_interpolation/deleted_interpolation.pl",
      "$ST::CFG_SCRIPT_DIR/99.make_s2_models/make_s2_models.pl",
     );
 
