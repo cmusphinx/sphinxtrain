@@ -167,7 +167,8 @@ for ($iter = 1; $iter < $ST::CFG_MAX_ITERATIONS; ++$iter) {
 	my $lsn = catfile($clustdir, "clust.$clust.$iter.lsn");
 	# Skip empty clusters
 	next if -s $ctl == 0;
-	my $npart = int($nclust / $ST::CFG_NPART + 0.5);
+	my $npart = int($ST::CFG_NPART / $nclust + 0.5);
+	$npart = 1 if $npart == 0;
 	foreach my $part (1..$npart) {
 	    # Use the last iteration's MLLR for Forward-Backward if
 	    # available (this will allow us to check for convergence among
@@ -192,7 +193,8 @@ for ($iter = 1; $iter < $ST::CFG_MAX_ITERATIONS; ++$iter) {
     WaitForScript($_) foreach @parts;
     my ($total_ll, $total_nfr);
     foreach my $clust (1..$nclust) {
-	my $npart = int($nclust / $ST::CFG_NPART + 0.5);
+	my $npart = int($ST::CFG_NPART / $nclust + 0.5);
+	$npart = 1 if $npart == 0;
 	foreach my $part (1..$npart) {
 	    my $logfile = catfile($clustdir,
 				  "${ST::CFG_EXPTNAME}.estimate.$clust.$iter-$part.bw.log");
