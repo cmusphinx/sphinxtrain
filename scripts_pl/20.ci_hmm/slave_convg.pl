@@ -61,7 +61,7 @@ $iter = 1 unless defined $iter;
 $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
 
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
-mkdir ($modeldir,0777) unless -d $modeldir;
+mkdir ($modeldir,0777);
 
 $| = 1; # Turn on autoflushing
 my $logdir = "$ST::CFG_LOG_DIR/20.ci_hmm";
@@ -117,9 +117,9 @@ sub FlatInitialize ()
     my $logdir              = "$ST::CFG_LOG_DIR/20.ci_hmm";
     my $modarchdir          = "$ST::CFG_BASE_DIR/model_architecture";
     my $hmmdir              = "$ST::CFG_BASE_DIR/model_parameters";
-    mkdir ($logdir,0777) unless -d $logdir;
-    mkdir ($modarchdir,0777) unless -d $modarchdir;
-    mkdir ($hmmdir,0777) unless -d $hmmdir;
+    mkdir ($logdir,0777);
+    mkdir ($modarchdir,0777);
+    mkdir ($hmmdir,0777);
     my $cmd ="";
 
     #-------------------------------------------------------------------------
@@ -170,7 +170,7 @@ sub FlatInitialize ()
     # make the flat models using the above topology file and the mdef file
     #------------------------------------------------------------------------
     my $outhmm               = "$hmmdir/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
-    mkdir ($outhmm,0777) unless -d $outhmm;
+    mkdir ($outhmm,0777);
 
     my $FLAT = "$ST::CFG_BIN_DIR/mk_flat";
 
@@ -202,7 +202,7 @@ sub FlatInitialize ()
     open LOG,">$logfile";
 
     my $output_buffer_dir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_1";
-    mkdir ($output_buffer_dir,0777) unless -d $output_buffer_dir;
+    mkdir ($output_buffer_dir,0777);
 
     # if there is an LDA transformation, use it
     my @lda_args;

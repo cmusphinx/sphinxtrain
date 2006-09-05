@@ -59,7 +59,7 @@ my $prunedtreedir = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.$n_tied_states";
 my $tied_mdef_file = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.$n_tied_states.mdef";
 
 my $logdir = "$ST::CFG_LOG_DIR/40.buildtrees";
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.tiestate.$n_tied_states.log";
 
 $| = 1; # Turn on autoflushing

@@ -66,18 +66,18 @@ Log ("   KMeans ");
 
 # Definitions
 $hmmdir = "$ST::CFG_BASE_DIR/model_parameters";
-mkdir ($hmmdir,0777) unless -d $hmmdir;
+mkdir ($hmmdir,0777);
 
 $outhmm  = "$hmmdir/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
-mkdir ($outhmm,0777) unless -d $outhmm;
+mkdir ($outhmm,0777);
 
 $segdmpdir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_1";
-mkdir ($segdmpdir,0777) unless -d $segdmpdir;
+mkdir ($segdmpdir,0777);
 
 $dumpfile = "$segdmpdir/${ST::CFG_EXPTNAME}.dmp";
 
 my $logdir = "$ST::CFG_LOG_DIR/10.vector_quantize";
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 $logfile = "$logdir/${ST::CFG_EXPTNAME}.kmeans.log";
 
 HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");

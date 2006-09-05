@@ -59,7 +59,7 @@ my ($n_gau, $iter, $n_parts) = @ARGV;
 my $processname="50.cd_hmm_tied";
 
 my $logdir ="$ST::CFG_LOG_DIR/$processname";
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 my $log = "$logdir/${ST::CFG_EXPTNAME}.$n_gau.$iter.norm.log";
 
 # Check the number and list of parts done. Compute avg likelihood per frame

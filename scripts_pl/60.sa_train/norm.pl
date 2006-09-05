@@ -68,14 +68,14 @@ my @bwaccumdirs = map catdir($bwaccumdir, $_),
     grep /^${ST::CFG_EXPTNAME}_buff_/, readdir(ACCUMDIR);
 closedir(ACCUMDIR);
 my $hmmdir              = "${ST::CFG_BASE_DIR}/model_parameters/$modelname";
-mkdir ($hmmdir,0777) unless -d $hmmdir;
+mkdir ($hmmdir,0777);
 my $means               = "$hmmdir/means";
 my $variances           = "$hmmdir/variances";
 my $mixture_weights     = "$hmmdir/mixture_weights";
 my $transition_matrices = "$hmmdir/transition_matrices";
 
 my  $logdir              = "${ST::CFG_LOG_DIR}/$processpart";
-mkdir ($logdir,0777) unless $logdir;
+mkdir ($logdir,0777);
 my $logfile 	     = "$logdir/${ST::CFG_EXPTNAME}.${iter}.norm.log";
 
 copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.60.sa.norm.$iter.state.gif";

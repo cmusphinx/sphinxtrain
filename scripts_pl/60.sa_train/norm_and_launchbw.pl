@@ -59,7 +59,7 @@ my ($iter) = @ARGV;
 my $processname="60.sa_train";
 
 my $logdir ="$ST::CFG_LOG_DIR/$processname";
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 my $log = "$logdir/${ST::CFG_EXPTNAME}.$iter.norm.log";
 
 my @speakers;

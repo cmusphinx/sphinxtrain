@@ -410,10 +410,9 @@ my %transcript_phonelist_hash = ();
 
   }
 
-mkdir ($ST::CFG_LOG_DIR,0755) unless -d $ST::CFG_LOG_DIR;
-mkdir ("$ST::CFG_BASE_DIR/bwaccumdir",0755) unless -d "$ST::CFG_LOG_DIR/bwaccumdir";
+mkdir ($ST::CFG_LOG_DIR,0755);
+mkdir ("$ST::CFG_BASE_DIR/bwaccumdir",0755);
 
-    
 exit ($ret_value);
 
 # General idea for senone: 

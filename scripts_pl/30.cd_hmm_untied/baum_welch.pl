@@ -66,7 +66,7 @@ my $mdefname="${ST::CFG_EXPTNAME}.untied.mdef";
 my $processname="30.cd_hmm_untied";
 
 my $output_buffer_dir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_${part}";
-mkdir ($output_buffer_dir,0777) unless -d $output_buffer_dir;
+mkdir ($output_buffer_dir,0777);
 
 my $hmm_dir;
 if ($iter == 1) {
@@ -108,7 +108,7 @@ if ( $ST::CFG_FORCEDALIGN eq "no" ) {
 my $topn     = 4;
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$part.bw.log";
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 
 my $ctl_counter = 0;
 open INPUT,"<$listoffiles" or die "Failed to open $listoffiles: $!";

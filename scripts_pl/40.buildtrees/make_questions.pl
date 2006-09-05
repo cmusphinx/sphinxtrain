@@ -58,7 +58,7 @@ my $tmp_str = time();
 my $questfn = ${ST::CFG_QUESTION_SET};
 
 my $logdir = "${ST::CFG_LOG_DIR}/40.buildtrees";
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 my $logfile = "$logdir/${ST::CFG_EXPTNAME}.make_questions.log";
 
 $| = 1; # Turn on autoflushing

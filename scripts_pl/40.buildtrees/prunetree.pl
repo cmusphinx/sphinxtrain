@@ -60,10 +60,10 @@ my $mdef_file = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.alltriph
 
 my $unprunedtreedir = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.unpruned";
 my $prunedtreedir  = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.$n_tied_states";
-mkdir ($prunedtreedir,0777) unless -d $prunedtreedir;
+mkdir ($prunedtreedir,0777);
 
 my $logdir = "$ST::CFG_LOG_DIR/40.buildtrees";
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.prunetree.$n_tied_states.log";
 
 $| = 1; # Turn on autoflushing

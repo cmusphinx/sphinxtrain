@@ -59,7 +59,7 @@ my $phone = shift;
 
 my $scriptdir = "{$ST::CFG_SCRIPT_DIR}/40.buildtrees";
 my $logdir = "${ST::CFG_LOG_DIR}/40.buildtrees";
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 
 $| = 1; # Turn on autoflushing
 
@@ -69,8 +69,8 @@ my $means_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${
 my $variances_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied/variances";
 my $tree_base_dir   = "${ST::CFG_BASE_DIR}/trees";
 my $unprunedtreedir = "$tree_base_dir/${ST::CFG_EXPTNAME}.unpruned";
-mkdir ($tree_base_dir,0777) unless -d $tree_base_dir;
-mkdir ($unprunedtreedir,0777) unless -d $unprunedtreedir;
+mkdir ($tree_base_dir,0777);
+mkdir ($unprunedtreedir,0777);
 
 my $state = 0;
 my $return_value = 0;

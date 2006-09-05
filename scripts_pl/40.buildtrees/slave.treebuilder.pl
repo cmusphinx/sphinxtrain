@@ -58,12 +58,18 @@ my $logdir = "${ST::CFG_LOG_DIR}/40.buildtrees";
 Log ("MODULE: 40 Build Trees\n");
 Log ("    Cleaning up old log files...\n");
 rmtree ("$logdir");
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 
 $| = 1; # Turn on autoflushing
-if (RunScript('make_questions.pl')) {
-  $return_value = 1;
-  exit ($return_value);
+if ($ST::CFG_MAKE_QUESTS eq 'no') {
+    die "Question set $ST::CFG_QUESTION_SET not found, but CFG_MAKE_QUESTS is no"
+	unless -e $ST::CFG_QUESTION_SET;
+}
+else {
+    if (RunScript('make_questions.pl')) {
+	$return_value = 1;
+	exit ($return_value);
+    }
 }
 
 Log ("    Tree building\n");
@@ -72,8 +78,8 @@ my $mdef_file       = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME
 my $mixture_wt_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied/mixture_weights";
 my $tree_base_dir   = "${ST::CFG_BASE_DIR}/trees";
 my $unprunedtreedir = "$tree_base_dir/${ST::CFG_EXPTNAME}.unpruned";
-mkdir ($tree_base_dir,0777) unless -d $tree_base_dir;
-mkdir ($unprunedtreedir,0777) unless -d $unprunedtreedir;
+mkdir ($tree_base_dir,0777);
+mkdir ($unprunedtreedir,0777);
 
 # For every phone submit each possible state
 Log ("\tProcessing each phone with each state\n");

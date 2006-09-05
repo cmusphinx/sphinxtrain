@@ -75,10 +75,10 @@ close CTL;
 $stride = 1 unless int($stride = $len/2500);
 
 my $logdir = "$ST::CFG_LOG_DIR/10.vector_quantize";
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 
 $segdmpdir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_1";
-mkdir ($segdmpdir,0777) unless -d $segdmpdir;
+mkdir ($segdmpdir,0777);
 
 $dumpfile = "$segdmpdir/${ST::CFG_EXPTNAME}.dmp";
 $logfile = "$logdir/${ST::CFG_EXPTNAME}.vq.agg_seg.log";

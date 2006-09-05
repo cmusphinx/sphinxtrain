@@ -65,10 +65,10 @@ if ($n_current + $n_inc > $ST::CFG_FINAL_NUM_DENSITIES) {
 $| = 1; # Turn on autoflushing
 my $scriptdir = "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied";
 my $logdir = "$ST::CFG_LOG_DIR/50.cd_hmm_tied";
-mkdir ("$logdir",0777) unless -d $logdir;
+mkdir ($logdir,0777);
 
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
-mkdir ($modeldir,0777) unless -d $modeldir;
+mkdir ($modeldir,0777);
 
 Log ("    Split Gaussians, increase by $n_inc\n");
     
@@ -81,7 +81,7 @@ Log ("    Split Gaussians, increase by $n_inc\n");
 # *************************************************************************
 
 my $src_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}";
-mkdir ($src_hmmdir,0777) unless -d $src_hmmdir;
+mkdir ($src_hmmdir,0777);
 
 my $src_moddeffn = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.$ST::CFG_N_TIED_STATES.mdef";
 my $src_mixwfn = "$src_hmmdir/mixture_weights";
@@ -90,7 +90,7 @@ my $src_varfn = "$src_hmmdir/variances";
 my $src_tmatfn = "$src_hmmdir/transition_matrices";
 
 my $dest_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_initial";
-mkdir ($dest_hmmdir,0777) unless -d $dest_hmmdir;
+mkdir ($dest_hmmdir,0777);
 
 my $dest_moddeffn = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.$ST::CFG_N_TIED_STATES.mdef";
 my $dest_mixwfn = "$dest_hmmdir/mixture_weights";
@@ -99,7 +99,7 @@ my $dest_varfn = "$dest_hmmdir/variances";
 my $dest_tmatfn = "$dest_hmmdir/transition_matrices";
 
 my $backup_hmmdir =  "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}_${n_current}";
-mkdir ($backup_hmmdir,0777) unless -d $backup_hmmdir;
+mkdir ($backup_hmmdir,0777);
 
 my $backup_mixwfn = "$backup_hmmdir/mixture_weights";
 my $backup_meanfn = "$backup_hmmdir/means";
@@ -128,7 +128,7 @@ if ($n_inc <= 0) {
 }
 
 my $logdir = "$ST::CFG_BASE_DIR/logdir/50.cd_hmm_tied";
-mkdir ($logdir,0777) unless -d $logdir;
+mkdir ($logdir,0777);
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.split_gaussians.$n_current.$n_inc.log";
 
 # if there is an LDA transformation, use it

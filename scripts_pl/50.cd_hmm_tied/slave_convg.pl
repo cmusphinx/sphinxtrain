@@ -85,7 +85,7 @@ $| = 1; # Turn on autoflushing
 my $logdir = "$ST::CFG_LOG_DIR/50.cd_hmm_tied";
 
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
-mkdir ($modeldir,0777) unless -d $modeldir;
+mkdir ($modeldir,0777);
 
 # We have to clean up and run flat initialize if it is the first iteration
 if (($iter == 1) && (($n_gau == 1) || ($ST::CFG_HMM_TYPE eq ".semi."))) {
@@ -139,7 +139,7 @@ sub copyci2cd2initialize ()
     my $src_tmatfn = "$ci_hmmdir/transition_matrices";
 
     my $cd_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_initial";
-    mkdir ($cd_hmmdir,0777) unless -d $cd_hmmdir;
+    mkdir ($cd_hmmdir,0777);
 
     my $dest_moddeffn = "$ST::CFG_BASE_DIR/model_architecture/${ST::CFG_EXPTNAME}.$ST::CFG_N_TIED_STATES.mdef";
     my $dest_mixwfn = "$cd_hmmdir/mixture_weights";
@@ -148,7 +148,7 @@ sub copyci2cd2initialize ()
     my $dest_tmatfn = "$cd_hmmdir/transition_matrices";
 
     my $logdir = "$ST::CFG_BASE_DIR/logdir/50.cd_hmm_tied";
-    mkdir ($logdir,0777) unless -d $logdir;
+    mkdir ($logdir,0777);
     my $logfile = "$logdir/$ST::CFG_EXPTNAME.copy.ci.2.cd.log";
 
     HTML_Print (FormatURL("$logfile", "Log File") . " ");

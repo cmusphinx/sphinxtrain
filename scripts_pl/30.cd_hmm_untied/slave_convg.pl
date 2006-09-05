@@ -61,11 +61,11 @@ $iter = 1 unless defined $iter;
 $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
 
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
-mkdir ($modeldir,0777) unless -d $modeldir;
+mkdir ($modeldir,0777);
 
 $| = 1; # Turn on autoflushing
 my $logdir = "${ST::CFG_LOG_DIR}/30.cd_hmm_untied";
-mkdir ("$logdir",0777) unless -d $logdir;
+mkdir ("$logdir",0777);
 
 #Read npart_untied from variables.def
 my $return_value = 0;
@@ -111,10 +111,10 @@ exit 0;
 sub Initialize () {
   my $cihmmdir = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}";
   my $cdhmmdir = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied";
-  mkdir ($cdhmmdir,0777) unless -d $cdhmmdir;
+  mkdir ($cdhmmdir,0777);
 
   my $logdir  =  "${ST::CFG_LOG_DIR}/30.cd_hmm_untied";
-  mkdir ($logdir,0777) unless -d $logdir;
+  mkdir ($logdir,0777);
 
   Log ("    Initialization Make Untied Mdef\n");
   my $untiedmdef = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef";

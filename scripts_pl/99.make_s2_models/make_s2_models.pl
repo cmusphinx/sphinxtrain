@@ -92,7 +92,7 @@ if ($ST::CFG_HMM_TYPE eq ".semi.") {
   $s3hmmdir="$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_$ST::CFG_N_TIED_STATES"."_$ST::CFG_FINAL_NUM_DENSITIES";
   $s2dir = "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}_$ST::CFG_FINAL_NUM_DENSITIES.s2models";
 }
-mkdir ($s2dir,0777) unless -d $s2dir;
+mkdir ($s2dir,0777);
 my $s3mixw = "$s3hmmdir/mixture_weights";
 my $s3mean = "$s3hmmdir/means";
 my $s3var = "$s3hmmdir/variances";

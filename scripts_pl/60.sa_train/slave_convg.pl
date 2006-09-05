@@ -52,7 +52,7 @@ $iter = 1 unless defined $iter;
 $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
 
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
-mkdir ($modeldir,0777) unless -d $modeldir;
+mkdir ($modeldir,0777);
 
 $| = 1; # Turn on autoflushing
 my $logdir = "$ST::CFG_LOG_DIR/60.sa_train";
