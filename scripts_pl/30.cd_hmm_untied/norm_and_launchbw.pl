@@ -173,7 +173,7 @@ if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO && $iter >= $ST::CFG_MAX_ITERATION
     exit (0);
 }
 
-if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO) {
+if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO or $iter < $ST::CFG_MIN_ITERATIONS) {
     Launch_BW($iter);
     exit (0);
 }
