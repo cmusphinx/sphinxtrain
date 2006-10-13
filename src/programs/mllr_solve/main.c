@@ -133,14 +133,42 @@ mllr_mat(float32 	*****out_A,
       E_INFO("\n");
       E_INFO(" ---- mllr_solve(): Conventional MLLR method\n"); 
 
-      if (s3gau_read(var_fn, 
-  	           &var, 
-  	           &n_mgau_rd, 
-  	           &n_stream_rd, 
-  	           &n_density_rd, 
-  	           &veclen_rd) != S3_SUCCESS) { 
-          E_FATAL("Couldn't read %s", var_fn); 
-      } 
+      if (cmd_ln_int32("-fullvar")) {
+	  /* Extract diagonals to solve MLLR (we are not doing
+	     variance adaptation, yet) */
+	  vector_t ****fullvar;
+	  uint32 i, j, k, l;
+
+	  if (s3gau_read_full(var_fn, 
+			      &fullvar, 
+			      &n_mgau_rd, 
+			      &n_stream_rd, 
+			      &n_density_rd, 
+			      &veclen_rd) != S3_SUCCESS) { 
+	      E_FATAL("Couldn't read %s", var_fn); 
+	  } 
+	  var = gauden_alloc_param(n_mgau_rd,
+				   n_stream_rd,
+				   n_density_rd,
+				   veclen_rd);
+	  for (i = 0; i < n_mgau_rd; ++i)
+	      for (j = 0; j < n_stream_rd; ++j)
+		  for (k = 0; k < n_density_rd; ++k)
+		      for (l = 0; l < veclen_rd[j]; ++l)
+			  var[i][j][k][l] =
+			      fullvar[i][j][k][l][l];
+	  gauden_free_param_full(fullvar);
+      }
+      else {
+	  if (s3gau_read(var_fn, 
+			 &var, 
+			 &n_mgau_rd, 
+			 &n_stream_rd, 
+			 &n_density_rd, 
+			 &veclen_rd) != S3_SUCCESS) { 
+	      E_FATAL("Couldn't read %s", var_fn); 
+	  } 
+      }
 
       if (n_mgau != n_mgau_rd) { 
   	E_FATAL("n_mgau mismatch (%u : %u)\n",n_mgau,n_mgau_rd); 

@@ -81,6 +81,11 @@ If you specific only -mllradd, then only b will be estimated. ";
 	  CMD_LN_NO_DEFAULT,
 	  "variance (baseline-var, or error-var) file"},
 
+	{ "-fullvar",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Variances are full covariance matrices"},
 
 	{ "-cb2mllrfn",
 	  CMD_LN_STRING,
