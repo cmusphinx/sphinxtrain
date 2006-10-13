@@ -367,6 +367,9 @@ sub WaitForConvergence {
 	my $likeli;
 	for ($iter = 1; $iter <= $ST::CFG_MAX_ITERATIONS; ++$iter) {
 	    my $norm_log = File::Spec->catfile($logdir, "$ST::CFG_EXPTNAME.$iter.norm.log");
+	    if (! -f $norm_log) { # Special case for CI training
+		$norm_log = File::Spec->catfile($logdir, "$ST::CFG_EXPTNAME.1.$iter.norm.log");
+	    }
 	    open LOG, "<$norm_log" or last;
 	    while (<LOG>) {
 		if (/failed/ or /Aborting/) {

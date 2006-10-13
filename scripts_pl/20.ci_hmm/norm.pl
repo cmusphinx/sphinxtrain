@@ -55,8 +55,9 @@ use SphinxTrain::Util;
 
 $| = 1; # Turn on autoflushing
 
-die "USAGE: $0 <iter>" if @ARGV != 1;
-my $iter = shift;
+die "USAGE: $0 <iter> [<ngau>]" if @ARGV < 1;
+my ($iter, $n_gau) = @ARGV;
+$n_gau = 1 unless defined($n_gau);
 
 my $modelname="${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}";
 my $processpart="20.ci_hmm";
@@ -76,10 +77,10 @@ my $transition_matrices = "$hmmdir/transition_matrices";
 
 my  $logdir              = "${ST::CFG_LOG_DIR}/$processpart";
 mkdir ($logdir,0777);
-my $logfile 	     = "$logdir/${ST::CFG_EXPTNAME}.${iter}.norm.log";
+my $logfile 	     = "$logdir/${ST::CFG_EXPTNAME}.${n_gau}.${iter}.norm.log";
 
-copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.20.norm.$iter.state.gif";
-HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.20.norm.$iter.state.gif") . " ");
+copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.20.norm.${n_gau}.$iter.state.gif";
+HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.20.norm.${n_gau}.$iter.state.gif") . " ");   
 Log ("    Normalization for iteration: $iter ");
 HTML_Print (FormatURL("$logfile", "Log File") . " ");
 
@@ -103,7 +104,7 @@ my $return_value = RunTool
     );
 
 if ($return_value) {
-  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.20.norm.$iter.state.gif";
-  LogError ("\tnorm failed\n");
+  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.20.norm.${n_gau}.$iter.state.gif";
+  LogError ("\tFailed to start norm \n");
 }
 exit ($return_value);

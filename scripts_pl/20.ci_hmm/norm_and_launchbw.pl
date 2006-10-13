@@ -52,22 +52,22 @@ use SphinxTrain::Util;
 #*******************************************************************
 $| = 1; # Turn on autoflushing
 
-die "USAGE: $0 <iter> <n_parts>" if (@ARGV != 2);
+die "USAGE: $0 <iter> <n_parts> [<ngau>]" if (@ARGV < 2);
 
-my ($iter, $n_parts) = @ARGV;
+my ($iter, $n_parts, $n_gau) = @ARGV;
 
 my $processname="20.ci_hmm";
 
 my $logdir ="$ST::CFG_LOG_DIR/$processname";
 mkdir ($logdir,0777);
-my $log = "$logdir/${ST::CFG_EXPTNAME}.$iter.norm.log";
+my $log = "$logdir/${ST::CFG_EXPTNAME}.$n_gau.$iter.norm.log";
 
 # Check the number and list of parts done. Compute avg likelihood per frame
 my $num_done = 0; my $tot_lkhd = 0; my $tot_frms = 0;
 my @done;
 for (my $i=1;$i<=$n_parts;$i++){
     $done[$i] = 0;
-    my $input_log = "${logdir}/${ST::CFG_EXPTNAME}.${iter}-${i}.bw.log";
+    my $input_log = "${logdir}/${ST::CFG_EXPTNAME}.${n_gau}.${iter}-${i}.bw.log";
     next if (! -s $input_log);
     open LOG,$input_log;
     while (<LOG>) {
@@ -106,14 +106,14 @@ if ($tot_frms == 0) {
 my $lkhd_per_frame = $tot_lkhd/$tot_frms;
 
 my $previter = $iter - 1;
-my $prev_norm = "${logdir}/${ST::CFG_EXPTNAME}.${previter}.norm.log";
+my $prev_norm = "${logdir}/${ST::CFG_EXPTNAME}.${n_gau}.${previter}.norm.log";
 if (! -s $prev_norm) {
     # Either iter == 1 or we are starting from an intermediate iter value
-    RunScript('norm.pl', $iter);
+    RunScript('norm.pl', $iter, $n_gau);
     open OUTPUT, ">> $log";
     print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
     close OUTPUT;
-    Launch_BW($iter);
+    Launch_BW($n_gau, $iter);
     exit (0);
 }
 
@@ -128,11 +128,11 @@ close LOG;
 
 if ($prevlkhd == -99999999) {
     # Some error with previous norm.log. Continue Baum Welch
-    RunScript('norm.pl', $iter);
+    RunScript('norm.pl', $iter, $n_gau);
     open OUTPUT, ">> $log";
     print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
     close OUTPUT;
-    Launch_BW($iter);
+    Launch_BW($n_gau, $iter);
     exit (0);
 }
 
@@ -147,7 +147,7 @@ else {
     $absprev = -$absprev if ($prevlkhd < 0);
     $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
-RunScript('norm.pl', $iter);
+RunScript('norm.pl', $iter, $n_gau);
 
 open OUTPUT, ">> $log";
 print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
@@ -161,6 +161,9 @@ if ($convg_ratio < 0) {
 }
 
 if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO && $iter >= $ST::CFG_MAX_ITERATIONS) {
+    if ($ST::CFG_CI_MGAU eq 'yes') {
+	Launch_SplitGaussian($n_gau);
+    }
     open OUTPUT, ">> $log";
     print OUTPUT "Maximum desired iterations $ST::CFG_MAX_ITERATIONS performed. Terminating CI training\n";
     print OUTPUT "******************************TRAINING COMPLETE*************************\n";
@@ -172,11 +175,14 @@ if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO && $iter >= $ST::CFG_MAX_ITERATION
 }
 
 if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO or $iter < $ST::CFG_MIN_ITERATIONS) {
-    Launch_BW($iter);
+    Launch_BW($n_gau, $iter);
     exit (0);
 }
 else {
     print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+    if ($ST::CFG_CI_MGAU eq 'yes') {
+	Launch_SplitGaussian($n_gau);
+    }
     open OUTPUT, ">> $log";
     print OUTPUT "Likelihoods have converged! Baum Welch training completed\!\n";
     print OUTPUT "******************************TRAINING COMPLETE*************************\n";
@@ -187,10 +193,33 @@ else {
 }
 
 sub Launch_BW {
-    my $iter = shift;
+    my ($n_gau, $iter) = @_;
     my $newiter = $iter + 1;
     print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
     print "        Convergence Ratio = $convg_ratio\n" if defined $convg_ratio;
-    RunScript('slave_convg.pl', $newiter, $n_parts);
+    RunScript('slave_convg.pl', $newiter, $n_parts, $n_gau);
 }
 
+
+sub Launch_SplitGaussian {
+    my $n_gau = shift;
+
+    if ($n_gau < $ST::CFG_FINAL_NUM_DENSITIES && $ST::CFG_HMM_TYPE ne ".semi.") {
+# Do stuff
+	my $n_split;
+        if ($ST::CFG_FINAL_NUM_DENSITIES >= 2 * $n_gau) {
+	    $n_split = $n_gau;
+        } else {
+	    $n_split = $ST::CFG_FINAL_NUM_DENSITIES - $n_gau;
+        }
+        RunScript('split_gaussians.pl', $n_gau, $n_split);
+
+        Launch_BW($n_gau + $n_split, 0);
+	exit 0;
+      } elsif ($n_gau == $ST::CFG_FINAL_NUM_DENSITIES) {
+# If we finally reached the desired number of densities, we still have
+# to copy the models to their final destination. The split gaussian
+# script below will do just that
+        RunScript('split_gaussians.pl', $ST::CFG_FINAL_NUM_DENSITIES, 0);
+      }
+}

@@ -56,9 +56,10 @@ use SphinxTrain::Util;
 # jobs as the number of parts we wish to split the training into.
 #***************************************************************************
 
-my ($iter, $n_parts) = @ARGV;
+my ($iter, $n_parts, $n_gau) = @ARGV;
 $iter = 1 unless defined $iter;
 $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
+$n_gau = 1 unless defined $n_gau;
 
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777);
@@ -68,7 +69,7 @@ my $logdir = "$ST::CFG_LOG_DIR/20.ci_hmm";
 my $return_value = 0;
 
 # We have to clean up and run flat initialize if it is the first iteration
-if ($iter == 1) {
+if ($iter == 1 and $n_gau == 1) {
     Log ("MODULE: 20 Training Context Independent models\n");
     Log ("    Cleaning up directories: accumulator...");
     rmtree($ST::CFG_BWACCUM_DIR, 0, 1);
@@ -92,13 +93,18 @@ if ($iter == 1) {
 my @deps;
 for (my $i=1; $i<=$n_parts; $i++)
 {
-    push @deps, LaunchScript("bw.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts])
+    push @deps, LaunchScript("bw.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, $n_gau])
 }
-LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
+LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts, $n_gau], \@deps);
 # For the first iteration (i.e. the one that was called from the
 # command line or a parent script), wait until completion or error
-if ($iter == 1) {
-    $return_value = WaitForConvergence($logdir);
+if ($iter == 1 && $n_gau == 1) {
+    if ($ST::CFG_CI_MGAU eq 'yes') {
+	$return_value = TiedWaitForConvergence($logdir);
+    }
+    else {
+	$return_value = WaitForConvergence($logdir);
+    }
 }
 exit $return_value;
 

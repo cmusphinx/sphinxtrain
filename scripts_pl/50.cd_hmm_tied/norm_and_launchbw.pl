@@ -159,7 +159,6 @@ if ($convg_ratio < 0) {
     print OUTPUT "*WARNING*: NEGATIVE CONVERGENCE RATIO! CHECK YOUR DATA AND TRASNCRIPTS\n";
     print "*WARNING*: NEGATIVE CONVERGENCE RATIO AT ITER ${iter}! CHECK BW AND NORM LOGFILES\n";
 }
-close OUTPUT;
 
 if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO && $iter >= $ST::CFG_MAX_ITERATIONS) {
     Launch_SplitGaussian($n_gau);

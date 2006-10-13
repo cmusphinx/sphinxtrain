@@ -57,10 +57,16 @@ use SphinxTrain::Util;
 
 $| = 1; # Turn on autoflushing
 
-die "USAGE: $0 <iter> <part> <npart>" if @ARGV != 3;
-my ($iter, $part, $npart) = @ARGV;
+die "USAGE: $0 <iter> <part> <npart> [<ngau>]" if @ARGV < 3;
+my ($iter, $part, $npart, $n_gau) = @ARGV;
 
-my $modelinitialname="${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
+my $modelinitialname;
+if ($n_gau == 1) {
+    $modelinitialname = "${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
+}
+else {
+    $modelinitialname = "${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_initial";
+}
 my $modelname="${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}";
 my $mdefname="${ST::CFG_EXPTNAME}.ci.mdef";
 my $processname ="20.ci_hmm";
@@ -108,7 +114,7 @@ if ( $ST::CFG_FORCEDALIGN eq "no" ) {
 
 my $topn     = 4;
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";
-my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$part.bw.log";
+my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.${n_gau}.$iter-$part.bw.log";
 mkdir ($logdir,0777);
 
 my $ctl_counter = 0;
@@ -120,9 +126,9 @@ close INPUT;
 $ctl_counter = int ($ctl_counter / $npart) if $npart;
 $ctl_counter = 1 unless ($ctl_counter);
 
-copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.20.bw.$iter.$part.state.gif";
-HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.20.bw.$iter.$part.state.gif") . " ");
-Log ("    Baum welch starting for iteration: $iter ($part of $npart) ");
+copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.20.bw.$n_gau.$iter.$part.state.gif";
+HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.20.bw.$n_gau.$iter.$part.state.gif") . " ");        
+Log ("    Baum welch starting for $n_gau Gaussian(s), iteration: $iter ($part of $npart) ");
 HTML_Print (FormatURL("$logfile", "Log File") . "\n");
 
 my $return_value = RunTool
@@ -164,7 +170,7 @@ my $return_value = RunTool
 
 
 if ($return_value) {
-  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.20.bw.$iter.$part.state.gif";
-  LogError ("\tbw failed\n");
+  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.20.bw.$n_gau.$iter.$part.state.gif";
+  LogError ("\tFailed to start bw \n");
 }
 exit ($return_value);
