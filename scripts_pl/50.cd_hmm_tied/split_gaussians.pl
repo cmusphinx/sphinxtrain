@@ -148,5 +148,6 @@ my $rv = RunTool('inc_comp', $logfile, 0,
 		 -outmeanfn=> $dest_meanfn,
 		 -invarfn  => $src_varfn,
 		 -outvarfn => $dest_varfn,
+		 -fullvar => $ST::CFG_FULLVAR,
 		 @feat);
 exit $rv;

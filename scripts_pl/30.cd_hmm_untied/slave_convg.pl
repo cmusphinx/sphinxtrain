@@ -157,6 +157,7 @@ sub Initialize () {
        -dest_meanfn => "$cdhmmdir/means",
        -dest_varfn => "$cdhmmdir/variances",
        -dest_tmatfn => "$cdhmmdir/transition_matrices",
+       -fullvar => $ST::CFG_FULLVAR,
        @feat);
 }
 

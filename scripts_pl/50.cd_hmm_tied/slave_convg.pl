@@ -173,6 +173,7 @@ sub copyci2cd2initialize ()
 		   -dest_meanfn => $dest_meanfn,
 		   -dest_varfn => $dest_varfn,
 		   -dest_tmatfn => $dest_tmatfn,
+		   -fullvar => $ST::CFG_FULLVAR,
 		   @feat);
 }
 

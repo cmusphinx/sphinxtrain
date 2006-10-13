@@ -119,7 +119,9 @@ sub BuildTree
 
     my @gauflag;
     if ($ST::CFG_HMM_TYPE eq ".cont.") {
-	@gauflag = (-meanfn => $means_file,  -varfn => $variances_file);
+	@gauflag = (-meanfn => $means_file,
+		    -varfn => $variances_file,
+		    -fullvar => $ST::CFG_FULLVAR);
     }
 
     return RunTool('bldtree', $logfile, 0,

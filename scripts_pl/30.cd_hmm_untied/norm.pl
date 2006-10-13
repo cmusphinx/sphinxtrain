@@ -98,6 +98,7 @@ my $return_value = RunTool
      -tmatfn => $transition_matrices,
      -meanfn => $means,
      -varfn => $variances,
+     -fullvar => $ST::CFG_FULLVAR,
      @feat
     );
 

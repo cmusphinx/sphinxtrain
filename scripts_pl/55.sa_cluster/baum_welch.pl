@@ -141,6 +141,8 @@ my $return_value = RunTool
      -varreest => $reest,
      -tmatreest => $reest,
      '-2passvar' => "yes",
+     -fullvar => $ST::CFG_FULLVAR,
+     -diagfull => $ST::CFG_DIAGFULL,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
      @extra_args,

@@ -77,6 +77,7 @@ my $return_value = RunTool
      -accumdir => @bwaccumdirs,
      -meanfn => $means,
      -varfn => $variances,
+     -fullvar => $ST::CFG_FULLVAR,
      -outmllrfn => $mllr
     );
 

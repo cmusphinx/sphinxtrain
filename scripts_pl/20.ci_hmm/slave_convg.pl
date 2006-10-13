@@ -260,6 +260,7 @@ sub FlatInitialize ()
 				-varnorm => $ST::CFG_VARNORM,
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
+				-fullvar => $ST::CFG_FULLVAR,
 				@lda_args
 			       )) {
       return $return_value;
@@ -274,6 +275,7 @@ sub FlatInitialize ()
 
     if ($return_value = RunTool('norm', $logfile, 0,
 				-accumdir => $output_buffer_dir,
+				-fullvar => $ST::CFG_FULLVAR,
 				-varfn => catfile($outhmm, "globalvar"),
 			       )) {
       return $return_value;
@@ -325,14 +327,21 @@ sub FlatInitialize ()
     $logfile = "$logdir/${ST::CFG_EXPTNAME}.cpvar_cihmm.log";
     HTML_Print ("\t\tcp_var " . FormatURL("$logfile", "Log File") . " ");
 
+    my @varcpy;
+    if ($ST::CFG_FULLVAR eq 'yes') {
+	@varcpy = (-ifullgaufn => catfile($outhmm, 'globalvar'),
+		   -ofullgaufn => catfile($outhmm, 'variances'));
+    }
+    else {
+	@varcpy = (-igaufn => catfile($outhmm, 'globalvar'),
+		   -ogaufn => catfile($outhmm, 'variances'));
+    }
     if ($return_value = RunTool('cp_parm', $logfile, 0,
 				-cpopsfn => $ST::CFG_CP_OPERATION,
-				-igaufn => catfile($outhmm, 'globalvar'),
 				-ncbout => $NUM_CI_STATES,
-				-ogaufn => catfile($outhmm, 'variances'),
-				@feat
+				@varcpy, @feat
 			       )) {
-      return $return_value;
+	return $return_value;
     }
 
     unlink $ST::CFG_CP_OPERATION;
