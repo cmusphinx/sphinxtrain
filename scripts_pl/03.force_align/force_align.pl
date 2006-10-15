@@ -73,8 +73,19 @@ my $transcriptfile = "$outdir/$ST::CFG_EXPTNAME.aligninput";
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$part.falign.log";
 
 # Get the number of utterances
-my $ctl_counter = 0;
 open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
+# Check control file format (determines if we add ,CTL below)
+my $line = <INPUT>;
+my $ctlext;
+if (split(" ", $line) ==1) {
+    # Use full file path
+    $ctlext = ",CTL";
+}
+else {
+    # Use utterance ID
+    $ctlext = "";
+}
+my $ctl_counter = 1;
 while (<INPUT>) {
     $ctl_counter++;
 }
@@ -106,7 +117,7 @@ my $return_value = RunTool
      -cepext => ".$ST::CFG_FEATFILE_EXTENSION",
      -insent => $transcriptfile,
      -outsent => $outfile,
-     -s2stsegdir => "$ST::CFG_STSEG_DIR",
+     -s2stsegdir => "$ST::CFG_STSEG_DIR$ctlext",
      -s2cdsen => 'yes',
      -beam => 0,
      -agc => $ST::CFG_AGC,
