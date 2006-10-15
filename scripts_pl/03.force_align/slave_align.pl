@@ -160,7 +160,7 @@ foreach my $job (@jobs) {
     open INPUT, "<$part" or die "Failed to open $part: $!";
     open INCTL,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
     while (<INPUT>) {
-	my ($uttid) = (/\(([^\)]+)\)$/);
+	my ($uttid) = (/\(([^\(\)]+)\)$/);
 	print LSN;
 	# Now scan forward in the control past any utterances that were missed
 	while (defined(my $ctlline = <INCTL>)) {
