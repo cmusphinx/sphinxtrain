@@ -70,6 +70,13 @@ my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 my $listoffiles = $ST::CFG_LISTOFFILES;
 my $transcriptfile = "$outdir/$ST::CFG_EXPTNAME.aligninput";
+my $dict = defined($ST::CFG_FORCE_ALIGN_DICTIONARY)
+    ? $ST::CFG_FORCE_ALIGN_DICT
+    : "$outdir/$ST::CFG_EXPTNAME.falign.dict";
+my $fdict = defined($ST::CFG_FORCE_ALIGN_FILLERDICT)
+    ? $ST::CFG_FORCE_ALIGN_FILLERDICT
+    : "$outdir/$ST::CFG_EXPTNAME.falign.fdict";
+my $beam = defined($ST::CFG_FORCE_ALIGN_BEAM) ? $ST::CFG_FORCE_ALIGN_BEAM : 1e-100;
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$part.falign.log";
 
 # Get the number of utterances
@@ -108,8 +115,8 @@ my $return_value = RunTool
      -mean => $meanfn,
      -var => $varfn,
      -varfloor => $minvar,
-     -dict => $ST::CFG_DICTIONARY,
-     -fdict => $ST::CFG_FILLERDICT,
+     -dict => $dict,
+     -fdict => $fdict,
      -ctl => $ST::CFG_LISTOFFILES,
      -ctloffset => $ctl_counter * ($part-1),
      -ctlcount => $ctl_counter,
@@ -119,7 +126,7 @@ my $return_value = RunTool
      -outsent => $outfile,
      -s2stsegdir => "$ST::CFG_STSEG_DIR$ctlext",
      -s2cdsen => 'yes',
-     -beam => 0,
+     -beam => $beam,
      -agc => $ST::CFG_AGC,
      -cmn => $ST::CFG_CMN,
      -varnorm => $ST::CFG_VARNORM,

@@ -106,13 +106,54 @@ while (<INPUT>) {
 Log("\n");
 close INPUT;
 
+# Create a new dictionary unless one is given
+unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN_FILLERDICT)) {
+    my $dict = "$outdir/$ST::CFG_EXPTNAME.falign.dict";
+    my $fdict = "$outdir/$ST::CFG_EXPTNAME.falign.fdict";
+
+    Log("    Creating dictionary for alignment...");
+    open INFDICT, "<$ST::CFG_FILLERDICT" or die "Failed to open $ST::CFG_FILLERDICT: $!";
+    open OUTFDICT, ">$fdict" or die "Failed to open $fdict: $!";
+    my %fillers;
+    # Strip out all fillers except silence
+    while (<INFDICT>) {
+	my ($word, @phones) = split;
+	if ($word =~ m,</?s(il)?>,i) {
+	    print OUTFDICT;
+	}
+	else {
+	    $fillers{$word} = "@phones";
+	}
+    }
+    close INFDICT;
+    close OUTFDICT;
+
+    # Add the extra fillers to the main dictionary
+    open INDICT, "<$ST::CFG_DICTIONARY" or die "Failed to open $ST::CFG_DICTIONARY: $!";
+    open OUTDICT, ">$dict" or die "Failed to open $dict: $!";
+    while (<INDICT>) {
+	print OUTDICT;
+    }
+    while (my ($k, $v) = each %fillers) {
+	print OUTDICT "$k\t$v\n";
+    }
+    close INDICT;
+    close OUTDICT;
+    Log("\n");
+}
+
 # Preprocess the transcript to remove extraneous <s> and </s> markers (argh)
 my $transcriptfile = "$outdir/$ST::CFG_EXPTNAME.aligninput";
+Log("    Creating transcript for alignment...");
 open INPUT,"<$ST::CFG_TRANSCRIPTFILE" or die "Failed to open $ST::CFG_TRANSCRIPTFILE: $!";
 open OUTPUT,">$transcriptfile" or die "Failed to open $transcriptfile: $!";
 while (<INPUT>) {
     chomp;
     s,</?s>,,g;
+    # Also remove silences
+    s,</?sil>,,g;
+    # Also remove pronunciation variants
+    s,\(\d+\),,g;
     # Also normalize whitespaces
     s,^\s+,,;
     s,\s+$,,;
@@ -121,6 +162,7 @@ while (<INPUT>) {
 }
 close INPUT;
 close OUTPUT;
+Log("\n");
 
 # Run n_parts of force alignment
 Log("Running force alignment in  $n_parts parts\n");
