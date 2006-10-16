@@ -127,8 +127,7 @@ sub Initialize () {
 		   -fdictfn => $ST::CFG_FILLERDICT,
 		   -lsnfn => $ST::CFG_TRANSCRIPTFILE,
 		   -ountiedmdef => $untiedmdef,
-		   -n_state_pm => $ST::CFG_STATESPERHMM,
-		   -maxtriphones => 10000);
+		   -n_state_pm => $ST::CFG_STATESPERHMM);
   return $rv if $rv;
 
   $logfile = "$logdir/${ST::CFG_EXPTNAME}.copycitocd.log";

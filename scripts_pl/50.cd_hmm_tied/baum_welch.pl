@@ -81,7 +81,8 @@ if ($iter == 1) {
 my $moddeffn    = "$ST::CFG_BASE_DIR/model_architecture/$mdefname";
 my $statepdeffn = $ST::CFG_HMM_TYPE; # indicates the type of HMMs
 my $mixwfn  = "$hmm_dir/mixture_weights";
-my $mwfloor = 1e-8;
+my $mwfloor = 1e-5;
+my $tpfloor = 1e-5;
 my $tmatfn  = "$hmm_dir/transition_matrices";
 my $meanfn  = "$hmm_dir/means";
 my $varfn   = "$hmm_dir/variances";
@@ -106,7 +107,13 @@ if ( $ST::CFG_FORCEDALIGN eq "no" ) {
     $transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedtranscripts";
 }
 
-my $topn     = 4;
+my $topn;
+if ($iter == 1) {
+    $topn = 99;
+}
+else {
+    $topn = 16;
+}
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.${n_gau}.$iter-$part.bw.log";
 mkdir ($logdir,0777);
@@ -131,6 +138,7 @@ my $return_value = RunTool
      -ts2cbfn => $statepdeffn,
      -mixwfn => $mixwfn,
      -mwfloor => $mwfloor,
+     -tpfloor => $tpfloor,
      -tmatfn => $tmatfn,
      -meanfn => $meanfn,
      -varfn => $varfn,
@@ -147,7 +155,7 @@ my $return_value = RunTool
      -varfloor => $minvar,
      -topn => $topn,
      -abeam => 1e-90,
-     -bbeam => 1e-40,
+     -bbeam => 1e-10,
      -agc => $ST::CFG_AGC,
      -cmn => $ST::CFG_CMN,
      -varnorm => $ST::CFG_VARNORM,
