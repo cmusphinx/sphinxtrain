@@ -51,6 +51,8 @@ use SphinxTrain::Util;
 
 my @sample_steps =
     ("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
+     "$ST::CFG_SCRIPT_DIR/02.falign_ci_hmm/slave_convg.pl",
+     "$ST::CFG_SCRIPT_DIR/03.force_align/slave_align.pl",
      "$ST::CFG_SCRIPT_DIR/10.vector_quantize/slave.VQ.pl",
      "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",

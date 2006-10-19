@@ -52,10 +52,17 @@ $iter = 1 unless defined $iter;
 $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
 
 $| = 1; # Turn on autoflushing
+
 my $logdir = "$ST::CFG_LOG_DIR/03.force_align";
 my $outdir = "$ST::CFG_BASE_DIR/falignout";
 
 Log("MODULE: 03 Force-aligning transcripts\n");
+
+if ( $ST::CFG_FORCEDALIGN eq "no" ) {
+    Log("    Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
+    exit(0);
+}
+
 unless (-x catdir($ST::CFG_BIN_DIR, "sphinx3_align")
 	or -x catdir($ST::CFG_BIN_DIR, "sphinx3_align.exe")) {
     Log("    Skipped: No sphinx3_align(.exe) found in $ST::CFG_BIN_DIR\n");
@@ -67,7 +74,7 @@ unless (-x catdir($ST::CFG_BIN_DIR, "sphinx3_align")
 }
 
 unless (defined($ST::CFG_FORCE_ALIGN_MODELDIR)
-	or -f "$ST::CFG_MODEL_DIR/$ST::CFG_EXPTNAME.ci_$ST::CFG_DIRLABEL/means") {
+	or -f "$ST::CFG_MODEL_DIR/$ST::CFG_EXPTNAME.falign_ci_$ST::CFG_DIRLABEL/means") {
     Log("    Skipped: No acoustic models available for force alignment\n");
     Log("    If you wish to do force-alignment, please define \$CFG_MODEL_DIR\n");
     Log("    in sphinx_train.cfg or run context-independent training first.\n");
@@ -118,7 +125,7 @@ unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN
     # Strip out all fillers except silence
     while (<INFDICT>) {
 	my ($word, @phones) = split;
-	if ($word =~ m,</?s(il)?>,i) {
+	if (($#phone == 0) and ($phone[0] =~ m,^SIL[be]?$,i)) {
 	    print OUTFDICT;
 	}
 	else {
