@@ -122,10 +122,12 @@ unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN
     open INFDICT, "<$ST::CFG_FILLERDICT" or die "Failed to open $ST::CFG_FILLERDICT: $!";
     open OUTFDICT, ">$fdict" or die "Failed to open $fdict: $!";
     my %fillers;
+    my %silences;
     # Strip out all fillers except silence
     while (<INFDICT>) {
 	my ($word, @phones) = split;
-	if (($#phone == 0) and ($phone[0] =~ m,^SIL[be]?$,i)) {
+	if (($#phones == 0) and ($phones[0] =~ m,^SIL[be]?$,i)) {
+	    $silences{$word} = "@phones";
 	    print OUTFDICT;
 	}
 	else {
@@ -156,9 +158,12 @@ open INPUT,"<$ST::CFG_TRANSCRIPTFILE" or die "Failed to open $ST::CFG_TRANSCRIPT
 open OUTPUT,">$transcriptfile" or die "Failed to open $transcriptfile: $!";
 while (<INPUT>) {
     chomp;
-    s,</?s>,,g;
-    # Also remove silences
-    s,</?sil>,,g;
+    # Remove silences
+    foreach my $sil (keys %silences) {
+        s,\b$sil\b, ,g;
+    }
+    #s,</?s>,,g;
+    #s,</?sil>,,g;
     # Also remove pronunciation variants
     s,\(\d+\),,g;
     # Also normalize whitespaces
