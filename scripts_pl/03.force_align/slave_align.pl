@@ -112,6 +112,8 @@ while (<INPUT>) {
 }
 Log("\n");
 close INPUT;
+    
+my %silences = ();
 
 # Create a new dictionary unless one is given
 unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN_FILLERDICT)) {
@@ -122,7 +124,6 @@ unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN
     open INFDICT, "<$ST::CFG_FILLERDICT" or die "Failed to open $ST::CFG_FILLERDICT: $!";
     open OUTFDICT, ">$fdict" or die "Failed to open $fdict: $!";
     my %fillers;
-    my %silences;
     # Strip out all fillers except silence
     while (<INFDICT>) {
 	my ($word, @phones) = split;
