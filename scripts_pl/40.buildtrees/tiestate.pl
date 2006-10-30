@@ -66,9 +66,14 @@ $| = 1; # Turn on autoflushing
 Log ("    Tie states\n");
 HTML_Print ("\t\t" . FormatURL("$logfile", "Log File") . " ");
 
+my @phnarg;
+if ($ST::CFG_CROSS_PHONE_TREES) {
+    @phnarg = (-allphones => 'yes');
+}
 exit RunTool('tiestate', $logfile, 0,
 	     -imoddeffn => $untied_mdef_file,
 	     -omoddeffn => $tied_mdef_file,
 	     -treedir => $prunedtreedir,
+	     @phnarg,
 	     -psetfn => $ST::CFG_QUESTION_SET);
 

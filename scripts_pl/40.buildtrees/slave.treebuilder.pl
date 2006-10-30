@@ -82,20 +82,25 @@ mkdir ($tree_base_dir,0777);
 mkdir ($unprunedtreedir,0777);
 
 # For every phone submit each possible state
-Log ("\tProcessing each phone with each state\n");
-open INPUT,"${ST::CFG_RAWPHONEFILE}";
 my @jobs;
-foreach $phone (<INPUT>) {
-    chomp $phone;
-    if (($phone =~ m/^(\+).*(\+)$/) || ($phone =~ m/^SIL$/)) {
-	Log ("        Skipping $phone\n");
-	next;
+if ($ST::CFG_CROSS_PHONE_TREES) {
+    Log ("\tProcessing all phones with each state\n");
+    push @jobs, ['ALLPHONES' => LaunchScript("tree.all", ['buildtree.pl', 'ALLPHONES'])];
+} else {
+    Log ("\tProcessing each phone with each state\n");
+    open INPUT,"${ST::CFG_RAWPHONEFILE}";
+    my @jobs;
+    foreach $phone (<INPUT>) {
+	chomp $phone;
+	if (($phone =~ m/^(\+).*(\+)$/) || ($phone =~ m/^SIL$/)) {
+	    Log ("        Skipping $phone\n");
+	    next;
+	}
+
+	push @jobs, [$phone => LaunchScript("tree.$phone", ['buildtree.pl', $phone])];
     }
-
-    push @jobs, [$phone => LaunchScript("tree.$phone", ['buildtree.pl', $phone])];
+    close INPUT;
 }
-close INPUT;
-
 # Wait for all the phones to finish
 # It doesn't really matter what order we do this in
 foreach (@jobs) {

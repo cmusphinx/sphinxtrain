@@ -70,10 +70,15 @@ $| = 1; # Turn on autoflushing
 Log ("    Prune trees\n");
 HTML_Print ("\t\t" . FormatURL("$logfile", "Log File") . " ");
 
+my @phnarg;
+if ($ST::CFG_CROSS_PHONE_TREES) {
+    @phnarg = (-allphones => 'yes');
+}
 exit RunTool('prunetree', $logfile, 0,
 	     -itreedir => $unprunedtreedir,
 	     -nseno => $n_tied_states,
 	     -otreedir => $prunedtreedir,
 	     -moddeffn => $mdef_file,
+	     @phnarg,
 	     -psetfn => $ST::CFG_QUESTION_SET,
 	     -minocc => $occurance_threshold);

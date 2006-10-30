@@ -124,6 +124,13 @@ sub BuildTree
 		    -fullvar => $ST::CFG_FULLVAR);
     }
 
+    my @phnflag;
+    if ($ST::CFG_CROSS_PHONE_TREES) {
+	@phnflag = (-allphones => 'yes');
+    }
+    else {
+	@phnflag = (-phone => $phn);
+    }
     return RunTool('bldtree', $logfile, 0,
 		   -treefn => "$unprunedtreedir/$phn-$stt.dtree",
 		   -moddeffn => "$mdef_file",
@@ -131,7 +138,7 @@ sub BuildTree
 		   -ts2cbfn => $ST::CFG_HMM_TYPE,
 		   -mwfloor => 1e-8,
 		   -psetfn => $ST::CFG_QUESTION_SET,
-		   -phone => $phn,
+		   @phnflag,
 		   -state => $stt,
 		   -stwt => @stwt,
 		   @gauflag,
