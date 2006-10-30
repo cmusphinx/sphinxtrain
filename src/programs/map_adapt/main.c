@@ -142,8 +142,6 @@ map_mixw_reest(float32 ***map_tau, float32 fixed_tau,
     uint32 i, j, k;
 
     E_INFO("Re-estimating mixture weights using MAP\n");
-    /* TODO: Try to use the un-normalized SI mixture counts as nu
-     * instead of deriving it using tau. */
     for (i = 0; i < n_mixw; ++i) {
 	for (j = 0; j < n_stream; ++j) {
 	    float32 sum_tau, sum_nu, sum_wt_mixw;
@@ -154,7 +152,12 @@ map_mixw_reest(float32 ***map_tau, float32 fixed_tau,
 	    for (k = 0; k < n_density; ++k) {
 		float32 nu;
 
-		nu = si_mixw[i][j][k] * sum_tau;
+		/* NOTE: We estimate nu such that the SI mixture
+		 * weight is the mode of the posterior distribution,
+		 * hence the + 1.  This allows the MAP estimate to
+		 * converge to the SI one in the case of no adaptation
+		 * data (clearly, this is desirable!) */
+		nu = si_mixw[i][j][k] * sum_tau + 1;
 		sum_nu += nu;
 		sum_wt_mixw += wt_mixw[i][j][k];
 	    }
@@ -163,7 +166,7 @@ map_mixw_reest(float32 ***map_tau, float32 fixed_tau,
 		float32 tau, nu;
 
 		tau = (map_tau != NULL) ? map_tau[i][j][k] : fixed_tau;
-		nu = si_mixw[i][j][k] * sum_tau;
+		nu = si_mixw[i][j][k] * sum_tau + 1;
 
 		map_mixw[i][j][k] = (nu - 1 + wt_mixw[i][j][k])
 		    / (sum_nu - n_density + sum_wt_mixw);
@@ -492,10 +495,11 @@ map_update(void)
 			       wt_mean, wt_mixw, wt_dcount);
 
     /* Re-estimate mixture weights. */
-    if (map_mixw)
+    if (map_mixw) {
 	map_mixw_reest(map_tau, fixed_tau,
 		       si_mixw, wt_mixw, map_mixw, mwfloor,
 		       n_mixw, n_stream, n_density);
+    }
 
     /* Re-estimate transition matrices. */
     if (map_tmat)
