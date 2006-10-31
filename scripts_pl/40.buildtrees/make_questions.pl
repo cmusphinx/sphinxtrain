@@ -65,14 +65,33 @@ $| = 1; # Turn on autoflushing
 Log ("    Make Questions\n");
 HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
 
-exit RunTool('make_quests', $logfile, 0,
-	     -moddeffn => $mdeffn,
-	     -meanfn => $meanfn,
-	     -varfn => $varfn,
-	     -fullvar => $ST::CFG_FULLVAR,
-	     -mixwfn => $mixwfn,
-	     -npermute => 12,
-	     -niter => 1,
-	     -qstperstt => 20,
-	     -questfn => $questfn,
-	     -type => $ST::CFG_HMM_TYPE);
+my $rv = RunTool('make_quests', $logfile, 0,
+		 -moddeffn => $mdeffn,
+		 -meanfn => $meanfn,
+		 -varfn => $varfn,
+		 -fullvar => $ST::CFG_FULLVAR,
+		 -mixwfn => $mixwfn,
+		 -npermute => 12,
+		 -niter => 1,
+		 -qstperstt => 20,
+		 -questfn => $questfn,
+		 -type => $ST::CFG_HMM_TYPE);
+exit $rv if $rv;
+
+# Add phone-identity questions if we are doing cross-phone sharing (rather important!)
+if ($ST::CFG_CROSS_PHONE_TREES) {
+    Log("    Add single-phone questions\n");
+    open INPUT,"<$ST::CFG_RAWPHONEFILE" or die "Failed to open $ST::CFG_RAWPHONEFILE: $!";
+    open OUTPUT, ">>$questfn" or die "Failed to append to $questfn: $!";
+    foreach my $phone (<INPUT>) {
+	chomp $phone;
+	$phone =~ s/^\s+//;
+	$phone =~ s/\s+$//;
+	if (($phone =~ m/^(\+).*(\+)$/) || ($phone =~ m/^SIL$/)) {
+	    next;
+	}
+	print OUTPUT "QUESTION_$phone\t$phone\n";
+    }
+    close OUTPUT;
+    close INPUT;
+}
