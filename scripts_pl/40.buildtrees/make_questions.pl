@@ -79,7 +79,7 @@ my $rv = RunTool('make_quests', $logfile, 0,
 exit $rv if $rv;
 
 # Add phone-identity questions if we are doing cross-phone sharing (rather important!)
-if ($ST::CFG_CROSS_PHONE_TREES) {
+if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
     Log("    Add single-phone questions\n");
     open INPUT,"<$ST::CFG_RAWPHONEFILE" or die "Failed to open $ST::CFG_RAWPHONEFILE: $!";
     open OUTPUT, ">>$questfn" or die "Failed to append to $questfn: $!";

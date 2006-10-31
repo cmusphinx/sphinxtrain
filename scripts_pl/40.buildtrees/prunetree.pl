@@ -71,7 +71,7 @@ Log ("    Prune trees\n");
 HTML_Print ("\t\t" . FormatURL("$logfile", "Log File") . " ");
 
 my @phnarg;
-if ($ST::CFG_CROSS_PHONE_TREES) {
+if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
     @phnarg = (-allphones => 'yes');
 }
 exit RunTool('prunetree', $logfile, 0,

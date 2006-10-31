@@ -83,7 +83,7 @@ mkdir ($unprunedtreedir,0777);
 
 # For every phone submit each possible state
 my @jobs;
-if ($ST::CFG_CROSS_PHONE_TREES) {
+if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
     Log ("\tProcessing all phones with each state\n");
     push @jobs, ['ALLPHONES' => LaunchScript("tree.all", ['buildtree.pl', 'ALLPHONES'])];
 } else {

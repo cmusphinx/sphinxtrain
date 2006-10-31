@@ -125,7 +125,7 @@ sub BuildTree
     }
 
     my @phnflag;
-    if ($ST::CFG_CROSS_PHONE_TREES) {
+    if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
 	@phnflag = (-allphones => 'yes');
     }
     else {
