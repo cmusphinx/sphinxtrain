@@ -44,7 +44,7 @@ TOP=..
 DIRNAME=doc
 BUILD_DIRS = 
 ALL_DIRS=
-FILES = Makefile sphinxtrain.sgml tinydoc.txt mc.html
+FILES = Makefile sphinxtrain.sgml tinydoc.txt
 
 HTMLDIR = $(TOP)/html
 

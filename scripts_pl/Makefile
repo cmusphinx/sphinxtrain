@@ -48,7 +48,6 @@ MODULES = lib/Queue/POSIX.pm			\
 SCRIPTS = 00.verify/verify_all.pl				\
 	03.force_align/force_align.pl				\
 	03.force_align/slave_align.pl				\
-	03.makeuntiedmdef/make_untied_mdef.pl			\
 	05.lda_train/lda_train.pl				\
 	10.vector_quantize/agg_seg.pl				\
 	10.vector_quantize/kmeans.pl				\
