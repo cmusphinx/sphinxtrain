@@ -724,7 +724,7 @@ int main(int argc, char *argv[])
     uint32 n_state = 0;
     uint32 n_stream = 0;
     uint32 n_density = 0;
-    model_def_t *mdef;
+    model_def_t *mdef = NULL;
     const char *phn;
     pset_t *pset = NULL;
     uint32 n_pset;
