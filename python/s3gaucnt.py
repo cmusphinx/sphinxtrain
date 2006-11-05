@@ -8,7 +8,7 @@
 # Author: David Huggins-Daines
 
 from struct import unpack, pack
-from Numeric import array, reshape, shape
+from Numeric import array, reshape, shape, fromstring
 from s3file import S3File
 
 def open(filename, mode="rb", attr={"version":1.0}):
@@ -77,8 +77,10 @@ class S3GauCntFile(S3File):
                             (self._nfloats,
                              self.n_mgau * self.density * self.blk,
                              self.n_mgau, self.density, self.blk))
-        data = array(unpack(self.swap + str(self._nfloats) + "f",
-                            self.fh.read(self._nfloats * 4)))
+        spam = self.fh.read(self._nfloats * 4)
+        data = fromstring(spam, 'f')
+        if self.otherend:
+            data = data.byteswapped()
         params = []
         r = 0
         for i in range(0, self.n_mgau):
@@ -109,8 +111,10 @@ class S3FullGauCntFile(S3GauCntFile):
                             (self._nfloats,
                              self.n_mgau * self.density * self.blk * self.blk,
                              self.n_mgau, self.density, self.blk, self.blk))
-        data = array(unpack(self.swap + str(self._nfloats) + "f",
-                            self.fh.read(self._nfloats * 4)))
+        spam = self.fh.read(self._nfloats * 4)
+        data = fromstring(spam, 'f')
+        if self.otherend:
+            data = data.byteswapped()
         params = []
         r = 0
         for i in range(0, self.n_mgau):

@@ -8,7 +8,7 @@
 # Author: David Huggins-Daines
 
 from struct import unpack, pack
-from Numeric import array,reshape,shape
+from Numeric import array,reshape,shape,fromstring
 
 class S3File(object):
     "Read Sphinx-III binary files"
@@ -41,6 +41,7 @@ class S3File(object):
             self.swap = ">"
         else:
             raise Exception("Invalid byte-order mark %08x" % spam)
+        self.otherend = (unpack('=i', pack(self.swap + 'i', spam)) == spam)
         self.data_start = self.fh.tell()        
 
     def read3d(self):
@@ -55,9 +56,11 @@ class S3File(object):
                             (self._nfloats,
                              self.d1 * self.d2 * self.d3,
                              self.d1, self.d2, self.d3))
-        params = array(unpack(self.swap + str(self._nfloats) + "f",
-                              self.fh.read(self._nfloats * 4)))
-        return reshape(params, (self.d1, self.d2, self.d3))
+        spam = self.fh.read(self._nfloats * 4)
+        params = fromstring(spam, 'f')
+        if self.otherend:
+            params = params.byteswapped()
+        return reshape(params, (self.d1, self.d2, self.d3)).astype('d')
         
 class S3File_write:
     "Write Sphinx-III binary files"

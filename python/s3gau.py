@@ -8,7 +8,7 @@
 # Author: David Huggins-Daines
 
 from struct import unpack, pack
-from Numeric import array, reshape, shape
+from Numeric import array, reshape, shape, fromstring
 from s3file import S3File, S3File_write
 
 def open(filename, mode="rb", attr={"version":1.0}):
@@ -59,9 +59,10 @@ class S3GauFile(S3File):
                              self.n_mgau * self.density * self.blk,
                              self.n_mgau, self.density, self.blk))
         # First load everything into a really big Numeric array.
-        # This is inefficient, but in the absence of fromfile()...
-        self._allgau = array(unpack(self.swap + str(self._nfloats) + "f",
-                                    self.fh.read(self._nfloats * 4)))
+        spam = self.fh.read(self._nfloats * 4)
+        data = fromstring(spam, 'f')
+        if self.otherend:
+            data = data.byteswapped()
         # The on-disk layout is bogus so we have to slice and dice it.
         # Since feature streams are not the same dimensionality, we use
         # a two-dimensional outer list of Numeric array slices
@@ -72,7 +73,7 @@ class S3GauFile(S3File):
             params.append(mgau)
             for j in range(0, self.n_feat):
                 rnext = r + self.density * self.veclen[j];
-                gmm = reshape(self._allgau[r:rnext], (self.density, self.veclen[j]))
+                gmm = reshape(data[r:rnext], (self.density, self.veclen[j]))
                 mgau.append(gmm)
                 r = rnext
         return params
@@ -90,8 +91,10 @@ class S3FullGauFile(S3GauFile):
                              self.n_mgau, self.density, self.blk, self.blk))
         # First load everything into a really big Numeric array.
         # This is inefficient, but in the absence of fromfile()...
-        self._allgau = array(unpack(self.swap + str(self._nfloats) + "f",
-                                    self.fh.read(self._nfloats * 4)))
+        spam = self.fh.read(self._nfloats * 4)
+        data = fromstring(spam, 'f')
+        if self.otherend:
+            data = data.byteswapped()
         # The on-disk layout is bogus so we have to slice and dice it.
         # Since feature streams are not the same dimensionality, we use
         # a two-dimensional outer list of Numeric array slices
@@ -102,9 +105,9 @@ class S3FullGauFile(S3GauFile):
             params.append(mgau)
             for j in range(0, self.n_feat):
                 rnext = r + self.density * self.veclen[j] * self.veclen[j];
-                gmm = reshape(self._allgau[r:rnext], (self.density,
-                                                      self.veclen[j],
-                                                      self.veclen[j]))
+                gmm = reshape(data[r:rnext], (self.density,
+                                              self.veclen[j],
+                                              self.veclen[j]))
                 mgau.append(gmm)
                 r = rnext
         return params

@@ -8,8 +8,8 @@
 # Author: David Huggins-Daines
 
 import s3gau, s3mixw, s3tmat, s3mdef, sys
-from math import log, sqrt, pi, exp
-from Numeric import shape,array,transpose
+from math import sqrt, pi, exp
+from Numeric import shape, array, transpose, log, clip, zeros
 
 WORSTSCORE = -100000
 
@@ -24,6 +24,8 @@ def logadd(x,y):
 class S3Model(object):
     def __init__(self, path=None, topn=4):
         self.topn = topn
+        self.mwfloor = 1e-5
+        self.tpfloor = 1e-4
         if path != None:
             self.read(path)
 
@@ -40,54 +42,44 @@ class S3Model(object):
         self.tmat = s3tmat.open(path + "/transition_matrices").getall()
         print "Loaded transition matrices", shape(self.tmat)
 
-        print "Normalizing mixw and tmat..."
-        # Normalize mixw, tmat and log-scale them
-        for m in range(0, len(self.mixw)):
-            feats = self.mixw[m]
-            for f in range(0, len(feats)):
-                feats[f] = feats[f] / sum(feats[f])
-                for d in range(0, len(feats[f])):
-                    # FIXME: There is a better way to do this
-                    if feats[f,d] == 0:
-                        feats[f,d] = WORSTSCORE
-                    else:
-                        feats[f,d] = log(feats[f,d])
+        sys.stdout.write("Flooring and normalizing mixw and tmat...")
+        sys.stdout.flush()
         for t in range(0, len(self.tmat)):
-            tmat = self.tmat[t]
-            for r in range(0, len(tmat)):
-                tmat[r] = tmat[r] / sum(tmat[r])
-                for d in range(0, len(tmat[r])):
-                    # FIXME: There is a better way to do this
-                    if tmat[r,d] == 0:
-                        tmat[r,d] = WORSTSCORE
-                    else:
-                        tmat[r,d] = log(tmat[r,d])
+            tmat = transpose(self.tmat[t])
+            tmat = transpose(tmat / sum(tmat))
+            self.tmat[t] = log(clip(tmat, self.tpfloor, 1.0)).astype('f')
 
-        print "Precomputing variance terms..."
+        for t in range(0, len(self.mixw)):
+            mixw = transpose(self.mixw[t])
+            mixw = transpose(mixw / sum(mixw))
+            self.mixw[t] = log(clip(mixw, self.mwfloor, 1.0)).astype('f')
+        print "done"
+
+        sys.stdout.write("Precomputing variance terms... ")
+        sys.stdout.flush()
         # Precompute normalizing terms
-        self.norm = []
-        for v in self.var:
-            outfeat = []
-            for f in v:
-                outgau = []
-                for g in f:
+        self.norm = zeros((len(self.var),
+                           len(self.var[0]),
+                           len(self.var[0][0])),'d')
+        for m,mgau in enumerate(self.var):
+            for f,feat in enumerate(mgau):
+                for g,gau in enumerate(feat):
                     # log of 1/sqrt(2*pi**N * det(var))
                     try:
-                        det = sum(log(x) for x in g)
+                        det = sum(log(x) for x in gau)
                     except OverflowError:
                         det = -200
-                    lrd = -0.5 * (det + len(g) * log(2 * pi))
-                    outgau.append(lrd)
-                outfeat.append(outgau)
-            self.norm.append(outfeat)
-
+                    lrd = -0.5 * (det + len(gau) * log(2 * pi))
+                    self.norm[m,f,g] = lrd
+        
         # "Invert" variances
         for m in range(0, len(self.var)):
             feats = self.var[m]
             for f in range(0, len(feats)):
                 gau = feats[f]
                 for g in range(0, len(gau)):
-                    gau[g] = 1 / (gau[g] * 2)
+                    gau[g] = (1 / (gau[g] * 2)).astype('f')
+        print "done"
 
     def gau_compute(self, mgau, mixw, feat, gau, obs):
         "Compute density for obs given parameters mgau,mixw,feat,gau"
