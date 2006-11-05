@@ -9,9 +9,17 @@
 
 import s3gau, s3mixw, s3tmat, s3mdef, sys
 from math import log, sqrt, pi, exp
-from Numeric import shape
+from Numeric import shape,array,transpose
 
 WORSTSCORE = -100000
+
+def logadd(x,y):
+    try:
+        return x + log(1 + exp(y-x))
+    except OverflowError:
+        print("Warning: Overflow (%f + log(1 + exp(%f - %f)))"
+              % (x, y, x))
+        return WORSTSCORE
 
 class S3Model(object):
     def __init__(self, path=None, topn=4):
@@ -22,13 +30,15 @@ class S3Model(object):
     def read(self, path):
         self.mdef = s3mdef.open(path + "/mdef")
         self.mean = s3gau.open(path + "/means").getall()
-        print "Loaded means", shape(self.mean)
+        print ("Loaded means (%d cb, %d feat, %s gau)"
+               % (len(self.mean), len(self.mean[0]), len(self.mean[0][0])))
         self.var = s3gau.open(path + "/variances").getall()
-        print "Loaded variances", shape(self.mean)
+        print ("Loaded variances (%d cb, %d feat, %s gau)" %
+               (len(self.var), len(self.var[0]), len(self.var[0][0])))
         self.mixw = s3mixw.open(path + "/mixture_weights").getall()
-        print "Loaded mixture weights", shape(self.mean)
+        print "Loaded mixture weights", shape(self.mixw)
         self.tmat = s3tmat.open(path + "/transition_matrices").getall()
-        print "Loaded transition matrices", shape(self.mean)
+        print "Loaded transition matrices", shape(self.tmat)
 
         print "Normalizing mixw and tmat..."
         # Normalize mixw, tmat and log-scale them
@@ -72,44 +82,51 @@ class S3Model(object):
             self.norm.append(outfeat)
 
         # "Invert" variances
-        for m in range(0, len(self.mixw)):
+        for m in range(0, len(self.var)):
             feats = self.var[m]
             for f in range(0, len(feats)):
                 gau = feats[f]
                 for g in range(0, len(gau)):
                     gau[g] = 1 / (gau[g] * 2)
 
-    def gmm_compute(self, mgau, frame):
-        "Evaluate frame according to GMM #mgau"
+    def gau_compute(self, mgau, mixw, feat, gau, obs):
+        "Compute density for obs given parameters mgau,mixw,feat,gau"
+        mean = self.mean[mgau][feat][gau]
+        ivar = self.var[mgau][feat][gau]
+        norm = self.norm[mgau][feat][gau]
+        mixw = self.mixw[mixw,feat,gau]
 
-        def logadd(x,y):
-            try:
-                return x + log(1 + exp(y-x))
-            except OverflowError:
-                print("Warning: Overflow (%f + log(1 + exp(%f - %f)))"
-                      % (x, y, x))
-                return WORSTSCORE
-            
-        # For each feature 
+        diff = obs - mean
+        dist = sum(diff * ivar * diff)
+        return norm - dist + mixw
+
+    def cb_compute(self, mgau, feat, obs):
+        "Compute codebook #mgau feature #feat for obs"
+        mean = self.mean[mgau][feat]
+        ivar = self.var[mgau][feat]
+        norm = self.norm[mgau][feat]
+
+        # Vectorize this for unreadability and efficiency
+        obsplus = array((obs,) * len(self.mean[mgau][feat]))
+        diff = obsplus - mean
+        dist = sum(transpose(diff * ivar * diff))
+        return norm - dist
+        
+    def gmm_compute(self, mgau, mixw, *features):
+        "Evaluate features according to codebook #mgau with mixw #mixw"
         densities = []
-        for f in range(0,len(self.mean[mgau])):
-            # For each mixture
-            densities.append([])
-            for g in range(0, len(self.mean[mgau][f])):
-                mean = self.mean[mgau][f][g]
-
-                ivar = self.var[mgau][f][g]
-                norm = self.norm[mgau][f][g]
-
-                diff = frame - mean
-                dist = sum(diff * ivar * diff)
-                den = norm - dist
-                densities[f].append(den)
-
-            # Take top N
-            densities[f].sort()
-            densities[f].reverse()
+        # Compute mixture density for each feature
+        for f,vec in enumerate(features):
+            # Compute codebook and apply mixture weights (in parallel)
+            d = self.cb_compute(mgau, f, vec) + self.mixw[mixw,f]
+            # Take top N:
+            # Convert to a list
+            d = list(d)
+            # Sort in reverse orter
+            d.sort(None, None, True)
             # Log-add them
-            #print "mgau %d feat %d densities %s" % (mgau, f, str(densities[f]))
-            densities[f] = reduce(logadd, densities[f][0:self.topn])
+            d = reduce(logadd, d[0:self.topn])
+            densities.append(d)
+
+        # Multiply their probabilities (in log domain)
         return sum(densities)
