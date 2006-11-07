@@ -201,11 +201,6 @@ map_tmat_reest(float32 ***si_tmat, float32 ***wt_tmat,
 	for (i = 0; i < n_state-1; ++i) {
 	    float32 sum_si_tmat = 0.0f, sum_wt_tmat = 0.0f;
 
-	    /* I think there is a different way to estimate the eta
-	     * parameters but I don't have it close at hand right now.
-	     * For the time being we will just use the un-normalized
-	     * counts from the SI models, which should give us some
-	     * measure of robustness. */
 	    for (j = 0; j < n_state; ++j) {
 		sum_si_tmat += si_tmat[t][i][j];
 		sum_wt_tmat += si_tmat[t][i][j];
@@ -213,17 +208,14 @@ map_tmat_reest(float32 ***si_tmat, float32 ***wt_tmat,
 	    for (j = 0; j < n_state; ++j) {
 		if (si_tmat[t][i][j] + wt_tmat[t][i][j] < 0) continue;
 
-		/* NOTE: There is a "missing" - 1 term here.  We will
-		   just assume that the priors are estimated as
-		   si_tmat + 1 */
 		map_tmat[t][i][j] =
 		    (si_tmat[t][i][j] + wt_tmat[t][i][j])
 		    / (sum_si_tmat + sum_wt_tmat);
-		if (map_tmat[t][i][j] < 0.0f)
+		if (map_tmat[t][i][j] < 0.0f) {
 		    E_WARN("map_tmat[%d][%d][%d] < 0 (%f)\n",
 			   t, i, j, map_tmat[t][i][j]);
-		if (map_tmat[t][i][j] < tpfloor)
-		    map_tmat[t][i][j] = tpfloor;
+		    map_tmat[t][i][j] = 0.0f;
+		}
 	    }
 	}
     }
