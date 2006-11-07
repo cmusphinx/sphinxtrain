@@ -290,26 +290,22 @@ map_var_reest(float32 tau, vector_t ***si_mean, vector_t ***si_var,
     uint32 m;
 
     for (m = 0; m < veclen[j]; ++m) {
-	float32 alpha, beta, mdiff, wt_vdiff;
+	float32 alpha, beta, mdiff;
 
-	alpha = (tau + 1) / 2;
-	/* Floor alpha to prevent negative variances
-	 * (though perhaps we should actually just not
-	 * adapt these at all?) */
-	if (alpha - veclen[j] + wt_dcount[i][j][k] < 0.0f)
-	    alpha = veclen[j] + tau;
-	beta = (tau / 2) * si_var[i][j][k][m];
-	mdiff = map_mean[i][j][k][m] - si_mean[i][j][k][m];
-	wt_vdiff = wt_var[i][j][k][m]
-	    - 2 * map_mean[i][j][k][m] * wt_mean[i][j][k][m]
-	    + map_mean[i][j][k][m] * map_mean[i][j][k][m] * wt_dcount[i][j][k];
-	/* Huo and Chan (1995) give a different derivation
-	 * of this equation for diagonal covariances.
-	 * However in practice this one works better.  */
+	/* Somewhat different estimates of alpha and beta from the
+	 * ones given in Gauvain & Lee.  These actually converge to
+	 * the SI variance with no observations, and also seem to
+	 * perform better in at least one case.  */
+	alpha = tau + 1;
+	beta = tau * si_var[i][j][k][m];
+
+	mdiff = si_mean[i][j][k][m] - map_mean[i][j][k][m];
+	/* This should be the correct update equation for diagonal
+	 * covariance matrices. */
 	map_var[i][j][k][m] = (beta
-			       + tau * mdiff * mdiff
-			       + wt_vdiff)
-	    / (alpha - veclen[j] + wt_dcount[i][j][k]);
+			       + wt_var[i][j][k][m]
+			       + tau * mdiff * mdiff)
+	    / (alpha - 1 + wt_dcount[i][j][k]);
 	if (map_var[i][j][k][m] < 0.0f) {
 	    /* This is bad and shouldn't happen! */
 	    E_WARN("mapvar[%d][%d][%d][%d] < 0 (%f)\n", i,j,k,m, map_var[i][j][k][m]);
