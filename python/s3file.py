@@ -87,7 +87,7 @@ class S3File_write:
         self.fh.write(pack("=IIII",
                            d1, d2, d3,
                            d1 * d2 * d3))
-        flat = reshape(stuff, (d1*d2*d3,))
+        flat = reshape(stuff, (d1*d2*d3,)).astype('f')
         self.fh.write(pack("=" + str(len(flat)) + "f", *flat))
 
     def __del__(self):
