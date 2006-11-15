@@ -189,6 +189,8 @@ acmod_id_t *mk_phone_list(char **btw_mark,
 
     for (i = 0, k = 0; i < n_word; i++) {	/* for each word */
 	e = lexicon_lookup(lex, word[i]);
+	if (e->phone_cnt == 0) /* Ignore words with no pronunciation */
+	  continue;
 	for (j = 0; j < e->phone_cnt-1; j++, k++) {	/* for all but the last phone in the word */
 	    p[k] = e->ci_acmod_id[j];
 	}
