@@ -141,14 +141,19 @@ sub FlatInitialize ()
     open PHONELIST, "<".$ST::CFG_RAWPHONEFILE;
     open PHONEFILE, ">".$phonefile;
     my $NUM_PHONES = 0;
+    my @phonelist;
     while (defined(my $line = <PHONELIST>)) {
       chomp($line);
       next if $line =~ m/^\s*$/;
       $line =~ s/$/ - - - /;
-      print PHONEFILE $line . "\n";
+      push @phonelist, $line;
       $NUM_PHONES++;
     }
 
+    # Make sure the CI phones are sorted, as PocketSphinx requires them to be
+    foreach (sort @phonelist) {
+	print PHONEFILE $_, "\n";
+    }
 #    system "sed 's+\$+ - - - +g' $ST::CFG_RAWPHONEFILE > $phonefile";
 
 
