@@ -70,7 +70,7 @@ my $return_value = 0;
 
 # We have to clean up and run flat initialize if it is the first iteration
 if ($iter == 1 and $n_gau == 1) {
-    Log ("MODULE: 20 Training Context Independent models\n");
+    Log ("MODULE: 02 Training Context Independent models for forced alignment\n");
     if ( $ST::CFG_FORCEDALIGN eq "no" ) {
         Log("    Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
 	exit(0);
