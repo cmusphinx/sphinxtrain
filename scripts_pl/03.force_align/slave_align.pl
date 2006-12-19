@@ -161,8 +161,9 @@ while (<INPUT>) {
     chomp;
     # Remove silences
     foreach my $sil (keys %silences) {
-        s,\b$sil\b, ,g;
+        s,(\s|^)$sil(\s|$),$1$2,g;
     }
+    # These are now done by the above removal of silence
     #s,</?s>,,g;
     #s,</?sil>,,g;
     # Also remove pronunciation variants
