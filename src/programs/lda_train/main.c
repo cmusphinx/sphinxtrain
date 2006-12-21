@@ -27,8 +27,8 @@ lda_save(const char *outfile, float32 ***lda, int32 nlda, int32 featlen)
         s3clr_fattr();
         s3add_fattr("version", MATRIX_FILE_VERSION, TRUE);
         s3add_fattr("chksum0", "yes", TRUE);
-        if ((outfh = s3open(cmd_ln_access("-outfn"), "wb", NULL)) == NULL) {
-            E_FATAL_SYSTEM("Failed to open %s for writing", cmd_ln_access("-outfn"));
+        if ((outfh = s3open(outfile, "wb", NULL)) == NULL) {
+            E_FATAL_SYSTEM("Failed to open %s for writing", outfile);
         }
         s3write_3d((void ***)lda, sizeof(float32), nlda, featlen, featlen, outfh, &chksum);
         s3write(&chksum, sizeof(chksum), 1, outfh, &val);
@@ -48,6 +48,7 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
     model_def_t *mdef;
     uint32 ceplen, featlen;
     float32 *globalmean, **mean, ***scatter, **sw, **sb, **op;
+    const char *outfn;
 
     /* Set up corpus and mdef. */
     if (model_def_read(&mdef,
@@ -171,6 +172,21 @@ calc_scatter(float32 ***out_sw, float32 ***out_sb, uint32 *out_featlen)
         ckd_free(mfcc);
     }
     printf("\n");
+
+    if ((outfn = cmd_ln_access("-outcovfn"))) {
+        lda_save(outfn, scatter, n_class, featlen);
+    }
+    if ((outfn = cmd_ln_access("-outcountfn"))) {
+        FILE *fh;
+
+        if ((fh = fopen(outfn, "w")) == NULL) {
+            E_FATAL_SYSTEM("Failed to open output count file %s");
+        }
+        for (i = 0; i < n_class; ++i) {
+            fprintf(fh, "%d\n", class_n_frame[i]);
+        }
+        fclose(fh);
+    }
 
     for (i = 0; i < n_class; ++i) {
         /* We are "supposed" to normalize scatter_i here:

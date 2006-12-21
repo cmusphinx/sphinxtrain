@@ -176,6 +176,16 @@ lda_train -ceplen 13 -feat 1s_c_d_dd -dim 29 -cepdir cep -stsegdir stseg \n\
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
 	  "Output file containing LDA transformation matrix"},
+	{ "-outcovfn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Output file containing class covariances (for MLLT)"},
+	{ "-outcountfn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Output file containing class counts (for MLLT)"},
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 
