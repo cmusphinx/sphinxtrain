@@ -8,7 +8,7 @@
 # Author: David Huggins-Daines
 
 from struct import unpack, pack
-from Numeric import array,reshape,shape,fromstring
+from numpy import array,reshape,shape,fromstring
 
 class S3File(object):
     "Read Sphinx-III binary files"
@@ -59,7 +59,7 @@ class S3File(object):
         spam = self.fh.read(self._nfloats * 4)
         params = fromstring(spam, 'f')
         if self.otherend:
-            params = params.byteswapped()
+            params = params.byteswap()
         return reshape(params, (self.d1, self.d2, self.d3)).astype('d')
         
 class S3File_write:

@@ -7,7 +7,7 @@
 #
 # Author: David Huggins-Daines
 
-from Numeric import *
+from numpy import zeros, arrayrange, dot, shape
 
 def s2dctmat(nfilt,ncep,freqstep):
     """Return the 'legacy' not-quite-DCT matrix used by Sphinx"""
@@ -23,7 +23,7 @@ def logspec2s2mfc(logspec, ncep=13):
     Sphinx transform"""
     nframes, nfilt = shape(logspec)
     melcos = s2dctmat(nfilt, ncep, 1/nfilt)
-    return matrixmultiply(logspec, transpose(melcos)) / nfilt
+    return dot(logspec, melcos.T) / nfilt
 
 def dctmat(N,K,freqstep):
     """Return the orthogonal DCT-II/DCT-III matrix of size NxK.
@@ -49,30 +49,3 @@ def idct(input, K=40):
     freqstep = pi / K
     cosmat = transpose(dctmat(K,N,freqstep))
     return dot(input, cosmat) * sqrt(2.0 / K)
-
-def dct2(input, K=13):
-    # Straightforward non-matrix implementation
-    nframes, N = shape(input)
-    out = zeros((nframes, K), 'double')
-    freqstep = pi / N
-    for f in range(0, nframes):
-        for k in range(0, K):
-            for n in range(0, N):
-                if k == 0:
-                    out[f,k] = out[f,k] + input[f,n] # / sqrt(2) # sqrt(2) orthogonalizes
-                else:
-                    out[f,k] = out[f,k] + input[f,n] * cos(freqstep * (n + 0.5) * k)
-    return out * (2.0 / N)
-
-def dct3(input, K=40):
-    # Straightforward non-matrix implementation
-    nframes, N = shape(input)
-    out = zeros((nframes, K), 'double')
-    freqstep = pi / K
-    for f in range(0, nframes):
-        for k in range(0, K):
-            out[f,k] = input[f,0] * 0.5 # * sqrt(2) # sqrt(2) orthogonalizes
-            for n in range(1, N):
-                out[f,k] = out[f,k] + input[f,n] * cos(freqstep * n * (k + 0.5))
-    return out
-

@@ -8,20 +8,20 @@
 # Author: David Huggins-Daines
 
 from struct import unpack, pack
-from Numeric import array, reshape, shape, fromstring
+from numpy import array, reshape, shape, fromstring
 from s3file import S3File
 
 def open(filename, mode="rb", attr={"version":1.0}):
     if mode in ("r", "rb"):
         return S3GauCntFile(filename, mode)
     else:
-        raise Error, "mode must be 'r' or 'rb'"
+        raise Exception, "mode must be 'r' or 'rb'"
 
 def open_full(filename, mode="rb", attr={"version":1.0}):
     if mode in ("r", "rb"):
         return S3FullGauCntFile(filename, mode)
     else:
-        raise Error, "mode must be 'r', 'rb'"
+        raise Exception, "mode must be 'r', 'rb'"
 
 class S3GauCntFile(S3File):
     "Read Sphinx-III format Gaussian count files"
@@ -80,7 +80,7 @@ class S3GauCntFile(S3File):
         spam = self.fh.read(self._nfloats * 4)
         data = fromstring(spam, 'f')
         if self.otherend:
-            data = data.byteswapped()
+            data = data.byteswap()
         params = []
         r = 0
         for i in range(0, self.n_mgau):
@@ -114,7 +114,7 @@ class S3FullGauCntFile(S3GauCntFile):
         spam = self.fh.read(self._nfloats * 4)
         data = fromstring(spam, 'f')
         if self.otherend:
-            data = data.byteswapped()
+            data = data.byteswap()
         params = []
         r = 0
         for i in range(0, self.n_mgau):

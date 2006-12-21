@@ -8,7 +8,7 @@
 # Author: David Huggins-Daines
 
 from struct import unpack, pack
-from Numeric import array, reshape
+from numpy import array, reshape
 
 def open(f, mode=None, veclen=13):
     """Open a Sphinx-II format feature file for reading or writing.
@@ -23,7 +23,7 @@ def open(f, mode=None, veclen=13):
     elif mode in ('w', 'wb'):
         return S2Feat_write(f,veclen)
     else:
-        raise Error, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
 
 class S2Feat_read(object):
     "Read Sphinx-II format feature files"

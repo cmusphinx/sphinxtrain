@@ -9,7 +9,7 @@
 
 import s3gau, s3mixw, s3tmat, s3mdef, sys
 from math import sqrt, pi, exp
-from Numeric import shape, array, transpose, log, clip, zeros
+from numpy import shape, array, transpose, log, clip, zeros
 
 WORSTSCORE = -100000
 

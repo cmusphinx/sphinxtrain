@@ -8,7 +8,7 @@
 # Author: David Huggins-Daines
 
 from struct import unpack, pack
-from Numeric import array, reshape, shape, fromstring
+from numpy import array, reshape, shape, fromstring
 from s3file import S3File, S3File_write
 
 def open(filename, mode="rb", attr={"version":1.0}):
@@ -17,7 +17,7 @@ def open(filename, mode="rb", attr={"version":1.0}):
     elif mode in ("w", "wb"):
         return S3GauFile_write(filename, mode, attr)
     else:
-        raise Error, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
 
 def open_full(filename, mode="rb", attr={"version":1.0}):
     if mode in ("r", "rb"):
@@ -25,7 +25,7 @@ def open_full(filename, mode="rb", attr={"version":1.0}):
     elif mode in ("w", "wb"):
         return S3FullGauFile_write(filename, mode, attr)
     else:
-        raise Error, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
 
 class S3GauFile(S3File):
     "Read Sphinx-III format Gaussian parameter files"
@@ -62,7 +62,7 @@ class S3GauFile(S3File):
         spam = self.fh.read(self._nfloats * 4)
         data = fromstring(spam, 'f')
         if self.otherend:
-            data = data.byteswapped()
+            data = data.byteswap()
         # The on-disk layout is bogus so we have to slice and dice it.
         # Since feature streams are not the same dimensionality, we use
         # a two-dimensional outer list of Numeric array slices
@@ -94,7 +94,7 @@ class S3FullGauFile(S3GauFile):
         spam = self.fh.read(self._nfloats * 4)
         data = fromstring(spam, 'f')
         if self.otherend:
-            data = data.byteswapped()
+            data = data.byteswap()
         # The on-disk layout is bogus so we have to slice and dice it.
         # Since feature streams are not the same dimensionality, we use
         # a two-dimensional outer list of Numeric array slices
@@ -118,7 +118,7 @@ class S3GauFile_write(S3File_write):
         # This will break for multi-stream files
         n_mgau, n_feat, density, veclen = shape(stuff)
         if n_feat != 1:
-            raise Error, "Multi-stream files not supported"
+            raise Exception, "Multi-stream files not supported"
         # Write the header
         self.fh.seek(self.data_start, 0)
         self.fh.write(pack("=IIIII",
@@ -133,7 +133,7 @@ class S3FullGauFile_write(S3GauFile_write):
         # This will break for multi-stream files
         n_mgau, n_feat, density, veclen, veclen2 = shape(stuff)
         if n_feat != 1:
-            raise Error, "Multi-stream files not supported"
+            raise Exception, "Multi-stream files not supported"
         # Write the header
         self.fh.seek(self.data_start, 0)
         self.fh.write(pack("=IIIII",

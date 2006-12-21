@@ -7,7 +7,7 @@
 #
 # Author: David Huggins-Daines
 
-from Numeric import shape, zeros, concatenate
+from numpy import shape, zeros, concatenate
 
 def compute(mfcc):
     """Compute 52-dimensional 4-stream features consisting of cepstra

@@ -7,7 +7,7 @@
 #
 # Author: David Huggins-Daines
 
-from Numeric import zeros
+from numpy import zeros
 from math import log
 import re
 
@@ -50,7 +50,7 @@ class ArpaLM(object):
         # Read unigrams and create word id list
         spam = fh.readline().rstrip()
         if spam != "\\1-grams:":
-            raise Error("1-grams marker not found")
+            raise Exception, "1-grams marker not found"
         # Word and N-Gram to ID mapping
         self.ngmap = {}
         self.widmap = []

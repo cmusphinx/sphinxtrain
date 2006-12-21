@@ -7,9 +7,7 @@
 #
 # Author: David Huggins-Daines
 
-from s3file import S3File, S3File_write
-from Numeric import array,reshape,shape
-from struct import unpack,pack
+import s3file
 
 def open(filename, mode="rb"):
     if mode in ("r", "rb"):
@@ -17,9 +15,9 @@ def open(filename, mode="rb"):
     elif mode in ("w", "wb"):
         return S3MixwFile_write(filename, mode)
     else:
-        raise Error, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
 
-class S3MixwFile(S3File):
+class S3MixwFile(s3file.S3File):
     "Read Sphinx-III format mixture weight files"
 
     def getall(self):
@@ -39,7 +37,7 @@ class S3MixwFile(S3File):
         self.fh.seek(self.data_start, 0)
         return self.read3d()
 
-class S3MixwFile_write(S3File_write):
+class S3MixwFile_write(s3file.S3File_write):
     "Write Sphinx-III format mixture weight files"
 
     def writeall(self, stuff):

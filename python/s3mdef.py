@@ -7,7 +7,7 @@
 #
 # Author: David Huggins-Daines
 
-from Numeric import *
+from numpy import *
 
 def open(file):
     return S3Mdef(file)
