@@ -1,11 +1,17 @@
-# s3mdef.py: Read/write Sphinx-III model definition files
-#
 # Copyright (c) 2006 Carnegie Mellon University
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-#
-# Author: David Huggins-Daines
+
+"""Read/write Sphinx-III model definition files.
+
+This module reads and writes the text format model definiton (triphone
+to senone mapping) files used by SphinxTrain, Sphinx-III, and
+PocketSphinx.
+"""
+
+__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__version__ = "$Revision$"
 
 from numpy import *
 

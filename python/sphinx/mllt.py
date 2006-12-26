@@ -1,17 +1,20 @@
-# s3mllt.py: Train maximum-likelihood linear transform
-#
-# This module implements the MLLT technique as described in
-# R. A. Gopinath, "Maximum Likelihood Modeling with Gaussian
-# Distributions for Classification", in proceedings of ICASSP 1998.
-#
+"""Train maximum-likelihood linear transforms.
+
+This module implements the MLLT technique as described in
+R. A. Gopinath, "Maximum Likelihood Modeling with Gaussian
+Distributions for Classification", in proceedings of ICASSP 1998.
+"""
+
 # Copyright (c) 2006 Carnegie Mellon University
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-#
-# Author: David Huggins-Daines
 
-from numpy import dot, prod, diag, log
+__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__version__ = "$Revision$"
+
+from numpy import dot, prod, diag, log, eye
+from numpy.random import random
 from numpy.linalg import det, inv
 from scipy.optimize import fmin_bfgs
 
@@ -65,7 +68,17 @@ class MLLTModel(object):
         print lg
         return -lg * 1e-7
 
-    def train(self, A):
+    def train(self, A=None):
+        """Train an MLLT transform from an optional starting point."""
+        if A == None:
+            # Initialize it with a random positive-definite matrix of
+            # the same shape as the covariances
+            s = self.cov[0].shape
+            d = -1
+            while d < 0:
+                A = eye(s[0]) + 0.1 * random(s)
+                d = det(A)
+            
         # Flatten out the matrix so scipy.optimize can handle it
         AA = fmin_bfgs(self.objective, A.ravel(), self.gradient, A.shape, disp=1)
         # And unflatten the maximum-likelihood

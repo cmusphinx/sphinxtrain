@@ -1,11 +1,17 @@
-# s3file.py: Read/write Sphinx-III binary files
-#
 # Copyright (c) 2006 Carnegie Mellon University
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-#
-# Author: David Huggins-Daines
+
+"""Read/write Sphinx-III binary parameter files.
+
+All the various binary parameter files created by SphinxTrain and used
+by Sphinx-III and PocketSphinx share a common file format.  This
+module contains some base classes for reading and writing these files.
+"""
+
+__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__version__ = "$Revision$"
 
 from struct import unpack, pack
 from numpy import array,reshape,shape,fromstring
@@ -22,6 +28,12 @@ class S3File(object):
         self.readheader()
 
     def readheader(self):
+        """Read binary header.  Sets the following attributes:
+        fileattr (a dictionary of attribute-value pairs)
+        swap (a byteswap string as used by the struct module)
+        otherend (a flag indicating if the file is wrong-endian
+                  for the current platform)
+        data_start (offset of the start of data in the file)"""
 	spam = self.fh.readline()
         self.fileattr = {}
         if spam != "s3\n":

@@ -1,11 +1,16 @@
-# arpalm.py: Read ARPA-format language models
-#
 # Copyright (c) 2006 Carnegie Mellon University
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-#
-# Author: David Huggins-Daines
+
+"""Read ARPA-format language models.
+
+This module provides a class for reading (currently not writing) ARPA
+format statistical language model files.
+"""
+
+__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__version__ = "$Revision$"
 
 from numpy import zeros
 from math import log

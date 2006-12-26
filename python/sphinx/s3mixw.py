@@ -1,26 +1,29 @@
-# s3model.py: Read/write Sphinx-III transition matrix files
-#
 # Copyright (c) 2006 Carnegie Mellon University
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-#
-# Author: David Huggins-Daines
 
-from s3file import S3File, S3File_write
-from numpy import shape
-from struct import unpack,pack
+"""Read/write Sphinx-III Gaussian mixture weight files.
+
+This module reads and writes the Gaussian mixture weight files used by
+SphinxTrain, Sphinx-III, and PocketSphinx.
+"""
+
+__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__version__ = "$Revision$"
+
+import s3file
 
 def open(filename, mode="rb"):
     if mode in ("r", "rb"):
-        return S3TmatFile(filename, mode)
+        return S3MixwFile(filename, mode)
     elif mode in ("w", "wb"):
-        return S3TmatFile_write(filename, mode)
+        return S3MixwFile_write(filename, mode)
     else:
         raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
 
-class S3TmatFile(S3File):
-    "Read Sphinx-III format transition matrix files"
+class S3MixwFile(s3file.S3File):
+    "Read Sphinx-III format mixture weight files"
 
     def getall(self):
         try:
@@ -37,14 +40,10 @@ class S3TmatFile(S3File):
     def _load(self):
         self.readgauheader()
         self.fh.seek(self.data_start, 0)
-        return self.read3d();
+        return self.read3d()
 
-class S3TmatFile_write(S3File_write):
-    "Write Sphinx-III format transition matrix files"
+class S3MixwFile_write(s3file.S3File_write):
+    "Write Sphinx-III format mixture weight files"
 
     def writeall(self, stuff):
-        n_tmat, n_state, spam = shape(stuff)
-        if n_state != spam:
-            raise Exception("n_state rows %d != n_state columns %d" % n_state, spam)
-        self.fh.seek(self.data_start, 0)
         self.write3d(stuff)

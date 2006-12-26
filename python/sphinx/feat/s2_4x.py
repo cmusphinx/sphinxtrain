@@ -1,18 +1,25 @@
-# feat_s2_4x.py: Compute Sphinx-II 4-stream features
-#
 # Copyright (c) 2006 Carnegie Mellon University
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-#
-# Author: David Huggins-Daines
 
-from numpy import shape, zeros, concatenate
+"""Compute Sphinx-II 4-stream features.
+
+This module provides a compute() function to compute 52-dimensional
+4-stream features consisting of cepstra and their first and second
+time derivatives, and the C0 values. This is the default feature type
+used for PocketSphinx and Sphinx-II semi-continuous acoustic models.
+"""
+
+__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__version__ = "$Revision$"
+
+from numpy import zeros, concatenate
 
 def compute(mfcc):
     """Compute 52-dimensional 4-stream features consisting of cepstra
      and their first and second time derivatives, and the C0 values."""
-    r, c = shape(mfcc)
+    r, c = mfcc.shape
 
     # Pad the features to compute dcep, ddcep
     pad = concatenate((zeros((5,c)), mfcc, zeros((5,c))))
@@ -39,4 +46,3 @@ def compute(mfcc):
     feat[2][:,2] = (pad[8:-2,0] - pad[4:-6,0]) - (pad[6:-4,0] - pad[2:-8,0])
 
     return feat
-

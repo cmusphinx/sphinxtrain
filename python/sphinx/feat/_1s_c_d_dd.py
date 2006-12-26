@@ -1,18 +1,25 @@
-# feat_1s_c_d_dd.py: Compute Sphinx-III 1s_c_d_dd features
-#
 # Copyright (c) 2006 Carnegie Mellon University
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-#
-# Author: David Huggins-Daines
 
-from numpy import shape, zeros, concatenate
+"""Compute Sphinx-III 1s_c_d_dd features.
+
+This module provides a compute() function to compute 39-dimensional
+single-stream features consisting of cepstra and their first and
+second time derivatives.  This is the default feature type used for
+Sphinx-III continuous density acoustic models.
+"""
+
+__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__version__ = "$Revision$"
+
+from numpy import zeros, concatenate
 
 def compute(mfcc):
     """Compute 39-dimensional single-stream features consisting of cepstra
      and their first and second time derivatives."""
-    r, c = shape(mfcc)
+    r, c = mfcc.shape
 
     # Pad the features to compute dcep, ddcep
     pad = concatenate((zeros((3,c)), mfcc, zeros((3,c))))

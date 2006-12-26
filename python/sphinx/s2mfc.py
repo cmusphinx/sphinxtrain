@@ -1,11 +1,16 @@
-# s2mfc.py: Read Sphinx feature files
-#
 # Copyright (c) 2006 Carnegie Mellon University
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-#
-# Author: David Huggins-Daines
+
+"""Read and write Sphinx feature files.
+
+This module reads and writes the acoustic feature files used by all
+Sphinx speech recognition systems.
+"""
+
+__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__version__ = "$Revision$"
 
 from struct import unpack, pack
 from numpy import array, reshape

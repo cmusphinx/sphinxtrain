@@ -39,17 +39,23 @@ DIRNAME=python
 BUILD_DIRS=
 ALL_DIRS=
 MODULES =					\
-	arpalm.py				\
-	feat_1s_c_d_dd.py			\
-	mfcc.py					\
-	s2mfc.py				\
-	s3file.py				\
-	s3gaucnt.py				\
-	s3gau.py				\
-	s3mdef.py				\
-	s3mixw.py				\
-	s3model.py				\
-	s3tmat.py
+	setup.py				\
+	sphinx/arpalm.py			\
+	sphinx/feat/s2_4x.py			\
+	sphinx/feat/__init__.py			\
+	sphinx/feat/_1s_c_d_dd.py		\
+	sphinx/__init__.py			\
+	sphinx/mfcc.py				\
+	sphinx/mllt.py				\
+	sphinx/s2mfc.py				\
+	sphinx/s3file.py			\
+	sphinx/s3gau.py				\
+	sphinx/s3gaucnt.py			\
+	sphinx/s3lda.py				\
+	sphinx/s3mdef.py			\
+	sphinx/s3mixw.py			\
+	sphinx/s3model.py			\
+	sphinx/s3tmat.py
 
 FILES = Makefile $(MODULES)
 

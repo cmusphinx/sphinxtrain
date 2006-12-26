@@ -1,11 +1,16 @@
-# s3lda.py: Read/write Sphinx-III LDA/MLLT/covariance files
-#
 # Copyright (c) 2006 Carnegie Mellon University
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-#
-# Author: David Huggins-Daines
+
+"""Read/write Sphinx-III LDA/MLLT/covariance files.
+
+This module reads and writes the linear transformation files used by
+Sphinx-III.
+"""
+
+__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__version__ = "$Revision$"
 
 import s3file
 

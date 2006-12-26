@@ -1,11 +1,18 @@
-# s3model.py: Read Sphinx-III acoustic models
-#
 # Copyright (c) 2006 Carnegie Mellon University
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-#
-# Author: David Huggins-Daines
+
+"""Sphinx-III acoustic models.
+
+This module provides a class which wraps a set of acoustic models, as
+used by SphinxTrain, Sphinx-III, and PocketSphinx.  It provides
+functions for computing Gaussian mixture densities for acoustic
+feature vectors.
+"""
+
+__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__version__ = "$Revision$"
 
 import s3gau, s3mixw, s3tmat, s3mdef, sys
 from math import sqrt, pi, exp
