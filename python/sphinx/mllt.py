@@ -16,7 +16,7 @@ __version__ = "$Revision$"
 from numpy import dot, prod, diag, log, eye
 from numpy.random import random
 from numpy.linalg import det, inv
-from scipy.optimize import fmin_bfgs
+from scipy.optimize import fmin_l_bfgs_b
 
 import s3lda
 
@@ -34,39 +34,26 @@ class MLLTModel(object):
         fh.close()
 
     def objective(self, A, r, c):
-        """Log-likelihood function for MLLT:
-        N|A| - \sum_j \frac{N_j}{2} \log |diag(A \Sigma_j A^T)|"""
+        """Log-likelihood function and gradient for MLLT:
+        L(A) = N|A| - \sum_j \frac{N_j}{2} \log |diag(A \Sigma_j A^T)|
+        \nabla L(A) = N(A^T)^{-1} - \sum_j N_j diag(A \Sigma_j A^T)^{-1}A\Sigma_j
+        """
         # Note: A has been flattened to make it acceptable to scipy.optimize
         A = A.reshape((r,c))
         detA = det(A)
         ll = self.totalcount * log(detA)
-        for j, nj in enumerate(self.count):
-            C = self.cov[j]
-            cl = diag(dot(dot(A, C), A.T))
-            ll = ll - (float(nj) / 2) * log(prod(cl))
-        print "likelihood: %f" % ll
-        # Note: we negate this to maximize likelihood
-        return -ll
-
-    def gradient(self, A, r, c):
-        """'Flattened' gradient of log-likelihood function for MLLT:
-        N(A^T)^{-1} - \sum_j N_j diag(A \Sigma_j A^T)^{-1}A\Sigma_j"""
-        # Note: A has been flattened to make it acceptable to scipy.optimize
-        A = A.reshape((r,c))
-        detA = det(A)
         lg = self.totalcount * inv(A.T)
         for j, nj in enumerate(self.count):
             C = self.cov[j]
             cl = diag(dot(dot(A, C), A.T))
+            ll = ll - (float(nj) / 2) * log(prod(cl))
             lg = lg - float(nj) * dot(dot(inv(diag(cl)), A), C)
+        print "likelihood: %f" % ll
         # Flatten out the gradient
         lg = lg.ravel()
-        # This is a HACK!  The gradient can be extremely large which
-        # causes line search to fail, or causes A to become
-        # non-positive-definite.  So we scale it down arbitrarily.
-        # Note: we negate this to maximize likelihood
-        print lg
-        return -lg * 1e-7
+        print "gradient L1: %f" % sum(abs(lg))
+        # Note: we negate these to maximize likelihood
+        return -ll, -lg
 
     def train(self, A=None):
         """Train an MLLT transform from an optional starting point."""
@@ -80,6 +67,6 @@ class MLLTModel(object):
                 d = det(A)
             
         # Flatten out the matrix so scipy.optimize can handle it
-        AA = fmin_bfgs(self.objective, A.ravel(), self.gradient, A.shape, disp=1)
+        AA = fmin_l_bfgs_b(self.objective, A.ravel(), args=A.shape)
         # And unflatten the maximum-likelihood
         return AA.reshape(A.shape)
