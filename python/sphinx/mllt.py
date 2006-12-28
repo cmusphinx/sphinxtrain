@@ -13,7 +13,7 @@ Distributions for Classification", in proceedings of ICASSP 1998.
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
-from numpy import dot, prod, diag, log, eye
+from numpy import dot, prod, diag, log, eye, sqrt
 from numpy.random import random
 from numpy.linalg import det, inv
 from scipy.optimize import fmin_l_bfgs_b
@@ -51,7 +51,7 @@ class MLLTModel(object):
         print "likelihood: %f" % ll
         # Flatten out the gradient
         lg = lg.ravel()
-        print "gradient L1: %f" % sum(abs(lg))
+        print "gradient L2: %f" % sqrt(sum(lg*lg))
         # Note: we negate these to maximize likelihood
         return -ll, -lg
 
@@ -67,6 +67,8 @@ class MLLTModel(object):
                 d = det(A)
             
         # Flatten out the matrix so scipy.optimize can handle it
-        AA = fmin_l_bfgs_b(self.objective, A.ravel(), args=A.shape)
-        # And unflatten the maximum-likelihood
+        AA, f, d = fmin_l_bfgs_b(self.objective, A.ravel(), args=A.shape)
+        if d['warnflag']:
+            print "WARNING! MLLT optimization failed to converge"
+        # Unflatten the return matrix
         return AA.reshape(A.shape)
