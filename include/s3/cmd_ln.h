@@ -156,6 +156,7 @@ cmd_ln_access(char *switch_name);
 #define cmd_ln_int32(name)	(*((int32 *)cmd_ln_access(name)))
 #define cmd_ln_float32(name)	(*((float32 *)cmd_ln_access(name)))
 #define cmd_ln_float64(name)	(*((float64 *)cmd_ln_access(name)))
+#define cmd_ln_boolean(name)	(*((int32 *)cmd_ln_access(name)))
 
 /* Prints out the command line argument definitions to stderr */
 

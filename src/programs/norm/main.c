@@ -463,7 +463,8 @@ normalize()
 		    E_INFO("Normalizing fullvar\n");
 		    gauden_norm_wt_fullvar(in_fullvar, wt_fullvar, pass2var, dnom,
 					   wt_mean,	/* wt_mean now just mean */
-					   n_mgau, n_stream, n_density, veclen);
+					   n_mgau, n_stream, n_density, veclen,
+					   cmd_ln_boolean("-tiedvar"));
 		}
 	    }
 	    else {
@@ -471,7 +472,8 @@ normalize()
 		    E_INFO("Normalizing var\n");
 		    gauden_norm_wt_var(in_var, wt_var, pass2var, dnom,
 				       wt_mean,	/* wt_mean now just mean */
-				       n_mgau, n_stream, n_density, veclen);
+				       n_mgau, n_stream, n_density, veclen,
+				       cmd_ln_boolean("-tiedvar"));
 		}
 	    }
 	}

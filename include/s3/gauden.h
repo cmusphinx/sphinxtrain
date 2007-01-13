@@ -286,7 +286,8 @@ gauden_norm_wt_var(vector_t ***in_var,
 		   uint32 n_mgau,
 		   uint32 n_feat,
 		   uint32 n_density,
-		   const uint32 *veclen);
+		   const uint32 *veclen,
+		   int32 tiedvar);
 
 void
 gauden_norm_wt_fullvar(vector_t ****in_var,
@@ -297,7 +298,8 @@ gauden_norm_wt_fullvar(vector_t ****in_var,
 		       uint32 n_mgau,
 		       uint32 n_feat,
 		       uint32 n_density,
-		       const uint32 *veclen);
+		       const uint32 *veclen,
+		       int32 tiedvar);
 int
 gauden_eval_precomp(gauden_t *g);
 

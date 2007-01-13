@@ -1615,6 +1615,72 @@ gauden_norm_wt_mean(vector_t ***in_mean,
     }
 }
 
+static void
+gauden_tie_vars_dnoms(vector_t ***wt_var,
+		      int32 pass2var,
+		      float32 ***dnom,
+		      vector_t ***mean,
+		      uint32 n_mgau,
+		      uint32 n_feat,
+		      uint32 n_density,
+		      const uint32 *veclen)
+{
+    uint32 i, j, k, l;
+
+    /* Tie all variances and dnoms together. */
+    /* First accumulate first codebook */
+    for (j = 0; j < n_feat; j++) {
+	if (!pass2var) {
+	    /* Unnormalize first mean */
+	    for (l = 0; l < veclen[j]; l++) {
+		mean[0][j][0][l] *= dnom[0][j][0];
+	    }
+	}
+	for (k = 1; k < n_density; k++) {
+	    for (l = 0; l < veclen[j]; l++) {
+		wt_var[0][j][0][l] += wt_var[0][j][k][l];
+		if (!pass2var) {
+		    /* Accumulate unnormalized means */
+		    mean[0][j][0][l] += mean[0][j][k][l] * dnom[0][j][k];
+		}
+	    }
+	    dnom[0][j][0] += dnom[0][j][k];
+	}
+    }
+    /* Now add other codebooks to it */
+    for (i = 1; i < n_mgau; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    for (k = 0; k < n_density; k++) {
+		for (l = 0; l < veclen[j]; l++) {
+		    wt_var[0][j][0][l] += wt_var[i][j][k][l];
+		    if (!pass2var) {
+			mean[0][j][0][l] += mean[i][j][k][l] * dnom[i][j][k];
+		    }
+		}
+		dnom[0][j][0] += dnom[i][j][k];
+	    }
+	}
+    }
+    /* Now spread everything around */
+    for (i = 0; i < n_mgau; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    for (k = 0; k < n_density; k++) {
+		for (l = 0; l < veclen[j]; l++) {
+		    if (!pass2var) {
+			if (i == 0 && k == 0) { /* Renormalize global mean */
+			    mean[i][j][k][l] /= dnom[i][j][k];
+			}
+			else
+			    mean[i][j][k][l] = mean[0][j][0][l];
+		    }
+		    wt_var[i][j][k][l] = wt_var[0][j][0][l];
+		}
+		dnom[i][j][k] = dnom[0][j][0];
+	    }
+	}
+    }
+}
+
 void
 gauden_norm_wt_var(vector_t ***in_var,
 		   vector_t ***wt_var,
@@ -1624,10 +1690,15 @@ gauden_norm_wt_var(vector_t ***in_var,
 		   uint32 n_mgau,
 		   uint32 n_feat,
 		   uint32 n_density,
-		   const uint32 *veclen)
+		   const uint32 *veclen,
+		   int32 tiedvar)
 {
     uint32 i, j, k, l;
 
+    if (tiedvar) {
+	gauden_tie_vars_dnoms(wt_var, pass2var, dnom, mean,
+			      n_mgau, n_feat, n_density, veclen);
+    }
     for (i = 0; i < n_mgau; i++) {
 	for (j = 0; j < n_feat; j++) {
 	    for (k = 0; k < n_density; k++) {
@@ -1663,6 +1734,77 @@ gauden_norm_wt_var(vector_t ***in_var,
     }
 }
 
+static void
+gauden_tie_fullvars_dnoms(vector_t ****wt_fullvar,
+			  int32 pass2var,
+			  float32 ***dnom,
+			  vector_t ***mean,
+			  uint32 n_mgau,
+			  uint32 n_feat,
+			  uint32 n_density,
+			  const uint32 *veclen)
+{
+    uint32 i, j, k, l, ll;
+
+    /* Tie all variances and dnoms together. */
+    /* First accumulate first codebook */
+    for (j = 0; j < n_feat; j++) {
+	if (!pass2var) {
+	    /* Unnormalize first mean */
+	    for (l = 0; l < veclen[j]; l++) {
+		mean[0][j][0][l] *= dnom[0][j][0];
+	    }
+	}
+	for (k = 1; k < n_density; k++) {
+	    for (l = 0; l < veclen[j]; l++) {
+		for (ll = 0; ll < veclen[j]; ll++) {
+		    wt_fullvar[0][j][0][l][ll] += wt_fullvar[0][j][k][l][ll];
+		}
+		if (!pass2var) {
+		    /* Accumulate unnormalized means */
+		    mean[0][j][0][l] += mean[0][j][k][l] * dnom[0][j][k];
+		}
+	    }
+	    dnom[0][j][0] += dnom[0][j][k];
+	}
+    }
+    /* Now add other codebooks to it */
+    for (i = 1; i < n_mgau; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    for (k = 0; k < n_density; k++) {
+		for (l = 0; l < veclen[j]; l++) {
+		    for (ll = 0; ll < veclen[j]; ll++) {
+			wt_fullvar[0][j][0][l][ll] += wt_fullvar[i][j][k][l][ll];
+		    }
+		    if (!pass2var) {
+			mean[0][j][0][l] += mean[i][j][k][l] * dnom[i][j][k];
+		    }
+		}
+		dnom[0][j][0] += dnom[i][j][k];
+	    }
+	}
+    }
+    /* Now spread everything around */
+    for (i = 0; i < n_mgau; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    for (k = 0; k < n_density; k++) {
+		for (l = 0; l < veclen[j]; l++) {
+		    if (!pass2var) {
+			if (i == 0 && k == 0) /* Renormalize global mean */
+			    mean[i][j][k][l] /= dnom[i][j][k];
+			else
+			    mean[i][j][k][l] = mean[0][j][0][l];
+		    }
+		    for (ll = 0; ll < veclen[j]; ll++) {
+			wt_fullvar[i][j][k][l][ll] = wt_fullvar[0][j][0][l][ll];
+		    }
+		}
+		dnom[i][j][k] = dnom[0][j][0];
+	    }
+	}
+    }
+}
+
 void
 gauden_norm_wt_fullvar(vector_t ****in_var,
 		       vector_t ****wt_var,
@@ -1672,10 +1814,15 @@ gauden_norm_wt_fullvar(vector_t ****in_var,
 		       uint32 n_mgau,
 		       uint32 n_feat,
 		       uint32 n_density,
-		       const uint32 *veclen)
+		       const uint32 *veclen,
+		       int32 tiedvar)
 {
     uint32 i, j, k, l, ll;
 
+    if (tiedvar) {
+	gauden_tie_fullvars_dnoms(wt_var, pass2var, dnom, mean,
+				  n_mgau, n_feat, n_density, veclen);
+    }
     for (i = 0; i < n_mgau; i++) {
 	for (j = 0; j < n_feat; j++) {
 	    vector_t *outermean = NULL;
