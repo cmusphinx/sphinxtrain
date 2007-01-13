@@ -362,5 +362,11 @@ sub FlatInitialize ()
     }
 
     unlink $ST::CFG_CP_OPERATION;
+
+    # Copy the mdef file into the HMM directory so that -hmm will find
+    # it in Sphinx3 and PocketSphinx
+    copy($ci_mdeffile, catfile($outhmm, 'mdef'))
+	or die "Failed to copy $ci_mdeffile to $outhmm/mdef: $!";
+
     return $return_value;
 }

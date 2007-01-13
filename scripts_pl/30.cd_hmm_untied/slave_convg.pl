@@ -142,7 +142,8 @@ sub Initialize () {
   } else {
       @feat = (-feat => $ST::CFG_FEATURE, -ceplen => $ST::CFG_VECTOR_LENGTH);
   }
-  return RunTool
+  my $cd_mdeffile = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef";
+  $rv = RunTool
       ('init_mixw', $logfile, 0,
        -src_moddeffn => "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.ci.mdef",
        -src_ts2cbfn => $ST::CFG_HMM_TYPE,
@@ -150,7 +151,7 @@ sub Initialize () {
        -src_meanfn => "$cihmmdir/means",
        -src_varfn => "$cihmmdir/variances",
        -src_tmatfn => "$cihmmdir/transition_matrices",
-       -dest_moddeffn => "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef",
+       -dest_moddeffn => $cd_mdeffile,
        -dest_ts2cbfn => $ST::CFG_HMM_TYPE,
        -dest_mixwfn => "$cdhmmdir/mixture_weights",
        -dest_meanfn => "$cdhmmdir/means",
@@ -158,6 +159,14 @@ sub Initialize () {
        -dest_tmatfn => "$cdhmmdir/transition_matrices",
        -fullvar => $ST::CFG_FULLVAR,
        @feat);
+
+  return $rv if $rv;
+  # Copy the mdef file into the HMM directory so that -hmm will find
+  # it in Sphinx3 and PocketSphinx
+  copy($cd_mdeffile, catfile($cdhmmdir, 'mdef'))
+      or die "Failed to copy $cd_mdeffile to $cdhmmdir/mdef: $!";
+
+  return $rv;
 }
 
 

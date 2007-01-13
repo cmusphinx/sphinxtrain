@@ -160,7 +160,7 @@ sub copyci2cd2initialize ()
     } else {
 	@feat = (-feat => $ST::CFG_FEATURE, -ceplen => $ST::CFG_VECTOR_LENGTH);
     }
-    return RunTool('init_mixw', $logfile, 0,
+    my $rv = RunTool('init_mixw', $logfile, 0,
 		   -src_moddeffn => $src_moddeffn,
 		   -src_ts2cbfn => $ST::CFG_HMM_TYPE,
 		   -src_mixwfn => $src_mixwfn,
@@ -175,5 +175,13 @@ sub copyci2cd2initialize ()
 		   -dest_tmatfn => $dest_tmatfn,
 		   -fullvar => $ST::CFG_FULLVAR,
 		   @feat);
+    return $rv if $rv;
+
+    # Copy the mdef file into the HMM directory so that -hmm will find
+    # it in Sphinx3 and PocketSphinx
+    copy($dest_moddeffn, catfile($cd_hmmdir, 'mdef'))
+	or die "Failed to copy $dest_moddeffn to $cd_hmmdir/mdef: $!";
+
+    return $rv;
 }
 
