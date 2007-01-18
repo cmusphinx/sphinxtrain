@@ -45,19 +45,21 @@ class ArpaLM(object):
                 n, c = map(int, m.groups())
                 self.ng_counts[n] = c
 
+        # Word and N-Gram to ID mapping
+        self.ngmap = []
         # Create probability/backoff arrays
         self.n = max(self.ng_counts.keys())
         self.ngrams = []
         for n in range(1,self.n+1):
             vals = zeros((self.ng_counts[n],2),'d')
             self.ngrams.append(vals)
+            self.ngmap.append({})
 
         # Read unigrams and create word id list
         spam = fh.readline().rstrip()
         if spam != "\\1-grams:":
             raise Exception, "1-grams marker not found"
-        # Word and N-Gram to ID mapping
-        self.ngmap = {}
+        # ID to word mapping
         self.widmap = []
         wordid = 0
         while True:
@@ -65,7 +67,7 @@ class ArpaLM(object):
             if spam == "":
                 break
             p,w,b = spam.split()
-            self.ngmap[w] = wordid
+            self.ngmap[0][w] = wordid
             self.widmap.append(w)
             self.ngrams[0][wordid,:] = float(p), float(b)
             wordid = wordid + 1
@@ -96,7 +98,7 @@ class ArpaLM(object):
                     b = float(spam[-1])
                 # N-Gram info
                 self.ngrams[n-1][ngramid,:] = p, b
-                self.ngmap[" ".join(ng)] = ngramid
+                self.ngmap[n-1][" ".join(ng)] = ngramid
 
                 # Successor list for N-1-Gram
                 mgram = " ".join(ng[:-1])
@@ -105,9 +107,26 @@ class ArpaLM(object):
                 self.succmap[mgram].append(ng[-1])
                 ngramid = ngramid + 1
 
-    def ngid(self, w):
-        "Return the N-gram ID for an N-gram string w"
-        return self.ngmap[w]
+    def save(self, path):
+        "Save an ARPA format language model to a file"
+        fh = file(path, 'w')
+        fh.write("# Written by arpalm.py\n")
+        fh.write("\\data\\\n")
+        for n in range(1, self.n+1):
+            fh.write("ngram %d=%d\n" % (n, self.ng_counts[n]))
+        for n in range(1, self.n+1):
+            fh.write("\n\\%d-grams:\n" % n)
+            ngrams = self.ngmap[n-1].keys()
+            ngrams.sort()
+            for g in ngrams:
+                ngid = self.ngmap[n-1][g]
+                score, bowt = self.ngrams[n-1][ngid]
+                if n == self.n:
+                    fh.write("%.4f %s\n" % (score, g))
+                else:
+                    fh.write("%.4f %s\t%.4f\n" % (score, g, bowt))
+        fh.write("\n\\end\\\n")
+        fh.close()
 
     def ngstr(self, *w):
         "Create the N-gram string for a sequence of IDs"
@@ -126,7 +145,7 @@ class ArpaLM(object):
         while n > 0:
             ng = " ".join(syms[-n:])
             try:
-                ngid = self.ngid(ng)
+                ngid = self.ngmap[n-1][ng]
                 score, bowt = self.ngrams[n-1][ngid]
                 # Convert to natural log
                 return (bowt + score) * LOG10
