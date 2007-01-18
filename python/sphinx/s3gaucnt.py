@@ -16,12 +16,37 @@ __version__ = "$Revision$"
 from struct import unpack, pack
 from numpy import array, reshape, shape, fromstring
 from s3file import S3File
+import os
 
 def open(filename, mode="rb", attr={"version":1.0}):
     if mode in ("r", "rb"):
         return S3GauCntFile(filename, mode)
     else:
         raise Exception, "mode must be 'r' or 'rb'"
+
+def accumdirs(accumdirs):
+    "Read and accumulate counts from several directories"
+    for d in accumdirs:
+        try:
+            gf = S3GauCntFile(os.path.join(d, "gauden_counts"), "rb")
+        except:
+            continue
+        if mcount == None:
+            mcount = gf.getmeans()
+        else:
+            mcount = mcount + gf.getmeans()
+        if vcount == None:
+            vcount = gf.getmeans()
+        else:
+            vcount = vcount + gf.getmeans()
+        if dnom == None:
+            dnom = gf.getdnom()
+        else:
+            dnom = dnom + gf.getdnom()
+
+def accumdirs_full(accumdirs):
+    "Read and accumulate full-covariance counts from several directories"
+    pass
 
 def open_full(filename, mode="rb", attr={"version":1.0}):
     if mode in ("r", "rb"):
@@ -33,10 +58,10 @@ class S3GauCntFile(S3File):
     "Read Sphinx-III format Gaussian count files"
     def getall(self):
         try:
-            return self._means, self._vars
+            return self._means, self._vars, self._dnom
         except AttributeError:
             self._load()
-            return self._means, self._vars
+            return self._means, self._vars, self._dnom
         
     def getmeans(self):
         try:
@@ -51,6 +76,13 @@ class S3GauCntFile(S3File):
         except AttributeError:
             self._load()
             return self._vars
+
+    def getdnom(self):
+        try:
+            return self._dnom
+        except AttributeError:
+            self._load()
+            return self._dnom
 
     def readgauheader(self):
         if self.fileattr["version"] != "1.0":
@@ -73,6 +105,7 @@ class S3GauCntFile(S3File):
             self._means = self._loadgau()
         if self.has_vars:
             self._vars = self._loadgau()
+        self._dnom = self.read3d()
 
     def _loadgau(self):
         self._nfloats = unpack(self.swap + "I", self.fh.read(4))[0]
@@ -107,6 +140,7 @@ class S3FullGauCntFile(S3GauCntFile):
             self._means = self._loadgau()
         if self.has_vars:
             self._vars = self._loadfullgau()
+        self._dnom = self.read3d()
 
     def _loadfullgau(self):
         self._nfloats = unpack(self.swap + "I", self.fh.read(4))[0]
