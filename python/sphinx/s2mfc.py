@@ -109,3 +109,7 @@ class S2Feat_write(object):
             raise Exception("Vector length must be %d" % self.veclen)
         self.fh.write(pack("=" + str(self.veclen) + "f", *vec))
         self.filesize = self.filesize + self.veclen
+
+    def writeall(self, arr):
+        for row in arr:
+            self.writevec(row)
