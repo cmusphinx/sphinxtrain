@@ -131,6 +131,7 @@ my $return_value = RunTool
      -cmn => $ST::CFG_CMN,
      -varnorm => $ST::CFG_VARNORM,
      -feat => $ST::CFG_FEATURE,
+     -ceplen => $ST::CFG_VECTOR_LENGTH,
      );
 
 if ($return_value) {
