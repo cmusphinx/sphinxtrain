@@ -329,7 +329,9 @@ forward(float64 **active_alpha,
 	active_alpha[t] = (float64 *)ckd_calloc(n_active, sizeof(float64));
 	aalpha_alloc = n_active;
 
-	/* for all active states */
+	/* For all active states at the previous frame, activate their
+	   successors in this frame and compute codebooks. */
+	/* (these are pre-computed so they can be scaled to avoid underflows) */
 	for (s = 0; s < n_active; s++) {
 	    i = active[s];
 #if FORWARD_DEBUG
@@ -338,6 +340,7 @@ forward(float64 **active_alpha,
 	    /* get list of states adjacent to active state i */
 	    next = state_seq[i].next_state;	
 
+	    /* activate them all, computing their codebook densities if necessary */
 	    for (u = 0; u < state_seq[i].n_next; u++) {
 		j = next[u];
 #if FORWARD_DEBUG
@@ -390,7 +393,8 @@ forward(float64 **active_alpha,
 	dscale[t] = gauden_scale_densities_fwd(now_den, now_den_idx,
 					       active_l_cb, n_active_l_cb, g);
 	
-	/* for all active states */
+	/* Now, for all active states in the previous frame, compute
+	   alpha for all successors in this frame. */
 	for (s = 0; s < n_active; s++) {
 	    i = active[s];
 	    
@@ -432,31 +436,32 @@ forward(float64 **active_alpha,
 	    }
 	}
 
-	/* deal with the non-emitting states following the next active states */
-	/* ARCHAN: Notice that this loop with automatically deal with null node after null node
-	   Not sure whether this is the original programmar will though. 
-	 */
+	/* Now, for all active states in this frame, consume any
+	   following non-emitting states (multiplying in their
+	   transition probabilities)  */
 	for (s = 0; s < n_next_active; s++) {
 	    i = next_active[s];
 
 #if FORWARD_DEBUG
 	    E_INFO("At time %d, In non-emitting state update, active state %d\n",t, i);
 #endif
-	    /* find the prior states */
+	    /* find the successor states */
 	    next = state_seq[i].next_state;
 	    tprob = state_seq[i].next_tprob;
 
 	    for (u = 0; u < state_seq[i].n_next; u++) {
 		j = next[u];
-#if FORWARD_DEBUG
-		E_INFO("In non-emitting state update, active state %d, next state %d\n",i,j);
-#endif
+		/* for any non-emitting ones */
 		if (state_seq[j].mixw == TYING_NON_EMITTING) {
+#if FORWARD_DEBUG
+		    E_INFO("In non-emitting state update, active state %d, next state %d\n",i,j);
+#endif
 		    x = active_alpha[t][s] * tprob[u];
 
 #if FORWARD_DEBUG
 		    E_INFO("In non-emitting state update, active_alpha[t][s]: %f,tprob[u]:  %f\n",active_alpha[t][s],tprob[u]);
 #endif
+		    /* activate this state if necessary */
 		    if (amap[j] == INACTIVE) {
 			amap[j] = n_next_active;
 			active_alpha[t][n_next_active] = 0;
@@ -469,18 +474,20 @@ forward(float64 **active_alpha,
 							  sizeof(float64) * aalpha_alloc);
 			}
 		    }
+		    /* update its alpha value */
 		    active_alpha[t][amap[j]] += x;
 		}
 	    }
 	}
 
-	/* find best alpha value for pruning and scaling purposes */
+	/* find best alpha value in current frame for pruning and scaling purposes */
 	balpha = 0;
 	for (s = 0; s < n_next_active; s++) {
 	    if (balpha < active_alpha[t][s])
 		balpha = active_alpha[t][s];
 	}
 
+	/* cope with some pathological case */
 	if (balpha == 0.0 && n_next_active > 0) {
 	    E_ERROR("All %u active states,", n_next_active);
 	    for (s = 0; s < n_next_active; s++) {
@@ -493,12 +500,11 @@ forward(float64 **active_alpha,
 	    }
 	    fprintf(stderr, ", zero at time %u\n", t);
 	    fflush(stderr);
-	    
 	    retval =  S3_ERROR;
-	    
 	    break;
 	}
 
+	/* and some related pathological cases */
 	if (balpha < 1e-300) {
 	    E_ERROR("Best alpha < 1e-300\n");
 
@@ -506,14 +512,20 @@ forward(float64 **active_alpha,
 
 	    break;
 	}
+	if (n_next_active == 0) {
+	    E_ERROR("No active states at time %u\n", t);
+	    retval = S3_ERROR;
+	    break;
+	}
 
 	/* compute the scale factor */
 	scale[t] = 1.0 / balpha;
-
+	/* compute the pruning threshold based on the beam */
 	if (log10(balpha) + log10(beam) > -300) {
 	    pthresh = balpha * beam;
 	}
 	else {
+	    /* avoiding underflow... */
 	    pthresh = 1e-300;
 	}
 /* DEBUG XXXXX */
