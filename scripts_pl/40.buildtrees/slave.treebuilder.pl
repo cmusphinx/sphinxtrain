@@ -89,7 +89,6 @@ if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
 } else {
     Log ("\tProcessing each phone with each state\n");
     open INPUT,"${ST::CFG_RAWPHONEFILE}";
-    my @jobs;
     foreach $phone (<INPUT>) {
 	chomp $phone;
 	if (($phone =~ m/^(\+).*(\+)$/) || ($phone =~ m/^SIL$/)) {
@@ -97,10 +96,12 @@ if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
 	    next;
 	}
 
-	push @jobs, [$phone => LaunchScript("tree.$phone", ['buildtree.pl', $phone])];
+	my $job = LaunchScript("tree.$phone", ['buildtree.pl', $phone]);
+	push @jobs, [$phone => $job];
     }
     close INPUT;
 }
+
 # Wait for all the phones to finish
 # It doesn't really matter what order we do this in
 foreach (@jobs) {
