@@ -72,6 +72,48 @@ backward_update(float64 **active_alpha,
 		int32 var_is_full,
 		FILE *pdumpfn);
 
+void
+partial_op(float64 *p_op,
+	   float64 op,
+
+	   float64 **den,
+	   uint32  **den_idx,
+	   float32 **mixw,
+
+	   uint32 n_feat,
+	   uint32 n_top);
+
+void
+partial_ci_op(float64 *p_op,
+
+	      float64 **den,
+	      uint32  **den_idx,
+	      float32 **mixw,
+
+	      uint32 n_feat,
+	      uint32 n_top);
+
+void
+den_terms_ci(float64 **d_term,
+
+	     float64 post_j,
+	     float64 *p_ci_op,
+	     float64 **den,
+	     uint32  **den_idx,
+	     float32 **mixw,
+	     uint32 n_feat,
+	     uint32 n_top);
+
+void
+den_terms(float64 **d_term,
+	  float64 p_reest_term,
+	  float64 *p_op,
+	  float64 **den,
+	  uint32  **den_idx,
+	  float32 **mixw,
+	  uint32 n_feat,
+	  uint32 n_top);
+
 #endif /* BACKWARD_H */ 
 
 

@@ -64,7 +64,7 @@
 #include <math.h>
 #include <string.h>
 
-static void
+void
 partial_op(float64 *p_op,
 	   float64 op,
 
@@ -95,7 +95,7 @@ partial_op(float64 *p_op,
     }
 }
 
-static void
+void
 partial_ci_op(float64 *p_op,
 
 	      float64 **den,
@@ -123,7 +123,7 @@ partial_ci_op(float64 *p_op,
     }
 }
 
-static void
+void
 den_terms_ci(float64 **d_term,
 
 	     float64 post_j,
@@ -156,7 +156,7 @@ den_terms_ci(float64 **d_term,
     }
 }
 
-static void
+void
 den_terms(float64 **d_term,
 	  float64 p_reest_term,
 	  float64 *p_op,
@@ -636,8 +636,6 @@ backward_update(float64 **active_alpha,
 	}
 	n_active_cb = 0;
 
-	sum_reest_post_j = 0.0;
-
 	/* zero beta at time t */
 	memset(beta, 0, n_state * sizeof(float64));
 
@@ -649,6 +647,7 @@ backward_update(float64 **active_alpha,
 	   compute the log density values */
 
 	for (s = 0; s < n_active; s++) {
+            sum_reest_post_j = 0.0;
 	    j = active[s];
 
 #if BACKWARD_DEBUG
@@ -748,6 +747,11 @@ backward_update(float64 **active_alpha,
 		if (rsts_timer)
 		    timing_start(rsts_timer);
 
+                /* NOTE!!! This is equivalent to post_j / op, a fact
+                   that is used in the calculation of mixture
+                   densities in the non-CI case (it's why p_reest_term
+                   is passed to den_terms() instead of post_j).  This
+                   seems needlessly obscure, but there you have it. */
 		p_reest_term =
 		    active_alpha[t][q] *
 		    (float64) tprob[u] *
@@ -757,7 +761,7 @@ backward_update(float64 **active_alpha,
 		post_j = p_reest_term * op;
 
 #if BACKWARD_DEBUG	
-		E_INFO("State %u, post_j %e p_reest_term %e op %e\n",j,post_j,p_reest_term,op);
+		E_INFO("State %u, prior %u, post_j %e p_reest_term %e op %e\n",j,i,post_j,p_reest_term,op);
 #endif
 		if (post_j < 0) {
 		    E_WARN("posterior of state %u @ time %u (== %.8e) < 0\n", j, post_j, t+1);
@@ -833,6 +837,7 @@ backward_update(float64 **active_alpha,
 			/* For each feature stream and density compute the terms:
 			 *   w[f][k] den[f][k] / sum_k(w[f][k] den[f][k]) * post_j
 			 * and store results in d_term_ci */
+                        /* Summing over these gives us \gamma_t(f,k) */
 			den_terms_ci(d_term_ci,
 				     post_j,
 				     p_ci_op,
@@ -900,7 +905,11 @@ backward_update(float64 **active_alpha,
 		}
 
 	    }
-
+            /* This should be the gamma variable */
+#if BACKWARD_DEBUG
+            E_INFO("gamma_%u(%u) = %e\n", t, j, sum_reest_post_j);
+#endif
+            sum_reest_post_j = 0.0;
 	}
 
 #if BACKWARD_DEBUG
