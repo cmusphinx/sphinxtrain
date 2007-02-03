@@ -74,6 +74,16 @@ my $variances           = "$hmmdir/variances";
 my $mixture_weights     = "$hmmdir/mixture_weights";
 my $transition_matrices = "$hmmdir/transition_matrices";
 
+if ($iter == 1) {
+    my $mdeffile = catfile($ST::CFG_BASE_DIR, 'model_architecture',
+			   "${ST::CFG_EXPTNAME}.untied.mdef");
+    # Copy the mdef and fillerdict files into the new HMM directory
+    copy($mdeffile, catfile($hmmdir, 'mdef'))
+	or die "Failed to copy $mdeffile to $hmmdir/mdef: $!";
+    copy($ST::CFG_FILLERDICT, catfile($hmmdir, 'fillerdict'))
+	or die "Failed to copy $ST::CFG_FILLERDICT to $hmmdir/fillerdict: $!";
+}
+
 my  $logdir              = "${ST::CFG_LOG_DIR}/$processpart";
 mkdir ($logdir,0777);
 my $logfile 	     = "$logdir/${ST::CFG_EXPTNAME}.${iter}.norm.log";

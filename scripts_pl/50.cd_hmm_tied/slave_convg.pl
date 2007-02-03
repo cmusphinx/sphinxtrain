@@ -175,13 +175,6 @@ sub copyci2cd2initialize ()
 		   -dest_tmatfn => $dest_tmatfn,
 		   -fullvar => $ST::CFG_FULLVAR,
 		   @feat);
-    return $rv if $rv;
-
-    # Copy the mdef file into the HMM directory so that -hmm will find
-    # it in Sphinx3 and PocketSphinx
-    copy($dest_moddeffn, catfile($cd_hmmdir, 'mdef'))
-	or die "Failed to copy $dest_moddeffn to $cd_hmmdir/mdef: $!";
-
     return $rv;
 }
 

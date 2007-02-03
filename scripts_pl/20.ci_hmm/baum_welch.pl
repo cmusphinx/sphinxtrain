@@ -59,6 +59,7 @@ $| = 1; # Turn on autoflushing
 
 die "USAGE: $0 <iter> <part> <npart> [<ngau>]" if @ARGV < 3;
 my ($iter, $part, $npart, $n_gau) = @ARGV;
+$n_gau = 1 unless defined($n_gau);
 
 my $modelinitialname;
 if ($n_gau == 1) {

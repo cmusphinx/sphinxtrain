@@ -159,13 +159,6 @@ sub Initialize () {
        -dest_tmatfn => "$cdhmmdir/transition_matrices",
        -fullvar => $ST::CFG_FULLVAR,
        @feat);
-
-  return $rv if $rv;
-  # Copy the mdef file into the HMM directory so that -hmm will find
-  # it in Sphinx3 and PocketSphinx
-  copy($cd_mdeffile, catfile($cdhmmdir, 'mdef'))
-      or die "Failed to copy $cd_mdeffile to $cdhmmdir/mdef: $!";
-
   return $rv;
 }
 
