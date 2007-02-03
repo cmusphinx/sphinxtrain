@@ -4,7 +4,8 @@ use strict;
 use File::Copy;
 require './scripts/testlib.pl';
 
-my $bindir="../bin.i686-pc-linux-gnu/";
+chomp(my $host=`../config.guess | xargs ../config.sub`);
+my $bindir="../bin.$host/";
 my $resdir="res/";
 my $exec_resdir="mk_flat";
 my $printp_resdir="printp";

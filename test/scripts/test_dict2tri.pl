@@ -3,8 +3,8 @@
 use strict;
 require './scripts/testlib.pl';
 
-
-my $bindir="../bin.i686-pc-linux-gnu/";
+chomp(my $host=`../config.guess | xargs ../config.sub`);
+my $bindir="../bin.$host/";
 my $resdir="res/";
 my $exec_resdir="dict2tri";
 my $bin="$bindir$exec_resdir";
