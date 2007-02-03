@@ -50,20 +50,25 @@
 #include <s3/vector.h>
 #include <s3/state.h>
 #include <s3/model_inventory.h>
+#include <s3/s3phseg_io.h>
 
 int32
 viterbi_update(float64 *log_forw_prob,
 	       vector_t **feature,
-	       uint32 *sseq,
-	       uint32 *t_seq,
-	       uint32 *ms_sseq,
 	       uint32 n_obs,
+	       state_t *state,
+	       uint32 n_state,
 	       model_inventory_t *inv,
+	       float64 a_beam,
+	       float32 spthresh,
+	       s3phseg_t *phseg,
 	       int32 mixw_reest,
 	       int32 tmat_reest,
 	       int32 mean_reest,
 	       int32 var_reest,
-	       int32 pass2var);
+	       int32 pass2var,
+	       int32 var_is_full,
+	       FILE *pdumpfh);
 
 #endif /* VITERBI_H */ 
 

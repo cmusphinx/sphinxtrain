@@ -445,18 +445,6 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_DEFAULT,
 	  "The cepstrum data root directory" },
 
-	{ "-segext",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  "v8_seg",
-	  "State segmentation file extension" },
-
-	{ "-segdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
-	  "State segmentation file root directory" },
-	
 	{ "-phsegext",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,

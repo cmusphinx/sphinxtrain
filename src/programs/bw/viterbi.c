@@ -1,5 +1,6 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
- * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2007 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,306 +40,466 @@
  * 
  * Description: 
  * 
- * Author: 
- * 	Eric H. Thayer
+ * Authors: 
+ * 	David Huggins-Daines
+ *      Eric Thayer
  *********************************************************************/
 
+#include "forward.h"
+#include "backward.h"
 #include "viterbi.h"
 #include "accum.h"
 
 #include <s3/ckd_alloc.h>
 #include <s3/profile.h>
 #include <s3/remap.h>
+#include <s3/corpus.h>
 #include <s3/err.h>
 
 #include <math.h>
+#include <string.h>
 #include <assert.h>
 
 int32
-viterbi_update(float64 *out_log_prob,
-	       vector_t **f,
-	       uint32 *s_seq,
-	       uint32 *t_seq,
-	       uint32 *ms_seq,
+viterbi_update(float64 *log_forw_prob,
+	       vector_t **feature,
 	       uint32 n_obs,
+	       state_t *state_seq,
+	       uint32 n_state,
 	       model_inventory_t *inv,
+	       float64 a_beam,
+	       float32 spthresh,
+	       s3phseg_t *phseg,
 	       int32 mixw_reest,
 	       int32 tmat_reest,
 	       int32 mean_reest,
 	       int32 var_reest,
-	       int32 pass2var)
+	       int32 pass2var,
+	       int32 var_is_full,
+	       FILE *pdumpfh)
 {
-    int ret = S3_SUCCESS;
-    uint32 i, j, k, l, kk, last_ms;
-    uint32 t;
-    float64 **den;
-    uint32 **den_idx;
-    float64 out_lik;
-    float64 cond_prob;
-    float64 total_log_olik = 0;
-    float64 xxx;
-    float64 diff;
-    model_def_t *mdef;
-    float32 ***mixw;
-    float32 ***l_tmat_acc;
-    float32 ***l_mixw_acc;
-    vector_t ***l_mean_acc;
-    vector_t ***l_var_acc;
-    vector_t ***mean;
-    float32 ***l_dnom;
-    gauden_t *g;
-    uint32 tmat_id, p_tmat_id;
-    uint32 p_ms, ms, s, l_s;
-    float32 ***tmat;
-    map_t *mixw_map;	/* structure to map global mixw id's to local utt id's */
-    map_t *cb_map;	/* structure to map global outprob id's to outprob id's */
-    uint32 cb;
-    uint32 l_cb;
+    float64 *scale = NULL;
+    float64 **dscale = NULL;
+    float64 **active_alpha;
+    uint32 **active_astate;
+    uint32 **bp;
+    uint32 *n_active_astate;
+    gauden_t *g;		/* Gaussian density parameters and
+				   reestimation sums */
+    float32 ***mixw;		/* all mixing weights */
+    float64 ***now_den = NULL;	/* Short for den[t] */
+    uint32 ***now_den_idx = NULL;/* Short for den_idx[t] */
+    uint32 *active_cb;
+    uint32 n_active_cb;
+    float32 **tacc;		/* Transition matrix reestimation sum accumulators
+				   for the utterance. */
+    float32 ***wacc;		/* mixing weight reestimation sum accumulators
+				   for the utterance. */
+    float32 ***denacc = NULL;	/* mean/var reestimation accumulators for time t */
+    size_t denacc_size;		/* Total size of data references in denacc.  Allows
+				   for quick clears between time frames */
+    uint32 n_lcl_cb;
+    uint32 *cb_inv;
+    uint32 i, j, q;
+    int32 t;
+    uint32 n_feat;
+    uint32 n_density;
+    uint32 n_top;
+    int ret;
+    timing_t *fwd_timer = NULL;
+    timing_t *rstu_timer = NULL;
+    timing_t *gau_timer = NULL;
+    timing_t *rsts_timer = NULL;
+    timing_t *rstf_timer = NULL;
+    float64 log_fp;	/* accumulator for the log of the probability
+			 * of observing the input given the model */
+    uint32 max_n_next = 0;
+    uint32 n_cb;
 
-    mixw_map = remap_init(n_obs);	/* the largest it could be is one per obs */
-    cb_map = remap_init(n_obs);	/* the largest it could be is one per obs */
+    static float64 *p_op = NULL;
+    static float64 *p_ci_op = NULL;
+    static float64 **d_term = NULL;
+    static float64 **d_term_ci = NULL;
 
-    mdef = inv->mdef;
-    mixw = inv->mixw;
-    tmat = inv->tmat;
+    /* caller must ensure that there is some non-zero amount
+       of work to be done here */
+    assert(n_obs > 0);
+    assert(n_state > 0);
+
+    /* Get the forward estimation CPU timer */
+    fwd_timer = timing_get("fwd");
+    /* Get the per utterance reestimation CPU timer */
+    rstu_timer = timing_get("rstu");
+    /* Get the Gaussian density evaluation CPU timer */
+    gau_timer = timing_get("gau");
+    /* Get the per state reestimation CPU timer */
+    rsts_timer = timing_get("rsts");
+    /* Get the per frame reestimation CPU timer */
+    rstf_timer = timing_get("rstf");
+
     g = inv->gauden;
-    mean = g->mean;
-    last_ms = inv->n_state_pm-1;
-    
-    den = (float64 **)ckd_calloc_2d(gauden_n_feat(g),
-				    gauden_n_top(g),
-				    sizeof(float64));
-    den_idx = (uint32 **)ckd_calloc_2d(gauden_n_feat(g),
-				       gauden_n_top(g),
-				       sizeof(uint32));
-    if (tmat_reest)
-	l_tmat_acc = (float32 ***)ckd_calloc_3d(inv->n_tmat,
-						inv->n_state_pm-1,
-						inv->n_state_pm,
-						sizeof(float32));
-    else
-	l_tmat_acc = NULL;
+    n_feat = gauden_n_feat(g);
+    n_density = gauden_n_density(g);
+    n_top = gauden_n_top(g);
+    n_cb = gauden_n_mgau(g);
 
-    if (mixw_reest)
-	l_mixw_acc = (float32 ***)ckd_calloc_3d(n_obs,
-						gauden_n_feat(g),
-						gauden_n_density(g),
-						sizeof(float32));
-    else
-	l_mixw_acc = NULL;
-
-    gauden_alloc_l_acc(g, n_obs,
-		       mean_reest, var_reest, FALSE);
-
-    l_dnom = g->l_dnom;
-
-    if (mean_reest)
-	l_mean_acc = g->l_macc;
-    else
-	l_mean_acc = NULL;
-	
-    if (var_reest)
-	l_var_acc = g->l_vacc;
-    else
-	l_var_acc = NULL;
-    
-    s = s_seq[0];
-    cb = mdef->cb[s];
-    t = 0;
-
-    l_s = remap(mixw_map, s);
-    l_cb = remap(cb_map, cb);
-
-    gauden_compute(den, den_idx, f[t], g, mdef->cb[s]);
-    out_lik = gauden_mixture(den, den_idx, mixw[s], g);
-    if (out_lik == 0) {
-	E_ERROR("outlik == 0\n");
-
-	ret = S3_ERROR;
-
-	goto free;
+    if (p_op == NULL) {
+	p_op    = ckd_calloc(n_feat, sizeof(float64));
+	p_ci_op = ckd_calloc(n_feat, sizeof(float64));
     }
 
-    total_log_olik = log(out_lik);
-	
-    for (j = 0; j < gauden_n_feat(g); j++) {
-	/* just deal w/ 1 feature stream for now */
-	assert(gauden_n_feat(g) == 1);
-	
-	for (kk = 0; kk < gauden_n_top(g); kk++) {
-	    k = den_idx[j][kk];
-	    cond_prob = mixw[s][j][k] * den[j][kk] / out_lik;
-	    
-	    if (mixw_reest)
-		l_mixw_acc[l_s][j][k] += cond_prob;
-	    
-	    for (l = 0; l < g->veclen[j]; l++) {
-		xxx = f[t][j][l] * cond_prob;
-		
-		if (mean_reest)
-		    l_mean_acc[l_cb][j][k][l] += xxx;
-		if (var_reest) {
-		    if (pass2var) {
-			diff = f[t][j][l] - mean[cb][j][k][l];
-			
-			l_var_acc[l_cb][j][k][l] += cond_prob * diff * diff;
-		    }
-		    else {
-			l_var_acc[l_cb][j][k][l] += xxx * f[t][j][l];
-		    }
-		}
-		if (mean_reest || var_reest)
-		    l_dnom[l_cb][j][k] += cond_prob;
-	    }
-	}
+    if (d_term == NULL) {
+	d_term    = (float64 **)ckd_calloc_2d(n_feat, n_top, sizeof(float64));
+	d_term_ci = (float64 **)ckd_calloc_2d(n_feat, n_top, sizeof(float64));
     }
 
-    for (t = 1, p_ms = ms_seq[0], p_tmat_id = t_seq[0]; t < n_obs; t++) {
-	ms = ms_seq[t];		/* model state (i.e. 0,1,...n_state_pm-1) */
-	tmat_id = t_seq[t];	/* tied transition matrix id @ t */
-	s = s_seq[t];		/* global tied state @ t */
-	l_s = remap(mixw_map, s);	/* local (to utt) tied state */
-	cb = mdef->cb[s];
-	l_cb = remap(cb_map, cb);
+    scale = (float64 *)ckd_calloc(n_obs, sizeof(float64));
+    dscale = (float64 **)ckd_calloc(n_obs, sizeof(float64 *));
+    n_active_astate = (uint32 *)ckd_calloc(n_obs, sizeof(uint32));
+    active_alpha  = (float64 **)ckd_calloc(n_obs, sizeof(float64 *));
+    active_astate = (uint32 **)ckd_calloc(n_obs, sizeof(uint32 *));
+    active_cb = ckd_calloc(2*n_state, sizeof(uint32));
+    bp = (uint32 **)ckd_calloc(n_obs, sizeof(uint32 *));
 
-	if ((p_tmat_id == tmat_id) && (p_ms <= ms)) {
-	    /* i.e. intra model transition, need to update */
+    /* Run forward algorithm, which has embedded Viterbi. */
+    if (fwd_timer)
+	timing_start(fwd_timer);
+    ret = forward(active_alpha, active_astate, n_active_astate, bp,
+		  scale, dscale,
+		  feature, n_obs, state_seq, n_state,
+		  inv, a_beam, phseg);
+    if (fwd_timer)
+	timing_stop(fwd_timer);
 
-	    if (tmat_reest) {
-		l_tmat_acc[tmat_id][p_ms][ms] += 1.0;
-	    }
-	    if (tmat[tmat_id][p_ms][ms] > 0.0)
-		total_log_olik += log(tmat[tmat_id][p_ms][ms]);
-	    
-	    if (l_tmat_acc[tmat_id][last_ms-1][0] != 0) {
-		E_ERROR("attn: %u %u %u > %u %u\n",
-			tmat_id, last_ms-1, 0, p_ms, ms);
-	    }
-			    
-	    /* Begin(HACK) (assumes a particular class of model topologies) */
-	    if ((ms == last_ms-1) || (ms == last_ms-2)) {
-		/* Current model state a pred. to a non-emitting state.
-		 * Need to transition there too. */
-		
-		/* deal w/ non-emitting final state */
-		if (tmat_reest &&
-		    tmat[tmat_id][ms][last_ms] > 0.0) {
-		    l_tmat_acc[tmat_id][ms][last_ms] += 1.0;
-		}
 
-		if (l_tmat_acc[tmat_id][last_ms-1][0] != 0) {
-		    E_ERROR("end attn: %u %u %u > %u %u\n",
-			    tmat_id, last_ms-1, 0, p_ms, ms);
-		}
-			    
+    if (ret != S3_SUCCESS) {
 
-		if (tmat[tmat_id][ms][last_ms] > 0.0)
-		    total_log_olik += log(tmat[tmat_id][ms][last_ms]);
-	    }
-	    /* End(HACK) */
-	}
+	/* Some problem with the utterance, release per utterance storage and
+	 * forget about adding the utterance accumulators to the global accumulators */
 
-	gauden_compute(den, den_idx, f[t], g, cb);
-	out_lik = gauden_mixture(den, den_idx, mixw[s], g);
-	if (out_lik == 0) {
-	    E_ERROR("outlik == 0\n");
-	    ret = S3_ERROR;
-
-	    goto free;
-	}
-
-	total_log_olik += log(out_lik);
-
-	for (j = 0; j < gauden_n_feat(g); j++) {
-	    /* just deal w/ 1 feature stream for now */
-	    assert(gauden_n_feat(g) == 1);
-	    
-
-	    for (kk = 0; kk < gauden_n_top(g); kk++) {
-		k = den_idx[j][kk];
-
-		cond_prob = mixw[s][j][k] * den[j][kk] / out_lik;
-
-		if (mixw_reest)
-		    l_mixw_acc[l_s][j][k] += cond_prob;
-		
-		for (l = 0; l < g->veclen[j]; l++) {
-		    xxx = f[t][j][l] * cond_prob;
-		    
-		    if (mean_reest)
-			l_mean_acc[l_cb][j][k][l] += xxx;
-		    if (var_reest) {
-			if (pass2var) {
-			    diff = f[t][j][l] - mean[cb][j][k][l];
-			    
-			    l_var_acc[l_cb][j][k][l] += cond_prob * diff * diff;
-			}
-			else {
-			    l_var_acc[l_cb][j][k][l] += xxx * f[t][j][l];
-			}
-		    }
-		    if (mean_reest || var_reest)
-			l_dnom[l_cb][j][k] += cond_prob;
-		}
-	    }
-	}
-	p_ms = ms;
-	p_tmat_id = tmat_id;
+	goto all_done;
     }
+
+    mixw = inv->mixw;
 
     if (mixw_reest) {
-	if (inv->mixw_inverse)
-	    ckd_free(inv->mixw_inverse);
-	inv->mixw_inverse = remap_inverse(mixw_map, &inv->n_mixw_inverse);
-	inv->l_mixw_acc = l_mixw_acc;
-	accum_global_mixw(inv, g);
+	/* Need to reallocate mixing accumulators for utt */
+	if (inv->l_mixw_acc) {
+	    ckd_free_3d((void ***)inv->l_mixw_acc);
+	    inv->l_mixw_acc = NULL;
+	}
+	inv->l_mixw_acc = (float32 ***)ckd_calloc_3d(inv->n_mixw_inverse,
+						     n_feat,
+						     n_density,
+						     sizeof(float32));
     }
+    wacc = inv->l_mixw_acc;
+    n_lcl_cb = inv->n_cb_inverse;
+    cb_inv = inv->cb_inverse;
 
-    if (mean_reest || var_reest) {
-	inv->cb_inverse = remap_inverse(cb_map, &inv->n_cb_inverse);
-    }
-
-    if (mean_reest)
-	accum_global_gauden(g->macc, g->l_macc, g,
-			    inv->cb_inverse, inv->n_cb_inverse);
-
-    if (var_reest)
-	accum_global_gauden(g->vacc, g->l_vacc, g,
-			    inv->cb_inverse, inv->n_cb_inverse);
-	
-    if (mean_reest || var_reest) {
-	accum_global_gauden_dnom(g->dnom, g->l_dnom, g,
-				 inv->cb_inverse, inv->n_cb_inverse);
-    }
+    /* Allocate local accumulators for mean, variance reestimation
+       sums if necessary */
+    gauden_alloc_l_acc(g, n_lcl_cb,
+		       mean_reest, var_reest,
+		       var_is_full);
 
     if (tmat_reest) {
-	for (i = 0; i < inv->n_tmat; i++) {
-	    for (j = 0; j < inv->n_state_pm-1; j++) {
-		for (k = 0; k < inv->n_state_pm; k++) {
-		    inv->tmat_acc[i][j][k] += l_tmat_acc[i][j][k];
-		    if ((j > k) && (inv->tmat_acc[i][j][k] != 0)) {
-			E_ERROR("not upper-triangular: [%u %u %u] non-zero\n",
-				i, j, k);
-		    }
+	if (inv->l_tmat_acc) {
+	    ckd_free_2d((void **)inv->l_tmat_acc);
+	    inv->l_tmat_acc = NULL;
+	}
+	for (i = 0; i < n_state; i++) {
+	    if (state_seq[i].n_next > max_n_next)
+		max_n_next = state_seq[i].n_next;
+	}
+	inv->l_tmat_acc = (float32 **)ckd_calloc_2d(n_state,
+						    max_n_next,
+						    sizeof(float32));
+    }
+    /* transition matrix reestimation sum accumulators
+       for the utterance */
+    tacc = inv->l_tmat_acc;
+
+    n_active_cb = 0;
+    now_den = (float64 ***)ckd_calloc_3d(n_lcl_cb,
+					 n_feat,
+					 n_top,
+					 sizeof(float64));
+    now_den_idx =  (uint32 ***)ckd_calloc_3d(n_lcl_cb,
+					     n_feat,
+					     n_top,
+					     sizeof(uint32));
+
+    if (mean_reest || var_reest) {
+	/* allocate space for the per frame density counts */
+	denacc = (float32 ***)ckd_calloc_3d(n_lcl_cb,
+					    n_feat,
+					    n_density,
+					    sizeof(float32));
+
+	/* # of bytes required to store all weighted vectors */
+	denacc_size = n_lcl_cb * n_feat * n_density * sizeof(float32);
+    }
+    else {
+	denacc = NULL;
+	denacc_size = 0;
+    }
+
+    /* Okay now run through the backtrace and accumulate counts. */
+    /* Find the non-emitting ending state */
+    for (q = 0; q < n_active_astate[n_obs-1]; ++q) {
+	if (active_astate[n_obs-1][q] == n_state-1)
+	    break;
+    }
+    if (q == n_active_astate[n_obs-1]) {
+	E_ERROR("final state not reached\n");
+	ret = S3_ERROR;
+	goto all_done;
+    }
+
+    for (t = n_obs-1; t >= 0; --t) {
+	uint32 l_cb;
+	uint32 l_ci_cb;
+	float64 op, p_reest_term;
+	uint32 prev;
+
+	j = active_astate[t][q];
+
+	/* Follow any non-emitting states at time t first. */
+	while (state_seq[j].mixw == -1) {
+	    prev = active_astate[t][bp[t][q]];
+
+#if VITERBI_DEBUG
+	    printf("Following non-emitting state at time %d, %u => %u\n",
+		   t, j, prev);
+#endif
+	    /* Backtrace and accumulate transition counts. */
+	    if (tmat_reest) {
+		assert(tacc != NULL);
+		tacc[prev][j - prev] += 1.0;
+	    }
+	    q = bp[t][q];
+	    j = prev;
+	}
+
+	/* Now accumulate statistics for the real state. */
+	l_cb = state_seq[j].l_cb;
+	l_ci_cb = state_seq[j].l_ci_cb;
+	n_active_cb = 0;
+
+	if (gau_timer)
+	    timing_start(gau_timer);
+
+	gauden_compute_log(now_den[l_cb],
+			   now_den_idx[l_cb],
+			   feature[t],
+			   g,
+			   state_seq[j].cb);
+	active_cb[n_active_cb++] = l_cb;
+
+	if (l_cb != l_ci_cb) {
+	    gauden_compute_log(now_den[l_ci_cb],
+			       now_den_idx[l_ci_cb],
+			       feature[t],
+			       g,
+			       state_seq[j].ci_cb);
+	    active_cb[n_active_cb++] = l_ci_cb;
+	}
+	gauden_scale_densities_bwd(now_den, now_den_idx,
+				   &dscale[t],
+				   active_cb, n_active_cb, g);
+
+	assert(state_seq[j].mixw != TYING_NON_EMITTING);
+	/* Now calculate mixture densities. */
+	/* This is the normalizer sum_m c_{jm} p(o_t|\lambda_{jm}) */
+	op = gauden_mixture(now_den[l_cb], now_den_idx[l_cb],
+			    mixw[state_seq[j].mixw], g);
+	if (gau_timer)
+	    timing_stop(gau_timer);
+
+	if (rsts_timer)
+	    timing_start(rsts_timer);
+	/* Make up this bogus value to be consistent with backward.c */
+	p_reest_term = 1.0 / op;
+
+	/* Compute the output probability excluding the contribution
+	 * of each feature stream.  i.e. p_op[0] is the output
+	 * probability excluding feature stream 0 */
+	partial_op(p_op,
+		   op,
+		   now_den[l_cb],
+		   now_den_idx[l_cb],
+		   mixw[state_seq[j].mixw],
+		   n_feat,
+		   n_top);
+
+	/* compute the probability of each (of possibly topn) density */
+	den_terms(d_term,
+		  p_reest_term,
+		  p_op,
+		  now_den[l_cb],
+		  now_den_idx[l_cb],
+		  mixw[state_seq[j].mixw],
+		  n_feat,
+		  n_top);
+
+	if (l_cb != l_ci_cb) {
+	    /* For each feature stream f, compute:
+	     *     sum_k(mixw[f][k] den[f][k])
+	     * and store the results in p_ci_op */
+	    partial_ci_op(p_ci_op,
+			  now_den[l_ci_cb],
+			  now_den_idx[l_ci_cb],
+			  mixw[state_seq[j].ci_mixw],
+			  n_feat,
+			  n_top);
+
+	    /* For each feature stream and density compute the terms:
+	     *   w[f][k] den[f][k] / sum_k(w[f][k] den[f][k]) * post_j
+	     * and store results in d_term_ci */
+	    den_terms_ci(d_term_ci,
+			 1.0, /* post_j = 1.0 */
+			 p_ci_op,
+			 now_den[l_ci_cb],
+			 now_den_idx[l_ci_cb],
+			 mixw[state_seq[j].ci_mixw],
+			 n_feat,
+			 n_top);
+	}
+		    
+
+	/* accumulate the probability for each density in the mixing
+	 * weight reestimation accumulators */
+	if (mixw_reest) {
+	    accum_den_terms(wacc[state_seq[j].l_mixw], d_term,
+			    now_den_idx[l_cb], n_feat, n_top);
+
+	    /* check if mixw and ci_mixw are different to avoid
+	     * doubling the EM counts in a CI run. */
+	    if (state_seq[j].mixw != state_seq[j].ci_mixw) {
+		if (n_cb == 1) {
+		    /* semi-continuous and discrete case */
+		    accum_den_terms(wacc[state_seq[j].l_ci_mixw], d_term,
+				    now_den_idx[l_cb], n_feat, n_top);
+		}
+		else {
+		    /* continuous case */
+		    accum_den_terms(wacc[state_seq[j].l_ci_mixw], d_term_ci,
+				    now_den_idx[l_ci_cb], n_feat, n_top);
 		}
 	    }
 	}
+		    
+	/* accumulate the probability for each density in the 
+	 * density reestimation accumulators */
+	if (mean_reest || var_reest) {
+	    accum_den_terms(denacc[l_cb], d_term,
+			    now_den_idx[l_cb], n_feat, n_top);
+	    if (l_cb != l_ci_cb) {
+		accum_den_terms(denacc[l_ci_cb], d_term_ci,
+				now_den_idx[l_ci_cb], n_feat, n_top);
+	    }
+	}
+		
+	if (rsts_timer)
+	    timing_stop(rsts_timer);
+	/* Note that there is only one state/frame so this is kind of
+	   redundant */
+ 	if (rstf_timer)
+	    timing_start(rstf_timer);
+	if (mean_reest || var_reest) {
+	    /* Update the mean and variance reestimation accumulators */
+	    if (pdumpfh)
+		fprintf(pdumpfh, "time %d:\n", t);
+	    accum_gauden(denacc,
+			 cb_inv,
+			 n_lcl_cb,
+			 feature[t],
+			 now_den_idx,
+			 g,
+			 mean_reest,
+			 var_reest,
+			 pass2var,
+			 inv->l_mixw_acc,
+			 var_is_full,
+			 pdumpfh);
+	    memset(&denacc[0][0][0], 0, denacc_size);
+	}
+	if (rstf_timer)
+	    timing_stop(rstf_timer);
+
+	if (t > 0) { 
+	    prev = active_astate[t-1][bp[t][q]];
+#if VITERBI_DEBUG
+	    printf("Backtrace at time %d, %u => %u\n",
+		   t, j, prev);
+#endif
+	    /* Backtrace and accumulate transition counts. */
+	    if (tmat_reest) {
+		assert(tacc != NULL);
+		tacc[prev][j-prev] += 1.0;
+	    }
+	    q = bp[t][q];
+	    j = prev;
+	}
     }
 
+    /* If no error was found, add the resulting utterance reestimation
+     * accumulators to the global reestimation accumulators */
+    if (rstu_timer)
+	timing_start(rstu_timer);
+    accum_global(inv, state_seq, n_state,
+		 mixw_reest, tmat_reest, mean_reest, var_reest,
+		 var_is_full);
+    if (rstu_timer)
+	timing_stop(rstu_timer);
 
-free:
-    if (l_mixw_acc)
-	ckd_free_3d((void ***)l_mixw_acc);
-    if (l_tmat_acc)
-	ckd_free_3d((void ***)l_tmat_acc);
+    /* Find the final state */
+    for (i = 0; i < n_active_astate[n_obs-1]; ++i) {
+	if (active_astate[n_obs-1][i] == n_state-1)
+	    break;
+    }
+    /* Calculate log[ p( O | \lambda ) ] */
+    assert(active_alpha[n_obs-1][i] > 0);
+    log_fp = log(active_alpha[n_obs-1][i]);
+    for (t = 0; t < n_obs; t++) {
+	assert(scale[t] > 0);
+	log_fp -= log(scale[t]);
+	for (j = 0; j < inv->gauden->n_feat; j++) {
+	    log_fp += dscale[t][j];
+	}
+    }
 
-    ckd_free_2d((void **)den_idx);
-    ckd_free_2d((void **)den);
+    *log_forw_prob = log_fp;
 
-    remap_free(mixw_map);
-    remap_free(cb_map);
+ all_done:
+    ckd_free((void *)scale);
+    for (i = 0; i < n_obs; i++) {
+	if (dscale[i])
+	    ckd_free((void *)dscale[i]);
+    }
+    ckd_free((void **)dscale);
+    
+    ckd_free(n_active_astate);
+    for (i = 0; i < n_obs; i++) {
+	ckd_free((void *)active_alpha[i]);
+	ckd_free((void *)active_astate[i]);
+	ckd_free((void *)bp[i]);
+    }
+    ckd_free((void *)active_alpha);
+    ckd_free((void *)active_astate);
+    ckd_free((void *)active_cb);
 
-    *out_log_prob = total_log_olik;
+    if (denacc)
+	ckd_free_3d((void ***)denacc);
+
+    if (now_den)
+	ckd_free_3d((void ***)now_den);
+    if (now_den_idx)
+	ckd_free_3d((void ***)now_den_idx);
+
+    if (ret != S3_SUCCESS)
+	E_ERROR("%s ignored\n", corpus_utt_brief_name());
 
     return ret;
 }

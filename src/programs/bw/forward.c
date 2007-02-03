@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -58,7 +59,9 @@
 
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 
+#define FORWARD_DEBUG 0
 #define INACTIVE	0xffff
 
 /*********************************************************************
@@ -110,6 +113,19 @@
  *		t >= 0 && t < n_obs and f >= 0 && f < n_feat) where
  *		n_feat is the # of assumed statistically independent
  *		feature streams to be modelled.
+ *
+ * 	uint32 **bp -
+ *		On the successful return of this function,
+ *		this array contains backtrace pointers for active states
+ *              for all input observations except the first timepoint.
+ *              As in active_alpha[], the sentence HMM state id can be
+ *              found by accessing active_astate[t][i].  NOTE!
+ *              This is a "raw" backpointer array and as such, it contains
+ *              pointers to non-emitting states.  These pointers refer to
+ *              the current frame rather than the previous one.  Thus,
+ *              the state id of the backpointer is either
+ *              active_astate[t-1][bp[t][i]] (for normal states) or
+ *              active_astate[t][bp[t][i]] (for non-emitting states).
  *
  *	uint32 n_obs -
  *		This variable contains the number of input observation
@@ -163,6 +179,7 @@ int32
 forward(float64 **active_alpha,
 	uint32 **active_astate,
 	uint32 *n_active_astate,
+	uint32 **bp,
 	float64 *scale,
 	float64 **dscale,
 	vector_t **feature,
@@ -203,6 +220,7 @@ forward(float64 **active_alpha,
     float64 *outprob;
     /* Can we prune this frame using phseg? */
     int can_prune_phseg;
+    float64 *best_pred = NULL;
     
     /* Get the CPU timer associated with mixture Gaussian evaluation */
     gau_timer = timing_get("gau");
@@ -293,6 +311,13 @@ forward(float64 **active_alpha,
      */
     active_alpha[0] = ckd_calloc(1, sizeof(float64));
     active_astate[0] = ckd_calloc(1, sizeof(uint32));
+    bp[0] = ckd_calloc(1, sizeof(uint32)); /* Unused, actually */
+    aalpha_alloc = 1;
+
+    /*
+     * Allocate the bestscore array for embedded Viterbi
+     */
+    best_pred = ckd_calloc(1, sizeof(float64));
 
     /* Compute scale for t == 0 */
     scale[0] = 1.0 / outprob[0];
@@ -327,6 +352,11 @@ forward(float64 **active_alpha,
 	/* assume next active state set about the same size as current;
 	   adjust to actual size as necessary later */
 	active_alpha[t] = (float64 *)ckd_calloc(n_active, sizeof(float64));
+	bp[t] = (int32 *)ckd_calloc(n_active, sizeof(int32));
+	/* reallocate the best score array and zero it out */
+	if (n_active > aalpha_alloc)
+	    best_pred = (float64 *)ckd_realloc(best_pred, n_active * sizeof(float64));
+	memset(best_pred, 0, n_active * sizeof(float64));
 	aalpha_alloc = n_active;
 
 	/* For all active states at the previous frame, activate their
@@ -383,6 +413,15 @@ forward(float64 **active_alpha,
 			    aalpha_alloc += ACHK;
 			    active_alpha[t] = ckd_realloc(active_alpha[t],
 							  sizeof(float64) * aalpha_alloc);
+			    /* And the backpointer array */
+			    bp[t] = ckd_realloc(bp[t],
+						sizeof(int32) * aalpha_alloc);
+			    /* And the best score array */
+			    best_pred = (float64 *)ckd_realloc(best_pred,
+							       sizeof(float64) * aalpha_alloc);
+			    /* Make sure the new ones are zero */
+			    memset(best_pred + aalpha_alloc - ACHK,
+				   0, sizeof(float64) * ACHK);
 			}
 		    }
 		}
@@ -406,7 +445,7 @@ forward(float64 **active_alpha,
 	    /* get the associated transition probs */
 	    tprob = state_seq[i].next_tprob;
 
-	    /* The the scaled alpha value for i at t-1 */
+	    /* the scaled alpha value for i at t-1 */
 	    prior_alpha = active_alpha[t-1][s];
 
 	    /* For all emitting states j adjacent to i, update their
@@ -426,9 +465,15 @@ forward(float64 **active_alpha,
 						mixw[state_seq[j].mixw],
 						g);
 
-		    /* update the unscaled alpha[t][j] */
-		    active_alpha[t][amap[j]] += prior_alpha * tprob[u] * outprob[j];
 
+		    /* update backpointers bp[t][j] */
+		    x = prior_alpha * tprob[u];
+		    if (x > best_pred[amap[j]]) {
+			bp[t][amap[j]] = s;
+		    }
+		    
+		    /* update the unscaled alpha[t][j] */
+		    active_alpha[t][amap[j]] += x * outprob[j];
 		}
 		else {
 		    /* already done below in the prior time frame */
@@ -436,6 +481,13 @@ forward(float64 **active_alpha,
 	    }
 	}
 
+#if FORWARD_DEBUG
+	for (s = 0; s < n_next_active; ++s) {
+	    j = next_active[s];
+	    E_INFO("After real state update, best path to %d(%d) = %d(%d)\n",
+		   j, amap[j], active[bp[t][s]], bp[t][s]);
+	}
+#endif
 	/* Now, for all active states in this frame, consume any
 	   following non-emitting states (multiplying in their
 	   transition probabilities)  */
@@ -472,7 +524,18 @@ forward(float64 **active_alpha,
 			    aalpha_alloc += ACHK;
 			    active_alpha[t] = ckd_realloc(active_alpha[t],
 							  sizeof(float64) * aalpha_alloc);
+			    bp[t] = ckd_realloc(bp[t],
+						sizeof(int32) * aalpha_alloc);
+			    best_pred = (float64 *)ckd_realloc(best_pred,
+							       sizeof(float64) * aalpha_alloc);
+			    memset(best_pred + aalpha_alloc - ACHK,
+				   0, sizeof(float64) * ACHK);
 			}
+		    }
+
+		    /* update backpointers bp[t][j] */
+		    if (x > best_pred[amap[j]]) {
+			bp[t][amap[j]] = s;
 		    }
 		    /* update its alpha value */
 		    active_alpha[t][amap[j]] += x;
@@ -480,11 +543,20 @@ forward(float64 **active_alpha,
 	    }
 	}
 
+#if FORWARD_DEBUG
+	for (s = 0; s < n_next_active; ++s) {
+	    j = next_active[s];
+	    E_INFO("After non-emitting state update, best path to %d(%d) = %d(%d)\n",
+		   j, amap[j], next_active[bp[t][s]], bp[t][s]);
+	}
+#endif
 	/* find best alpha value in current frame for pruning and scaling purposes */
 	balpha = 0;
+	/* also take the argmax to find the best backtrace */
 	for (s = 0; s < n_next_active; s++) {
-	    if (balpha < active_alpha[t][s])
+	    if (balpha < active_alpha[t][s]) {
 		balpha = active_alpha[t][s];
+	    }
 	}
 
 	/* cope with some pathological case */
@@ -542,31 +614,63 @@ forward(float64 **active_alpha,
 	    can_prune_phseg = !(s == n_next_active);
 #if FORWARD_DEBUG
 	    if (!can_prune_phseg) {
-		printf("Will not apply phone-based pruning at timepoint %d\n", t);
+		E_INFO("Will not apply phone-based pruning at timepoint %d\n", t);
 	    }
 #endif
 	}
-	/* Produce the scaled alpha values and active state list for
-	 * unpruned alphas */
+	/* Prune active states for the next frame and rescale their alphas. */
 	active_astate[t] = ckd_calloc(n_next_active, sizeof(uint32));
 	for (s = 0, n_active = 0; s < n_next_active; s++) {
+	    /* "Snap" the backpointers for non-emitting states, so
+	       that they don't point to bogus indices (we will use
+	       amap to recover them). */
+	    if (state_seq[next_active[s]].mixw == TYING_NON_EMITTING) {
+#if FORWARD_DEBUG
+		E_INFO("Snapping backpointer for %d, %d => %d\n",
+		       next_active[s], bp[t][s], next_active[bp[t][s]]);
+#endif
+		bp[t][s] = next_active[bp[t][s]];
+	    }
 	    /* If we have a phone segmentation, use it instead of the beam. */
 	    if (phseg && can_prune_phseg) {
 		if (state_seq[next_active[s]].phn == phseg->phone) {
 		    active_alpha[t][n_active] = active_alpha[t][s] * scale[t];
 		    active[n_active] = active_astate[t][n_active] = next_active[s];
+		    bp[t][n_active] = bp[t][s];
+		    amap[next_active[s]] = n_active;
 		    n_active++;
+		}
+		else {
+		    amap[next_active[s]] = INACTIVE;
 		}
 	    }
 	    else {
 		if (active_alpha[t][s] > pthresh) {
 		    active_alpha[t][n_active] = active_alpha[t][s] * scale[t];
 		    active[n_active] = active_astate[t][n_active] = next_active[s];
+		    bp[t][n_active] = bp[t][s];
+		    amap[next_active[s]] = n_active;
 		    n_active++;
 		}
+		else {
+		    amap[next_active[s]] = INACTIVE;
+		}
 	    }
-	    assert(amap[next_active[s]] != INACTIVE);
-	    amap[next_active[s]] = INACTIVE; /* reset the mapping for next frame */
+	}
+	/* Now recover the backpointers for non-emitting states. */
+	for (s = 0; s < n_active; ++s) {
+	    if (state_seq[active[s]].mixw == TYING_NON_EMITTING) {
+#if FORWARD_DEBUG
+		E_INFO("Snapping backpointer for %d, %d => %d(%d)\n",
+		       active[s], bp[t][s], amap[bp[t][s]], active[amap[bp[t][s]]]);
+#endif
+		assert(amap[bp[t][s]] != INACTIVE);
+		bp[t][s] = amap[bp[t][s]];
+	    }
+	}
+	/* And finally deactive all states. */
+	for (s = 0; s < n_active; ++s) {
+	    amap[active[s]] = INACTIVE;
 	}
 	n_active_astate[t] = n_active;
 	n_next_active = 0;
@@ -584,6 +688,7 @@ cleanup:
     ckd_free(acbflag);
 
     ckd_free(outprob);
+    ckd_free(best_pred);
 
     ckd_free_3d((void ***)now_den);
     ckd_free_3d((void ***)now_den_idx);

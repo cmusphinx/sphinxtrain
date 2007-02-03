@@ -347,14 +347,6 @@ main_initialize(int argc,
     silence_str = (char *)cmd_ln_access("-siltag");
     E_INFO("Silence Tag %s\n",silence_str);
 
-    if (*(int32 *)cmd_ln_access("-viterbi")) {
-	if (cmd_ln_access("-segdir") == NULL) {
-	    E_FATAL("Specify -segdir if -viterbi is true\n");
-	}
-	corpus_set_seg_dir(cmd_ln_access("-segdir"));
-	corpus_set_seg_ext(cmd_ln_access("-segext"));
-    }
-
     if (cmd_ln_access("-lsnfn")) {
 	/* use a LSN file which has all the transcripts */
 	corpus_set_lsn_filename(cmd_ln_access("-lsnfn"));
@@ -534,9 +526,6 @@ main_reestimate(model_inventory_t *inv,
     int32 var_is_full;
 
     uint32 n_utt;
-
-    uint16 *seg;
-    uint32 n_seg;
 
     uint32 *del_sf;
     uint32 *del_ef;
@@ -754,13 +743,11 @@ main_reestimate(model_inventory_t *inv,
 
 	if (upd_timer)
 	    timing_start(upd_timer);
+	/* create a sentence HMM */
+	state_seq = next_utt_states(&n_state, lex, inv, mdef, trans, sil_del, silence_str);
+	printf(" %5u", n_state);
 	if (!viterbi) {
-	    /* create a sentence HMM */
-	    state_seq = next_utt_states(&n_state, lex, inv, mdef, trans, sil_del, silence_str);
-	    printf(" %5u", n_state);
-
 	    /* accumulate reestimation sums for the utterance */
-
 	    if (baum_welch_update(&log_lik,
 				  f, n_frame,
 				  state_seq, n_state,
@@ -787,50 +774,25 @@ main_reestimate(model_inventory_t *inv,
 
 	}
 	else {
-	    char **word;
-	    uint32 n_word;
-	    acmod_id_t *phone;
-	    uint32 n_phone;
-	    char *btw_mark;
-	    uint32 *s_seq;
-	    uint32 *t_seq;
-	    uint32 *ms_seq;
-
-	    corpus_get_seg(&seg, &n_seg);
-	    assert(n_seg == n_frame);
-
-	    word = mk_wordlist(trans, &n_word);
-	    phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
-	    cvt2triphone(inv->mdef->acmod_set, phone, btw_mark, n_phone);
-	    s_seq = mk_sseq(seg, n_frame, phone, n_phone, inv->mdef);
-	    mk_trans_seq(&t_seq, &ms_seq, seg, n_frame, phone, n_phone, inv->mdef);
-
-	    ckd_free(seg);
-	    ckd_free(word);
-	    ckd_free(phone);
-	    ckd_free(btw_mark);
-
-	    /* create a tied state sequence from the state segmentation */
-	    
+	    /* Viterbi search and accumulate in it */
 	    if (viterbi_update(&log_lik,
-			       f,
-			       s_seq,
-			       t_seq,
-			       ms_seq,
-			       n_frame,
+			       f, n_frame,
+			       state_seq, n_state,
 			       inv,
+			       a_beam,
+			       spthresh,
+			       phseg,
 			       mixw_reest,
 			       tmat_reest,
 			       mean_reest,
 			       var_reest,
-			       pass2var) == S3_SUCCESS) {
+			       pass2var,
+			       var_is_full,
+			       pdumpfh) == S3_SUCCESS) {
 		total_frames += n_frame;
 		total_log_lik += log_lik;
 		printf(" %e", log_lik);
 	    }
-	    ckd_free(s_seq);
-	    ckd_free(t_seq);
-	    ckd_free(ms_seq);
 	}
 	if (upd_timer)
 	    timing_stop(upd_timer);

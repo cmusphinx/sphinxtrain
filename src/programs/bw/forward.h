@@ -59,6 +59,7 @@ int32
 forward(float64 **active_alpha,
 	uint32 **active_astate,
 	uint32 *n_active_astate,
+	uint32 **bp,
 	float64 *scale,
 	float64 **dscale,
 	vector_t **feature,
