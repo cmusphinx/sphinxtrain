@@ -105,6 +105,11 @@ HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.03.force_align.$part.state.gif") .
 Log ("    Force alignment starting: ($part of $npart) ");
 HTML_Print (FormatURL("$logfile", "Log File") . "\n");
 
+my @phsegdir;
+if (defined($ST::CFG_PHSEG_DIR)) {
+    @phsegdir = (-phsegdir => "$ST::CFG_PHSEG_DIR$ctlext");
+}
+
 my $return_value = RunTool
     ('sphinx3_align', $logfile, $ctl_counter,
      -mdef => $mdef,
@@ -126,6 +131,7 @@ my $return_value = RunTool
      -outsent => $outfile,
      -s2stsegdir => "$ST::CFG_STSEG_DIR$ctlext",
      -s2cdsen => 'yes',
+     @phsegdir,
      -beam => $beam,
      -agc => $ST::CFG_AGC,
      -cmn => $ST::CFG_CMN,

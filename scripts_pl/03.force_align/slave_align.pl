@@ -93,10 +93,15 @@ mkdir($ST::CFG_QMGR_DIR,0777);
 Log("s2stseg...");
 rmtree($ST::CFG_STSEG_DIR, 0, 1);
 mkdir($ST::CFG_STSEG_DIR,0777);
+if (defined($ST::CFG_PHSEG_DIR)) {
+    Log("phseg...");
+    rmtree($ST::CFG_PHSEG_DIR, 0, 1);
+    mkdir($ST::CFG_PHSEG_DIR,0777);
+}
 Log("\n");
 
 # Build state segmentation directories
-Log("    Building state segmentation directories...");
+Log("    Building state/phone segmentation directories...");
 open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
 my %dirs;
 while (<INPUT>) {
@@ -108,11 +113,14 @@ while (<INPUT>) {
     unless ($dirs{$basedir}) {
 	$dirs{$basedir}++;
 	mkpath(catdir($ST::CFG_STSEG_DIR, $basedir), 0, 0777);
+	if (defined($ST::CFG_PHSEG_DIR)) {
+	    mkpath(catdir($ST::CFG_PHSEG_DIR, $basedir), 0, 0777);
+	}
     }
 }
 Log("\n");
 close INPUT;
-    
+
 my %silences = ();
 
 # Create a new dictionary unless one is given
