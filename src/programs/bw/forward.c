@@ -352,7 +352,7 @@ forward(float64 **active_alpha,
 	/* assume next active state set about the same size as current;
 	   adjust to actual size as necessary later */
 	active_alpha[t] = (float64 *)ckd_calloc(n_active, sizeof(float64));
-	bp[t] = (int32 *)ckd_calloc(n_active, sizeof(int32));
+	bp[t] = (uint32 *)ckd_calloc(n_active, sizeof(uint32));
 	/* reallocate the best score array and zero it out */
 	if (n_active > aalpha_alloc)
 	    best_pred = (float64 *)ckd_realloc(best_pred, n_active * sizeof(float64));
@@ -415,11 +415,13 @@ forward(float64 **active_alpha,
 							  sizeof(float64) * aalpha_alloc);
 			    /* And the backpointer array */
 			    bp[t] = ckd_realloc(bp[t],
-						sizeof(int32) * aalpha_alloc);
+						sizeof(uint32) * aalpha_alloc);
 			    /* And the best score array */
 			    best_pred = (float64 *)ckd_realloc(best_pred,
 							       sizeof(float64) * aalpha_alloc);
-			    /* Make sure the new ones are zero */
+			    /* Make sure the new stuff is zero */
+			    memset(bp[t] + aalpha_alloc - ACHK,
+				   0, sizeof(uint32) * ACHK);
 			    memset(best_pred + aalpha_alloc - ACHK,
 				   0, sizeof(float64) * ACHK);
 			}
@@ -494,9 +496,6 @@ forward(float64 **active_alpha,
 	for (s = 0; s < n_next_active; s++) {
 	    i = next_active[s];
 
-#if FORWARD_DEBUG
-	    E_INFO("At time %d, In non-emitting state update, active state %d\n",t, i);
-#endif
 	    /* find the successor states */
 	    next = state_seq[i].next_state;
 	    tprob = state_seq[i].next_tprob;
@@ -525,12 +524,17 @@ forward(float64 **active_alpha,
 			    active_alpha[t] = ckd_realloc(active_alpha[t],
 							  sizeof(float64) * aalpha_alloc);
 			    bp[t] = ckd_realloc(bp[t],
-						sizeof(int32) * aalpha_alloc);
+						sizeof(uint32) * aalpha_alloc);
 			    best_pred = (float64 *)ckd_realloc(best_pred,
 							       sizeof(float64) * aalpha_alloc);
+			    memset(bp[t] + aalpha_alloc - ACHK,
+				   0, sizeof(uint32) * ACHK);
 			    memset(best_pred + aalpha_alloc - ACHK,
 				   0, sizeof(float64) * ACHK);
 			}
+			/* Give its backpointer a default value */
+			bp[t][amap[j]] = s;
+			best_pred[amap[j]] = x;
 		    }
 
 		    /* update backpointers bp[t][j] */
@@ -546,8 +550,14 @@ forward(float64 **active_alpha,
 #if FORWARD_DEBUG
 	for (s = 0; s < n_next_active; ++s) {
 	    j = next_active[s];
-	    E_INFO("After non-emitting state update, best path to %d(%d) = %d(%d)\n",
-		   j, amap[j], next_active[bp[t][s]], bp[t][s]);
+	    if (state_seq[j].mixw == TYING_NON_EMITTING) {
+		E_INFO("After non-emitting state update, best path to %d(%d) = %d(%d)\n",
+		       j, amap[j], next_active[bp[t][s]], bp[t][s]);
+		/* Assumptions about topology that might not be valid
+		 * but are useful for debugging. */
+		assert(next_active[bp[t][s]] <= j);
+		assert(j - next_active[bp[t][s]] < 2);
+	    }
 	}
 #endif
 	/* find best alpha value in current frame for pruning and scaling purposes */
