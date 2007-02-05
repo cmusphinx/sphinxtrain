@@ -81,8 +81,8 @@ if ($iter == 1) {
     # Copy the mdef and fillerdict files into the new HMM directory
     copy($mdeffile, catfile($hmmdir, 'mdef'))
 	or die "Failed to copy $mdeffile to $hmmdir/mdef: $!";
-    copy($ST::CFG_FILLERDICT, catfile($hmmdir, 'fillerdict'))
-	or die "Failed to copy $ST::CFG_FILLERDICT to $hmmdir/fillerdict: $!";
+    copy($ST::CFG_FILLERDICT, catfile($hmmdir, 'noisedict'))
+	or die "Failed to copy $ST::CFG_FILLERDICT to $hmmdir/noisedict: $!";
 }
 
 my  $logdir              = "${ST::CFG_LOG_DIR}/$processpart";
