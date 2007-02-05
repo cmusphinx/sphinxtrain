@@ -319,6 +319,12 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  "no",
 	  "Shows example of how to use the tool"},
 
+	{ "-hmmdir",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Default directory for acoustic model files (mdef, means, variances, transition_matrices, noisedict)" },
+
 	{ "-moddeffn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,

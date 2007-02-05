@@ -90,6 +90,34 @@
 #include <assert.h>
 
 #define DUMP_RETRY_PERIOD	3	/* If a count dump fails, retry every # of sec's */
+
+/* FIXME: Should go in libutil */
+static char *
+string_join(const char *base, ...)
+{
+    va_list args;
+    size_t len;
+    const char *c;
+    char *out;
+
+    va_start(args, base);
+    len = strlen(base);
+    while ((c = va_arg(args, const char *)) != NULL) {
+        len += strlen(c);
+    }
+    len++;
+    va_end(args);
+
+    out = ckd_calloc(len, 1);
+    va_start(args, base);
+    strcpy(out, base);
+    while ((c = va_arg(args, const char *)) != NULL) {
+        strcat(out, c);
+    }
+    va_end(args);
+
+    return out;
+}
 
 /*********************************************************************
  *
@@ -142,7 +170,6 @@ main_initialize(int argc,
 {
     model_inventory_t *inv;	/* the model inventory */
     lexicon_t *lex;		/* the lexicon to be returned to the caller */
-    const char *filler_dict;	/* the file name of a noise word dictionary */
     model_def_t *mdef;
     uint32 n_map;
     uint32 n_ts;
@@ -162,6 +189,8 @@ main_initialize(int argc,
     float32 ****sxfrm_a = NULL;
     float32 ***sxfrm_b = NULL;
     int32 *mllr_idx = NULL;
+    const char *hmmdir;
+    char *mdeffn, *meanfn, *varfn, *mixwfn, *tmatfn, *fdictfn;
     
     E_INFO("Compiled on %s at %s\n", __DATE__, __TIME__);
 
@@ -189,13 +218,35 @@ main_initialize(int argc,
 
     mod_inv_set_n_feat(inv, feat_n_stream());
 
-    E_INFO("Reading %s\n", cmd_ln_access("-moddeffn"));
+    mdeffn = cmd_ln_str("-moddeffn");
+    meanfn = cmd_ln_str("-meanfn");
+    varfn = cmd_ln_str("-varfn");
+    mixwfn = cmd_ln_str("-mixwfn");
+    tmatfn = cmd_ln_str("-tmatfn");
+    fdictfn = cmd_ln_str("-fdictfn");
+
+    /* Note: this will leak a small amount of memory but we really
+     * don't care. */
+    if ((hmmdir = cmd_ln_str("-hmmdir")) != NULL) {
+	if (mdeffn == NULL)
+	    mdeffn = string_join(hmmdir, "/mdef", NULL);
+	if (meanfn == NULL)
+	    meanfn = string_join(hmmdir, "/means", NULL);
+	if (varfn == NULL)
+	    varfn = string_join(hmmdir, "/variances", NULL);
+	if (mixwfn == NULL)
+	    mixwfn = string_join(hmmdir, "/mixture_weights", NULL);
+	if (tmatfn == NULL)
+	    tmatfn = string_join(hmmdir, "/transition_matrices", NULL);
+	if (fdictfn == NULL)
+	    fdictfn = string_join(hmmdir, "/noisedict", NULL);
+    }
+    E_INFO("Reading %s\n", mdeffn);
     
     /* Read in the model definitions.  Defines the set of
        CI phones and context dependent phones.  Defines the
        transition matrix tying and state level tying. */
-    if (model_def_read(&mdef,
-		       cmd_ln_access("-moddeffn")) != S3_SUCCESS) {
+    if (model_def_read(&mdef, mdeffn) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
@@ -225,23 +276,20 @@ main_initialize(int argc,
     inv->acmod_set = mdef->acmod_set;
     inv->mdef = mdef;
 
-    if (mod_inv_read_mixw(inv, mdef, cmd_ln_access("-mixwfn"),
+    if (mod_inv_read_mixw(inv, mdef, mixwfn,
 			  *(float32 *)cmd_ln_access("-mwfloor")) != S3_SUCCESS)
 	return S3_ERROR;
     
     if (n_ts != inv->n_mixw) {
 	E_WARN("%u mappings from tied-state to cb, but %u tied-state in %s\n",
-	       mdef->n_cb, inv->n_mixw, cmd_ln_access("-mixwfn"));
+	       mdef->n_cb, inv->n_mixw, mixwfn);
     }
 
-    if (mod_inv_read_tmat(inv,
-			  cmd_ln_access("-tmatfn"),
+    if (mod_inv_read_tmat(inv, tmatfn,
 			  *(float32 *)cmd_ln_access("-tpfloor")) != S3_SUCCESS)
 	return S3_ERROR;
 
-    if (mod_inv_read_gauden(inv,
-			    cmd_ln_access("-meanfn"),
-			    cmd_ln_access("-varfn"),
+    if (mod_inv_read_gauden(inv, meanfn, varfn,
 			    *(float32 *)cmd_ln_access("-varfloor"),
 			    *(int32 *)cmd_ln_access("-topn"),
 			    cmd_ln_int32("-fullvar")) != S3_SUCCESS)
@@ -322,12 +370,11 @@ main_initialize(int argc,
     if (cmd_ln_int32("-ltsoov"))
 	lex->lts_rules = (lts_t *)&cmu6_lts_rules;
     
-    filler_dict = cmd_ln_access("-fdictfn");
-    if (filler_dict) {
+    if (fdictfn) {
 	E_INFO("Reading filler lexicon: %s\n",
-	       filler_dict);
+	       fdictfn);
 	(void)lexicon_read(lex,
-			   filler_dict,
+			   fdictfn,
 			   mdef->acmod_set);
     }
 
