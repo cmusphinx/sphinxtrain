@@ -161,7 +161,7 @@ mod_inv_read_gauden(model_inventory_t *minv,
     const uint32 *veclen, *vl;
     gauden_t *g;
     
-    if (s3gau_read(cmd_ln_access("-meanfn"),
+    if (s3gau_read(meanfn,
 		   &mean,
 		   &n_mgau,
 		   &n_feat,
@@ -334,7 +334,7 @@ mod_inv_read_mixw(model_inventory_t *minv,
     uint32 n_feat, j;
     uint32 n_density;
 
-    if (s3mixw_read(cmd_ln_access("-mixwfn"),
+    if (s3mixw_read(fn,
 		    &mixw,
 		    &n_mixw,
 		    &n_feat,
