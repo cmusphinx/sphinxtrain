@@ -461,7 +461,6 @@ forward(float64 **active_alpha,
 
 		if (state_seq[j].mixw != TYING_NON_EMITTING) {
 		    /* Next state j is an emitting state */
-
 		    outprob[j] = gauden_mixture(now_den[l_cb],
 						now_den_idx[l_cb],
 						mixw[state_seq[j].mixw],
@@ -471,6 +470,11 @@ forward(float64 **active_alpha,
 		    /* update backpointers bp[t][j] */
 		    x = prior_alpha * tprob[u];
 		    if (x > best_pred[amap[j]]) {
+#if FORWARD_DEBUG
+			E_INFO("In real state update, backpointer %d => %d updated from %e to (%e * %e = %e)\n",
+			       i, j, best_pred[amap[j]], prior_alpha, tprob[u], x);
+#endif
+			best_pred[amap[j]] = x;
 			bp[t][amap[j]] = s;
 		    }
 		    
@@ -540,6 +544,7 @@ forward(float64 **active_alpha,
 		    /* update backpointers bp[t][j] */
 		    if (x > best_pred[amap[j]]) {
 			bp[t][amap[j]] = s;
+			best_pred[amap[j]] = x;
 		    }
 		    /* update its alpha value */
 		    active_alpha[t][amap[j]] += x;
