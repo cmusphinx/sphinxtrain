@@ -89,11 +89,19 @@ my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 
 # if there is an LDA transformation, use it
-my @lda_args;
+my @extra_args;
 if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
-    push(@lda_args,
+    push(@extra_args,
 	 -ldafn => $ST::CFG_LDA_TRANSFORM,
 	 -ldadim => $ST::CFG_LDA_DIMENSION);
+}
+
+if ($ST::CFG_CD_VITERBI eq 'yes') {
+    push(@extra_args, -viterbi => 'yes');
+}
+
+if (defined($ST::CFG_PHSEG_DIR)) {
+    push(@extra_args, -phsegdir => $ST::CFG_PHSEG_DIR);
 }
 
 # aligned transcripts and the list of aligned files is obtained as a result
@@ -167,7 +175,7 @@ my $return_value = RunTool
      -diagfull => $ST::CFG_DIAGFULL,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
-     @lda_args,
+     @extra_args,
      -timing => "no");
 
 
