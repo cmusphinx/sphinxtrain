@@ -101,6 +101,11 @@ mk_s2sendump -moddeffn s3mdef -mixwfn s3mixw -tpfloor 0.0000001 \n\
 	      CMD_LN_NO_VALIDATION,
 	      CMD_LN_NO_DEFAULT,
 	      "Feature type e.g. s2_4x"},
+	{ "-pocketsphinx",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Write a PocketSphinx-format senone dump file"},
 
 	{ "-tpfloor",
 	      CMD_LN_FLOAT32,

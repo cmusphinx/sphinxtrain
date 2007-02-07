@@ -248,6 +248,75 @@ static void senone_dump (const model_def_t *mdef, const senone_t *s, char *file)
     fclose (fpout);
 }
 
+static void pocketsphinx_senone_dump(const model_def_t *mdef,
+				     const senone_t *s, char *file)
+{
+    FILE *fpout;
+    char pshdr[256];
+    int32 i, n, k, c, d, f;
+    
+    E_INFO("Writing PocketSphinx format sendump file: %s\n", file);
+    if ((fpout = fopen(file, "wb")) == NULL)
+	E_FATAL("fopen(%s,wb) failed\n", file);
+    
+    /* Write format description into header */
+    for (i = 0; fmtdesc[i] != NULL; i++) {
+	n = strlen(fmtdesc[i])+1;
+	fwrite_int32 (fpout, n);
+	fwrite (fmtdesc[i], sizeof(char), n, fpout);
+    }
+    /* Now write the cluster, feature and codebook counts */
+    sprintf(pshdr, "cluster_count %d", 0);
+    fwrite_int32(fpout, strlen(pshdr)+1);
+    fwrite(pshdr, sizeof(char), strlen(pshdr)+1, fpout);
+    sprintf(pshdr, "codebook_count %d", s->n_mgau);
+    fwrite_int32(fpout, strlen(pshdr)+1);
+    fwrite(pshdr, sizeof(char), strlen(pshdr)+1, fpout);
+    sprintf(pshdr, "feature_count %d", s->n_feat);
+    fwrite_int32(fpout, strlen(pshdr)+1);
+    fwrite(pshdr, sizeof(char), strlen(pshdr)+1, fpout);
+
+    /* Pad the header for alignment purposes */
+    k = ftell(fpout) & 3;
+    if (k > 0) {
+        k = 4 - k;
+        fwrite_int32(fpout, k);
+        fwrite("!!!!", 1, k, fpout);
+    }
+
+    /* Terminate header */
+    fwrite_int32(fpout, 0);
+
+    /* For each codebook, write #codewords, #pdfs */
+    for (c = 0; c < s->n_mgau; ++c) {
+	int32 aligned_n_sen;
+
+	/* Align the number of pdfs to a 4-byte boundary. */
+	aligned_n_sen = (s->mgau2sen[c].n_sen + 3) & ~3;
+
+	/* Write #densities, #senones (indicates that they are transposed) */
+	fwrite_int32 (fpout, s->mgau2sen[c].feat_mixw[0].n_wt);
+	fwrite_int32 (fpout, aligned_n_sen);
+
+	/* Now write out transposed, quantized senones. */
+	/* Note!  PocketSphinx puts them in Sphinx3 order. */
+	for (f = 0; f < s->n_feat; f++) {
+	    for (d = 0; d < s->mgau2sen[c].feat_mixw[f].n_wt; ++d) {
+		for (i = 0; i < s->mgau2sen[c].n_sen; ++i) {
+		    fputc(s->mgau2sen[c].feat_mixw[f].prob[i][d], fpout);
+		}
+		/* Pad out each row for alignment purposes */
+		if (aligned_n_sen > s->mgau2sen[c].n_sen) {
+		    fwrite("\0\0\0\0", 1,
+			   aligned_n_sen - s->mgau2sen[c].n_sen, fpout);
+		}
+	    }
+	}
+    }
+
+    fclose (fpout);
+}
+
 static int32 senone_mgau_map_read (senone_t *s, char *file_name)
 {
     FILE *fp;
@@ -394,6 +463,7 @@ static int32 senone_mixw_read(senone_t *s, char *file_name, float64 mixwfloor)
     int32 i, j, f, m, c, p, n_sen, n_err, n_cw, nval;
     char eofchk;
     mixw_t *fw;
+    int32 pocketsphinx = cmd_ln_boolean("-pocketsphinx");
     
     E_INFO("Reading senone mixture weights: %s\n", file_name);
     
@@ -471,6 +541,8 @@ static int32 senone_mixw_read(senone_t *s, char *file_name, float64 mixwfloor)
 	E_FATAL("mixwfloor (%e) not in range (0, 1)\n", mixwfloor);
     p = logs3(mixwfloor);
     for (s->shift = 0, p = -p; p >= 256; s->shift++, p >>= 1);
+    if (pocketsphinx) /* PocketSphinx uses a fixed 10-bit shift. */
+	s->shift = 10;
     E_INFO("Truncating senone logs3(wt) values by %d bits, to 8 bits\n", s->shift);
 
     /* Allocate memory for s->mgau2sen and senone PDF data */
@@ -503,7 +575,6 @@ static int32 senone_mixw_read(senone_t *s, char *file_name, float64 mixwfloor)
 		p = -(logs3(pdf[c]));
 		p += (1 << (s->shift-1)) - 1;	/* Rounding before truncation */
 		p = (p < (255 << s->shift)) ? (p >> s->shift) : 255;	/* Trunc/shift */
-
 		fw[f].prob[j][c] = p;
 	    }
 	}
@@ -640,7 +711,12 @@ int main (int32 argc, char **argv)
     if (m->n_tied_state != s->n_sen)
 	E_FATAL("#senones different in mdef(%d) and mixw(%d) files\n", m->n_tied_state, s->n_sen);
     
-    senone_dump (m, s, outfile);
+    if (cmd_ln_boolean("-pocketsphinx")) {
+	pocketsphinx_senone_dump(m, s, outfile);
+    }
+    else {
+	senone_dump(m, s, outfile);
+    }
 
     return 0;
 }
