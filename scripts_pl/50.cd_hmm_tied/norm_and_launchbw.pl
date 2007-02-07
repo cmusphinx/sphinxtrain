@@ -199,7 +199,21 @@ sub Launch_BW {
 sub Launch_SplitGaussian {
     my $n_gau = shift;
 
-    if ($n_gau < $ST::CFG_FINAL_NUM_DENSITIES && $ST::CFG_HMM_TYPE ne ".semi.") {
+    if ($ST::CFG_HMM_TYPE eq '.semi.') {
+# No need to split Gaussians, however for convenience purposes we will
+# generate a PocketSphinx format sendump file in the model directory.
+	my $modelname = "${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}";
+	my $hmm_dir = "$ST::CFG_BASE_DIR/model_parameters/$modelname";
+	my $logfile = "$logdir/$ST::CFG_EXPTNAME.mk_s2sendump.pocketsphinx";
+	my $rv = RunTool('mk_s2sendump', $logfile, 0,
+			 -moddeffn => catfile($hmm_dir, 'mdef'),
+			 -mixwfn => catfile($hmm_dir, 'mixture_weights'),
+			 -mwfloor => 0.0000001,
+			 -feattype => $ST::CFG_FEATURE,
+			 -pocketsphinx => 'yes',
+			 -sendumpfn => catfile($hmm_dir, 'sendump'));
+    }
+    elsif ($n_gau < $ST::CFG_FINAL_NUM_DENSITIES) {
 # Do stuff
 	my $n_split;
         if ($ST::CFG_FINAL_NUM_DENSITIES >= 2 * $n_gau) {
@@ -211,10 +225,10 @@ sub Launch_SplitGaussian {
 
         Launch_BW($n_gau + $n_split, 0);
 	exit 0;
-      } elsif ($n_gau == $ST::CFG_FINAL_NUM_DENSITIES) {
+    } elsif ($n_gau == $ST::CFG_FINAL_NUM_DENSITIES) {
 # If we finally reached the desired number of densities, we still have
 # to copy the models to their final destination. The split gaussian
 # script below will do just that
         RunScript('split_gaussians.pl', $ST::CFG_FINAL_NUM_DENSITIES, 0);
-      }
+    }
 }
