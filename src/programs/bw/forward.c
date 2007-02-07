@@ -561,7 +561,7 @@ forward(float64 **active_alpha,
 		/* Assumptions about topology that might not be valid
 		 * but are useful for debugging. */
 		assert(next_active[bp[t][s]] <= j);
-		assert(j - next_active[bp[t][s]] < 2);
+		assert(j - next_active[bp[t][s]] <= 2);
 	    }
 	}
 #endif
@@ -679,7 +679,6 @@ forward(float64 **active_alpha,
 		E_INFO("Snapping backpointer for %d, %d => %d(%d)\n",
 		       active[s], bp[t][s], amap[bp[t][s]], active[amap[bp[t][s]]]);
 #endif
-		assert(amap[bp[t][s]] != INACTIVE);
 		bp[t][s] = amap[bp[t][s]];
 	    }
 	}
