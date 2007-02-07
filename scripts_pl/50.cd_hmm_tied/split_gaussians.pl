@@ -127,7 +127,7 @@ if ($n_inc <= 0) {
   exit 0;
 }
 
-my $logdir = "$ST::CFG_BASE_DIR/logdir/50.cd_hmm_tied";
+my $logdir = "$ST::CFG_LOG_DIR/50.cd_hmm_tied";
 mkdir ($logdir,0777);
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.split_gaussians.$n_current.$n_inc.log";
 

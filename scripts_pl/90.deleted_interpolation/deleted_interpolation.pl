@@ -81,7 +81,7 @@ my $mixwfn = "$hmm_dir/mixture_weights";
 
 my $moddeffn = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.$ST::CFG_N_TIED_STATES.mdef";
 
-my $logdir = "$ST::CFG_BASE_DIR/logdir/90.deleted_interpolation";
+my $logdir = "$ST::CFG_LOG_DIR/90.deleted_interpolation";
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.deletedintrep-${nsenones}.log";
 
 Log ("    Cleaning up directories: logs...\n");

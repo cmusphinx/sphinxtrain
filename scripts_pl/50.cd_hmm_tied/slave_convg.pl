@@ -147,7 +147,7 @@ sub copyci2cd2initialize ()
     my $dest_varfn = "$cd_hmmdir/variances";
     my $dest_tmatfn = "$cd_hmmdir/transition_matrices";
 
-    my $logdir = "$ST::CFG_BASE_DIR/logdir/50.cd_hmm_tied";
+    my $logdir = "$ST::CFG_LOG_DIR/50.cd_hmm_tied";
     mkdir ($logdir,0777);
     my $logfile = "$logdir/$ST::CFG_EXPTNAME.copy.ci.2.cd.log";
 
