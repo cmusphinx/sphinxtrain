@@ -435,7 +435,7 @@ init_mixw()
     n_tmat_dest = dest_mdef->n_tied_tmat;
     tmat_dest_list = init_was_added(n_tmat_dest);
     
-    E_INFO("Alloc %ux%ux%ux dest tmat\n",
+    E_INFO("Alloc %ux%ux%u dest tmat\n",
 	   n_tmat_dest,
 	   n_state_pm-1,
 	   n_state_pm);

@@ -87,7 +87,7 @@ typedef struct dtree_node_str {
 #define IS_LEAF(nd) ((((nd)->y == NULL) && ((nd)->n == NULL)))
 #define IS_TWIG(nd) (!IS_LEAF(nd) && IS_LEAF((nd)->y) && IS_LEAF((nd)->n))
 
-typedef struct {
+typedef struct dtree_s {
     dtree_node_t *node;
     uint32 n_node;
 } dtree_t;

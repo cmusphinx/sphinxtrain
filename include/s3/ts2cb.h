@@ -46,6 +46,13 @@
 #ifndef TS2CB_H
 #define TS2CB_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 #define CONT_LABEL	".cont."
@@ -56,6 +63,10 @@ semi_ts2cb(uint32 n_ts);
 
 uint32 *
 cont_ts2cb(uint32 n_ts);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TS2CB_H */ 
 

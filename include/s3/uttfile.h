@@ -50,7 +50,7 @@
 
 #include <stdio.h>
 
-typedef struct {
+typedef struct uttfile_s {
     FILE  *fp;
     uint32 off;
     uint32 len;

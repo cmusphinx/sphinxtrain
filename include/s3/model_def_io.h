@@ -46,6 +46,13 @@
 #ifndef MODEL_DEF_IO_H
 #define MODEL_DEF_IO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/acmod_set.h>
 #include <s3/prim_type.h>
 
@@ -63,6 +70,10 @@ model_def_read(model_def_t **out_mdef,
 int32
 model_def_write(model_def_t *mdef,
 		const char *file_name);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MODEL_DEF_IO_H */ 
 

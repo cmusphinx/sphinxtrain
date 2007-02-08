@@ -54,7 +54,7 @@
 #include <stdio.h>
 
 
-typedef struct {
+typedef struct pset_s {
     char *name;		/* name of the phone set (e.g. sonor, vowel, etc.) */
     acmod_id_t *phone;	/* list of member phones */
     uint32 n_phone;	/* cardinality of the set */
@@ -76,7 +76,7 @@ typedef struct {
  * where SONOR and LIQUID are phone sets derived,
  * for instance, linguistically.
  */
-typedef struct {
+typedef struct quest_s {
     int32 ctxt;		/* .
 			   .
 			   -2 => two phones to left
@@ -112,7 +112,7 @@ typedef struct {
  * found by Q.prod_len[i] and the total # of terms
  * in the sum is Q.sum_len.
  */
-typedef struct {
+typedef struct comp_quest_s {
     quest_t **conj_q;
     uint32 *prod_len;
     uint32 sum_len;

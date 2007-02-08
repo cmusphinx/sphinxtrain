@@ -45,7 +45,7 @@
 
 #include <sys/types.h>
 
-typedef struct {
+typedef struct list_s {
 	int32	size;			/* Number entries in the list */
 	int32	in_use;			/* Number entries in use in list */
 	caddr_t	*list;			/* The list */

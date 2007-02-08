@@ -50,6 +50,13 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/cmd_ln.h>
 #include <s3/ckd_alloc.h>
 #include <s3/matrix.h>
@@ -65,6 +72,10 @@
 #include <s3/feat.h>
 #include <s3/err.h>
 #include <s3/prim_type.h>
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* COMMON_H */ 
 

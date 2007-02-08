@@ -80,7 +80,7 @@ float64 cyctimer_get_sec (int32 id);
  * Timing structures and functions for coarse-grained performance measurements.
  * Using standard system calls.
  */
-typedef struct {
+typedef struct timing_s {
     float64 t_cpu;		/* CPU time for most recent start-stop operation */
     float64 t_elapsed;		/* Elapsed time for most recent start-stop operation */
     float64 t_tot_cpu;		/* Accumulated CPU time */

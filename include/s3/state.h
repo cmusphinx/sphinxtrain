@@ -59,7 +59,7 @@
 /* The state ID representing "No state" */
 #define NO_STATE	0xffffffff
 
-typedef struct {
+typedef struct state_s {
     /* information necessary to compute output probability of
        an observation given this state */
     uint32 mixw;	/* mixing weight id for this state */

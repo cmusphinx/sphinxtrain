@@ -51,7 +51,7 @@
 
 typedef uint32 codew_t;
 
-typedef struct {
+typedef struct idx_dist_s {
     uint32 idx;
     float64 d;
 } idx_dist_t;

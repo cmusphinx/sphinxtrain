@@ -50,12 +50,12 @@
 
 #include <s3/prim_type.h>
 
-typedef struct {
+typedef struct mapping_s {
     uint32 x;
     uint32 y;
 } mapping_t;
 
-typedef struct {
+typedef struct map_s {
     mapping_t *map;
     uint32 *inv;
     uint32 n_map;

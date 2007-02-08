@@ -46,12 +46,19 @@
 #ifndef GAUDEN_H
 #define GAUDEN_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/s3.h>
 #include <s3/vector.h>
 
 #include <stdio.h>
 
-typedef struct {
+typedef struct gauden_s {
     uint32 n_feat;
 #ifdef SWIG /* A bug in SWIG - it thinks "const" means "static const" inside a struct. */
     uint32 *veclen;
@@ -350,6 +357,10 @@ gauden_massage_var(vector_t ***var,
                   uint32 n_stream,
                   uint32 n_density,
                   const uint32 *veclen);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GAUDEN_H */ 
 

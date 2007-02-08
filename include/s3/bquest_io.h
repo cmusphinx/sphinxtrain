@@ -50,7 +50,7 @@
 #include <s3/prim_type.h>
 
 /*
-typedef struct {
+typedef struct quest_s {
     char *qname;
     acmod_id_t *phone;
     uint32 n_phone;

@@ -46,6 +46,13 @@
 #ifndef S2IO_H
 #define S2IO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 int
 areadchar (char *file,
 	   char **data_ref,
@@ -79,6 +86,10 @@ int
 areadshort (char *file,
 	    short **data_ref,
 	    int *length_ref);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* S2IO_H */ 
 

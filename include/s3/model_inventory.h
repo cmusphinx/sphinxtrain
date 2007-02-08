@@ -47,6 +47,13 @@
 #ifndef MODEL_INVENTORY_H
 #define MODEL_INVENTORY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/acmod_set.h>
 #include <s3/gauden.h>
 #include <s3/prim_type.h>
@@ -54,7 +61,7 @@
 
 /* data structure definition */
 
-typedef struct {
+typedef struct model_inventory_s {
     model_def_t    *mdef;	/* acoustic model definitions */
     acmod_set_t    *acmod_set;	/* describes mapping of strings to id's and
 				   vice versa */
@@ -144,6 +151,10 @@ mod_inv_restore_acc(model_inventory_t *minv,
 		    int mean_reest,
 		    int var_reest,
 		    int tmat_reest);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MODEL_INVENTORY_H */ 
 

@@ -55,13 +55,13 @@ typedef uint32 cell_index_t;
 #define NULL_INDEX	(0xffffffff)
 #define NO_ID		(0xffffffff)
 
-typedef struct {
+typedef struct cell_s {
     cell_id_t id;		/* id of node */
     cell_index_t child;		/* index of first child context */
     cell_index_t sib;		/* index of next sibling in current context */
 } cell_t;
 
-typedef struct {
+typedef struct itree_s {
     cell_t *cell;
     uint32 n_cell;
     uint32 max_n_cell;

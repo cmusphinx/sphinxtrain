@@ -46,6 +46,13 @@
 #ifndef S3TS2CB_IO_H
 #define S3TS2CB_IO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 int
@@ -60,6 +67,10 @@ s3ts2cb_write(const char *fn,
 	      uint32 n_ts,
 	      uint32 n_cb);
 #endif /* S3TS2CB_IO_H */ 
+
+#ifdef __cplusplus
+}
+#endif
 
 
 /*

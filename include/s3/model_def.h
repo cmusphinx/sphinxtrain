@@ -53,7 +53,7 @@
  * This structure defines the tied transitions
  * and tied states for a phone in the system
  */
-typedef struct {
+typedef struct model_def_entry_s {
     acmod_id_t p;
     uint32 tmat;
     uint32 *state;
@@ -66,7 +66,7 @@ typedef struct {
  * This structure contains the definitions for all
  * phones and some parameters about the definitions.
  */
-typedef struct {
+typedef struct model_def_s {
     acmod_set_t *acmod_set;	/* Data for names <-> id mapping, etc. */
     model_def_entry_t *defn;
     uint32 n_defn;

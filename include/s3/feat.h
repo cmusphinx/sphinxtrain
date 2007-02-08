@@ -61,7 +61,7 @@
 #define FEAT_ID_MAX		9
 #define FEAT_ID_NONE		0xffffffff
 
-typedef struct {
+typedef struct feat_conf_s {
     void (*set_in_veclen)(uint32 len);
     const char * (*doc)(void);
     uint32 (*id)(void);

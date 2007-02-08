@@ -78,7 +78,7 @@ typedef enum {
 					   i == word-internal, u == undefined */
 
 /* acoustic model record (describes triphones, diphones, etc.) */
-typedef struct {
+typedef struct acmod_s {
     ci_acmod_id_t base;		/* The base phone associated w/ this phone */
 
     ci_acmod_id_t left_context;	/* The left context associated w/ this phone,
@@ -101,7 +101,7 @@ typedef struct {
 } acmod_t;
 
 /* ci_acmod record (represents base phones and filler words) */
-typedef struct {
+typedef struct ci_acmod_s {
     const char *name;		/* A C string representation for the acoustic model */
 
     const char **attrib;	/* A NULL terminated list of C strings which
@@ -114,7 +114,7 @@ typedef struct {
 
 #include <s3/itree.h>
 
-typedef struct {
+typedef struct acmod_set_s {
     ci_acmod_t *ci;		/* base phone and filler model list.
 				 * The base phone set are used to compose
 				 * triphones, diphones, etc.  They are also

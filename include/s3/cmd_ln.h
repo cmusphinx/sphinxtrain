@@ -49,6 +49,13 @@
 #ifndef S3CMD_LN_H
 #define S3CMD_LN_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 #ifndef NULL
@@ -78,12 +85,12 @@ typedef enum {
     CMD_LN_BOOLEAN
 } arg_type_t;
 
-typedef struct {
+typedef struct arg_def_s {
     char *switch_name;	/* name of the command line switch */
     arg_type_t type;	/* type of the argument */
     validation_fn_t validate_arg; /* a function which validates
 				     argument values */
-    void *default_value; /* the default value of the argument, if any */
+    const void *default_value; /* the default value of the argument, if any */
     char *doc;		 /* a documentation string for the argument */
 } arg_def_t;
 
@@ -162,6 +169,10 @@ cmd_ln_access(char *switch_name);
 
 void
 cmd_ln_print_definitions(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* S3CMD_LN_H */ 
 
