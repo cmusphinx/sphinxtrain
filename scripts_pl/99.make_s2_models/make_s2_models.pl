@@ -98,6 +98,17 @@ my $s3mean = "$s3hmmdir/means";
 my $s3var = "$s3hmmdir/variances";
 my $s3tmat = "$s3hmmdir/transition_matrices";
 
+Log("    Copy noise dictionary\n");
+open IN, "<$ST::CFG_FILLERDICT" or die "Failed to open $ST::CFG_FILLERDICT: $!";
+open OUT, ">".catfile($s2dir, 'noisedict') or die "Failed to open $s2dir/noisedict: $!";
+while (<IN>) {
+    # Sphinx-II creates these dictionary entries (<s>, </s>) automatically
+    next if /<\/?s>/i;
+    print OUT;
+}
+close IN;
+close OUT;
+
 if ($ST::CFG_HMM_TYPE eq ".semi.") {
   Log ("    Make codebooks\n");
   HTML_Print ("\t" . FormatURL("$logfile_cb", "Log File") . " ");
@@ -110,7 +121,9 @@ warn "$return_value\n";
   #HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> completed </font>\n");
   exit ($return_value != 0) if ($return_value);
 } else {
-  Log ("    Copying means, vars, mix_weights\n");
+  Log ("    Copying mdef, means, vars, mix_weights\n");
+  my $s2mdef = "$s2dir/mdef";
+  copy($s3mdef, $s2mdef);
   my $s2mixw = "$s2dir/mixture_weights";
   copy($s3mixw, $s2mixw);
   my $s2mean = "$s2dir/means";

@@ -91,7 +91,7 @@ mkdir($logdir,0777);
 Log ("    Doing interpolation...\n");
 HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
 
-exit RunTool('delint', $logfile, 0,
+my $rv = RunTool('delint', $logfile, 0,
 	     -accumdirs => @bwaccumdirs,
 	     -moddeffn => $moddeffn,
 	     -mixwfn => $mixwfn,
@@ -99,3 +99,17 @@ exit RunTool('delint', $logfile, 0,
 	     -feat => $ST::CFG_FEATURE,
 	     -ceplen => $ST::CFG_VECTOR_LENGTH,
 	     -maxiter => 4000);
+exit $rv if $rv;
+$rv = RunTool('mk_s2sendump', $logfile, 0,
+		 -moddeffn => $moddeffn,
+		 -mixwfn => $mixwfn,
+		 -mwfloor => 0.0000001,
+		 -feattype => $ST::CFG_FEATURE,
+		 -pocketsphinx => 'yes',
+		 -sendumpfn => catfile($hmm_dir, 'sendump'));
+exit $rv if $rv;
+# Copy the mdef and fillerdict files into the new HMM directory
+copy($moddeffn, catfile($hmm_dir, 'mdef'))
+    or die "Failed to copy $moddeffn to $hmm_dir/mdef: $!";
+copy($ST::CFG_FILLERDICT, catfile($hmm_dir, 'noisedict'))
+    or die "Failed to copy $ST::CFG_FILLERDICT to $hmm_dir/noisedict: $!";
