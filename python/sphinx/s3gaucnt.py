@@ -26,27 +26,45 @@ def open(filename, mode="rb", attr={"version":1.0}):
 
 def accumdirs(accumdirs):
     "Read and accumulate counts from several directories"
+    gauden = None
     for d in accumdirs:
         try:
-            gf = S3GauCntFile(os.path.join(d, "gauden_counts"), "rb")
+            subgau = S3GauCntFile(os.path.join(d, "gauden_counts"), "rb")
         except:
+            subgau = None
             continue
-        if mcount == None:
-            mcount = gf.getmeans()
+        if gauden == None:
+            gauden = subgau
+            gauden._load()
         else:
-            mcount = mcount + gf.getmeans()
-        if vcount == None:
-            vcount = gf.getmeans()
-        else:
-            vcount = vcount + gf.getmeans()
-        if dnom == None:
-            dnom = gf.getdnom()
-        else:
-            dnom = dnom + gf.getdnom()
+            subgau._load()
+            for m, mgau in enumerate(gauden._means):
+                for f, feat in enumerate(mgau):
+                    gauden._means[m][f] += subgau._means[m][f]
+                    gauden._vars[m][f] += subgau._vars[m][f]
+                    gauden._dnom[m][f] += subgau._dnom[m][f]
+    return gauden
 
 def accumdirs_full(accumdirs):
     "Read and accumulate full-covariance counts from several directories"
-    pass
+    gauden = None
+    for d in accumdirs:
+        try:
+            subgau = S3FullGauCntFile(os.path.join(d, "gauden_counts"), "rb")
+        except:
+            subgau = None
+            continue
+        if gauden == None:
+            gauden = subgau
+            gauden._load()
+        else:
+            subgau._load()
+            for m, mgau in enumerate(gauden._means):
+                for f, feat in enumerate(mgau):
+                    gauden._means[m][f] += subgau._means[m][f]
+                    gauden._vars[m][f] += subgau._vars[m][f]
+                    gauden._dnom[m][f] += subgau._dnom[m][f]
+    return gauden
 
 def open_full(filename, mode="rb", attr={"version":1.0}):
     if mode in ("r", "rb"):
