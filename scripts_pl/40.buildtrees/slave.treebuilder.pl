@@ -90,6 +90,12 @@ if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
     Log ("\tProcessing each phone with each state\n");
     open INPUT,"${ST::CFG_RAWPHONEFILE}";
     foreach $phone (<INPUT>) {
+	# Use @jobs as a queue (better than nothing for Queue::POSIX)
+	if (@jobs > $ST::CFG_NPART) {
+	    my ($p, $j) = @{shift @jobs};
+	    WaitForScript($j);
+	    print "$p ";
+	}
 	chomp $phone;
 	if (($phone =~ m/^(\+).*(\+)$/) || ($phone =~ m/^SIL$/)) {
 	    Log ("        Skipping $phone\n");
@@ -102,7 +108,7 @@ if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
     close INPUT;
 }
 
-# Wait for all the phones to finish
+# Wait for all the remaining phones to finish
 # It doesn't really matter what order we do this in
 foreach (@jobs) {
     my ($phone,$job) = @$_;
