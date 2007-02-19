@@ -149,8 +149,8 @@ foreach my $speaker (@speakers) {
     my $rv = RunTool
 	('mllr_solve', $logfile, 0,
 	 -outmllrfn => $mllrfile,
-	 -accumdir => catfile($ST::CFG_BASE_DIR,
-			      'bwaccumdir', "${ST::CFG_EXPTNAME}_buff_${speaker}"),
+	 -accumdir => catfile($ST::CFG_BWACCUM_DIR,
+			      "${ST::CFG_EXPTNAME}_buff_${speaker}"),
 	 -meanfn => catfile($inmodeldir, 'means'),
 	 -varfn => catfile($inmodeldir, 'variances'));
     exit $rv if $rv;

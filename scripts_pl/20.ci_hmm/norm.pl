@@ -62,11 +62,10 @@ $n_gau = 1 unless defined($n_gau);
 my $modelname="${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}";
 my $processpart="20.ci_hmm";
 
-my $bwaccumdir 	     = "${ST::CFG_BASE_DIR}/bwaccumdir";
-opendir(ACCUMDIR, $bwaccumdir)
-    or die "Could not open $bwaccumdir: $!";
-my @bwaccumdirs = map catdir($bwaccumdir, $_),
-    grep /^${ST::CFG_EXPTNAME}_buff_/, readdir(ACCUMDIR);
+opendir(ACCUMDIR, $ST::CFG_BWACCUM_DIR)
+    or die "Could not open $ST::CFG_BWACCUM_DIR: $!";
+my @bwaccumdirs = map catdir($ST::CFG_BWACCUM_DIR, $_),
+    grep /^\Q${ST::CFG_EXPTNAME}_buff_/, readdir(ACCUMDIR);
 closedir(ACCUMDIR);
 my $hmmdir              = "${ST::CFG_BASE_DIR}/model_parameters/$modelname";
 mkdir ($hmmdir,0777);

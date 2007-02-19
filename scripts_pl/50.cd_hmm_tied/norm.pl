@@ -61,11 +61,10 @@ my ($n_gau, $iter) = @ARGV;
 my $modelname="${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_$ST::CFG_N_TIED_STATES";
 my $processpart="50.cd_hmm_tied";
 
-my $bwaccumdir 	     = "${ST::CFG_BASE_DIR}/bwaccumdir";
-opendir(ACCUMDIR, $bwaccumdir)
-    or die "Could not open $bwaccumdir: $!";
-my @bwaccumdirs = map catdir($bwaccumdir, $_),
-    grep /^${ST::CFG_EXPTNAME}_buff_/, readdir(ACCUMDIR);
+opendir(ACCUMDIR, $ST::CFG_BWACCUM_DIR)
+    or die "Could not open $ST::CFG_BWACCUM_DIR: $!";
+my @bwaccumdirs = map catdir($ST::CFG_BWACCUM_DIR, $_),
+    grep /^\Q${ST::CFG_EXPTNAME}_buff_/, readdir(ACCUMDIR);
 closedir(ACCUMDIR);
 my $hmmdir              = "${ST::CFG_BASE_DIR}/model_parameters/$modelname";
 mkdir ($hmmdir,0777);

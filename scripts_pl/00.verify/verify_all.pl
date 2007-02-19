@@ -411,7 +411,7 @@ my %transcript_phonelist_hash = ();
   }
 
 mkdir ($ST::CFG_LOG_DIR,0755);
-mkdir ("$ST::CFG_BASE_DIR/bwaccumdir",0755);
+mkdir ($ST::CFG_BWACCUM_DIR,0755);
 
 exit ($ret_value);
 
