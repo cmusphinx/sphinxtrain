@@ -68,7 +68,8 @@ viterbi_update(float64 *log_forw_prob,
 	       int32 var_reest,
 	       int32 pass2var,
 	       int32 var_is_full,
-	       FILE *pdumpfh);
+	       FILE *pdumpfh,
+	       float32 ***lda);
 
 #endif /* VITERBI_H */ 
 

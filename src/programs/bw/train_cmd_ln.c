@@ -606,6 +606,11 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_VALIDATION,
 	  "29",
 	  "# of output dimensions for LDA"},
+	{ "-ldaaccum",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Apply LDA in accumulation of statistics only (NOTE: no dimensionality reduction will be done)."},
 
 	{ "-timing",
 	  CMD_LN_BOOLEAN,

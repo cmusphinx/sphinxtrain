@@ -145,7 +145,8 @@ baum_welch_update(float64 *log_forw_prob,
 		  int32 var_reest,
 		  int32 pass2var,
 		  int32 var_is_full,
-		  FILE *pdumpfh)
+		  FILE *pdumpfh,
+		  float32 ***lda)
 {
     float64 *scale = NULL;
     float64 **dscale = NULL;
@@ -231,7 +232,7 @@ baum_welch_update(float64 *log_forw_prob,
 			  state, n_state,
 			  inv, b_beam, spthresh,
 			  mixw_reest, tmat_reest, mean_reest, var_reest, pass2var,
-			  var_is_full, pdumpfh);
+			  var_is_full, pdumpfh, lda);
     if (bwd_timer)
 	timing_stop(bwd_timer);
 

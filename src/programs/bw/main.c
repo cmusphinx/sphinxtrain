@@ -72,6 +72,7 @@
 #include <s3/mllr.h>
 #include <s3/mllr_io.h>
 #include <s3/ts2cb.h>
+#include <s3/lda.h>
 #include <s3/s3cb2mllr_io.h>
 
 #include <s3/feat.h>
@@ -208,8 +209,16 @@ main_initialize(int argc,
     }
     feat_set_in_veclen(cmd_ln_int32("-ceplen"));
     if (cmd_ln_access("-ldafn") != NULL) {
-	if (feat_read_lda(cmd_ln_access("-ldafn"), cmd_ln_int32("-ldadim"))) {
-	    E_FATAL("Failed to read LDA matrix\n");
+	if (cmd_ln_boolean("-ldaaccum")) {
+	    /* If -ldaaccum is set, we will not apply LDA until we accumulate,
+	       so read it in later. */
+	}
+	else {
+	    /* Otherwise we load it into the feature computation so it
+	     * applies globally. */
+	    if (feat_read_lda(cmd_ln_access("-ldafn"), cmd_ln_int32("-ldadim"))) {
+		E_FATAL("Failed to read LDA matrix\n");
+	    }
 	}
     }
 
@@ -540,6 +549,8 @@ main_reestimate(model_inventory_t *inv,
 				 * from cepstra */
     state_t *state_seq;		/* sentence HMM state sequence for the
 				   utterance */
+    float32 ***lda = NULL;
+    uint32 n_lda = 0, m, n;
     uint32 n_state = 0;	/* # of sentence HMM states */
     float64 total_log_lik;	/* total log liklihood over corpus */
     float64 log_lik;		/* log liklihood for an utterance */
@@ -632,6 +643,12 @@ main_reestimate(model_inventory_t *inv,
     silence_str = (char *)cmd_ln_access("-siltag");
     pdumpdir = (char *)cmd_ln_access("-pdumpdir");
     in_veclen = cmd_ln_int32("-ceplen");
+
+    if (cmd_ln_access("-ldafn") && cmd_ln_boolean("-ldaaccum")) {
+	/* Read in an LDA matrix for accumulation. */
+	lda = lda_read(cmd_ln_access("-ldafn"), &n_lda,
+		       &m, &n);
+    }
 
     if (cmd_ln_access("-ckptintv")) {
 	ckpt_intv = *(int32 *)cmd_ln_access("-ckptintv");
@@ -809,8 +826,8 @@ main_reestimate(model_inventory_t *inv,
 				  var_reest,
 				  pass2var,
 				  var_is_full,
-				  pdumpfh
-				  ) == S3_SUCCESS) {
+				  pdumpfh,
+				  lda) == S3_SUCCESS) {
 		total_frames += n_frame;
 		total_log_lik += log_lik;
 		
@@ -835,7 +852,7 @@ main_reestimate(model_inventory_t *inv,
 			       var_reest,
 			       pass2var,
 			       var_is_full,
-			       pdumpfh) == S3_SUCCESS) {
+			       pdumpfh, lda) == S3_SUCCESS) {
 		total_frames += n_frame;
 		total_log_lik += log_lik;
 		printf(" %e", log_lik);
@@ -997,6 +1014,8 @@ main_reestimate(model_inventory_t *inv,
 	E_INFO("Counts NOT saved.\n");
 
     mod_inv_free(inv);
+    if (lda)
+	ckd_free_3d((void ***)lda);
 }
 
 int main(int argc, char *argv[])

@@ -104,9 +104,11 @@
 #include <s3/model_def.h>
 
 #include <s3/ckd_alloc.h>
+#include <s3/cmd_ln.h>
 #include <s3/s2_param.h>
 #include <s3/feat.h>
 #include <s3/matrix.h>
+#include <s3/lda.h>
 #include <s3/s3.h>
 
 #include <s3/state_seq.h>
@@ -188,7 +190,8 @@ accum_gauden(float32 ***denacc,
 	     int32 pass2var,
 	     float32 ***wacc,
 	     int32 var_is_full,
-	     FILE *pdumpfh)
+	     FILE *pdumpfh,
+	     float32 ***lda)
 {
     uint32 g_i, i, j, k, kk, l;
 
@@ -210,6 +213,14 @@ accum_gauden(float32 ***denacc,
     float32 diff;
     float32 obs_cnt;
     vector_t feat = NULL;
+
+    /* Apply LDA if desired. */
+    if (lda) {
+	    /* Note that we ignore -ldadim here, because it's rather
+	     * complicated to change the length of veclen for the
+	     * output only. */
+	    lda_transform(&frame, 1, lda, g->veclen[0], g->veclen[0]);
+    }
 
     /* for each density family found in the utterance */
     for (i = 0; i < n_lcl2gbl; i++) {

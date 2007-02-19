@@ -76,7 +76,8 @@ viterbi_update(float64 *log_forw_prob,
 	       int32 var_reest,
 	       int32 pass2var,
 	       int32 var_is_full,
-	       FILE *pdumpfh)
+	       FILE *pdumpfh,
+	       float32 ***lda)
 {
     float64 *scale = NULL;
     float64 **dscale = NULL;
@@ -422,7 +423,8 @@ viterbi_update(float64 *log_forw_prob,
 			 pass2var,
 			 inv->l_mixw_acc,
 			 var_is_full,
-			 pdumpfh);
+			 pdumpfh,
+			 lda);
 	    memset(&denacc[0][0][0], 0, denacc_size);
 	}
 	if (rstf_timer)

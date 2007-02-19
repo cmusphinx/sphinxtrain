@@ -73,7 +73,8 @@ accum_gauden(float32 ***cbacc,
 	     int32 pass2var,
 	     float32 ***wacc,
 	     int32 var_is_full,
-	     FILE *pdumpfh);
+	     FILE *pdumpfh,
+	     float32 ***lda);
 
 int32
 accum_global(model_inventory_t *inv,

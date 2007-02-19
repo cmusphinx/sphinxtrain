@@ -70,7 +70,8 @@ backward_update(float64 **active_alpha,
 		int32 var_reest,
 		int32 pass2var,
 		int32 var_is_full,
-		FILE *pdumpfn);
+		FILE *pdumpfn,
+		float32 ***lda);
 
 void
 partial_op(float64 *p_op,
