@@ -71,7 +71,7 @@ my $modelname="${ST::CFG_EXPTNAME}.falign_ci_${ST::CFG_DIRLABEL}";
 my $mdefname="${ST::CFG_EXPTNAME}.falign_ci.mdef";
 my $processname ="02.falign_ci_hmm";
 
-my $output_buffer_dir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_${part}";
+my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_${part}";
 mkdir ($output_buffer_dir,0777);
 
 my ($hmm_dir, $var2pass);

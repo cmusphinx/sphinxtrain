@@ -119,7 +119,7 @@ if ($iter > 1) {
     foreach my $speaker (@speakers) {
 	Log(" $speaker");
 	my $mllrfile = catfile($hmmdir, "$ST::CFG_EXPTNAME.$speaker.mllr");
-	my $bwaccumdir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_${speaker}";
+	my $bwaccumdir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_${speaker}";
 	my $gaucntfn = catfile($bwaccumdir, 'gauden_counts');
 	my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$speaker.mllr_transform.log";
 	my $rv = RunTool
@@ -163,7 +163,7 @@ if ($iter > 1) {
     foreach my $speaker (@speakers) {
 	Log(" $speaker");
 	my $mllrfile = catfile($hmmdir, "$ST::CFG_EXPTNAME.$speaker.mllr");
-	my $bwaccumdir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_${speaker}";
+	my $bwaccumdir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_${speaker}";
 	my $gaucntfn = catfile($bwaccumdir, 'gauden_counts');
 	unlink($gaucntfn) or die "Failed to remove $gaucntfn: $!";
 	rename("$gaucntfn.new", $gaucntfn)

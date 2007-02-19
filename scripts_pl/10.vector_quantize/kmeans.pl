@@ -71,7 +71,7 @@ mkdir ($hmmdir,0777);
 $outhmm  = "$hmmdir/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
 mkdir ($outhmm,0777);
 
-$segdmpdir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_1";
+$segdmpdir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_1";
 mkdir ($segdmpdir,0777);
 
 $dumpfile = "$segdmpdir/${ST::CFG_EXPTNAME}.dmp";

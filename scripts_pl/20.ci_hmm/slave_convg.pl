@@ -212,7 +212,7 @@ sub FlatInitialize ()
 
     open LOG,">$logfile";
 
-    my $output_buffer_dir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_1";
+    my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_1";
     mkdir ($output_buffer_dir,0777);
 
     # if there is an LDA transformation, use it

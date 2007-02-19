@@ -65,7 +65,7 @@ my $modelname="$modelinitialname";  # same for both in the case
 my $mdefname="${ST::CFG_EXPTNAME}.untied.mdef";
 my $processname="30.cd_hmm_untied";
 
-my $output_buffer_dir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_${part}";
+my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_${part}";
 mkdir ($output_buffer_dir,0777);
 
 my $hmm_dir;

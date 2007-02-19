@@ -57,7 +57,7 @@ my $modelname="${ST::CFG_EXPTNAME}.sat_${ST::CFG_DIRLABEL}";
 my $mdefname="${ST::CFG_EXPTNAME}.$ST::CFG_N_TIED_STATES.mdef";
 my $processname ="60.sa_train";
 
-my $output_buffer_dir = "$ST::CFG_BASE_DIR/bwaccumdir/${ST::CFG_EXPTNAME}_buff_${speaker}";
+my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_${speaker}";
 mkdir ($output_buffer_dir,0777);
 
 my ($hmm_dir);
