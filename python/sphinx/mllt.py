@@ -18,6 +18,8 @@ from numpy.random import random
 from numpy.linalg import det, inv
 from scipy.optimize import fmin_l_bfgs_b
 
+import sys
+import s3gaucnt
 import s3lda
 
 class MLLTModel(object):
@@ -87,3 +89,16 @@ class MLLTModel(object):
             print "WARNING! MLLT optimization failed to converge"
         # Unflatten the return matrix
         return AA.reshape(A.shape)
+
+if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        sys.stderr.write("Usage: %s OUTFILE ACCUMDIRS...\n" % (sys.argv[0]))
+        sys.exit(1)
+
+    mlltfn = sys.argv[1]
+    accumdirs = sys.argv[2:]
+    gauden = s3gaucnt.accumdirs_full(accumdirs)
+    m = MLLTModel(gauden)
+    mllt = m.train()
+    s3lda.open(mlltfn, 'w').writeall([mllt])
+    
