@@ -301,10 +301,27 @@ main_initialize(int argc,
     if (mod_inv_read_gauden(inv, meanfn, varfn,
 			    *(float32 *)cmd_ln_access("-varfloor"),
 			    *(int32 *)cmd_ln_access("-topn"),
-			    cmd_ln_int32("-fullvar")) != S3_SUCCESS)
-	return S3_ERROR;
+			    cmd_ln_int32("-fullvar")) != S3_SUCCESS) {
+	    if (!cmd_ln_int32("-fullvar")) {
+		    return S3_ERROR;
+	    }
+	    else {
+		    /* If reading full variances failed, try reading
+		     * them as diagonal variances (allows us to
+		     * initialize full vars from diagonal ones) */
+		    if (mod_inv_read_gauden(inv, meanfn, varfn,
+					    *(float32 *)cmd_ln_access("-varfloor"),
+					    *(int32 *)cmd_ln_access("-topn"),
+					    FALSE) != S3_SUCCESS) {
+			    return S3_ERROR;
+		    }
+	    }
+	    
+    }
 
-    if (cmd_ln_int32("-diagfull")) {
+    /* If we want to use diagonals only, and we didn't read diagonals
+     * above, then we have to extract them here. */
+    if (cmd_ln_int32("-diagfull") && inv->gauden->var == NULL) {
 	    /* Extract diagonals and use them for Gaussian computation. */
 	    gauden_t *g;
 	    uint32 i, j, k, l;

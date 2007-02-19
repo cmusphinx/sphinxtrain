@@ -122,10 +122,14 @@ s3gau_read_full(const char *fn,
     }
 
     for (i = 0, blk = 0, maxveclen = 0; i < n_feat; i++) {
-	blk += veclen[i];
+	blk += veclen[i] * veclen[i];
 	if (veclen[i] > maxveclen) maxveclen = veclen[i];
     }
-    assert(n == n_mgau * n_density * blk * blk);
+    if (n != n_mgau * n_density * blk) {
+	E_ERROR("Failed to read full covariance file %s (expected %d values, got %d)\n",
+		fn, n_mgau * n_density * blk, n);
+	goto error;
+    }
 
     o = (vector_t ****)ckd_calloc_4d(n_mgau, n_feat, n_density,
 				     maxveclen, sizeof(vector_t));
