@@ -644,7 +644,7 @@ forward(float64 **active_alpha,
 		    == acmod_set_base_phone(as, phseg->phone))
 		    break;
 	    can_prune_phseg = !(s == n_next_active);
-#if 1 //FORWARD_DEBUG
+#if FORWARD_DEBUG
 	    if (!can_prune_phseg) {
 		E_INFO("Will not apply phone-based pruning at timepoint %d "
 		       "(%d != %d) (%s != %s)\n", t,
