@@ -53,6 +53,27 @@
 #include <s3/s3phseg_io.h>
 
 int32
+write_phseg(const char *filename,
+	    model_inventory_t *modinv,
+	    state_t *state_seq,
+	    uint32 **active_astate,
+	    uint32 *n_active_astate,
+	    uint32 n_state,
+	    uint32 n_obs,
+	    float64 **active_alpha,
+	    float64 *scale,
+	    uint32 **bp);
+
+int32
+write_s2stseg(const char *filename,
+	      state_t *state_seq,
+	      uint32 **active_astate,
+	      uint32 *n_active_astate,
+	      uint32 n_state,
+	      uint32 n_obs,
+	      uint32 **bp);
+
+int32
 viterbi_update(float64 *log_forw_prob,
 	       vector_t **feature,
 	       uint32 n_obs,

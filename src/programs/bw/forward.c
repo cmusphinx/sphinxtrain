@@ -208,6 +208,7 @@ forward(float64 **active_alpha,
     float64 prior_alpha;
     float32 ***mixw;
     gauden_t *g;
+    acmod_set_t *as;
     float64 x;
     float64 pthresh = 1e-300;
     float64 balpha;
@@ -232,6 +233,7 @@ forward(float64 **active_alpha,
     acbflag = ckd_calloc(n_l_cb, sizeof(uint32));
 
     g = inv->gauden;
+    as = inv->mdef->acmod_set;
     /* density values and indices (for top-N eval) for some time t */
     now_den = (float64 ***)ckd_calloc_3d(n_l_cb, gauden_n_feat(g), gauden_n_top(g),
 					 sizeof(float64));
@@ -311,13 +313,15 @@ forward(float64 **active_alpha,
      */
     active_alpha[0] = ckd_calloc(1, sizeof(float64));
     active_astate[0] = ckd_calloc(1, sizeof(uint32));
-    bp[0] = ckd_calloc(1, sizeof(uint32)); /* Unused, actually */
+    if (bp)
+	bp[0] = ckd_calloc(1, sizeof(uint32)); /* Unused, actually */
     aalpha_alloc = 1;
 
     /*
      * Allocate the bestscore array for embedded Viterbi
      */
-    best_pred = ckd_calloc(1, sizeof(float64));
+    if (bp)
+	best_pred = ckd_calloc(1, sizeof(float64));
 
     /* Compute scale for t == 0 */
     scale[0] = 1.0 / outprob[0];
@@ -352,11 +356,13 @@ forward(float64 **active_alpha,
 	/* assume next active state set about the same size as current;
 	   adjust to actual size as necessary later */
 	active_alpha[t] = (float64 *)ckd_calloc(n_active, sizeof(float64));
-	bp[t] = (uint32 *)ckd_calloc(n_active, sizeof(uint32));
-	/* reallocate the best score array and zero it out */
-	if (n_active > aalpha_alloc)
-	    best_pred = (float64 *)ckd_realloc(best_pred, n_active * sizeof(float64));
-	memset(best_pred, 0, n_active * sizeof(float64));
+	if (bp) {
+	    bp[t] = (uint32 *)ckd_calloc(n_active, sizeof(uint32));
+	    /* reallocate the best score array and zero it out */
+	    if (n_active > aalpha_alloc)
+		best_pred = (float64 *)ckd_realloc(best_pred, n_active * sizeof(float64));
+	    memset(best_pred, 0, n_active * sizeof(float64));
+	}
 	aalpha_alloc = n_active;
 
 	/* For all active states at the previous frame, activate their
@@ -414,16 +420,18 @@ forward(float64 **active_alpha,
 			    active_alpha[t] = ckd_realloc(active_alpha[t],
 							  sizeof(float64) * aalpha_alloc);
 			    /* And the backpointer array */
-			    bp[t] = ckd_realloc(bp[t],
-						sizeof(uint32) * aalpha_alloc);
-			    /* And the best score array */
-			    best_pred = (float64 *)ckd_realloc(best_pred,
-							       sizeof(float64) * aalpha_alloc);
-			    /* Make sure the new stuff is zero */
-			    memset(bp[t] + aalpha_alloc - ACHK,
-				   0, sizeof(uint32) * ACHK);
-			    memset(best_pred + aalpha_alloc - ACHK,
-				   0, sizeof(float64) * ACHK);
+			    if (bp) {
+				bp[t] = ckd_realloc(bp[t],
+						    sizeof(uint32) * aalpha_alloc);
+				/* And the best score array */
+				best_pred = (float64 *)ckd_realloc(best_pred,
+								   sizeof(float64) * aalpha_alloc);
+				/* Make sure the new stuff is zero */
+				memset(bp[t] + aalpha_alloc - ACHK,
+				       0, sizeof(uint32) * ACHK);
+				memset(best_pred + aalpha_alloc - ACHK,
+				       0, sizeof(float64) * ACHK);
+			    }
 			}
 		    }
 		}
@@ -469,13 +477,15 @@ forward(float64 **active_alpha,
 
 		    /* update backpointers bp[t][j] */
 		    x = prior_alpha * tprob[u];
-		    if (x > best_pred[amap[j]]) {
+		    if (bp) {
+			if (x > best_pred[amap[j]]) {
 #if FORWARD_DEBUG
-			E_INFO("In real state update, backpointer %d => %d updated from %e to (%e * %e = %e)\n",
-			       i, j, best_pred[amap[j]], prior_alpha, tprob[u], x);
+			    E_INFO("In real state update, backpointer %d => %d updated from %e to (%e * %e = %e)\n",
+				   i, j, best_pred[amap[j]], prior_alpha, tprob[u], x);
 #endif
-			best_pred[amap[j]] = x;
-			bp[t][amap[j]] = s;
+			    best_pred[amap[j]] = x;
+			    bp[t][amap[j]] = s;
+			}
 		    }
 		    
 		    /* update the unscaled alpha[t][j] */
@@ -488,10 +498,12 @@ forward(float64 **active_alpha,
 	}
 
 #if FORWARD_DEBUG
-	for (s = 0; s < n_next_active; ++s) {
-	    j = next_active[s];
-	    E_INFO("After real state update, best path to %d(%d) = %d(%d)\n",
-		   j, amap[j], active[bp[t][s]], bp[t][s]);
+	if (bp) {
+	    for (s = 0; s < n_next_active; ++s) {
+		j = next_active[s];
+		E_INFO("After real state update, best path to %d(%d) = %d(%d)\n",
+		       j, amap[j], active[bp[t][s]], bp[t][s]);
+	    }
 	}
 #endif
 	/* Now, for all active states in this frame, consume any
@@ -527,22 +539,26 @@ forward(float64 **active_alpha,
 			    aalpha_alloc += ACHK;
 			    active_alpha[t] = ckd_realloc(active_alpha[t],
 							  sizeof(float64) * aalpha_alloc);
-			    bp[t] = ckd_realloc(bp[t],
-						sizeof(uint32) * aalpha_alloc);
-			    best_pred = (float64 *)ckd_realloc(best_pred,
-							       sizeof(float64) * aalpha_alloc);
-			    memset(bp[t] + aalpha_alloc - ACHK,
-				   0, sizeof(uint32) * ACHK);
-			    memset(best_pred + aalpha_alloc - ACHK,
-				   0, sizeof(float64) * ACHK);
+			    if (bp) {
+				bp[t] = ckd_realloc(bp[t],
+						    sizeof(uint32) * aalpha_alloc);
+				best_pred = (float64 *)ckd_realloc(best_pred,
+								   sizeof(float64) * aalpha_alloc);
+				memset(bp[t] + aalpha_alloc - ACHK,
+				       0, sizeof(uint32) * ACHK);
+				memset(best_pred + aalpha_alloc - ACHK,
+				       0, sizeof(float64) * ACHK);
+			    }
 			}
-			/* Give its backpointer a default value */
-			bp[t][amap[j]] = s;
-			best_pred[amap[j]] = x;
+			if (bp) {
+			    /* Give its backpointer a default value */
+			    bp[t][amap[j]] = s;
+			    best_pred[amap[j]] = x;
+			}
 		    }
 
 		    /* update backpointers bp[t][j] */
-		    if (x > best_pred[amap[j]]) {
+		    if (bp && x > best_pred[amap[j]]) {
 			bp[t][amap[j]] = s;
 			best_pred[amap[j]] = x;
 		    }
@@ -555,7 +571,7 @@ forward(float64 **active_alpha,
 #if FORWARD_DEBUG
 	for (s = 0; s < n_next_active; ++s) {
 	    j = next_active[s];
-	    if (state_seq[j].mixw == TYING_NON_EMITTING) {
+	    if (bp && state_seq[j].mixw == TYING_NON_EMITTING) {
 		E_INFO("After non-emitting state update, best path to %d(%d) = %d(%d)\n",
 		       j, amap[j], next_active[bp[t][s]], bp[t][s]);
 		/* Assumptions about topology that might not be valid
@@ -624,12 +640,19 @@ forward(float64 **active_alpha,
 	can_prune_phseg = 0;
 	if (phseg) {
 	    for (s = 0; s < n_next_active; ++s) 
-		if (state_seq[next_active[s]].phn == phseg->phone)
+		if (acmod_set_base_phone(as, state_seq[next_active[s]].phn)
+		    == acmod_set_base_phone(as, phseg->phone))
 		    break;
 	    can_prune_phseg = !(s == n_next_active);
-#if FORWARD_DEBUG
+#if 1 //FORWARD_DEBUG
 	    if (!can_prune_phseg) {
-		E_INFO("Will not apply phone-based pruning at timepoint %d\n", t);
+		E_INFO("Will not apply phone-based pruning at timepoint %d "
+		       "(%d != %d) (%s != %s)\n", t,
+		       state_seq[next_active[s]].phn,
+		       phseg->phone,
+		       acmod_set_id2name(inv->mdef->acmod_set, state_seq[next_active[s]].phn),
+		       acmod_set_id2name(inv->mdef->acmod_set, phseg->phone)
+		       );
 	    }
 #endif
 	}
@@ -639,7 +662,7 @@ forward(float64 **active_alpha,
 	    /* "Snap" the backpointers for non-emitting states, so
 	       that they don't point to bogus indices (we will use
 	       amap to recover them). */
-	    if (state_seq[next_active[s]].mixw == TYING_NON_EMITTING) {
+	    if (bp && state_seq[next_active[s]].mixw == TYING_NON_EMITTING) {
 #if FORWARD_DEBUG
 		E_INFO("Snapping backpointer for %d, %d => %d\n",
 		       next_active[s], bp[t][s], next_active[bp[t][s]]);
@@ -648,10 +671,12 @@ forward(float64 **active_alpha,
 	    }
 	    /* If we have a phone segmentation, use it instead of the beam. */
 	    if (phseg && can_prune_phseg) {
-		if (state_seq[next_active[s]].phn == phseg->phone) {
+		if (acmod_set_base_phone(as, state_seq[next_active[s]].phn)
+		    == acmod_set_base_phone(as, phseg->phone)) {
 		    active_alpha[t][n_active] = active_alpha[t][s] * scale[t];
 		    active[n_active] = active_astate[t][n_active] = next_active[s];
-		    bp[t][n_active] = bp[t][s];
+		    if (bp)
+			bp[t][n_active] = bp[t][s];
 		    amap[next_active[s]] = n_active;
 		    n_active++;
 		}
@@ -663,7 +688,8 @@ forward(float64 **active_alpha,
 		if (active_alpha[t][s] > pthresh) {
 		    active_alpha[t][n_active] = active_alpha[t][s] * scale[t];
 		    active[n_active] = active_astate[t][n_active] = next_active[s];
-		    bp[t][n_active] = bp[t][s];
+		    if (bp)
+			bp[t][n_active] = bp[t][s];
 		    amap[next_active[s]] = n_active;
 		    n_active++;
 		}
@@ -674,7 +700,7 @@ forward(float64 **active_alpha,
 	}
 	/* Now recover the backpointers for non-emitting states. */
 	for (s = 0; s < n_active; ++s) {
-	    if (state_seq[active[s]].mixw == TYING_NON_EMITTING) {
+	    if (bp && state_seq[active[s]].mixw == TYING_NON_EMITTING) {
 #if FORWARD_DEBUG
 		E_INFO("Snapping backpointer for %d, %d => %d(%d)\n",
 		       active[s], bp[t][s], amap[bp[t][s]], active[amap[bp[t][s]]]);

@@ -463,6 +463,12 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_DEFAULT,
 	  "Phone segmentation file root directory" },
 
+	{ "-outphsegdir",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Phone segmentation file output root directory" },
+
 	{ "-sentdir",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,

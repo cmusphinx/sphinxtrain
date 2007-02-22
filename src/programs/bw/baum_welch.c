@@ -49,6 +49,7 @@
 
 #include "baum_welch.h"
 #include "forward.h"
+#include "viterbi.h"
 #include "backward.h"
 #include "accum.h"
 #include <s3/state_seq.h>
@@ -57,6 +58,7 @@
 #include <s3/ckd_alloc.h>
 #include <s3/profile.h>
 #include <s3/corpus.h>
+#include <s3/cmd_ln.h>
 
 #include <s3/s2_param.h>
 
@@ -206,6 +208,25 @@ baum_welch_update(float64 *log_forw_prob,
     j=0;
 #endif
 
+    /* Dump a phoneme segmentation if requested */
+    if (cmd_ln_str("-outphsegdir")) {
+	    const char *phsegdir;
+	    char *segfn, *uttid;
+
+	    phsegdir = cmd_ln_str("-outphsegdir");
+	    uttid = (cmd_ln_int32("-outputfullpath")
+		     ? corpus_utt_full_name() : corpus_utt());
+	    segfn = ckd_calloc(strlen(phsegdir) + 1
+			       + strlen(uttid)
+			       + strlen(".phseg") + 1, 1);
+	    strcpy(segfn, phsegdir);
+	    strcat(segfn, "/");
+	    strcat(segfn, uttid);
+	    strcat(segfn, ".phseg");
+	    write_phseg(segfn, inv, state, active_astate, n_active_astate,
+			n_state, n_obs, active_alpha, scale, bp);
+	    ckd_free(segfn);
+    }
 
     if (fwd_timer)
 	timing_stop(fwd_timer);

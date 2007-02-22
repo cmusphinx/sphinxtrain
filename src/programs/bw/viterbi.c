@@ -55,10 +55,179 @@
 #include <s3/remap.h>
 #include <s3/corpus.h>
 #include <s3/err.h>
+#include <s3/cmd_ln.h>
+#include <s3/s3phseg_io.h>
+#include <s3/model_def.h>
+#include <s2/byteorder.h>
 
 #include <math.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
+
+#define INVLOGS3 100000.5 /* (1.0/log(1.0001)) */
+int32
+write_phseg(const char *filename,
+	    model_inventory_t *modinv,
+	    state_t *state_seq,
+	    uint32 **active_astate,
+	    uint32 *n_active_astate,
+	    uint32 n_state,
+	    uint32 n_obs,
+	    float64 **active_alpha,
+	    float64 *scale,
+	    uint32 **bp)
+{
+    FILE *fh;
+    int32 t;
+    uint32 q;
+    s3phseg_t *phseg, *next;
+    model_def_t *mdef;
+    model_def_entry_t *defn;
+    uint32 n_defn;
+    float64 ascr;
+
+    /* Find the non-emitting ending state */
+    for (q = 0; q < n_active_astate[n_obs-1]; ++q) {
+	if (active_astate[n_obs-1][q] == n_state-1)
+	    break;
+    }
+    if (q == n_active_astate[n_obs-1]) {
+	E_ERROR("final state not reached\n");
+	return S3_ERROR;
+    }
+
+    if ((fh = fopen(filename, "w")) == NULL) {
+	return S3_ERROR;
+    }
+
+    /* Backtrace and build a phone segmentation */
+    mdef = modinv->mdef;
+    defn = mdef->defn;
+    n_defn = mdef->n_defn;
+    phseg = NULL;
+    ascr = 0;
+    for (t = n_obs-1; t >= 0; --t) {
+	uint32 j;
+
+	j = active_astate[t][q];
+
+	/* Follow any non-emitting states at time t first. */
+	if (state_seq[j].mixw == TYING_NON_EMITTING) {
+	    s3phseg_t *prev;
+	    uint32 phn;
+
+	    while (state_seq[j].mixw == TYING_NON_EMITTING) {
+		j = active_astate[t][bp[t][q]];
+		q = bp[t][q];
+	    }
+
+	    /* Do a rather nasty mdef scan to find the triphone in question. */
+	    for (phn = 0; phn < n_defn; phn++) {
+		if (state_seq[j].mixw == defn[phn].state[defn[phn].n_state-2])
+		    break;
+	    }
+	    if (phn == n_defn) {
+		E_ERROR("mixw %u not found\n", state_seq[j].mixw);
+	    }
+	    /* Record ascr and sf for the next phone */
+	    if (phseg) {
+		phseg->score = (int32)(ascr * INVLOGS3);
+		phseg->sf = t + 1;
+		ascr = 0;
+	    }
+	    prev = ckd_calloc(1, sizeof(*prev));
+	    prev->next = phseg;
+	    prev->phone = phn;
+	    prev->ef = t;
+	    phseg = prev;
+	}
+
+	/* Multiply alphas to get "acoustic score" for this phone */
+	ascr += (log(active_alpha[t][q]) + log(scale[t]));
+
+	/* Backtrace. */
+	if (t > 0) {
+	    q = bp[t][q];
+	}
+    }
+
+    fprintf(fh, "\t%5s %5s %9s %s\n", "SFrm", "EFrm", "SegAScr", "Phone");
+    phseg->sf = 0; /* vacuous */
+    while (phseg) {
+	next = phseg->next;
+        fprintf(fh, "\t%5d %5d %9d %s\n",
+                phseg->sf, phseg->ef, phseg->score,
+		acmod_set_id2name(mdef->acmod_set, phseg->phone));
+	ckd_free(phseg);
+	phseg = next;
+    }
+
+    fclose(fh);
+    return S3_SUCCESS;
+}
+
+int32
+write_s2stseg(const char *filename,
+	      state_t *state_seq,
+	      uint32 **active_astate,
+	      uint32 *n_active_astate,
+	      uint32 n_state,
+	      uint32 n_obs,
+	      uint32 **bp)
+{
+    FILE *fh;
+    uint32 q;
+    int32 t;
+    uint16 word, *stseg;
+
+    /* Backtrace and build a phone segmentation. */
+    /* Find the non-emitting ending state */
+    for (q = 0; q < n_active_astate[n_obs-1]; ++q) {
+	if (active_astate[n_obs-1][q] == n_state-1)
+	    break;
+    }
+    if (q == n_active_astate[n_obs-1]) {
+	E_ERROR("final state not reached\n");
+	return S3_ERROR;
+    }
+
+    if ((fh = fopen(filename, "wb")) == NULL) {
+	return S3_ERROR;
+    }
+
+    word = n_obs;
+    SWAPW(&word);
+    fwrite(&word, 2, 1, fh);
+
+    stseg = ckd_calloc(n_obs, sizeof(uint16));
+
+    for (t = n_obs-1; t >= 0; --t) {
+	uint32 j;
+
+	j = active_astate[t][q];
+
+	/* Follow any non-emitting states at time t first. */
+	while (state_seq[j].mixw == TYING_NON_EMITTING) {
+	    j = active_astate[t][bp[t][q]];
+	    q = bp[t][q];
+	}
+
+	/* mixw = senone (we hope!) */
+	stseg[t] = state_seq[j].mixw;
+	SWAPW(&stseg[t]);
+
+	/* Backtrace. */
+	if (t > 0) {
+	    q = bp[t][q];
+	}
+    }
+
+    fwrite(stseg, 2, n_obs, fh);
+    ckd_free(stseg);
+    fclose(fh);
+    return S3_SUCCESS;
+}
 
 int32
 viterbi_update(float64 *log_forw_prob,
@@ -169,6 +338,25 @@ viterbi_update(float64 *log_forw_prob,
 		  scale, dscale,
 		  feature, n_obs, state_seq, n_state,
 		  inv, a_beam, phseg);
+    /* Dump a phoneme segmentation if requested */
+    if (cmd_ln_str("-outphsegdir")) {
+	    const char *phsegdir;
+	    char *segfn, *uttid;
+
+	    phsegdir = cmd_ln_str("-outphsegdir");
+	    uttid = (cmd_ln_int32("-outputfullpath")
+		     ? corpus_utt_full_name() : corpus_utt());
+	    segfn = ckd_calloc(strlen(phsegdir) + 1
+			       + strlen(uttid)
+			       + strlen(".phseg") + 1, 1);
+	    strcpy(segfn, phsegdir);
+	    strcat(segfn, "/");
+	    strcat(segfn, uttid);
+	    strcat(segfn, ".phseg");
+	    write_phseg(segfn, inv, state_seq, active_astate, n_active_astate,
+			n_state, n_obs, active_alpha, scale, bp);
+	    ckd_free(segfn);
+    }
     if (fwd_timer)
 	timing_stop(fwd_timer);
 
@@ -267,7 +455,7 @@ viterbi_update(float64 *log_forw_prob,
 	j = active_astate[t][q];
 
 	/* Follow any non-emitting states at time t first. */
-	while (state_seq[j].mixw == -1) {
+	while (state_seq[j].mixw == TYING_NON_EMITTING) {
 	    prev = active_astate[t][bp[t][q]];
 
 #if VITERBI_DEBUG
