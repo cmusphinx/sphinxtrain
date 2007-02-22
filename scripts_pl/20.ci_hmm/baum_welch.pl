@@ -101,6 +101,17 @@ if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
 	 -ldafn => $ST::CFG_LDA_TRANSFORM,
 	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
+if (defined($ST::CFG_PHSEG_DIR)) {
+    open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
+    # Check control file format (determines if we add ,CTL below)
+    my $line = <INPUT>;
+    if (split(" ", $line) ==1) {
+	# Use full file path
+	push(@lda_args, -outputfullpath => 'yes');
+    }
+    close INPUT;
+    push(@lda_args, -outphsegdir => $ST::CFG_PHSEG_DIR);
+}
 
 # aligned transcripts and the list of aligned files is obtained as a result
 # of (03.) forced alignment

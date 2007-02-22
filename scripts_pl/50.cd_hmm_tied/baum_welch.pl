@@ -101,7 +101,16 @@ if ($ST::CFG_CD_VITERBI eq 'yes') {
 }
 
 if (defined($ST::CFG_PHSEG_DIR)) {
-    push(@extra_args, -phsegdir => $ST::CFG_PHSEG_DIR);
+    open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
+    # Check control file format (determines if we need -outputfullpath)
+    my $line = <INPUT>;
+    if (split(" ", $line) ==1) {
+	# Use full file path
+	push(@extra_args, -outputfullpath => 'yes');
+    }
+    close INPUT;
+    push(@extra_args,
+	 -phsegdir => $ST::CFG_PHSEG_DIR);
 }
 
 # aligned transcripts and the list of aligned files is obtained as a result

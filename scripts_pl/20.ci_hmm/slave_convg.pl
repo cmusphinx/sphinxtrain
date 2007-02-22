@@ -88,6 +88,25 @@ if ($iter == 1 and $n_gau == 1) {
     exit ($return_value) if ($return_value);
 }
 
+if (defined($ST::CFG_PHSEG_DIR) and ! -d $ST::CFG_PHSEG_DIR) {
+    # Build phone segmentation dirs
+    open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
+    my %dirs;
+    while (<INPUT>) {
+	chomp;
+	my @fields = split;
+	my $uttid = pop @fields;
+	my $basedir = dirname($uttid);
+	next if $basedir eq ".";
+	unless ($dirs{$basedir}) {
+	    $dirs{$basedir}++;
+	    mkpath(catdir($ST::CFG_PHSEG_DIR, $basedir), 0, 0777);
+	}
+    }
+    close INPUT;
+}
+
+
 # Call baum_welch with iter part and n_parts,
 # once done call norm_and_lauchbw.pl
 my @deps;
