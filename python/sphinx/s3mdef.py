@@ -57,9 +57,10 @@ class S3Mdef:
         ssidmap = {}
         self.phonemap = {}
         self.trimap = []
-        self.fillermap = zeros(self.n_phone, Int8)
-        self.tmatmap = zeros(self.n_phone, Int8)
-        self.ciphone = zeros(self.n_phone, Int8)
+        self.fillermap = zeros(self.n_phone, 'c')
+        self.tmatmap = zeros(self.n_phone, 'c')
+        self.ciphone = zeros(self.n_phone, 'c')
+        self.sidmap = zeros(self.n_phone, 'i')
         phoneid = 0
         self.max_emit_state = 0
         while True:
@@ -88,10 +89,14 @@ class S3Mdef:
             if sseq not in ssidmap:
                 ssidmap[sseq] = []
             ssidmap[sseq].append(phoneid)
+            for s in sids:
+                # FIXME: Note this will break for one-to-many mappings
+                self.sidmap[int(s)] = phoneid
             phoneid = phoneid + 1
 
+
         # Now invert the senone sequence mapping
-        self.sseqmap = zeros(self.n_phone, Int)
+        self.sseqmap = zeros(self.n_phone, 'i')
         print "Found %d unique senone sequences" % len(ssidmap)
         # This is a bogus way to fill an array with -1
         # (which is the ID for non-emitting states)
@@ -123,6 +128,14 @@ class S3Mdef:
 
     def phone_from_id(self, id):
         return self.trimap[id]
+
+    # FIXME: This may be bogus, see def. of sidmap above
+    def phone_id_from_senone_id(self,sid):
+        return self.sidmap[sid]
+    
+    # FIXME: This may be bogus, see def. of sidmap above
+    def phone_from_senone_id(self, sid):
+        return self.trimap[int(self.sidmap[sid])]
 
     def triphones(self, ci, lc, wpos=None):
         if wpos == None:
