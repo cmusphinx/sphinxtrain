@@ -89,8 +89,7 @@ typedef struct state_s {
     uint32 l_ci_cb;	/* local CI codebook accumulator ID */
     float32 *tacc;	/* local transition observation count accumulators */
 
-    uint32 bp;		/* backpointer index (for Viterbi algorithm) */
-    uint32 phn;		/* phone ID (for constrained Baum-Welch) */
+    uint32 phn;		/* CI phone ID (for constrained Baum-Welch) */
 } state_t;
 
 #endif /* STATE_H */ 
