@@ -13,12 +13,10 @@ __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
 from numpy import zeros
-from math import log
+from math import log, exp
 import re
 
-LOG10 = log(10)
-
-class ArpaLM(object):
+class model(object):
     "Class for reading ARPA-format language models"
     def __init__(self, path=None):
         if path != None:
@@ -75,8 +73,6 @@ class ArpaLM(object):
         # Read N-grams
         r = re.compile(r"\\(\d+)-grams:")
         ngramid = 0
-        # Successor list map
-        self.succmap = {}
         while True:
             spam = fh.readline().rstrip()
             if spam == "":
@@ -91,20 +87,14 @@ class ArpaLM(object):
                 spam = spam.split()
                 p = float(spam[0])
                 if n == self.n:
-                    ng = spam[1:]
+                    ng = tuple(spam[1:])
                     b = 0.0
                 else:
-                    ng = spam[1:-1]
+                    ng = tuple(spam[1:-1])
                     b = float(spam[-1])
                 # N-Gram info
                 self.ngrams[n-1][ngramid,:] = p, b
-                self.ngmap[n-1][" ".join(ng)] = ngramid
-
-                # Successor list for N-1-Gram
-                mgram = " ".join(ng[:-1])
-                if mgram not in self.succmap:
-                    self.succmap[mgram] = []
-                self.succmap[mgram].append(ng[-1])
+                self.ngmap[n-1][ng] = ngramid
                 ngramid = ngramid + 1
 
     def save(self, path):
@@ -118,9 +108,20 @@ class ArpaLM(object):
             fh.write("\n\\%d-grams:\n" % n)
             ngrams = self.ngmap[n-1].keys()
             ngrams.sort()
+            if '<UNK>' in self.ngmap[n-1]:
+                ngid = self.ngmap[n-1]['<UNK>']
+                score, bowt = self.ngrams[n-1][ngid]
+                if n == self.n:
+                    fh.write("%.4f <UNK>\n" % (score))
+                else:
+                    fh.write("%.4f <UNK>\t%.4f\n" % (score,bowt))
             for g in ngrams:
+                if g == '<UNK>':
+                    continue
                 ngid = self.ngmap[n-1][g]
                 score, bowt = self.ngrams[n-1][ngid]
+                if n > 1:
+                    g = " ".join(g) 
                 if n == self.n:
                     fh.write("%.4f %s\n" % (score, g))
                 else:
@@ -128,27 +129,34 @@ class ArpaLM(object):
         fh.write("\n\\end\\\n")
         fh.close()
 
-    def ngstr(self, *w):
-        "Create the N-gram string for a sequence of IDs"
-        return " ".join(widmap[x] for x in w )
-    
-    def successors(self, *syms):
-        "Find all successors for an N-1-gram"
-        try:
-            return self.succmap[" ".join(syms)]
-        except:
-            return []
-
     def score(self, *syms):
-        "Return the log probability score for an N-gram"
+        # It makes the most sense to do this recursively
         n = len(syms)
-        while n > 0:
-            ng = " ".join(syms[-n:])
-            try:
-                ngid = self.ngmap[n-1][ng]
-                score, bowt = self.ngrams[n-1][ngid]
-                # Convert to natural log
-                return (bowt + score) * LOG10
-            except:
-                n = n - 1
-        return -99 * LOG10 # very improbable
+        if n == 1:
+            if syms[0] in self.ngmap[0]:
+                # 1-Gram exists, just return its probability
+                return self.ngrams[0][self.ngmap[0][syms[0]]][0]
+            else:
+                # Use <UNK>
+                return self.ngrams[0][self.ngmap[0]['<UNK>']][0]
+        else:
+            if syms in self.ngmap[n-1]:
+                # N-Gram exists, just return its probability
+                return self.ngrams[n-1][self.ngmap[n-1][syms]][0]
+            else:
+                # Backoff: alpha(history) * probability (N-1-Gram)
+                hist = tuple(syms[0:-1])
+                syms = syms[1:]
+                # Treat unigram histories a bit specially
+                if n == 2:
+                    hist = hist[0]
+                    # Back off to <UNK> if word doesn't exist
+                    if not hist in self.ngmap[0]:
+                        hist = '<UNK>'
+                if hist in self.ngmap[n-2]:
+                    # Try to use the history if it exists
+                    bowt = self.ngrams[n-2][self.ngmap[n-2][hist]][1]
+                    return bowt + self.score(*syms)
+                else:
+                    # Otherwise back off some more
+                    return self.score(*syms)
