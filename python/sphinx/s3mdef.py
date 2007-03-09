@@ -112,11 +112,11 @@ class S3Mdef:
                 self.sseqmap[p] = sseqid
             sseqid = sseqid + 1
 
-    def is_ciphone(self, id):
-        return id >= 0 and id < self.n_ci
+    def is_ciphone(self, sid):
+        return sid >= 0 and sid < self.n_ci
 
-    def is_cisenone(self, id):
-        return id >= 0 and id < self.n_ci_sen
+    def is_cisenone(self, sid):
+        return sid >= 0 and sid < self.n_ci_sen
 
     def phone_id(self, ci, lc='-', rc='-', wpos=None):
         if wpos == None:
@@ -126,8 +126,8 @@ class S3Mdef:
                 wpos = '-' # context-independent phones have no wpos
         return self.phonemap[wpos][ci][lc][rc]
 
-    def phone_from_id(self, id):
-        return self.trimap[id]
+    def phone_from_id(self, pid):
+        return self.trimap[pid]
 
     # FIXME: This may be bogus, see def. of sidmap above
     def phone_id_from_senone_id(self,sid):
