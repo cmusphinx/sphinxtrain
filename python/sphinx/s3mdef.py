@@ -57,9 +57,8 @@ class S3Mdef:
         ssidmap = {}
         self.phonemap = {}
         self.trimap = []
-        self.fillermap = zeros(self.n_phone, 'c')
-        self.tmatmap = zeros(self.n_phone, 'c')
-        self.ciphone = zeros(self.n_phone, 'c')
+        self.fillermap = zeros(self.n_phone, 'b')
+        self.tmatmap = zeros(self.n_phone, 'h')
         self.sidmap = zeros(self.n_phone, 'i')
         phoneid = 0
         self.max_emit_state = 0
