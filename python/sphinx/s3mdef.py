@@ -59,7 +59,7 @@ class S3Mdef:
         self.trimap = []
         self.fillermap = zeros(self.n_phone, 'b')
         self.tmatmap = zeros(self.n_phone, 'h')
-        self.sidmap = zeros(self.n_phone, 'i')
+        self.sidmap = zeros(self.n_sen, 'i')
         phoneid = 0
         self.max_emit_state = 0
         while True:
@@ -149,13 +149,13 @@ class S3Mdef:
         return out
 
     def pid2ssid(self, pid):
-        return self.sseqmap[pid]
+        return int(self.sseqmap[pid])
 
     def pid2sseq(self, pid):
         return self.sseq[self.sseqmap[pid]]
 
     def pid2tmat(self, pid):
-        return self.tmatmap[pid]
+        return int(self.tmatmap[pid])
 
     def is_filler(self, pid):
-        return self.fillermap[pid]
+        return int(self.fillermap[pid])

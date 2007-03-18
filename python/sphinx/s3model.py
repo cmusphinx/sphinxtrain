@@ -52,9 +52,14 @@ class S3Model(object):
         sys.stdout.write("Flooring and normalizing mixw and tmat...")
         sys.stdout.flush()
         for t in range(0, len(self.tmat)):
-            tmat = transpose(self.tmat[t])
-            tmat = transpose(tmat / sum(tmat))
-            self.tmat[t] = log(clip(tmat, self.tpfloor, 1.0)).astype('f')
+            tmat = self.tmat[t]
+            for r in range(0, len(tmat)):
+                tmat[r] = tmat[r] / sum(tmat[r])
+                for d in range(0, len(tmat[r])):
+                    if tmat[r,d] == 0: # Make sure zeros are log-zeros
+                        tmat[r,d] = WORSTSCORE
+                    else:
+                        tmat[r,d] = log(tmat[r,d])
 
         for t in range(0, len(self.mixw)):
             mixw = transpose(self.mixw[t])
