@@ -5,7 +5,7 @@
 
 """Read ARPA-format language models.
 
-This module provides a class for reading (currently not writing) ARPA
+This module provides a class for reading, writing, and using ARPA
 format statistical language model files.
 """
 
@@ -15,7 +15,7 @@ __version__ = "$Revision$"
 import numpy
 import re
 
-class model(object):
+class ArpaLM(object):
     "Class for reading ARPA-format language models"
     def __init__(self, path=None):
         if path != None:
@@ -72,6 +72,8 @@ class model(object):
         # Read N-grams
         r = re.compile(r"\\(\d+)-grams:")
         ngramid = 0
+        # Successor list map
+        self.succmap = {}
         while True:
             spam = fh.readline().rstrip()
             if spam == "":
@@ -94,6 +96,12 @@ class model(object):
                 # N-Gram info
                 self.ngrams[n-1][ngramid,:] = p, b
                 self.ngmap[n-1][ng] = ngramid
+
+                # Successor list for N-1-Gram
+                mgram = tuple(ng[:-1])
+                if mgram not in self.succmap:
+                    self.succmap[mgram] = []
+                self.succmap[mgram].append(ng[-1])
                 ngramid = ngramid + 1
 
     def save(self, path):
@@ -127,6 +135,12 @@ class model(object):
                     fh.write("%.4f %s\t%.4f\n" % (score, g, bowt))
         fh.write("\n\\end\\\n")
         fh.close()
+
+    def successors(self, *syms):
+        try:
+            return self.succmap[syms]
+        except:
+            return []
 
     def score(self, *syms):
         # It makes the most sense to do this recursively
