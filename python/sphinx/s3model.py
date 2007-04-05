@@ -21,6 +21,10 @@ from numpy import shape, array, transpose, log, clip, zeros
 WORSTSCORE = -100000
 
 def logadd(x,y):
+    if x <= WORSTSCORE:
+        return y
+    if y <= WORSTSCORE:
+        return x
     try:
         return x + log(1 + exp(y-x))
     except OverflowError:
