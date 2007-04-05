@@ -120,7 +120,10 @@ class S3Mdef:
     def phone_id(self, ci, lc='-', rc='-', wpos=None):
         if wpos == None:
             if lc != '-':
-                wpos = 's' # context-dependent phones default to s
+                # Try all word positions to find one that matches
+                for wpos, pmap in self.phonemap.iteritems():
+                    if ci in pmap and lc in pmap[ci] and rc in pmap[ci][rc]:
+                        break
             else:
                 wpos = '-' # context-independent phones have no wpos
         return self.phonemap[wpos][ci][lc][rc]
