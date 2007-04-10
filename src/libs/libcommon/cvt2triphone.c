@@ -222,13 +222,26 @@ cvt2triphone(acmod_set_t *acmod_set,
 		phone[i] = tri_id;
 	    }
 	    else {
+		    /* Try to back off to other word positions */
+		    int j;
+
+		    for (j = 0; j < N_WORD_POSN; ++j) {
+			    tri_id = acmod_set_tri2id(acmod_set,
+						      b, l, r, j);
+			    if (tri_id != NO_ACMOD) {
+				    phone[i] = tri_id;
+				    break;
+			    }
+		    }
+		    if (j == N_WORD_POSN) {
 #if 0
-		E_WARN("Missing triphone, (%s %s %s %c), left as CI phone",
-		       acmod_set_id2name(acmod_set, b),
-		       acmod_set_id2name(acmod_set, l),
-		       acmod_set_id2name(acmod_set, r),
-		       word_posn_map[(int)posn]);
+			    E_WARN("Missing triphone, (%s %s %s %c), left as CI phone\n",
+				   acmod_set_id2name(acmod_set, b),
+				   acmod_set_id2name(acmod_set, l),
+				   acmod_set_id2name(acmod_set, r),
+				   word_posn_map[(int)posn]);
 #endif
+		    }
 	    }
 	}
 	else {
