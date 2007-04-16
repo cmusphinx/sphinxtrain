@@ -390,10 +390,12 @@ init(model_def_t **out_mdef,
     else 
         continuous = 0;
 
+#if 0 /* This is rather arbitrary (in actual fact we should treat all models as continuous) */
    /* Additional check for meaningless input */
     if (continuous == 0 && n_density < 256) {
         E_FATAL("Attempt to build trees on semi-continuous HMMs with %d < 256 gaussians!\n****A minimum of 256 gaussians are expected!\n",n_density);
     }
+#endif
 /* END ADDITIONS FOR CONTINUOUS_TREES */
 
     
