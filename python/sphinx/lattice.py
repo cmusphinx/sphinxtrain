@@ -80,7 +80,6 @@ class Dag(list):
             self.lat2dag(lattice)
 
     fieldre = re.compile(r'(\S+)=(?:"((?:[^\\"]+|\\.)*)"|(\S+))')
-        
     def htk2dag(self, htkfile):
         """Read an HTK-format lattice file to populate a DAG."""
         fh = open(htkfile)
@@ -101,14 +100,27 @@ class Dag(list):
                 self.header.update(fields)
             else:
                 if 'I' in fields:
-                    node = DagNode(fields['W'], float(fields['t']))
+                    frame = int(float(fields['t']) * self.frate)
+                    node = DagNode(fields['W'], frame)
                     nodes[int(fields['I'])] = node
+                    while len(self) <= frame:
+                        self.append({})
+                    self[frame][fields['W']] = node
                 elif 'J' in fields:
-                    links[int(fields['J'])] = (int(fields['S']), int(fields['E']),
-                                               float(fields['n']))
+                    # Link up existing nodes
+                    fromnode = int(fields['S'])
+                    tonode = int(fields['E'])
+                    tofr = nodes[fromnode].entry
+                    ascr = float(fields['a'])
+                    lscr = float(fields['n'])
+                    # FIXME: Not sure if this is a good idea
+                    if not (tofr,ascr) in nodes[int(fromnode)].exits:
+                        nodes[int(fromnode)].exits.append((nodes[int(tonode)].entry, ascr))
+        # FIXME: Not sure if the first and last nodes are always the start and end?
+        self.start = nodes[0]
+        self.end = nodes[-1]
 
     headre = re.compile(r'# (-\S+) (\S+)')
-
     def sphinx2dag(self, s3file):
         """Read a Sphinx3-format lattice file to populate a DAG."""
         fh = gzip.open(s3file)
@@ -153,8 +165,8 @@ class Dag(list):
                     elif state == 'edges':
                         fromnode, tonode, ascr = fields
                         ascr = float(ascr) * logbase
-                        # FIXME: Not sure if this is a good idea
                         tofr = nodes[int(tonode)].entry
+                        # FIXME: Not sure if this is a good idea
                         if not (tofr,ascr) in nodes[int(fromnode)].exits:
                             nodes[int(fromnode)].exits.append((nodes[int(tonode)].entry, ascr))
 
