@@ -13,7 +13,7 @@ PocketSphinx.
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
-from numpy import *
+from numpy import ones, empty
 
 def open(file):
     return S3Mdef(file)
@@ -47,8 +47,6 @@ class S3Mdef:
         self.n_ci_sen = info['n_tied_ci_state']
         self.n_sen = info['n_tied_state']
         self.n_tmat = info['n_tied_tmat']
-        print("Loaded mdef (%d phones, %d ci, %d tri, %d sen)"
-              % (self.n_phone, self.n_ci, self.n_tri, self.n_sen))
 
         # Skip field description lines
         spam = self.fh.readline().rstrip()
@@ -57,9 +55,9 @@ class S3Mdef:
         ssidmap = {}
         self.phonemap = {}
         self.trimap = []
-        self.fillermap = zeros(self.n_phone, 'b')
-        self.tmatmap = zeros(self.n_phone, 'h')
-        self.sidmap = zeros(self.n_sen, 'i')
+        self.fillermap = empty(self.n_phone, 'b')
+        self.tmatmap = empty(self.n_phone, 'h')
+        self.sidmap = empty(self.n_sen, 'i')
         phoneid = 0
         self.max_emit_state = 0
         while True:
@@ -95,12 +93,11 @@ class S3Mdef:
 
 
         # Now invert the senone sequence mapping
-        self.sseqmap = zeros(self.n_phone, 'i')
-        print "Found %d unique senone sequences" % len(ssidmap)
-        # This is a bogus way to fill an array with -1
-        # (which is the ID for non-emitting states)
-        self.sseq = fromfunction(lambda x,y:x-x-1, (len(ssidmap),
-                                                    self.max_emit_state+1))
+        self.sseqmap = empty(self.n_phone, 'i')
+        # Fill an array with -1 (which is the ID for non-emitting
+        # states)
+        self.sseq = -1 * ones((len(ssidmap), self.max_emit_state+1), 'i')
+        
         sseqid = 0
         self.pidmap = []
         for sseq, phones in ssidmap.iteritems():

@@ -54,7 +54,7 @@ class S3File(object):
         else:
             raise Exception("Invalid byte-order mark %08x" % spam)
         self.otherend = (unpack('=i', pack(self.swap + 'i', spam)) == spam)
-        self.data_start = self.fh.tell()        
+        self.data_start = self.fh.tell()
 
     def read3d(self):
         self.d1 = unpack(self.swap + "I", self.fh.read(4))[0]
@@ -63,7 +63,7 @@ class S3File(object):
         self._nfloats = unpack(self.swap + "I", self.fh.read(4))[0]
         if self._nfloats != self.d1 * self.d2 * self.d3:
             raise Exception(("Number of data points %d doesn't match "
-                             + "total %d = %d*%d*%d*%d")
+                             + "total %d = %d*%d*%d")
                             %
                             (self._nfloats,
                              self.d1 * self.d2 * self.d3,
@@ -73,6 +73,37 @@ class S3File(object):
         if self.otherend:
             params = params.byteswap()
         return reshape(params, (self.d1, self.d2, self.d3)).astype('d')
+
+    def read2d(self):
+        self.d1 = unpack(self.swap + "I", self.fh.read(4))[0]
+        self.d2 = unpack(self.swap + "I", self.fh.read(4))[0]
+        self._nfloats = unpack(self.swap + "I", self.fh.read(4))[0]
+        if self._nfloats != self.d1 * self.d2:
+            raise Exception(("Number of data points %d doesn't match "
+                             + "total %d = %d*%d")
+                            %
+                            (self._nfloats,
+                             self.d1 * self.d2,
+                             self.d1, self.d2))
+        spam = self.fh.read(self._nfloats * 4)
+        params = fromstring(spam, 'f')
+        if self.otherend:
+            params = params.byteswap()
+        return reshape(params, (self.d1, self.d2)).astype('d')
+
+    def read1d(self):
+        self.d1 = unpack(self.swap + "I", self.fh.read(4))[0]
+        self._nfloats = unpack(self.swap + "I", self.fh.read(4))[0]
+        if self._nfloats != self.d1:
+            raise Exception(("Number of data points %d doesn't match "
+                             + "total %d")
+                            %
+                            (self._nfloats, self.d1))
+        spam = self.fh.read(self._nfloats * 4)
+        params = fromstring(spam, 'f')
+        if self.otherend:
+            params = params.byteswap()
+        return params.astype('d')
         
 class S3File_write:
     "Write Sphinx-III binary files"
@@ -99,8 +130,19 @@ class S3File_write:
         self.fh.write(pack("=IIII",
                            d1, d2, d3,
                            d1 * d2 * d3))
-        flat = reshape(stuff, (d1*d2*d3,)).astype('f')
-        self.fh.write(pack("=" + str(len(flat)) + "f", *flat))
+        stuff.ravel().astype('f').tofile(self.fh)
+
+    def write2d(self, stuff):
+        d1, d2 = shape(stuff)
+        self.fh.write(pack("=III",
+                           d1, d2,
+                           d1 * d2))
+        stuff.ravel().astype('f').tofile(self.fh)
+
+    def write1d(self, stuff):
+        d1 = len(stuff)
+        self.fh.write(pack("=II", d1, d1))
+        stuff.ravel().astype('f').tofile(self.fh)
 
     def __del__(self):
         self.close()

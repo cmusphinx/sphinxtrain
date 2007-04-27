@@ -14,127 +14,79 @@ feature vectors.
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
-import s3gau, s3mixw, s3tmat, s3mdef, sys
-from math import sqrt, pi, exp
-from numpy import shape, array, transpose, log, clip, zeros
+import s3gau
+import s3mixw
+import s3tmat
+import s3mdef
+import sys
+import os
+import numpy
 
 WORSTSCORE = -100000
-
-def logadd(x,y):
-    if x <= WORSTSCORE:
-        return y
-    if y <= WORSTSCORE:
-        return x
-    try:
-        return x + log(1 + exp(y-x))
-    except OverflowError:
-        print("Warning: Overflow (%f + log(1 + exp(%f - %f)))"
-              % (x, y, x))
-        return WORSTSCORE
 
 class S3Model(object):
     def __init__(self, path=None, topn=4):
         self.topn = topn
         self.mwfloor = 1e-5
-        self.tpfloor = 1e-4
+        self.varfloor = 1e-5
         if path != None:
             self.read(path)
 
     def read(self, path):
-        self.mdef = s3mdef.open(path + "/mdef")
-        self.mean = s3gau.open(path + "/means").getall()
-        print ("Loaded means (%d cb, %d feat, %s gau)"
-               % (len(self.mean), len(self.mean[0]), len(self.mean[0][0])))
-        self.var = s3gau.open(path + "/variances").getall()
-        print ("Loaded variances (%d cb, %d feat, %s gau)" %
-               (len(self.var), len(self.var[0]), len(self.var[0][0])))
-        self.mixw = s3mixw.open(path + "/mixture_weights").getall()
-        print "Loaded mixture weights", shape(self.mixw)
-        self.tmat = s3tmat.open(path + "/transition_matrices").getall()
-        print "Loaded transition matrices", shape(self.tmat)
-
-        sys.stdout.write("Flooring and normalizing mixw and tmat...")
-        sys.stdout.flush()
+        self.mdef = s3mdef.open(os.path.join(path, "mdef"))
+        self.mean = s3gau.open(os.path.join(path, "means")).getall()
+        self.var = s3gau.open(os.path.join(path, "variances")).getall()
+        self.mixw = s3mixw.open(os.path.join(path, "mixture_weights")).getall()
+        self.tmat = s3tmat.open(os.path.join(path, "transition_matrices")).getall()
+        # Normalize transition matrices and mixture weights
         for t in range(0, len(self.tmat)):
-            tmat = self.tmat[t]
-            for r in range(0, len(tmat)):
-                tmat[r] = tmat[r] / sum(tmat[r])
-                for d in range(0, len(tmat[r])):
-                    if tmat[r,d] == 0: # Make sure zeros are log-zeros
-                        tmat[r,d] = WORSTSCORE
-                    else:
-                        tmat[r,d] = log(tmat[r,d])
-
+            self.tmat[t] = (self.tmat[t].T / self.tmat[t].sum(1)).T
         for t in range(0, len(self.mixw)):
-            mixw = transpose(self.mixw[t])
-            mixw = transpose(mixw / sum(mixw))
-            self.mixw[t] = log(clip(mixw, self.mwfloor, 1.0)).astype('f')
-        print "done"
-
-        sys.stdout.write("Precomputing variance terms... ")
-        sys.stdout.flush()
-        # Precompute normalizing terms
-        self.norm = zeros((len(self.var),
-                           len(self.var[0]),
-                           len(self.var[0][0])),'d')
+            self.mixw[t] = (self.mixw[t].T / self.mixw[t].sum(1)).T.clip(self.mwfloor, 1.0)
+        # Floor variances and precompute normalizing and inverse variance terms
+        self.norm = numpy.empty((len(self.var),
+                                 len(self.var[0]),
+                                 len(self.var[0][0])),'d')
         for m,mgau in enumerate(self.var):
             for f,feat in enumerate(mgau):
-                for g,gau in enumerate(feat):
-                    # log of 1/sqrt(2*pi**N * det(var))
-                    try:
-                        det = sum(log(x) for x in gau)
-                    except OverflowError:
-                        det = -200
-                    lrd = -0.5 * (det + len(gau) * log(2 * pi))
-                    self.norm[m,f,g] = lrd
-        
-        # "Invert" variances
-        for m in range(0, len(self.var)):
-            feats = self.var[m]
-            for f in range(0, len(feats)):
-                gau = feats[f]
-                for g in range(0, len(gau)):
-                    gau[g] = (1 / (gau[g] * 2)).astype('f')
-        print "done"
-
-    def gau_compute(self, mgau, mixw, feat, gau, obs):
-        "Compute density for obs given parameters mgau,mixw,feat,gau"
-        mean = self.mean[mgau][feat][gau]
-        ivar = self.var[mgau][feat][gau]
-        norm = self.norm[mgau][feat][gau]
-        mixw = self.mixw[mixw,feat,gau]
-
-        diff = obs - mean
-        dist = sum(diff * ivar * diff)
-        return norm - dist + mixw
+                fvar = feat.clip(self.varfloor, numpy.inf)
+                # log of 1/sqrt(2*pi**N * det(var))
+                det = numpy.log(fvar).sum(1)
+                lrd = -0.5 * (det + 2 * numpy.pi * feat.shape[1])
+                self.norm[m,f] = lrd
+                # "Invert" variances
+                feat[:] = (1 / (fvar * 2))
+        # Construct senone to codebook mapping
+        if os.access(os.path.join(path, "senmgau"), os.F_OK):
+            self.senmgau = s3file.S3File(os.path.join(path, "senmgau")).read1d()
+        elif len(self.mean) == 1:
+            self.senmgau = numpy.ones(len(self.mixw))
+        else:
+            self.senmgau = numpy.arange(0, len(self.mixw))
 
     def cb_compute(self, mgau, feat, obs):
         "Compute codebook #mgau feature #feat for obs"
         mean = self.mean[mgau][feat]
         ivar = self.var[mgau][feat]
         norm = self.norm[mgau][feat]
-
-        # Vectorize this for unreadability and efficiency
-        obsplus = array((obs,) * len(self.mean[mgau][feat]))
-        diff = obsplus - mean
-        dist = sum(transpose(diff * ivar * diff))
+        diff = obs - mean
+        dist = (diff * ivar * diff).sum(1)
         return norm - dist
         
-    def gmm_compute(self, mgau, mixw, *features):
-        "Evaluate features according to codebook #mgau with mixw #mixw"
-        densities = []
-        # Compute mixture density for each feature
-        for f,vec in enumerate(features):
-            # Compute codebook and apply mixture weights (in parallel)
-            d = self.cb_compute(mgau, f, vec) + self.mixw[mixw,f]
-            # Take top N:
-            # Convert to a list
-            d = list(d)
-            # Sort in reverse orter
-            d.sort(None, None, True)
-            # Log-add them
-            d = reduce(logadd, d[0:self.topn])
-            densities.append(d)
-
-        # Multiply their probabilities (in log domain)
-        return sum(densities)
+    def senone_compute(self, senones, *features):
+        """Compute senone scores for given list of senones and acoustic features"""
+        cbs = {}
+        out = numpy.zeros(len(senones))
+        for i,s in enumerate(senones):
+            m = self.senmgau[s]
+            if not m in cbs:
+                cbs[m] = [self.cb_compute(m, f, features[f])
+                          for f in range(0,len(self.mean[m]))]
+            for f, vec in enumerate(features):
+                # Compute densities and scale by mixture weights
+                d = cbs[m][f] + numpy.log(self.mixw[s,f])
+                # Take top-N densities
+                d = d.take(d.argsort()[-self.topn:])
+                # Multiply into output score
+                out[i] += numpy.log(numpy.exp(d).sum())
+        return out
