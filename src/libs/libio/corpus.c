@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -1401,8 +1402,10 @@ corpus_next_utt()
      *       behind ctl_fp. */
 
     if (lsn_fp) {
-	if (fgets_wo_nl(lsn_line, MAX_LSN_LINE, lsn_fp) == NULL)
-	    lsn_line[0] = '\0';
+	if (fgets_wo_nl(lsn_line, MAX_LSN_LINE, lsn_fp) == NULL) {
+	    /* ahem! */
+	    E_FATAL("File length mismatch at line %d in %s\n", n_proc, lsn_filename);
+	}
     }
 
     if (sil_fp) {
