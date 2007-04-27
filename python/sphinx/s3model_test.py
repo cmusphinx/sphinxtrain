@@ -25,9 +25,11 @@ class TestS3Model(unittest.TestCase):
         mfcc = s2mfc.open(os.path.join(self.testdir, 'man.ah.111a.mfc')).getall()
         mfcc -= mfcc.mean(0)
         feat = _1s_c_d_dd.compute(mfcc)
-        senscr = self.acmod.senone_compute([0, 69, 135, 525], feat[0])
-        expected = numpy.array((-165.69276147, -83.90997198, -119.25384053, -86.14322017))
-        self.assert_(abs(sum(senscr - expected)) < 0.01)
+        senones = [0, 69, 135, 525]
+        expected = [3.03518949e-36, 1.00000000e+00, 4.47046728e-16, 1.07179724e-01]
+        senscr = self.acmod.senone_compute(senones, feat[0])
+        for i,s in enumerate(senones):
+            self.assert_(abs(senscr[s] - expected[i]) < 0.01)
 
 if __name__ == '__main__':
     unittest.main()

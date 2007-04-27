@@ -63,6 +63,7 @@ class S3Model(object):
             self.senmgau = numpy.ones(len(self.mixw))
         else:
             self.senmgau = numpy.arange(0, len(self.mixw))
+        self.senscr = numpy.ones(len(self.mixw)) * WORSTSCORE
 
     def cb_compute(self, mgau, feat, obs):
         "Compute codebook #mgau feature #feat for obs"
@@ -74,19 +75,22 @@ class S3Model(object):
         return norm - dist
         
     def senone_compute(self, senones, *features):
-        """Compute senone scores for given list of senones and acoustic features"""
+        """Compute senone scores for given list of senones and a
+        frame of acoustic features"""
         cbs = {}
-        out = numpy.zeros(len(senones))
-        for i,s in enumerate(senones):
+        self.senscr[:] = WORSTSCORE
+        for s in senones:
             m = self.senmgau[s]
             if not m in cbs:
                 cbs[m] = [self.cb_compute(m, f, features[f])
                           for f in range(0,len(self.mean[m]))]
+            score = 0
             for f, vec in enumerate(features):
                 # Compute densities and scale by mixture weights
                 d = cbs[m][f] + numpy.log(self.mixw[s,f])
                 # Take top-N densities
                 d = d.take(d.argsort()[-self.topn:])
                 # Multiply into output score
-                out[i] += numpy.log(numpy.exp(d).sum())
-        return out
+                score += numpy.log(numpy.exp(d).sum())
+            self.senscr[s] = score
+        return numpy.exp(self.senscr - self.senscr.max())
