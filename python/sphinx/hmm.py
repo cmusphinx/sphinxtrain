@@ -13,41 +13,83 @@ __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
 import numpy
+import bisect
+from itertools import izip
 
 class HMMGraph(object):
     def __init__(self, *hmms):
-        pass
+        self.hmms = []
+        self.offsets = [0]
+        if hmms:
+            self.append(*hmms)
 
-    def copy(self):
-        pass
+    def append(self, *hmms):
+        """Append a list of HMMs or tuples of alternative HMMs (more
+        interesting graph structures are possible, but not through
+        this interface, yet)."""
+        for h1,h2 in izip(hmms[:-1],hmms[1:]):
+            if isinstance(h1, tuple):
+                for h in h1:
+                    self.hmms.append(h)
+                    self.offsets.append(self.offsets[-1] + len(h))
+                    h.link(h2)
+            else:
+                self.hmms.append(h1)
+                self.offsets.append(self.offsets[-1] + len(h1))
+                h1.link(h2)
+        if isinstance(hmms[-1], tuple):
+            for h in hmms[-1]:
+                self.hmms.append(h)
+        else:
+            self.hmms.append(hmms[-1])
+
+    def get_hmm_idx(self, idx):
+        """Get HMM and offset for state index idx."""
+        i = bisect.bisect(self.offsets, idx)
+        return self.hmms[i-1], idx - self.offsets[i-1]
 
     def senid(self, idx):
-        pass
+        """Get senone ID from state ID."""
+        hmm, offset = self.get_hmm_idx(idx)
+        return hmm[offset]
 
     def tprob(self, i, j):
-        pass
+        """Get transition probability from state i to state j"""
+        ihmm, ioff = self.get_hmm_idx(i)
+        jhmm, joff = self.get_hmm_idx(j)
+        if ihmm == jhmm:
+            return ihmm[ioff,joff]
+        elif ioff == len(ihmm)-1 and joff == 0 and jhmm in ihmm.links:
+            return ihmm.links[jhmm]
+        else:
+            return 0
 
     def iter_senones(self):
-        pass
+        """Iterate over senone IDs (in arbitrary order)."""
+        for h in self.hmms:
+            for s in h.iter_senones():
+                yield s
 
     def senones(self):
-        pass
+        """Return all senone IDs (in arbitrary order)."""
+        return tuple(self.iter_senones())
 
     def __len__(self):
-        pass
+        """Number of states in this HMM graph."""
+        return sum([len(h) for h in self.hmms])
 
     def iter_statepairs(self):
-        pass
+        """Iterate over state pairs with non-zero transition
+        probabilities."""
+        
 
 class HMM(object):
     """Class representing a single HMM"""
-    def __init__(self, sseq, tmat):
+    def __init__(self, sseq, tmat, name=None):
         self.sseq = sseq
         self.tmat = tmat
-        self.links = []
-
-    def copy(self):
-        return self.__class__(self.sseq.copy(), self.tmat.copy())
+        self.name = name
+        self.links = {}
 
     def senid(self, idx):
         """Get senone ID from state ID."""
@@ -56,6 +98,16 @@ class HMM(object):
     def tprob(self, i, j):
         """Get transition probability from state i to state j"""
         return self.tmat[i,j]
+
+    def link(self, others, prob=1.0):
+        """Add a link to one or more HMMs with total probability prob.
+        If others is a tuple, prob will be divided uniformly among
+        them (for the time being this is the only way)."""
+        if isinstance(others, tuple):
+            for o in others:
+                self.link(o, prob/len(others))
+        else:
+            self.links[others] = prob
 
     def __getitem__(self, key):
         if isinstance(key, tuple):
@@ -111,13 +163,13 @@ class PhoneHMMFactory(object):
     def __init__(self, acmod):
         self.acmod = acmod
 
-    def create(self, pid, ssid=None):
-        """Create an HMM for base phone PID and senone sequence SSID"""
-        if ssid == None:
-            # Use the CI phone model
-            ssid = self.acmod.mdef.pid2ssid(pid)
+    def create(self, ci, lc='-', rc='-', wpos=None):
+        """Create an HMM for a triphone (ci, lc, rc, wpos)"""
+        pid = self.acmod.mdef.phone_id(ci, lc, rc, wpos)
+        ssid = self.acmod.mdef.pid2ssid(pid)
         return HMM(self.acmod.mdef.sseq[ssid],
-                   self.acmod.tmat[self.acmod.mdef.pid2tmat(pid)])
+                   self.acmod.tmat[self.acmod.mdef.pid2tmat(pid)],
+                   (ci, lc, rc, wpos))
 
 class SentenceHMMFactory(object):
     """Create sentence HMMs"""
