@@ -229,6 +229,21 @@ sub RunTool {
 
   local $| = 1;	# Turn on autoflushing
 
+  # In case we're running with the PBS queue, print some additional
+  # information, useful if there's a need to debug
+
+  if ($ENV{PBS_ENVIRONMENT}) {
+    print LOG "This job was submitted by user: $ENV{PBS_O_LOGNAME}\n";
+    print LOG "This job was submitted to host: $ENV{PBS_O_HOST}\n";
+    print LOG "This job was submitted to queue: $ENV{PBS_O_QUEUE}\n";
+    print LOG "PBS working directory: $ENV{PBS_O_WORKDIR}\n";
+    print LOG "PBS job id: $ENV{PBS_JOBID}\n";
+    print LOG "PBS job name: $ENV{PBS_JOBNAME}\n";
+    print LOG "PBS environment: $ENV{PBS_ENVIRONMENT}\n";
+    my $hostname = hostname();
+    print LOG "This job is running on $hostname\n\n";
+  }
+
   my $returnvalue = 0;
   my $error_count = 0;
   my $warning_count = 0;
