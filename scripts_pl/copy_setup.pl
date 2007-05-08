@@ -172,9 +172,9 @@ foreach my $old_task_etc_file (@etc_dir_list) {
                $replace_mode);
 }
 
-copy_dir("$BASE_DIR/wav", "wav", $replace_mode);
+copy_dir("$BASE_DIR/wav", "wav", $replace_mode) if (-e "$BASE_DIR/wav");
 
-copy_dir("$BASE_DIR/feat", "feat", $replace_mode);
+copy_dir("$BASE_DIR/feat", "feat", $replace_mode) if (-e "$BASE_DIR/feat");
 
 print "Set up for $task_name complete\n";
 
