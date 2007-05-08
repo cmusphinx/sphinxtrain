@@ -36,11 +36,19 @@
 ##
 ## Author: Evandro Gouvea
 ##
-use File::Copy;
 use Cwd;
 use Getopt::Long;
 use Pod::Usage;
+
+use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
+use File::Path;
 use File::stat;
+
+use lib catdir(dirname($0), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
 
 $| = 1;                         # Turn on autoflushing
 
@@ -74,13 +82,13 @@ if (($result == 0) or (defined($help)) or (!defined($task_name))) {
 if (!defined($cfg_file)) {
   if (-e "etc/sphinx_decode.cfg") {
     $cfg_file = "etc/sphinx_decode.cfg";
-  } else {
+  } elsif (-e "etc/sphinx_train.cfg") {
     $cfg_file = "etc/sphinx_train.cfg";
+  } else {
+    pod2usage( -verbose => 1 );
+    warn "unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_decode.cfg for default\n";
+    exit(-1);
   }
-} else {
-  pod2usage( -verbose => 1 );
-  warn "unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_decode.cfg for default\n";
-  exit(-1);
 }
 
 require $cfg_file;
@@ -250,6 +258,7 @@ Update existing files if they are older. Optional.
 =item B<-cfg>
 
 The location of the SphinxTrain configuration file. If not provided, the script uses "etc/sphinx_decode.cfg", if available, or "etc/sphinx_train.cfg". Optional.
+
 =item B<-task>
 
 The name of the new task. Required.
