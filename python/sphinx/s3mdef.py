@@ -119,7 +119,7 @@ class S3Mdef:
             if lc != '-':
                 # Try all word positions to find one that matches
                 for wpos, pmap in self.phonemap.iteritems():
-                    if ci in pmap and lc in pmap[ci] and rc in pmap[ci][rc]:
+                    if ci in pmap and lc in pmap[ci] and rc in pmap[ci][lc]:
                         break
             else:
                 wpos = '-' # context-independent phones have no wpos
