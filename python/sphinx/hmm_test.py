@@ -55,9 +55,10 @@ class TestPhoneHMM(unittest.TestCase):
         self.factory = hmm.PhoneHMMFactory(self.acmod)
 
     def test_create(self):
-        h1 = hmm.HMM(self.acmod.mdef.pid2sseq(352),
-                     self.acmod.tmat[self.acmod.mdef.pid2tmat(352)])
-        h2 = self.factory.create(352)
+        pid = self.acmod.mdef.phone_id('OW_four', 'F_four', 'R_four')
+        h1 = hmm.HMM(self.acmod.mdef.pid2sseq(pid),
+                     self.acmod.tmat[self.acmod.mdef.pid2tmat(pid)])
+        h2 = self.factory.create('OW_four', 'F_four', 'R_four')
         self.assertEquals(h1[0], h2[0])
 
 def read_dict(dictfile):
