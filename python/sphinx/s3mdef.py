@@ -123,7 +123,11 @@ class S3Mdef:
                         break
             else:
                 wpos = '-' # context-independent phones have no wpos
-        return self.phonemap[wpos][ci][lc][rc]
+        if wpos == '-':
+            # It's context-indepedent so ignore lc, rc
+            return self.phonemap[wpos][ci]
+        else:
+            return self.phonemap[wpos][ci][lc][rc]
 
     def phone_from_id(self, pid):
         return self.trimap[pid]
