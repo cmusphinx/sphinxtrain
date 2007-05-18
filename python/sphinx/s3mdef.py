@@ -125,7 +125,7 @@ class S3Mdef:
                 wpos = '-' # context-independent phones have no wpos
         if wpos == '-':
             # It's context-indepedent so ignore lc, rc
-            return self.phonemap[wpos][ci]
+            return self.phonemap[wpos][ci]['-']['-']
         else:
             return self.phonemap[wpos][ci][lc][rc]
 
