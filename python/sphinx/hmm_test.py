@@ -61,6 +61,49 @@ class TestPhoneHMM(unittest.TestCase):
         h2 = self.factory.create('OW_four', 'F_four', 'R_four')
         self.assertEquals(h1[0], h2[0])
 
+class TestHMMGraph(unittest.TestCase):
+    def setUp(self):
+        thisdir = os.path.dirname(sys.argv[0])
+        self.testdir = os.path.join(thisdir, 'test', 'tidigits')
+        self.acmod = s3model.S3Model(self.testdir)
+        self.factory = hmm.PhoneHMMFactory(self.acmod)
+
+    def test_create(self):
+        h1 = self.factory.create('F_four', 'SIL', 'OW_four')
+        h2 = self.factory.create('OW_four', 'F_four', 'R_four')
+        h3 = self.factory.create('R_four', 'OW_four', 'SIL')
+        hg = hmm.HMMGraph(h1, h2, h3)
+        self.assertEquals(hg[0], h1[0])
+        self.assertEquals(hg[4], h2[0])
+        self.assertEquals(hg[8], h3[0])
+
+    def test_forward_backward(self):
+        mfcc = s2mfc.open(os.path.join(self.testdir, 'man.ah.1b.mfc')).getall()
+        mfcc -= mfcc.mean(0)
+        feat = _1s_c_d_dd.compute(mfcc)
+        hg = hmm.HMMGraph(self.factory.create('SIL'),
+                          self.factory.create('SIL'))
+        alpha = None
+        self.alpha = []
+        for f in feat[0:15]:
+            senscr = self.acmod.senone_compute(hg.iter_senones(), f)
+            alpha = hmm.forward_evaluate(hg, senscr, alpha)
+            self.alpha.append(alpha)
+        beta = None
+        self.beta = []
+        for f in feat[15:0:-1]: # Note that this is time-shifted by
+                                # one from the forward pass above
+            senscr = self.acmod.senone_compute(hg.iter_senones(), f)
+            beta = hmm.backward_evaluate(hg, senscr, beta)
+            self.beta.append(beta)
+        self.beta.reverse()
+        ll = 0
+        for a,b in zip(self.alpha, self.beta):
+            newll = sum(a*b)
+            if ll != 0:
+                self.assert_(abs(log(ll) - log(newll)) < 0.1)
+            ll = newll
+
 def read_dict(dictfile):
     fh = open(dictfile)
     out = {}
