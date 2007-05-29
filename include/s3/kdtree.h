@@ -46,6 +46,13 @@
 #ifndef __KDTREE_H__
 #define __KDTREE_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include "s3/prim_type.h"
 #include "s3/gauden.h"
 #include "s3/vector.h"
@@ -73,4 +80,7 @@ void free_kd_tree(kd_tree_node_t *tree);
 int32 write_kd_trees(const char *outfile, kd_tree_node_t **trees, uint32 n_trees);
 int32 read_kd_trees(const char *infile, kd_tree_node_t ***out_trees, uint32 *out_n_trees);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* __KDTREE_H__ */

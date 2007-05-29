@@ -45,6 +45,12 @@
 
 #ifndef S3MAP_IO_H
 #define S3MAP_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -66,6 +72,9 @@ s3map_write(const char *fn,
 	    uint32 n_rng,
 	    size_t map_elem_size);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3MAP_IO_H */ 
 
 

@@ -45,6 +45,12 @@
 
 #ifndef SILCOMP_H
 #define SILCOMP_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 #include <s3/vector.h>
@@ -61,6 +67,9 @@ sil_compression(const char *type,
 		vector_t *mfcc,
 		uint32 in_n_frame);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* SILCOMP_H */ 
 
 /*

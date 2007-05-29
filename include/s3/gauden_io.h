@@ -46,6 +46,13 @@
 #ifndef GAUDEN_IO_H
 #define GAUDEN_IO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 #include <s3/s3.h>
 #include <s3/common.h>
@@ -130,6 +137,9 @@ gauden_dcount_write(const char *file_name,
 		    uint32 n_feat,
 		    uint32 n_density);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* GAUDEN_IO_H */ 
 
 

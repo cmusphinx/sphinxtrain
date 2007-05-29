@@ -50,6 +50,13 @@
 #ifndef FREAD_RETRY_H
 #define FREAD_RETRY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <stdio.h>
 #include <sys/types.h>
 
@@ -58,6 +65,9 @@ size_t fread_retry(void *pointer,
 		   size_t num_items,
 		   FILE *stream);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FREAD_RETRY_H */ 
 
 /*

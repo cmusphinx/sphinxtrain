@@ -46,6 +46,12 @@
 
 #ifndef S2_READ_TMAT_H
 #define S2_READ_TMAT_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/acmod_set.h>
 #include <s3/prim_type.h>
@@ -55,6 +61,9 @@ s2_read_tmat(const char *in_dir_name,
 	     acmod_set_t *phone_set,
 	     float32 tprob_floor);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S2_READ_TMAT_H */ 
 
 

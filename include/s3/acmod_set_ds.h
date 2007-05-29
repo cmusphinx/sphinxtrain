@@ -48,6 +48,13 @@
 #ifndef ACMOD_SET_DS_H
 #define ACMOD_SET_DS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 typedef unsigned char ci_acmod_id_t;
@@ -146,6 +153,10 @@ typedef struct acmod_set_s {
     
     uint32 *n_with;	/* The number of phones having each attribute. */
 } acmod_set_t;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ACMOD_SET_DS_H */ 
 

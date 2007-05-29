@@ -46,6 +46,13 @@
 #ifndef FEAT_H
 #define FEAT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/vector.h>
 #include <s3/prim_type.h>
 
@@ -130,6 +137,9 @@ feat_free(vector_t **f);
 
 #define FEAT_NO_SIZE	0xffffffff
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FEAT_H */ 
 
 /*

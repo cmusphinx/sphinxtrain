@@ -45,6 +45,12 @@
 
 #ifndef R_AGC_NOISE_H
 #define R_AGC_NOISE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -73,6 +79,9 @@ histo_add_c0 (float32 c0);
 void
 compute_noise_level (void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* R_AGC_NOISE_H */ 
 
 

@@ -45,12 +45,21 @@
 
 #ifndef MK_TS2CI_H
 #define MK_TS2CI_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/model_def.h>
 
 uint32 *
 mk_ts2ci(model_def_t *mdef);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* MK_TS2CI_H */ 
 
 /*

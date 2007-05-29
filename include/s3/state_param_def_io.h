@@ -45,6 +45,12 @@
 
 #ifndef STATE_PARAM_DEF_IO_H
 #define STATE_PARAM_DEF_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #define STATE_PARAM_DEF_VERSION	"0.1"
 
@@ -67,6 +73,9 @@ ck_state_param_def(uint32 *den_map,
 		   uint32 n_map,
 		   uint32 n_mgau);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* STATE_PARAM_DEF_IO_H */ 
 
 

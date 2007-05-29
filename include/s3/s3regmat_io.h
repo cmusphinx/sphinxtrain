@@ -45,6 +45,12 @@
 
 #ifndef S3REGMAT_IO_H
 #define S3REGMAT_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #define REGMATCNT_FILE_VERSION	"1.0"
 
@@ -71,6 +77,9 @@ s3regmatcnt_write(const char *fn,
 		  uint32 mllr_add);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3REGMAT_IO_H */ 
 
 

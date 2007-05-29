@@ -48,6 +48,14 @@
 #ifndef CKD_ALLOC_H
 #define CKD_ALLOC_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <stdlib.h>
 
 #define ckd_salloc(s)                     __ckd_salloc((s), __FILE__, __LINE__)
@@ -151,6 +159,10 @@ __ckd_alloc_2d_ptr(int d1,
 		   size_t elem_size,
 		   char *caller_file,
 		   int caller_line);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CKD_ALLOC_H */ 
 

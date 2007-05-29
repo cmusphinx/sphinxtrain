@@ -46,6 +46,13 @@
 #ifndef INT32_IO_H
 #define INT32_IO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <stdio.h>
 #include <s3/prim_type.h>
 
@@ -66,6 +73,9 @@ write_int32_array (FILE *stream,
 		   int32 *base,
 		   int length);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* INT32_IO_H */ 
 
 

@@ -47,6 +47,12 @@
 
 #ifndef S2_MIXING_WEIGHTS_H
 #define S2_MIXING_WEIGHTS_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -55,6 +61,9 @@ s2_mixing_weights(float32 ***out_mixw,
 		  const char *hmm_file_name);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S2_MIXING_WEIGHTS_H */ 
 
 

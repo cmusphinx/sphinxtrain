@@ -45,6 +45,12 @@
 
 #ifndef MK_PHONE_SEQ_H
 #define MK_PHONE_SEQ_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/acmod_set.h>
 #include <s3/prim_type.h>
@@ -57,6 +63,9 @@ mk_phone_seq(acmod_id_t **out_phone,
 	     acmod_set_t *acmod_set,
 	     lexicon_t *lex);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* MK_PHONE_SEQ_H */ 
 
 

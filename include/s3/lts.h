@@ -39,6 +39,12 @@
 /*************************************************************************/
 #ifndef _CST_LTS_H__
 #define _CST_LTS_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 typedef unsigned short cst_lts_addr;
 typedef int cst_lts_phone;
@@ -76,5 +82,8 @@ int lts_apply(const char *word,const char *feats,
 
 extern const cst_lts_rules cmu6_lts_rules;
 
+#ifdef __cplusplus
+}
+#endif
 #endif
 

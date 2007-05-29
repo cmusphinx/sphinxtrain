@@ -46,6 +46,13 @@
 #ifndef DIV_H
 #define DIV_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 float64
@@ -86,6 +93,9 @@ ent_cont(float32 *mean,
          uint32 n);
 /* END ADDITION FOR CONTINUOUS_TREE */
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* DIV_H */ 
 
 /*

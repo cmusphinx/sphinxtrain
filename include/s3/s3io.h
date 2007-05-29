@@ -46,6 +46,12 @@
 
 #ifndef S3IO_H
 #define S3IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 
 #include <s3/prim_type.h>
@@ -156,6 +162,9 @@ s3write_1d(void *arr,
 	   FILE *fp,
 	   uint32 *chksum);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3IO_H */ 
 
 

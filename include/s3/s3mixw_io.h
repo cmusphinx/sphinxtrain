@@ -45,6 +45,12 @@
 
 #ifndef S3MIXW_IO_H
 #define S3MIXW_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #define MIXW_FILE_VERSION "1.0"
 
@@ -76,6 +82,9 @@ s3mixw_write(const char *fn,
 	     uint32 n_feat,
 	     uint32 n_density);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3MIXW_IO_H */ 
 
 

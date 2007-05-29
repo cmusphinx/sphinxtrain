@@ -46,6 +46,13 @@
 #ifndef _LIBUTIL_PROFILE_H_
 #define _LIBUTIL_PROFILE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 
 #include "prim_type.h"
 #include <stdio.h>
@@ -107,6 +114,10 @@ void timing_bind_name(const char *name, timing_t *tmr);
 /* Given a name, return the timing_t structure
    associated with it.  Returns NULL if no such structure */
 timing_t *timing_get(const char *name);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

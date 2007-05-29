@@ -48,6 +48,14 @@
 #ifndef BCOMMENT_IO_H
 #define BCOMMENT_IO_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 #include <stdio.h>
@@ -60,6 +68,10 @@ int32
 bcomment_write(FILE *fp,
 	       const char *comment);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BCOMMENT_IO_H */ 
 

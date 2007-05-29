@@ -45,6 +45,12 @@
 
 #ifndef MODEL_DEF_H
 #define MODEL_DEF_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 #include <s3/acmod_set.h>
@@ -86,6 +92,9 @@ typedef struct model_def_s {
     acmod_id_t *ts2ci;	/* maps any tied state to ci model ID */
 } model_def_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* MODEL_DEF_H */ 
 
 /*

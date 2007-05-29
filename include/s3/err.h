@@ -37,6 +37,13 @@
 #ifndef _ERR_H
 #define _ERR_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 /*
  * Package for checking and catching common errors, printing out
  * errors nicely, etc.
@@ -90,4 +97,7 @@ void _E__fatal_sys_error( char *fmt, ... );
 
 #define E_WARN	  _E__pr_header(__FILE__, __LINE__, "WARNING"),_E__pr_warn
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* !_ERR_H */

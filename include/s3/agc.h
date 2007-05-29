@@ -46,6 +46,14 @@
 #ifndef AGC_H
 #define AGC_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 void
@@ -54,6 +62,10 @@ agc_set_veclen(uint32 veclen);
 void
 agc(float32 *mfcc,
     uint32 n_frame);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* AGC_H */ 
 

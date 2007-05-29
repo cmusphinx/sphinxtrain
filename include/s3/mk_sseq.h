@@ -45,6 +45,12 @@
 
 #ifndef MK_SSEQ_H
 #define MK_SSEQ_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 #include <s3/acmod_set.h>
@@ -57,6 +63,9 @@ mk_sseq(uint16 *seg,
 	uint32 n_phone,
 	model_def_t *mdef);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* MK_SSEQ_H */ 
 
 

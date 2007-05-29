@@ -47,6 +47,12 @@
 
 #ifndef VECTOR_H
 #define VECTOR_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -86,6 +92,9 @@ vector_dot(const vector_t a, const vector_t b, uint32 dim);
 void
 vector_print(vector_t v, uint32 dim);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* VECTOR_H */ 
 
 

@@ -45,6 +45,12 @@
 
 #ifndef S3ACC_IO_H
 #define S3ACC_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/vector.h>
 
@@ -80,5 +86,8 @@ rdacc_den_full(const char *dir,
 	       uint32 *inout_n_density,
 	       const uint32 **inout_veclen);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3ACC_IO_H */ 
 

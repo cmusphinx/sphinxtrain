@@ -47,12 +47,21 @@
 
 #ifndef MK_WORDLIST_H
 #define MK_WORDLIST_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
 char **mk_wordlist(char *str,
 		   uint32 *n_word);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* MK_WORDLIST_H */ 
 
 

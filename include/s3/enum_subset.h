@@ -46,6 +46,13 @@
 #ifndef ENUM_SUBSET_H
 #define ENUM_SUBSET_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 int
@@ -53,6 +60,9 @@ next_subset(uint32 *s,
 	    uint32 n,
 	    uint32 r);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* ENUM_SUBSET_H */ 
 
 

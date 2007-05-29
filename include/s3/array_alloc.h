@@ -48,6 +48,14 @@
 #ifndef ARRAY_ALLOC_H
 #define ARRAY_ALLOC_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <stddef.h>	/* defines size_t */
 
 void ****
@@ -76,6 +84,10 @@ alloc_2d_array(int d1, int d2, size_t elem_size);
 
 int
 free_2d_array(void **arr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ARRAY_ALLOC_H */ 
 

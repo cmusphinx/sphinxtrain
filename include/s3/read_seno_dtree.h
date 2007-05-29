@@ -45,6 +45,12 @@
 
 #ifndef READ_SENO_DTREE_H
 #define READ_SENO_DTREE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 #include <s3/dtree.h>
@@ -75,6 +81,9 @@ read_node_line(float32 *out_entropy,
 	       char *quest_str,
 	       FILE *fp);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* READ_SENO_DTREE_H */ 
 
 

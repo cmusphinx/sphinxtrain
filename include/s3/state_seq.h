@@ -45,6 +45,12 @@
 
 #ifndef STATE_SEQ_H
 #define STATE_SEQ_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/state.h>
 #include <s3/model_inventory.h>
@@ -69,6 +75,9 @@ state_seq_print(state_t *state,
 		uint32 n_state,
 		model_def_t *mdef);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* STATE_SEQ_H */ 
 
 /*

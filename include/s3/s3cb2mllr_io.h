@@ -45,6 +45,12 @@
 
 #ifndef S3CB2MLLR_IO_H
 #define S3CB2MLLR_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -60,6 +66,9 @@ s3cb2mllr_write(const char *fn,
 		uint32 n_cb,
 		uint32 n_mllr);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3CB2MLLR_IO_H */ 
 
 

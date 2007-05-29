@@ -46,6 +46,14 @@
 #ifndef CVT2TRIPHONE_H
 #define CVT2TRIPHONE_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/acmod_set.h>
 #include <s3/prim_type.h>
 
@@ -55,6 +63,9 @@ cvt2triphone(acmod_set_t *acmod_set,
 	     char *btw_mark,
 	     uint32 n_phone);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* CVT2TRIPHONE_H */ 
 
 

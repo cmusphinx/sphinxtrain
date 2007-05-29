@@ -46,6 +46,12 @@
 
 #ifndef S2_WRITE_CB_H
 #define S2_WRITE_CB_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/gauden.h>
 
@@ -57,6 +63,9 @@ s2_write_cb(gauden_t *g,
 	    const char *var_ext,
 	    int do_floor);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S2_WRITE_CB_H */ 
 
 

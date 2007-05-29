@@ -46,8 +46,18 @@
 #ifndef GET_HOST_NAME_H
 #define GET_HOST_NAME_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 const char *get_host_name(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* GET_HOST_NAME_H */ 
 
 /*

@@ -45,6 +45,12 @@
 
 #ifndef S2_WRITE_SENO_H
 #define S2_WRITE_SENO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 #include <s3/acmod_set.h>
@@ -57,6 +63,9 @@ s2_write_seno_3(float ***new_mixw,		/* the sphinx-3 mixture weights we are savin
 		uint32 **in_smap,	/* An initial global state sharing map */
 		uint32 *state_of);	/* the model state id's for each shared state */
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S2_WRITE_SENO_H */ 
 
 

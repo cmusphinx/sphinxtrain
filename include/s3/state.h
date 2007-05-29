@@ -53,6 +53,12 @@
 
 #ifndef STATE_H
 #define STATE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -92,6 +98,9 @@ typedef struct state_s {
     uint32 phn;		/* CI phone ID (for constrained Baum-Welch) */
 } state_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* STATE_H */ 
 
 

@@ -45,6 +45,12 @@
 
 #ifndef BQUEST_IO_H
 #define BQUEST_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/acmod_set.h>
 #include <s3/prim_type.h>
@@ -55,6 +61,9 @@ read_pset_file(const char *file_name,
 	       acmod_set_t *acmod_set,
 	       uint32 *n_pset);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* BQUEST_IO_H */ 
 
 

@@ -45,6 +45,12 @@
 
 #ifndef MERGE_DEN_H
 #define MERGE_DEN_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 
 #include <s3/prim_type.h>
@@ -72,6 +78,9 @@ interpolate_d(float32 ***opdf,
 	      uint32 n_codeword);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* MERGE_DEN_H */ 
 
 

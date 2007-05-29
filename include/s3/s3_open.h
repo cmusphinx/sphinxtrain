@@ -45,6 +45,12 @@
 
 #ifndef S3_OPEN_H
 #define S3_OPEN_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 #include <stdio.h>
@@ -59,6 +65,9 @@ s3_open_bin_write(const char *file_name,
 		  const char *version,
 		  const char *comment);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3_OPEN_H */ 
 
 

@@ -50,6 +50,13 @@
 #ifndef _LIBUTIL_HASH_H_
 #define _LIBUTIL_HASH_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include "prim_type.h"
 
 typedef int32 hash_t;	/* Type of handle to hash tables */
@@ -77,4 +84,7 @@ int32 hash_lookup (hash_t h,	/* In: Handle of hash table being searched */
 		   char *key,	/* In: Key for which value being sought */
 		   void **val);	/* Out: *val = value associated with key */
 
+#ifdef __cplusplus
+}
+#endif
 #endif

@@ -45,6 +45,12 @@
 
 #ifndef S3GAU_IO_H
 #define S3GAU_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/vector.h>
 
@@ -142,6 +148,9 @@ s3gaudnom_write(const char *fn,
 		uint32 n_feat,
 		uint32 n_density);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3GAU_IO_H */ 
 
 

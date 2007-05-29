@@ -49,6 +49,12 @@
 
 #ifndef PRIM_TYPE_H
 #define PRIM_TYPE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 
 #if defined(__alpha)
@@ -67,6 +73,9 @@ typedef double		float64;
 typedef char * caddr_t;
 #endif
 
+#ifdef __cplusplus
+}
+#endif
 #endif	/* PRIM_TYPE_H */
 
 

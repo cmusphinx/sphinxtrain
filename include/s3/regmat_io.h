@@ -45,6 +45,12 @@
 
 #ifndef REGMAT_IO_H
 #define REGMAT_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #define REGMAT_PARAM_VERSION 	"0.1"
 
@@ -73,6 +79,9 @@ regmat_param_read(const char **comment,
 		  const char *file_name);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* REGMAT_IO_H */ 
 
 

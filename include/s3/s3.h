@@ -47,6 +47,12 @@
 
 #ifndef S3_H
 #define S3_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/err.h>
 #include <s3/prim_type.h>
@@ -100,6 +106,9 @@
 
 #define MEG *1024*1024
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3_H */ 
 
 /*

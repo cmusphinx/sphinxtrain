@@ -46,6 +46,8 @@
 #ifndef LAMBDA_IO_H
 #define LAMBDA_IO_H
 
+#ifdef __cplusplus
+extern "C" 
 #include <s3/prim_type.h>
 
 #define LAMBDA_VERSION "0.1"
@@ -91,6 +93,9 @@ lambda_cnt_read(uint32 **cnt,
 		const char *fn);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* LAMBDA_IO_H */ 
 
 

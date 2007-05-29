@@ -46,6 +46,13 @@
 #ifndef INTBUF_IO_H
 #define INTBUF_IO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 #include <s3/s3.h>
 
@@ -60,6 +67,9 @@ uint32buf_read(uint32 **out_b,
 	       uint32 *out_n,
 	       FILE *fp);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* INTBUF_IO_H */ 
 
 /*

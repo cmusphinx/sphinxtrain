@@ -50,11 +50,23 @@
 #ifndef AGC_EMAX_H
 #define AGC_EMAX_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 int agc_emax_proc (float32 *ocep,		/* ouput cepstrum frame */
 		   float32 *icep,		/* input cepstrum frame */
 		   uint32 cf_cnt);	/* Number of coeff's per frame */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* AGC_EMAX_H */ 
 

@@ -46,6 +46,13 @@
 #ifndef HEAP_H
 #define HEAP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 #ifndef NO_KEY
@@ -98,6 +105,9 @@ uint32
 heap64b_extr_top(float64 *out_a, uint32 *out_k,
 		 float64 *a, uint32 *k, uint32 sz, hcmpfn64b_t fn);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* HEAP_H */ 
 
 

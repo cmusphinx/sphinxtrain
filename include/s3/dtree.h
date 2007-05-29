@@ -46,6 +46,13 @@
 #ifndef DTREE_H
 #define DTREE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/dtree.h>
 #include <s3/pset_io.h>
 #include <s3/prim_type.h>
@@ -410,6 +417,9 @@ leaf_mean_vars(dtree_node_t *node,
                uint32 off);
 /* END ADDITION FOR CONTINUOUS_TREES */
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* DTREE_H */ 
 
 

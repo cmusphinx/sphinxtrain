@@ -47,6 +47,13 @@
 #define ARRAY_IO_H
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 #include <s3/vector.h>
 #include <s3/s3io.h>
@@ -98,6 +105,10 @@ float32_feat_aread(vector_t ***out_arr,
 		   uint32 *out_n_stream,
 		   uint32 **out_vecsize,
 		   FILE *fp);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ARRAY_IO_H */ 
 

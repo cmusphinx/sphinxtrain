@@ -49,6 +49,14 @@
 #ifndef ACMOD_SET_H
 #define ACMOD_SET_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/acmod_set_ds.h>	/* defines the data structures used by this
 				 * module */
 #include <s3/prim_type.h>
@@ -152,6 +160,10 @@ acmod_set_s2_parse_triphone(acmod_set_t *acmod_set,
 			    acmod_id_t *right,
 			    word_posn_t *posn,
 			    char *str);
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* ACMOD_SET_H */ 
 
 /*

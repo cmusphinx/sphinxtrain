@@ -46,6 +46,13 @@
 #ifndef FGETS_WO_NL_H
 #define FGETS_WO_NL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <stdio.h>
 
 char *
@@ -54,6 +61,9 @@ fgets_wo_nl(char *str,
 	    FILE *fp);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FGETS_WO_NL_H */ 
 
 

@@ -47,6 +47,12 @@
 
 #ifndef MK_PHONE_LIST_H
 #define MK_PHONE_LIST_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/acmod_set.h>
 #include <s3/lexicon.h>
@@ -64,6 +70,9 @@ mk_phone_list(char **btw_mark,
 	      uint32 n_word,
 	      lexicon_t *lex);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* MK_PHONE_LIST_H */ 
 
 /*

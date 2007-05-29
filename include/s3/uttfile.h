@@ -45,6 +45,12 @@
 
 #ifndef UTTFILE_H
 #define UTTFILE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -71,6 +77,9 @@ uttfile_data_next(uttfile_t *uf, char *buf, uint32 sz);
 int
 uttfile_data_for(uttfile_t *uf, const char *id, char *buf, uint32 sz);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* UTTFILE_H */ 
 
 

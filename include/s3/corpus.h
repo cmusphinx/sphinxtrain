@@ -46,6 +46,14 @@
 #ifndef CORPUS_H
 #define CORPUS_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 #include <s3/vector.h>
 #include <s3/acmod_set_ds.h>
@@ -231,6 +239,9 @@ corpus_provides_ddcode(void);
 int
 corpus_get_ddcode(unsigned char **ddcode, uint32 *n_frame);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* CORPUS_H */ 
 
 /*

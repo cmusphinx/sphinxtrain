@@ -46,6 +46,14 @@
 #ifndef CK_SEG_H
 #define CK_SEG_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/acmod_set.h>
 
 int
@@ -56,6 +64,10 @@ ck_seg(acmod_set_t *acmod_set,
        uint32 n_frame,
        const char *utt_name);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CK_SEG_H */ 
 

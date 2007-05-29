@@ -45,6 +45,12 @@
 
 #ifndef SEGDMP_H
 #define SEGDMP_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 #include <s3/acmod_set.h>
@@ -141,6 +147,9 @@ void
 segdmp_set_bufsz(uint32 sz_in_meg);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* SEGDMP_H */ 
 
 

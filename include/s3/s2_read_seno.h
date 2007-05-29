@@ -45,6 +45,12 @@
 
 #ifndef S2_READ_SENO_H
 #define S2_READ_SENO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/model_inventory.h>
 #include <s3/prim_type.h>
@@ -73,6 +79,9 @@ s2_read_seno_3(acmod_set_t *phone_set,
 	       uint32 *state_of);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S2_READ_SENO_H */ 
 
 

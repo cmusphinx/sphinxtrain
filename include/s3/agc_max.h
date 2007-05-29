@@ -48,6 +48,14 @@
 #ifndef AGC_MAX_H
 #define AGC_MAX_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 void
@@ -55,6 +63,10 @@ agc_max (float32 *cep,		/* The cepstrum data */
 	 uint32 fcnt,	/* Number of cepstrum frame availiable */
 	 uint32 cf_cnt);/* Number of coeff's per frame */
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* AGC_MAX_H */ 
 

@@ -45,12 +45,21 @@
 
 #ifndef N_WORDS_H
 #define N_WORDS_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
 uint32
 n_words(char *str);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* N_WORDS_H */ 
 
 

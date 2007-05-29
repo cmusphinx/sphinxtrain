@@ -46,6 +46,14 @@
 #ifndef BTREE_H
 #define BTREE_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 /* Data structures & type defn's */
@@ -115,6 +123,10 @@ void
 bt_print(bt_node_t *n, void *data, node_op_fn_t op);
 
 /* Private Fns */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BTREE_H */ 
 

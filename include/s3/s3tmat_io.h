@@ -46,6 +46,12 @@
 
 #ifndef S3TMAT_IO_H
 #define S3TMAT_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #define TMAT_FILE_VERSION	"1.0"
 
@@ -64,6 +70,9 @@ s3tmat_write(const char *fn,
 	     uint32 n_tmat,
 	     uint32 n_state);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3TMAT_IO_H */ 
 
 /*

@@ -48,6 +48,13 @@
 #ifndef FLOATBUF_IO_H
 #define FLOATBUF_IO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 #include <s3/s3.h>
 
@@ -62,6 +69,9 @@ float32buf_read(float32 **out_b,
 		uint32 *out_n,
 		FILE *fp);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FLOATBUF_IO_H */ 
 
 /*

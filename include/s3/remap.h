@@ -47,6 +47,12 @@
 
 #ifndef REMAP_H
 #define REMAP_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -84,6 +90,9 @@ remap_inverse(map_t *m, uint32 *n_map);
 int
 remap_free(map_t *m);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* REMAP_H */ 
 
 

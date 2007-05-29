@@ -47,6 +47,12 @@
 
 #ifndef NORM_H
 #define NORM_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -54,6 +60,9 @@ void norm_mean (float32 *vec,		/* the data */
 		uint32 nvec,	/* number of vectors (frames) */
 		uint32 veclen);	/* number of components per vector */
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* NORM_H */ 
 
 

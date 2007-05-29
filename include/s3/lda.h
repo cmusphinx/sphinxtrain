@@ -45,6 +45,12 @@
 
 #ifndef LDA_H
 #define LDA_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 float32 ***lda_read(const char *ldafile, uint32 *out_n_lda,
 		    uint32 *out_m, uint32 *out_n);
@@ -52,4 +58,7 @@ float32 ***lda_read(const char *ldafile, uint32 *out_n_lda,
 void lda_transform(float32 ***inout_feat, uint32 nfr,
 		   float32 ***lda, uint32 veclen, uint32 dim);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* LDA_H */

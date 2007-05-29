@@ -47,6 +47,12 @@
 
 #ifndef S2_READ_CB_H
 #define S2_READ_CB_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/gauden.h>
 #include <s3/prim_type.h>
@@ -60,6 +66,9 @@ s2_read_cb(gauden_t *g,
 	   int do_floor,
 	   const int32 *do_fixvar);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S2_READ_CB_H */ 
 
 

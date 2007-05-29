@@ -47,6 +47,12 @@
 
 #ifndef LEXICON_H
 #define LEXICON_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/acmod_set.h>
 #include <s3/list.h>
@@ -90,6 +96,9 @@ lex_entry_t *
 lexicon_lookup(lexicon_t *lexicon,
 	       char *word);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* LEXICON_H */ 
 
 

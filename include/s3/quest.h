@@ -47,6 +47,12 @@
 
 #ifndef QUEST_H
 #define QUEST_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 #include <s3/acmod_set.h>
@@ -180,6 +186,9 @@ parse_simple_q(quest_t *q,
 	       char *q_str);
 #endif
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* QUEST_H */ 
 
 

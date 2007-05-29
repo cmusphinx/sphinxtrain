@@ -47,6 +47,14 @@
 #ifndef CMN_H
 #define CMN_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 void
@@ -56,6 +64,9 @@ void
 cmn(float32 *mfcc,
     uint32 n_frame);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* CMN_H */ 
 
 

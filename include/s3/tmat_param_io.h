@@ -45,6 +45,12 @@
 
 #ifndef TMAT_PARAM_IO_H
 #define TMAT_PARAM_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #define TMAT_PARAM_VERSION	"0.1"
 
@@ -70,6 +76,9 @@ tmat_param_unbundle(const char *dir,
 		    unsigned int n_tmat,
 		    unsigned int n_state);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* TMAT_PARAM_IO_H */ 
 
 /*

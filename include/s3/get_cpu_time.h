@@ -46,9 +46,19 @@
 #ifndef GET_CPU_TIME_H
 #define GET_CPU_TIME_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 int
 get_cpu_time(uint32 *sec, float32 *frac_sec);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* GET_CPU_TIME_H */ 
 
 

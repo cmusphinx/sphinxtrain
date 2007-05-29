@@ -34,6 +34,15 @@
  *
  */
 
+#ifndef __MLLR_IO__
+#define __MLLR_IO__
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 int32
 store_reg_mat (const char    *regmatfn,
 	       const uint32  *veclen,
@@ -67,3 +76,8 @@ free_mllr_reg(float32 *****regl,
               float32 ****regr,
               uint32  n_class,
               uint32  n_stream);
+
+#ifdef __cplusplus
+}
+#endif
+#endif /* __MLLR_IO__ */

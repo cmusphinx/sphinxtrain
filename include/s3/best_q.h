@@ -46,6 +46,14 @@
 #ifndef BEST_Q_H
 #define BEST_Q_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 #include <s3/quest.h>
 
@@ -73,6 +81,10 @@ best_q(float32 ****mixw,
        float64 node_wt_ent,  /* Weighted entropy of node */
 /* END ADDITION FOR CONTINUOUS_TREES */
        quest_t **out_best_q);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BEST_Q_H */ 
 

@@ -47,6 +47,13 @@
 #ifndef TIMER_H
 #define TIMER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 int
@@ -54,6 +61,10 @@ timer_start(uint32 id);
 
 float32
 timer_stop(uint32 id);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TIMER_H */ 
 

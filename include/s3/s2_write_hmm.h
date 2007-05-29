@@ -45,6 +45,12 @@
 
 #ifndef S2_WRITE_HMM_H
 #define S2_WRITE_HMM_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 
 #include <s3/acmod_set.h>
@@ -62,6 +68,9 @@ s2_write_dhmm(float32 ***tmat,
 	      model_def_t *mdef,
 	      const char  *out_dir_name);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S2_WRITE_HMM_H */ 
 
 

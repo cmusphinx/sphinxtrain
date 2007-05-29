@@ -47,6 +47,13 @@
 #ifndef ITREE_H
 #define ITREE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 typedef uint32 cell_id_t;
@@ -108,6 +115,9 @@ itree_enum_init(itree_t *t);
 cell_id_t
 itree_enum(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* ITREE_H */ 
 
 

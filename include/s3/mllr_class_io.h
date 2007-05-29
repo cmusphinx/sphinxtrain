@@ -45,6 +45,12 @@
 
 #ifndef MLLR_CLASS_IO_H
 #define MLLR_CLASS_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #define MLLR_CLASS_VERSION	"0.1"
 
@@ -70,6 +76,9 @@ ck_mllr_class(uint32 *mllr_class_map,
 	      uint32 n_map,
 	      uint32 n_mgau);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* MLLR_CLASS_IO_H */ 
 
 

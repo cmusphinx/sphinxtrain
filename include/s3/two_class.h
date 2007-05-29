@@ -45,6 +45,12 @@
 
 #ifndef TWO_CLASS_H
 #define TWO_CLASS_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -63,6 +69,9 @@ two_class(float32 ****mixw_occ,
           uint32 *bclust,
           float32 mwfloor);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* TWO_CLASS_H */ 
 
 

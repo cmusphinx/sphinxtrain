@@ -46,6 +46,12 @@
 
 #ifndef S3PHSEG_IO_H
 #define S3PHSEG_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 #include <s3/acmod_set.h>
@@ -68,4 +74,7 @@ int s3phseg_write(const char *fn,
 
 void s3phseg_free(s3phseg_t *phseg);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3PHSEG_IO_H */

@@ -45,6 +45,12 @@
 
 #ifndef S2_READ_MAP_H
 #define S2_READ_MAP_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/acmod_set.h>
 #include <s3/prim_type.h>
@@ -61,6 +67,9 @@ s2_convert_smap_to_global(acmod_set_t *phone_set,
 			  uint32 **state_of,
 			  uint32 *cluster_size);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S2_READ_MAP_H */ 
 
 

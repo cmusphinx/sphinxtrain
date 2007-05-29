@@ -46,6 +46,12 @@
 
 #ifndef S3LAMB_IO_H
 #define S3LAMB_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #define LAMBDA_FILE_VERSION "1.0"
 #define LAMBDACNT_FILE_VERSION "1.0"
@@ -72,6 +78,9 @@ s3lambcnt_write(const char *fn,
 		const uint32 *lambda_cnt,
 		uint32 n_lambda_cnt);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* S3LAMB_IO_H */ 
 
 

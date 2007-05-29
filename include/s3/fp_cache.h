@@ -46,6 +46,13 @@
 #ifndef FP_CACHE_H
 #define FP_CACHE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/s3.h>
 #include <s3/prim_type.h>
 
@@ -69,6 +76,9 @@ fpc_get(uint32 id);
 int
 fpc_flush(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FP_CACHE_H */ 
 
 

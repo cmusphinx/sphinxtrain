@@ -47,6 +47,12 @@
 
 #ifndef LIVE_NORM_H
 #define LIVE_NORM_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -58,6 +64,9 @@ void mean_norm_acc_sub(float32 *vec);
 
 void mean_norm_update(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* LIVE_NORM_H */ 
 
 

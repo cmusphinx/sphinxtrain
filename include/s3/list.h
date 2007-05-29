@@ -40,6 +40,12 @@
 
 #ifndef _LIST_H_
 #define _LIST_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -54,4 +60,7 @@ typedef struct list_s {
 extern list_t *new_list(void);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif

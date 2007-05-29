@@ -45,6 +45,12 @@
 
 #ifndef SWAP_H
 #define SWAP_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #define SWAP_INT16(x)	*(x) = ((0xff & (*(x))>>8) | (0xff00 & (*(x))<<8))
 
@@ -68,6 +74,9 @@ swap_stamp(FILE *fp);
 int
 swap_little_endian(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* SWAP_H */ 
 
 

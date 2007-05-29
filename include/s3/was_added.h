@@ -45,6 +45,12 @@
 
 #ifndef WAS_ADDED_H
 #define WAS_ADDED_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -76,6 +82,9 @@ int
 was_added(pair_t **l,
 	  uint32 src);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* WAS_ADDED_H */ 
 
 /*

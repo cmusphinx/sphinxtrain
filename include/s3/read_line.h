@@ -47,6 +47,12 @@
 
 #ifndef READ_LINE_H
 #define READ_LINE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -60,6 +66,9 @@ read_line(char *buf,
 	  uint32 *n_read,
 	  FILE *fp);
 	  
+#ifdef __cplusplus
+}
+#endif
 #endif /* READ_LINE_H */ 
 
 /*

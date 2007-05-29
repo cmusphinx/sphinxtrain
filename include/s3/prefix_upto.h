@@ -47,9 +47,18 @@
 
 #ifndef PREFIX_UPTO_H
 #define PREFIX_UPTO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 char *prefix_upto(char **in_str, char delimiter);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* PREFIX_UPTO_H */ 
 
 

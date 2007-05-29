@@ -49,10 +49,22 @@
 #ifndef CEP_MANIP_H
 #define CEP_MANIP_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/live_norm.h>
 #include <s3/norm.h>
 #include <s3/agc_emax.h>
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CEP_MANIP_H */ 
 

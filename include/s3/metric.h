@@ -45,6 +45,12 @@
 
 #ifndef METRIC_H
 #define METRIC_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -58,6 +64,9 @@ wt_ent_inc(float32 **a,
 	   uint32 n_cw);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* METRIC_H */ 
 
 

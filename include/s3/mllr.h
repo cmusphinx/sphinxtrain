@@ -35,6 +35,12 @@
  */
 #ifndef __MLLR_H__
 #define __MLLR_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/feat.h>
 #define TINY 1.0e-20;
@@ -83,5 +89,8 @@ int32 mllr_transform_mean(vector_t ***mean,
 			  int32 *cb2mllr,
 			  uint32 n_mllr_class);
 
+#ifdef __cplusplus
+}
+#endif
 #endif
 

@@ -45,6 +45,12 @@
 
 #ifndef MK_TRANS_SEQ_H
 #define MK_TRANS_SEQ_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 #include <s3/model_def.h>
@@ -60,6 +66,9 @@ mk_trans_seq(uint32 **out_tmat_seq,
 
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* MK_TRANS_SEQ_H */ 
 
 

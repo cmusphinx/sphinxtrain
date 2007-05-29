@@ -46,11 +46,21 @@
 #ifndef GET_TIME_H
 #define GET_TIME_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 
 int
 get_time(uint32 *sec, float32 *frac_sec);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* GET_TIME_H */ 
 
 

@@ -47,6 +47,12 @@
 
 #ifndef TOPO_READ_H
 #define TOPO_READ_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 
@@ -55,6 +61,9 @@ topo_read(float32 ***tmat,
 	  uint32 *n_state_pm,
 	  const char *topo_file_name);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* TOPO_READ_H */ 
 
 

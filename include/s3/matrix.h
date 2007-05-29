@@ -45,6 +45,12 @@
 
 #ifndef MATRIX_H
 #define MATRIX_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #include <s3/prim_type.h>
 #include <s3/vector.h>
@@ -117,6 +123,9 @@ scalarmultiply(vector_t *a, float32 x, int32 m, int32 n);
 void
 matrixadd(vector_t *a, vector_t *b, int32 m, int32 n);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* MATRIX_H */ 
 
 

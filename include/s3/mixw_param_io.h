@@ -47,6 +47,12 @@
 
 #ifndef MIXW_PARAM_IO_H
 #define MIXW_PARAM_IO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 #define MIXW_PARAM_VERSION "0.1"
 
@@ -81,6 +87,9 @@ mixw_param_read(const char **out_comment,
 		uint32 *out_n_cw,
 		const char *file_name);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* MIXW_PARAM_IO_H */ 
 
 

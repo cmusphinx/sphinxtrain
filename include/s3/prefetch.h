@@ -36,6 +36,12 @@
 
 #ifndef _PREFETCH_H
 #define _PREFETCH_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
 
 /*
  * prefetch.c -- a simple interface to set up prefetching of files that
@@ -52,4 +58,7 @@ int prefetch_hint(char *fn);
 
 int prefetch_finish(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* _PREFETCH_H */

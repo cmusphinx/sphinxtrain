@@ -46,6 +46,13 @@
 #ifndef KMEANS_H
 #define KMEANS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+}
+#endif
+
 #include <s3/prim_type.h>
 #include <s3/vector.h>
 
@@ -138,6 +145,9 @@ k_means_update_subset(vector_t *mean,
 		      uint32 n_obs_subset);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* KMEANS_H */ 
 
 
