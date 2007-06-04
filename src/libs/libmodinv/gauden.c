@@ -614,7 +614,7 @@ gauden_free_acc(gauden_t *g)
     if (g->fullvacc) {
 	gauden_free_param_full(g->fullvacc);
     }
-    g->vacc = NULL;
+    g->fullvacc = NULL;
 
     if (g->dnom) {
 	ckd_free_3d((void ***)g->dnom);
