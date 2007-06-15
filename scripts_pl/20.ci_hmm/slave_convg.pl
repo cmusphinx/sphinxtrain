@@ -333,19 +333,11 @@ sub FlatInitialize ()
     $logfile = "$logdir/${ST::CFG_EXPTNAME}.cpmean_cihmm.log";
     HTML_Print ("\t\tcp_mean " . FormatURL("$logfile", "Log File") . " ");
 
-    my @feat;
-    if (@lda_args) {
-	@feat = (-feat => '1s_c', -ceplen => $ST::CFG_LDA_DIMENSION);
-    }
-    else {
-	@feat = (-feat => $ST::CFG_FEATURE, -ceplen => $ST::CFG_VECTOR_LENGTH);
-    }
     if ($return_value = RunTool('cp_parm', $logfile, 0,
 				-cpopsfn => $ST::CFG_CP_OPERATION,
 				-igaufn => catfile($outhmm, 'globalmean'),
 				-ncbout => $NUM_CI_STATES,
-				-ogaufn => catfile($outhmm, 'means'),
-				@feat
+				-ogaufn => catfile($outhmm, 'means')
 			       )) {
       return $return_value;
     }
@@ -369,7 +361,7 @@ sub FlatInitialize ()
     if ($return_value = RunTool('cp_parm', $logfile, 0,
 				-cpopsfn => $ST::CFG_CP_OPERATION,
 				-ncbout => $NUM_CI_STATES,
-				@varcpy, @feat
+				@varcpy
 			       )) {
 	return $return_value;
     }
