@@ -457,14 +457,6 @@ main(int argc, char *argv[])
 
     parse_cmd_ln(argc, argv);
 
-    if (cmd_ln_access("-feat") != NULL) {
-	feat_set(cmd_ln_access("-feat"));
-	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
-    }
-    else {
-	E_FATAL("You need to set a feature extraction config using -feat\n");
-    }
-
     if(rd_parm()==S3_ERROR) {
 	E_FATAL("Problem in reading input parameters.\n");
     }
