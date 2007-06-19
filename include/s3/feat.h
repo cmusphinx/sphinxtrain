@@ -68,6 +68,12 @@ extern "C" {
 #define FEAT_ID_MAX		9
 #define FEAT_ID_NONE		0xffffffff
 
+/* These default values will be used by the command line parser,
+ * therefore they're defined as strings */
+#define FEAT_DEFAULT_CEP_LENGTH          "13"
+#define FEAT_DEFAULT_FEATURE_TYPE        "1s_c_d_dd"
+#define FEAT_DEFAULT_FEATURE_EXTENSION   "mfc"
+
 typedef struct feat_conf_s {
     void (*set_in_veclen)(uint32 len);
     const char * (*doc)(void);

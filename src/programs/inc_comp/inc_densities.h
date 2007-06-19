@@ -65,6 +65,7 @@ inc_densities(float32 ***new_mixw,
 	      uint32 n_mgau,
 	      uint32 n_feat,
 	      uint32 n_density,
+	      const uint32 *veclen,
 
 	      uint32 n_inc);
 

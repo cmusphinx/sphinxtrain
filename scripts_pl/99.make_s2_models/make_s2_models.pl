@@ -158,7 +158,6 @@ if ($ST::CFG_HMM_TYPE eq ".semi.") {
 			  -moddeffn => $s3mdef,
 			  -mixwfn => $s3mixw,
 			  -mwfloor => 0.0000001,
-			  -feattype => 's2_4x',
 			  -sendumpfn => catfile($s2dir, 'sendump'));
   #HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> completed </font>\n");
   exit $return_value if ($return_value);

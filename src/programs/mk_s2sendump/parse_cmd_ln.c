@@ -65,7 +65,7 @@ Convert s3 model definition file and s3 mixture weight file to a s2 senddump fil
 "Example: \n\
 \n\
 mk_s2sendump -moddeffn s3mdef -mixwfn s3mixw -tpfloor 0.0000001 \n\
--feattype s2_4x -sendumpfn s2dir/sendump";
+-sendumpfn s2dir/sendump";
 
 
     static arg_def_t defn[] = {
@@ -96,11 +96,6 @@ mk_s2sendump -moddeffn s3mdef -mixwfn s3mixw -tpfloor 0.0000001 \n\
 	      CMD_LN_NO_VALIDATION,
 	      CMD_LN_NO_DEFAULT,
 	      "Output sendump file name"},
-	{ "-feattype",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
-	      "Feature type e.g. s2_4x"},
 	{ "-pocketsphinx",
 	  CMD_LN_BOOLEAN,
 	  CMD_LN_NO_VALIDATION,

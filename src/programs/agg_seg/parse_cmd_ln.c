@@ -60,13 +60,12 @@ parse_cmd_ln(int argc, char *argv[])
     const char helpstr[] =  
 "Description: \n\
 \n\
-agg_seg sample accumulate feature vectors and used it for quantizing \n\
-the vector space.  This functionality is very useful in S2 training \n\
-initialization. Not all features vectors are used.  They are sampled \n\
-using option -stride. \n\
+agg_seg accumulate feature vectors and use the accumulated values to quantize \n\
+the vector space.  This functionality is useful in semi-continuous training \n\
+initialization. Feature vectors are skipped according to the option -stride. \n\
 \n\
-There are many other options of this command is currently\n\
-obsolete. Please type -example yes to get a working argument list.";
+Some options are specific to Sphinx-2.\n\
+Please type -example yes to get an example argument list.";
 
     const char examplestr[]=
 "Example: \n\
@@ -250,12 +249,12 @@ ctl -cepdir cepdir -cepext .mfc -ceplen 13 -stride 10 ";
 	{ "-cepext",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  "mfc",
+	  FEAT_DEFAULT_FEATURE_EXTENSION,
 	  "Extension of the cepstrum files"},
 	{ "-ceplen",
 	  CMD_LN_INT32,
 	  CMD_LN_NO_VALIDATION,
-	  "13",
+	  FEAT_DEFAULT_CEP_LENGTH,
 	  "# of coefficients per cepstrum frame"},
 	{ "-cepwin",
 	  CMD_LN_INT32,
@@ -286,10 +285,8 @@ ctl -cepdir cepdir -cepext .mfc -ceplen 13 -stride 10 ";
 	{ "-feat",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
-	  "Feature set to compute"
-	  "\n\t4s_12c_24d_3p_12dd"
-	  "\n\t1s_12c_12d_3p_12dd"},
+	  FEAT_DEFAULT_FEATURE_TYPE,
+	  "Feature set to compute"},
 
 	{ "-cachesz",
 	  CMD_LN_INT32,

@@ -75,22 +75,12 @@ main(int argc, char *argv[])
     uint32 n_mixw;
     uint32 n_mgau;
     uint32 n_feat;
-    uint32 feat_veclen;
     uint32 n_density;
     uint32 n_inc;
     const uint32 *veclen;
     int32 var_is_full;
 
     parse_cmd_ln(argc, argv);
-
-    if (cmd_ln_access("-feat") != NULL) {
-	feat_set((const char *)cmd_ln_access("-feat"));
-    }
-    else {
-	E_FATAL("You must specify the acoustic feature set using -feat\n");
-    }
-    feat_veclen = *(int32 *)cmd_ln_access("-ceplen");
-    feat_set_in_veclen(feat_veclen);
 
     E_INFO("Reading mixing weight file %s.\n",
 	   cmd_ln_access("-inmixwfn"));
@@ -175,6 +165,7 @@ main(int argc, char *argv[])
 		  n_mgau,
 		  n_feat,
 		  n_density,
+		  veclen,
 
 		  n_inc);
 
@@ -197,7 +188,7 @@ main(int argc, char *argv[])
 			n_mgau,
 			n_feat,
 			n_density+n_inc,
-			feat_vecsize()) != S3_SUCCESS) {
+			veclen) != S3_SUCCESS) {
 	    return 1;
 	}
     }
@@ -212,7 +203,7 @@ main(int argc, char *argv[])
 				 n_mgau,
 				 n_feat,
 				 n_density+n_inc,
-				 feat_vecsize()) != S3_SUCCESS) {
+				 veclen) != S3_SUCCESS) {
 		return 1;
 	    }
 	}
@@ -222,7 +213,7 @@ main(int argc, char *argv[])
 			    n_mgau,
 			    n_feat,
 			    n_density+n_inc,
-			    feat_vecsize()) != S3_SUCCESS) {
+			    veclen) != S3_SUCCESS) {
 		return 1;
 	    }
 	}

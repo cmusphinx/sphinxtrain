@@ -83,19 +83,6 @@ initialize(int argc,
     /* define, parse and (partially) validate the command line */
     parse_cmd_ln(argc, argv);
 
-    if (cmd_ln_access("-feat") != NULL) {
-	feat_set(cmd_ln_access("-feat"));
-    }
-    else {
-	E_FATAL("You need to set a feature extraction config using -feat\n");
-    }
-
-    if (cmd_ln_access("-ceplen") == NULL) {
-	E_FATAL("Input vector length must be specified using -ceplen\n");
-    }
-    
-    feat_set_in_veclen(*(int32 *)cmd_ln_access("-ceplen"));
-
     return S3_SUCCESS;
 }
 
@@ -105,7 +92,7 @@ init_uniform(float32 ***dest_mixw,
 	     uint32 n_feat,
 	     uint32 n_gau)
 {
-    float32 uniform = 1.0 / (float32)n_gau;
+    float32 uniform = 1.0f / (float32)n_gau;
     unsigned int s, i, j;
     uint32 d_m;
 
@@ -147,15 +134,13 @@ init_model(float32 ***dest_mixw,
 	   
 	   uint32 n_feat,
 	   uint32 n_gau,
-	   uint32 n_state_pm)
+	   uint32 n_state_pm,
+	   const uint32 *veclen)
 {
     unsigned int s, i, j, k, l, ll;
     unsigned int s_m, s_mg;
     unsigned int d_m, d_mg;
     uint32 s_tmat, d_tmat;
-    const uint32 *veclen;
-
-    veclen = feat_vecsize();
 
     printf("%10s <- %-10s: ",
 	   acmod_set_id2name(dest_acmod_set, dest->p),
@@ -275,8 +260,6 @@ init_mixw()
 
     const char *ts2cbfn;
 
-    veclen = feat_vecsize();
-    
     E_INFO("Reading src %s\n", (const char *)cmd_ln_access("-src_moddeffn"));
 
     /* read in the source model definition file */
@@ -335,10 +318,9 @@ init_mixw()
 		   &n_cb_src,
 		   &tmp_n_feat,
 		   &tmp_n_gau,
-		   &tmp_veclen) != S3_SUCCESS) {
+		   &veclen) != S3_SUCCESS) {
 	return S3_ERROR;
     }
-    ckd_free((void *)tmp_veclen);
 
     if (tmp_n_feat != n_feat) {
 	E_FATAL("src mean n_feat (== %u) != prior value (== %u)\n",
@@ -375,8 +357,6 @@ init_mixw()
 	}
     }
 
-    ckd_free((void *)tmp_veclen);
-
     if (tmp_n_feat != n_feat) {
 	E_FATAL("src var n_feat (== %u) != prior value (== %u)\n",
 		tmp_n_feat, n_feat);
@@ -394,6 +374,14 @@ init_mixw()
 	E_FATAL("Too few source mixing weights, %u, for the # of tied states, %u\n",
 		n_mixw_src, src_mdef->n_tied_state);
     }
+
+    for (i = 0; i < n_feat; i++) {
+	if (veclen[i] != tmp_veclen[i]) {
+	    E_FATAL("src var veclen[%u] (== %u) != prior value (== %u)\n",
+		    i, tmp_veclen[i], veclen[i]);
+	}
+    }
+    ckd_free((void *)tmp_veclen);
 
     E_INFO("Reading dest %s\n",
 	   (const char *)cmd_ln_access("-dest_moddeffn"));
@@ -498,7 +486,7 @@ init_mixw()
 			   &dest_mdef->defn[dest_m], dest_mdef->cb, dest_mdef->acmod_set,
 			   src_mixw, src_mean, src_var, src_fullvar, src_tmat,
 			   &src_mdef->defn[src_m_base], src_mdef->cb, src_mdef->acmod_set,
-			   n_feat, n_gau, n_state_pm);
+			   n_feat, n_gau, n_state_pm, veclen);
 	    }
 	}
 	else {
@@ -508,7 +496,7 @@ init_mixw()
 		       &dest_mdef->defn[dest_m], dest_mdef->cb, dest_mdef->acmod_set,
 		       src_mixw, src_mean, src_var, src_fullvar, src_tmat,
 		       &src_mdef->defn[src_m], src_mdef->cb, src_mdef->acmod_set,
-		       n_feat, n_gau, n_state_pm);
+		       n_feat, n_gau, n_state_pm, veclen);
 	}
     }
 
@@ -555,7 +543,7 @@ init_mixw()
 		    n_cb_dest,
 		    n_feat,
 		    n_gau,
-		    feat_vecsize()) != S3_SUCCESS) {
+		    veclen) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
@@ -567,7 +555,7 @@ init_mixw()
 			     n_cb_dest,
 			     n_feat,
 			     n_gau,
-			     feat_vecsize()) != S3_SUCCESS) {
+			     veclen) != S3_SUCCESS) {
 	    return S3_ERROR;
 	}
     }
@@ -577,11 +565,11 @@ init_mixw()
 			n_cb_dest,
 			n_feat,
 			n_gau,
-			feat_vecsize()) != S3_SUCCESS) {
+			veclen) != S3_SUCCESS) {
 	    return S3_ERROR;
 	}
     }
-    
+    ckd_free((void *)veclen);    
     return S3_SUCCESS;
 }
 

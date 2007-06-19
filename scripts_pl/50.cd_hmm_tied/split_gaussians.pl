@@ -71,7 +71,7 @@ my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777);
 
 Log ("    Split Gaussians, increase by $n_inc\n");
-    
+
 #**************************************************************************
 # this script copies the mixw/mean/var/tmat from a cd (continuous)
 # HMM to another cd (continuous) HMM, increasing the number of
@@ -130,15 +130,8 @@ if ($n_inc <= 0) {
 my $logdir = "$ST::CFG_LOG_DIR/50.cd_hmm_tied";
 mkdir ($logdir,0777);
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.split_gaussians.$n_current.$n_inc.log";
+HTML_Print (FormatURL("$logfile", "Log File") . " ");
 
-# if there is an LDA transformation, use it
-my @feat;
-if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
-    @feat = (-feat => '1s_c', -ceplen => $ST::CFG_LDA_DIMENSION);
-}
-else {
-    @feat = (-feat => $ST::CFG_FEATURE, -ceplen => $ST::CFG_VECTOR_LENGTH);
-}
 my $rv = RunTool('inc_comp', $logfile, 0,
 		 -ninc => $n_inc,
 		 -dcountfn => $src_mixwfn,
@@ -148,6 +141,5 @@ my $rv = RunTool('inc_comp', $logfile, 0,
 		 -outmeanfn=> $dest_meanfn,
 		 -invarfn  => $src_varfn,
 		 -outvarfn => $dest_varfn,
-		 -fullvar => $ST::CFG_FULLVAR,
-		 @feat);
+		 -fullvar => $ST::CFG_FULLVAR);
 exit $rv;

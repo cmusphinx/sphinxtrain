@@ -70,7 +70,7 @@ Conversion from sphinx 2 codebook to sphinx3 means and variances";
 
   const char examplestr[]=
 "Example: \n\
-mk_s3gau -meanfn s3mean -varfn s3var -cbdir s2dir -feat 4s_12c_24d_3p_12dd ";
+mk_s3gau -meanfn s3mean -varfn s3var -cbdir s2dir ";
 
     static arg_def_t defn[] = {
 	{ "-help",
@@ -98,12 +98,12 @@ mk_s3gau -meanfn s3mean -varfn s3var -cbdir s2dir -feat 4s_12c_24d_3p_12dd ";
 	{ "-cbdir",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ".",
 	  "A directory containing SPHINX-II 1PD codebooks" },
 	{ "-varfloor",
 	  CMD_LN_FLOAT32,
 	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  "0.00001",
 	  "Minimum variance value" },
 	{ "-cepcb",
 	  CMD_LN_STRING,
@@ -143,24 +143,6 @@ mk_s3gau -meanfn s3mean -varfn s3var -cbdir s2dir -feat 4s_12c_24d_3p_12dd ";
 	  CMD_LN_NO_VALIDATION,
 	  "false",
 	  "Fix the power variance to the SPHINX-II standards" },
-
-	{ "-feat",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  "4s_12c_24d_3p_12dd",
-	  "Defines the feature set to use" },
-
-	{ "-ceplen",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  "13",
-	  "Defines the input feature vector (e.g. MFCC) len" },
-
-	{ "-cepwin",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  "0",
-	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
 
 	{ NULL,
 	  CMD_LN_UNDEF,

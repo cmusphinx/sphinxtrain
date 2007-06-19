@@ -537,20 +537,6 @@ rd_interp_wr()
     const char **accum_dir;
     uint32 i;
 
-    if (cmd_ln_access("-feat")) {
-	feat_set((const char *)cmd_ln_access("-feat"));
-    }
-    else {
-	E_FATAL("Please set the feature set using -feat\n");
-    }
-
-    if (cmd_ln_access("-ceplen")) {
-	feat_set_in_veclen(*(int32 *)cmd_ln_access("-ceplen"));
-    }
-    else {
-	E_FATAL("Please set the source feature vector length using -ceplen\n");
-    }
-
     if (model_def_read(&mdef,
 		       cmd_ln_access("-moddeffn")) != S3_SUCCESS) {
 	return S3_ERROR;

@@ -95,15 +95,17 @@ my $rv = RunTool('delint', $logfile, 0,
 	     -moddeffn => $moddeffn,
 	     -mixwfn => $mixwfn,
 	     -cilambda => $cilambda,
-	     -feat => $ST::CFG_FEATURE,
-	     -ceplen => $ST::CFG_VECTOR_LENGTH,
 	     -maxiter => 4000);
 exit $rv if $rv;
+
+$logfile = "$logdir/$ST::CFG_EXPTNAME.s2sendump-${nsenones}.log";
+Log ("\n    Dumping senone...\n");
+HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
+
 $rv = RunTool('mk_s2sendump', $logfile, 0,
 		 -moddeffn => $moddeffn,
 		 -mixwfn => $mixwfn,
 		 -mwfloor => 0.0000001,
-		 -feattype => $ST::CFG_FEATURE,
 		 -pocketsphinx => 'yes',
 		 -sendumpfn => catfile($hmm_dir, 'sendump'));
 exit $rv if $rv;

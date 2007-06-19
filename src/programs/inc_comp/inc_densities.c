@@ -84,6 +84,7 @@ inc_densities(float32 ***new_mixw,
 	      uint32 n_mgau,
 	      uint32 n_feat,
 	      uint32 n_density,
+	      const uint32 *veclen,
 
 	      uint32 n_inc)
 {
@@ -91,10 +92,7 @@ inc_densities(float32 ***new_mixw,
     uint32 **did;
     float32 max_wt;
     uint32 max_wt_idx;
-    const uint32 *veclen;
     float32 std;
-
-    veclen = feat_vecsize();
 
     assert(n_mgau <= n_mixw);
 
@@ -182,12 +180,12 @@ inc_densities(float32 ***new_mixw,
 		for (l = 0; l < veclen[j]; l++) {
 		    /* Use the stddev of mean[l] itself for full covariances. */
 		    if (fullvar)
-			std = sqrt(fullvar[i][j][max_wt_idx][l][l]);
+			std = (float32)sqrt(fullvar[i][j][max_wt_idx][l][l]);
 		    else
-			std = sqrt(var[i][j][max_wt_idx][l]);
+			std = (float32)sqrt(var[i][j][max_wt_idx][l]);
 		    
-		    new_mean[i][j][max_wt_idx][l] = mean[i][j][max_wt_idx][l] + 0.2 * std;
-		    new_mean[i][j][n_density+r][l]  = mean[i][j][max_wt_idx][l] - 0.2 * std;
+		    new_mean[i][j][max_wt_idx][l] = mean[i][j][max_wt_idx][l] + 0.2f * std;
+		    new_mean[i][j][n_density+r][l]  = mean[i][j][max_wt_idx][l] - 0.2f * std;
 		}
 
 		did[j][r] = max_wt_idx;

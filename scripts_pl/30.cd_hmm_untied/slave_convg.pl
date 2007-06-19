@@ -135,13 +135,6 @@ sub Initialize () {
   Log ("    Initialization Copy CI to CD\n");
   HTML_Print (FormatURL("$logfile", "Log File") . " ");
 
-  # if there is an LDA transformation, use it
-  my @feat;
-  if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
-      @feat = (-feat => '1s_c', -ceplen => $ST::CFG_LDA_DIMENSION);
-  } else {
-      @feat = (-feat => $ST::CFG_FEATURE, -ceplen => $ST::CFG_VECTOR_LENGTH);
-  }
   my $cd_mdeffile = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef";
   $rv = RunTool
       ('init_mixw', $logfile, 0,
@@ -157,8 +150,7 @@ sub Initialize () {
        -dest_meanfn => "$cdhmmdir/means",
        -dest_varfn => "$cdhmmdir/variances",
        -dest_tmatfn => "$cdhmmdir/transition_matrices",
-       -fullvar => $ST::CFG_FULLVAR,
-       @feat);
+       -fullvar => $ST::CFG_FULLVAR);
   return $rv;
 }
 

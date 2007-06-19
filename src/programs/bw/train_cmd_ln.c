@@ -442,7 +442,7 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	{ "-cepext",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  "mfc",
+	  FEAT_DEFAULT_FEATURE_EXTENSION,
 	  "The cepstrum file extension" },
 
 	{ "-cepdir",
@@ -496,7 +496,7 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	{ "-ceplen",
 	  CMD_LN_INT32,
 	  CMD_LN_NO_VALIDATION,
-	  "13",
+	  FEAT_DEFAULT_CEP_LENGTH,
 	  "The length of the input feature (e.g. MFCC) vectors"},
 
 	{ "-cepwin",
@@ -599,7 +599,7 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	{ "-feat",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  FEAT_DEFAULT_FEATURE_TYPE,
 	  "This argument selects the derived feature computation to use."},
 
 	{ "-ldafn",

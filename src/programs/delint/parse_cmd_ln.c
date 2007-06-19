@@ -100,7 +100,7 @@ up the numerator terms from the various buffers, and the denominator\n\
 terms, and then does the division. ";
 
     const char examplestr[]=
-"delint -accumdirs accumdir -moddeffn mdef -mixwfn mixw -cilambda 0.9 -feat  c/1..L-1/,d/1..L-1/,c/0/d/0/dd/0/,dd/1..L-1/ -ceplen 13 -maxiter 4000";
+"delint -accumdirs accumdir -moddeffn mdef -mixwfn mixw -cilambda 0.9 -maxiter 4000";
 
     static arg_def_t defn[] = {
 	{ "-help",
@@ -140,21 +140,7 @@ terms, and then does the division. ";
 	  CMD_LN_NO_VALIDATION,
 	  "100",
 	  "max # of iterations if no lambda convergence"},
-	{ "-feat",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  "4s_12c_24d_3p_12dd",
-	  "feature stream definition" },
-	{ "-ceplen",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  "13",
-	  "Input feature vector length (e.g. MFCC)"},
-	{ "-cepwin",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  "0",
-	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
+
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 

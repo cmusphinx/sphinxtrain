@@ -209,7 +209,6 @@ sub Launch_SplitGaussian {
 			 -moddeffn => catfile($hmm_dir, 'mdef'),
 			 -mixwfn => catfile($hmm_dir, 'mixture_weights'),
 			 -mwfloor => 0.0000001,
-			 -feattype => $ST::CFG_FEATURE,
 			 -pocketsphinx => 'yes',
 			 -sendumpfn => catfile($hmm_dir, 'sendump'));
     }

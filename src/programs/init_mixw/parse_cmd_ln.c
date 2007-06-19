@@ -74,8 +74,7 @@ init_mixw -src_moddeffn src_moddeffn -src_ts2cbfn .semi. -src_mixwfn \n\
 src_mixwfn -src_meanfn src_meanfn -src_varfn src_varfn -src_tmatfn \n\
 src_tmatfn -dest_moddeffn dest_moddeffn -dest_ts2cbfn \n\
 .semi. -dest_mixwfn dest_mixwfn -dest_me anfn dest_meanfn -dest_varfn \n\
-dest_varfn -dest_tmatfn dest_tmatfn -feat \n\
-c/1..L-1/,d/1..L-1/,c/0/d/0/dd/0/,dd/1..L-1/ -ceplen 13";
+dest_varfn -dest_tmatfn dest_tmatfn";
 
     static arg_def_t defn[] = {
 	{ "-help",
@@ -156,21 +155,6 @@ c/1..L-1/,d/1..L-1/,c/0/d/0/dd/0/,dd/1..L-1/ -ceplen 13";
 	  CMD_LN_NO_DEFAULT,
 	  "The destination transition matrix file name"},
 
-	{ "-feat",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  "1s_12c_12d_3p_12dd",
-	  "Derived feature computation to use"},
-	{ "-ceplen",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  "13",
-	  "Size of the input feature vector length"},
-	{ "-cepwin",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  "0",
-	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 

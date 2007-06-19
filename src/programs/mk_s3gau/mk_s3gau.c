@@ -72,19 +72,6 @@ main(int argc, char *argv[])
 
     parse_cmd_ln(argc, argv);
 
-    if (cmd_ln_access("-feat") != NULL) {
-	feat_set((const char *)cmd_ln_access("-feat"));
-	if (cmd_ln_access("-ceplen") != NULL) {
-	    feat_set_in_veclen(*(int32 *)cmd_ln_access("-ceplen"));
-	}
-	else {
-	    E_FATAL("Define the input feature vector len using -veclen argument\n");
-	}
-    }
-    else {
-	E_FATAL("Define a feature set using -feat argument\n");
-    }
-
     g = gauden_alloc();
 
     gauden_set_min_var(*(float32 *)cmd_ln_access("-varfloor"));
