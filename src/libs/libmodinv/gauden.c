@@ -365,7 +365,9 @@ diag_norm(vector_t var,
     log_det = 0;
 
     for (i = 0; i < len; i++) {
-	assert(var[i] > 0);
+	if (var[i] <= 0) {
+	    E_FATAL("Sanity check var[i] > 0 failed: %e\n", var[i]);
+	}
 	log_det += log(var[i]);
     }
 
