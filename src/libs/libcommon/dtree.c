@@ -632,13 +632,19 @@ tied_state(dtree_node_t *node,
 	return node->clust;
     }
     else {
+#ifdef HORRIBLY_VERBOSE
 	print_comp_quest(stderr, pset, (comp_quest_t *)node->q);
+#endif
 	if (eval_comp_quest((comp_quest_t *)node->q, dfeat, 4)) {
+#ifdef HORRIBLY_VERBOSE
 	    fprintf(stderr, " -> y\n");
+#endif
 	    return tied_state(node->y, b, l, r, wp, pset);
 	}
 	else {
+#ifdef HORRIBLY_VERBOSE
 	    fprintf(stderr, " -> n\n");
+#endif
 	    return tied_state(node->n, b, l, r, wp, pset);
 	}
     }

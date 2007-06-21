@@ -237,17 +237,21 @@ main(int argc, char *argv[])
 		acmod_set_id2tri(omdef->acmod_set,
 				 &b, &l, &r, &wp,
 				 p);
+#ifdef HORRIBLY_VERBOSE
 		fprintf(stderr, "%s %u ",
 			acmod_set_id2name(omdef->acmod_set, p), s);
+#endif
 
 		bb = allphones ? 0 : b;
 		odefn->state[s] = tied_state(&tree[bb][s]->node[0],
 					     b, l, r, wp,
 					     pset);
 
+#ifdef HORRIBLY_VERBOSE
 		fprintf(stderr, "\t-> %u\n", odefn->state[s]);
 
 		fprintf(stderr, "\n");
+#endif
 	    }
 	}
     }
