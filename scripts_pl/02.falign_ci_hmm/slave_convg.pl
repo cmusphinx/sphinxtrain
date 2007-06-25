@@ -221,13 +221,6 @@ sub FlatInitialize ()
     my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_1";
     mkdir ($output_buffer_dir,0777);
 
-    # if there is an LDA transformation, use it
-    my @lda_args;
-    if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
-	push(@lda_args,
-	     -ldafn => $ST::CFG_LDA_TRANSFORM,
-	     -ldadim => $ST::CFG_LDA_DIMENSION);
-    }
     if ($return_value = RunTool('init_gau', $logfile, 0,
 				-ctlfn => $ST::CFG_LISTOFFILES,
 				-part => 1, -npart => 1,
@@ -239,7 +232,6 @@ sub FlatInitialize ()
 				-varnorm => $ST::CFG_VARNORM,
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
-				@lda_args
 			       )) {
       return $return_value;
     }
@@ -278,7 +270,6 @@ sub FlatInitialize ()
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
 				-fullvar => $ST::CFG_FULLVAR,
-				@lda_args
 			       )) {
       return $return_value;
     }

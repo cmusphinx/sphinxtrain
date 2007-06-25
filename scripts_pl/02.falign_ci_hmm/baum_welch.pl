@@ -93,14 +93,6 @@ my $meanfn  = "$hmm_dir/means";
 my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 
-# if there is an LDA transformation, use it
-my @lda_args;
-if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
-    push(@lda_args,
-	 -ldafn => $ST::CFG_LDA_TRANSFORM,
-	 -ldadim => $ST::CFG_LDA_DIMENSION);
-}
-
 # These models are created in preparation for forced alignment, so use
 # the non-forced aligned ones, necessarily
 my ($listoffiles, $transcriptfile);
@@ -160,7 +152,6 @@ my $return_value = RunTool
      -diagfull => $ST::CFG_DIAGFULL,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
-     @lda_args,
      -timing => "no");
 
 
