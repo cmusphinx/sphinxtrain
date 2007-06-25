@@ -72,11 +72,12 @@ while ($n <= $nstates) {
     while ($j <= $no) {
         if ($j < $n || $j > $nnn) {
             print "0.0	";
-	    $j = $j + 1;
+	} elsif ($j == $n) {
+	    print "3.0	";
         } else {
             print "1.0	";
-	    $j = $j + 1
 	}
+	$j = $j + 1;
     }
     print "\n";
     $n = $n + 1;
