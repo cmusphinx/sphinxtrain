@@ -185,8 +185,9 @@ mod_inv_read_gauden(model_inventory_t *minv,
 	E_FATAL("mean file contains a different # of Gaussian densities, %u, per mixture than previously defined, %u\n", n_density, minv->n_density);
     }
     else if (minv->n_density == 0) {
-	E_WARN("Model inventory n_density not set; setting to mean file value, %u.\n",
-	       n_density);
+	/* This warning is bogus. */
+        /* E_WARN("Model inventory n_density not set; setting to mean file value, %u.\n",
+	   n_density); */
 
 	minv->n_density = n_density;
     }
@@ -365,8 +366,9 @@ mod_inv_read_mixw(model_inventory_t *minv,
 	       n_density, fn, minv->n_density);
     }
     else if (minv->n_density == 0) {
-	E_WARN("Model inventory n_density not set; setting to value in mixw file, %u.\n",
-	       n_density);
+	/* This warning is bogus. */
+        /* E_WARN("Model inventory n_density not set; setting to value in mixw file, %u.\n",
+	   n_density); */
 
 	minv->n_density = n_density;
     }
