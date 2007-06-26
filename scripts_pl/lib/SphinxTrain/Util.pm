@@ -68,18 +68,28 @@ sub CreateHeader {
 
     my $hostname = hostname();
     open HTML_LOG,">$logfile";
-    print HTML_LOG "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n";
-    print HTML_LOG "<html>\n";
-    print HTML_LOG "<head>\n";
-    print HTML_LOG "<META HTTP-EQUIV=REFRESH CONTENT=60>\n"; # Force reloading every 60 seconds
-    print HTML_LOG "<meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-1\">\n";
-    print HTML_LOG "<title>$ST::CFG_EXPTNAME</title>\n";
-    print HTML_LOG "</head>\n";
-    print HTML_LOG "<body BGCOLOR = \"#F0F0F5\">\n";
-    print HTML_LOG "<pre>\n";
-    print HTML_LOG "<CENTER><h1>${ST::CFG_BASE_DIR}/${ST::CFG_EXPTNAME}</h1></CENTER>\n";
-    print HTML_LOG "<CENTER> <h3>$hostname</h3></CENTER>\n";
-    print HTML_LOG "<hr>\n";
+    print HTML_LOG <<"EOH";
+<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">
+<html>
+<head>
+<meta http-equiv="REFRESH" content="60">
+<title>$ST::CFG_EXPTNAME</title>
+<style type="text/css">
+body {
+ background: #f0f0f5;
+}
+
+h1, h2, h3 {
+ text-align: center;
+}
+</style>
+</head>
+<body>
+<pre>
+<h1>${ST::CFG_BASE_DIR}/${ST::CFG_EXPTNAME}</h1>
+<h3>$hostname</h3>
+<hr>
+EOH
     close HTML_LOG;
 }
 
