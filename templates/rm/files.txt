@@ -19,6 +19,7 @@ doc/train/6b_deptr.ndx
 doc/train/72_indtr.ndx
 doc/train/80_indtr.ndx
 doc/al_sents.snr
+doc/lexicon.snr
 doc/wp_gram.txt
 
 dep/dev/bef0_3/st0009.wav

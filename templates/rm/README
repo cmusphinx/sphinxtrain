@@ -9,4 +9,17 @@ subdirectories where the RM1 files are located.  Specific directories
 and files required are listed in files.txt.
 
 Basically, you need to have the doc, dep, ind, dep_trn and ind_trn
-directories from the original release.
+directories from the original release.  Case of the filenames should
+not be important.
+
+In order for the scripts included here to work, you must have Festival
+and the Perl scripts and binaries from cmuclmtk in your $PATH.  If you
+don't want to install them systemwide, then you can do it like this
+(replacing /path/to/cmuclmtk with the full path to wherever the source
+tree for it resides):
+
+export PATH="$PATH:/path/to/cmuclmtk/src:/path/to/cmuclmtk/perl"
+
+or, for those of you who still insist on using csh:
+
+setenv PATH "$PATH:/path/to/cmuclmtk/src:/path/to/cmuclmtk/perl"
