@@ -73,8 +73,25 @@ if (defined $ctl) {
 
   require $cfg_file;
 
-  system("bin/wave2feat -verbose yes -c \"$ctl\" -nist yes " .
-	 "-di wav -ei sph -do \"$ST::CFG_FEATFILES_DIR\" " .
+  $ST::WAVFILE_TYPE ||= 'nist';
+  $ST::WAVFILES_DIR ||= 'wav';
+  $ST::WAVFILE_EXTENSION ||= 'sph';
+  $ST::FEATFILES_DIR ||= 'feat';
+  $ST::FEATFILE_EXTENSION ||= 'mfc';
+
+  # Read control file and create any necessary directories
+  open CTL, "<$ctl" or die "Failed to open control file $ctl: $!";
+  while (<CTL>) {
+      chomp;
+      my $dir = dirname($_);
+      mkdir(catdir($ST::FEATFILES_DIR, $dir), 0777);
+  }
+  close CTL;
+
+  # Now run wave2feat (should maybe be sphinx_fe eventually)
+  system("bin/wave2feat -verbose yes -c \"$ctl\" -$ST::WAVFILE_TYPE yes " .
+	 "-di \"$ST::WAVFILES_DIR\" -ei \"$ST::CFG_WAVFILE_EXTENSION\" ".
+	 "-do \"$ST::CFG_FEATFILES_DIR\" " .
 	 "-eo \"$ST::CFG_FEATFILE_EXTENSION\"");
 } else {
   system("bin/wave2feat @ARGV");
