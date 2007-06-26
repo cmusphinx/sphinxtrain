@@ -66,7 +66,7 @@ sub create_files {
 	    s,^/rm1/,,i;
 	    s/\.wav$//;
 	    my $uttid = basename($_);
-	    print OUTLSN $sents{uc($uttid)} . " ($uttid)\n";
+	    print OUTLSN "<s> " . $sents{uc($uttid)} . " </s> ($uttid)\n";
 	    print OUTCTL "$_\n";
 	}
     }
