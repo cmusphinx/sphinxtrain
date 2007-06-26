@@ -1,0 +1,13 @@
+This directory contains "template" setups for some common benchmarking
+tasks.
+
+These depend on audio databases from the LDC
+(http://www.ldc.upenn.edu/) which are quite large and cannot be
+redistributed.  Where possible we have added notes on the exact LDC
+catalog numbers and required files.
+
+Some of the contents are inspired by Keith Vertanen's WSJ recipe
+(http://www.inference.phy.cam.ac.uk/kv227/sphinx/)
+
+-- dhuggins@cs.cmu.edu, 2007-06-25
+

@@ -1,0 +1,11 @@
+foo = bar
+   baz = quux
+
+argh = foo \
+     bar \
+     "baz" \
+     quux
+
+blah = "foo's bar \"food\""
+urgh = 'foo "ugh"'
+blatz = 'blah\'s blah'

@@ -1,0 +1,12 @@
+Resource Management "from scratch" training/testing setup
+---------------------------------------------------------
+
+This setup relies on having the RM1 corpus, LDC catalog number
+LDC93S3B, in a locally accessible directory.  Since this originally
+shipped on a number of CDs, to which you may or may not have access,
+you should edit the file etc/rm1_files.cfg to point to the
+subdirectories where the RM1 files are located.  Specific directories
+and files required are listed in files.txt.
+
+Basically, you need to have the doc, dep, ind, dep_trn and ind_trn
+directories from the original release.
