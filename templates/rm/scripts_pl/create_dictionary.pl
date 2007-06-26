@@ -56,6 +56,7 @@ my $rv = system('ngram_pronounce',
 		-v => $tmpfile,
 		-i => $opts{cmudict},
 		-o => $opts{outfile});
+unlink($tmpfile);
 die "ngram_pronounce failed: $rv $!" unless $rv == 0;
 
 1;
