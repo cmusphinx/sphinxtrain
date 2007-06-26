@@ -10,12 +10,16 @@ use lib catdir(dirname($0), 'lib');
 use SimpleConfig;
 
 my %opts = (config => 'etc/rm1_files.cfg',
-	    outfile => 'etc/rm.dic',
+	    extradict => 'etc/rm.acronyms.dic',
+	    outdict => 'etc/rm.dic',
+	    outvocab => 'etc/rm.vocab',
 	    cmudict => catfile(dirname($0), updir, updir, updir,
 			       'test', 'res', 'cmudict.0.6d'));
 GetOptions(\%opts,
 	   'config=s',
-	   'outfile|o=s',
+	   'outdict|o=s',
+	   'outvocab|v=s',
+	   'extradict|e=s',
 	   'cmudict|c=s',
 	   'help|h|?')
     or pod2usage(2);
@@ -40,22 +44,65 @@ sub try_opening {
     return $fh;
 }
 
-# Read vocabulary list
+# Read and process vocabulary list
 my $lexfh = try_opening($dirs{doc}, 'lexicon.snr');
-my $outfile = catfile($opts{outdir}, 'rm.dic');
-my ($tmpfh, $tmpfile) = tempfile();
+open VOCAB, ">$opts{outvocab}" or die "Failed to open $opts{outvocab}: $!";
 while (<$lexfh>) {
     next if /^;/;
     chomp;
     s/\r$//;
     tr/+/\'/;
-    print $tmpfh "$_\n";
+    print VOCAB "$_\n";
+}
+close VOCAB;
+
+# Read and merge input dictionaries
+sub read_dict {
+    my ($dict, $file) = @_;
+    local *DICT;
+    open DICT, "<$file" or die "Failed to open $file: $!";
+    while (<DICT>) {
+	next if /^##/;
+	chomp;
+	s/\r$//;
+	my ($word, $alt, $phones) = /^(\S+)(?:\((\d+)\))?\s+(.*)$/;
+	if (defined($alt)) {
+	    $dict->{$word} = [$dict->{$word}] if exists $dict->{$word};
+	    push @{$dict->{$word}}, $phones;
+	} else {
+	    $dict->{$word} = $phones;
+	}
+    }
+}
+
+my %dict;
+read_dict(\%dict, $opts{extradict});
+read_dict(\%dict, $opts{cmudict});
+my ($tmpfh, $tmpfile) = tempfile();
+foreach my $word (sort keys %dict) {
+    if (ref($dict{$word})) {
+	my $i = 1;
+	foreach my $pron (@{$dict{$word}}) {
+	    if ($i == 1) {
+		print $tmpfh "$word $dict{$word}\n";
+	    }
+	    else {
+		print $tmpfh "$word($i) $dict{$word}\n";
+	    }
+	    ++$i;
+	}
+    }
+    else {
+	print $tmpfh "$word $dict{$word}\n";
+    }
 }
 close($tmpfh);
+
+my $outfile = catfile($opts{outdir}, 'rm.dic');
 my $rv = system('ngram_pronounce',
-		-v => $tmpfile,
-		-i => $opts{cmudict},
-		-o => $opts{outfile});
+		-v => $opts{outvocab},
+		-i => $tmpfile,
+		-o => $opts{outdict});
 unlink($tmpfile);
 die "ngram_pronounce failed: $rv $!" unless $rv == 0;
 
@@ -69,7 +116,9 @@ __END__
 create_transcripts.pl
      S<[<I<--config> B<etc/rm1_files.cfg>]>
      S<[ I<-c> B</path/to/cmudict.0.6d> ]>
+     S<[ I<-e> B</path/to/training/etc/rm.acronyms.dic> ]>
      S<[ I<-o> B</path/to/training/etc/rm.dic> ]>
+     S<[ I<-v> B</path/to/training/etc/rm.vocab> ]>
 
 =head1 DESCRIPTION
 
