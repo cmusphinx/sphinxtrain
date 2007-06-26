@@ -48,19 +48,36 @@ use SphinxTrain::Config;
 use SphinxTrain::Util;
 
 # What pieces would you like to compute.
+my @sample_steps;
 
-my @sample_steps =
-    ("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
-     "$ST::CFG_SCRIPT_DIR/02.falign_ci_hmm/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/03.force_align/slave_align.pl",
-     "$ST::CFG_SCRIPT_DIR/10.vector_quantize/slave.VQ.pl",
-     "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
-     "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/90.deleted_interpolation/deleted_interpolation.pl",
-     "$ST::CFG_SCRIPT_DIR/99.make_s2_models/make_s2_models.pl",
-    );
+# We have to do VQ first for semi-continuous models
+if ($ST::CFG_HMM_TYPE eq '.semi.') {
+    @sample_steps =
+	("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
+	 "$ST::CFG_SCRIPT_DIR/10.vector_quantize/slave.VQ.pl",
+	 "$ST::CFG_SCRIPT_DIR/02.falign_ci_hmm/slave_convg.pl",
+	 "$ST::CFG_SCRIPT_DIR/03.force_align/slave_align.pl",
+	 "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
+	 "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",
+	 "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
+	 "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
+	 "$ST::CFG_SCRIPT_DIR/90.deleted_interpolation/deleted_interpolation.pl",
+	 "$ST::CFG_SCRIPT_DIR/99.make_s2_models/make_s2_models.pl",
+	);
+} else {
+    @sample_steps =
+	("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
+	 "$ST::CFG_SCRIPT_DIR/02.falign_ci_hmm/slave_convg.pl",
+	 "$ST::CFG_SCRIPT_DIR/03.force_align/slave_align.pl",
+	 "$ST::CFG_SCRIPT_DIR/10.vector_quantize/slave.VQ.pl",
+	 "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
+	 "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",
+	 "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
+	 "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
+	 "$ST::CFG_SCRIPT_DIR/90.deleted_interpolation/deleted_interpolation.pl",
+	 "$ST::CFG_SCRIPT_DIR/99.make_s2_models/make_s2_models.pl",
+	);
+}
 
 foreach my $step (@sample_steps) {
     my $ret_value = RunScript($step);
