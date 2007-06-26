@@ -50,7 +50,7 @@ use SphinxTrain::Util;
 $| = 1; # Turn on autoflushing
 Log ("MODULE: 90 deleted interpolation\n");
 if ($ST::CFG_HMM_TYPE eq ".cont.") {
-  Log("    Skipped for continuous models\n");
+  Log("Skipped for continuous models\n");
   exit(0);
 }
 
@@ -83,12 +83,11 @@ my $moddeffn = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.$ST::CFG_
 my $logdir = "$ST::CFG_LOG_DIR/90.deleted_interpolation";
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.deletedintrep-${nsenones}.log";
 
-Log ("    Cleaning up directories: logs...\n");
+Log ("Phase 1: Cleaning up directories: logs...\n");
 rmtree($logdir, 0, 1);
 mkdir($logdir,0777);
 
-Log ("    Doing interpolation...\n");
-HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
+Log ("Phase 2: Doing interpolation...\n");
 
 my $rv = RunTool('delint', $logfile, 0,
 	     -accumdirs => @bwaccumdirs,
@@ -99,9 +98,7 @@ my $rv = RunTool('delint', $logfile, 0,
 exit $rv if $rv;
 
 $logfile = "$logdir/$ST::CFG_EXPTNAME.s2sendump-${nsenones}.log";
-Log ("\n    Dumping senone...\n");
-HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
-
+Log ("Phase 3: Dumping senones for PocketSphinx...\n");
 $rv = RunTool('mk_s2sendump', $logfile, 0,
 		 -moddeffn => $moddeffn,
 		 -mixwfn => $mixwfn,

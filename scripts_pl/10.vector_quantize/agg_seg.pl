@@ -53,7 +53,6 @@ use SphinxTrain::Util;
 my ($AGG_SEG,$len,$stride,$segdmpdir,$dumpfile,$logfile);
 
 $| = 1; # Turn on autoflushing
-Log ("    AggSeg ");
 
 $AGG_SEG  = "$ST::CFG_BIN_DIR/agg_seg";
 
@@ -82,7 +81,6 @@ mkdir ($segdmpdir,0777);
 
 $dumpfile = "$segdmpdir/${ST::CFG_EXPTNAME}.dmp";
 $logfile = "$logdir/${ST::CFG_EXPTNAME}.vq.agg_seg.log";
-HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
 
 # run it here 
 exit RunTool('agg_seg',, $logfile, 0,

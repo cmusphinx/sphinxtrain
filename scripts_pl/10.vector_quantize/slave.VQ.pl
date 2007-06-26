@@ -73,8 +73,7 @@ if ($ST::CFG_HMM_TYPE eq ".semi.") {
   $return_value = (RunScript('agg_seg.pl')
 		   or RunScript('kmeans.pl'));
 } else {
-  Log("    Skipped for continuous models\n");
+  Log("Skipped for continuous models\n");
 }
-Log ("\n");
 exit ($return_value != 0);
 

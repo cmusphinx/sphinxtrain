@@ -71,7 +71,7 @@ my $logdir = "$ST::CFG_LOG_DIR/99.make_s2_models";
 
 $| = 1; # Turn on autoflushing
 Log ("MODULE: 99 Convert to Sphinx2 format models\n");
-Log ("    Cleaning up old log files...\n");
+Log ("Phase 1: Cleaning up old log files...\n");
 rmtree ($logdir) unless ! -d $logdir;
 mkdir ($logdir,0777);
 
@@ -98,7 +98,7 @@ my $s3mean = "$s3hmmdir/means";
 my $s3var = "$s3hmmdir/variances";
 my $s3tmat = "$s3hmmdir/transition_matrices";
 
-Log("    Copy noise dictionary\n");
+Log("Phase 2: Copy noise dictionary\n");
 open IN, "<$ST::CFG_FILLERDICT" or die "Failed to open $ST::CFG_FILLERDICT: $!";
 open OUT, ">".catfile($s2dir, 'noisedict') or die "Failed to open $s2dir/noisedict: $!";
 while (<IN>) {
@@ -110,7 +110,7 @@ close IN;
 close OUT;
 
 if ($ST::CFG_HMM_TYPE eq ".semi.") {
-  Log ("    Make codebooks\n");
+  Log ("Phase 3: Make codebooks\n");
   HTML_Print ("\t" . FormatURL("$logfile_cb", "Log File") . " ");
   $return_value = RunTool('mk_s2cb', $logfile_cb, 0,
 			  -meanfn => $s3mean,
@@ -121,7 +121,7 @@ warn "$return_value\n";
   #HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> completed </font>\n");
   exit ($return_value != 0) if ($return_value);
 } else {
-  Log ("    Copying mdef, means, vars, mix_weights\n");
+  Log ("Phase 3: Copying mdef, means, vars, mix_weights\n");
   my $s2mdef = "$s2dir/mdef";
   copy($s3mdef, $s2mdef);
   my $s2mixw = "$s2dir/mixture_weights";
@@ -132,8 +132,7 @@ warn "$return_value\n";
   copy($s3var, $s2var);
 }
 
-Log ("    Make chmm files\n");
-HTML_Print ("\t" . FormatURL("$logfile_chmm", "Log File") . " ");
+Log ("Phase 4: Make chmm files\n");
 my $return_value;
 if ($ST::CFG_HMM_TYPE eq ".semi.") {
     $return_value = RunTool('mk_s2hmm', $logfile_chmm, 0,
@@ -148,22 +147,20 @@ if ($ST::CFG_HMM_TYPE eq ".semi.") {
 			    -hmmdir => $s2dir,
 			    -mtype => 'fchmm');
 }
-#HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> completed </font>\n");
 exit $return_value if ($return_value);
 
 if ($ST::CFG_HMM_TYPE eq ".semi.") {
-  Log ("    Make senone file\n");
+  Log ("Phase 5: Make senone file\n");
   HTML_Print ("\t" . FormatURL("$logfile_senone", "Log File") . " ");
   $return_value = RunTool('mk_s2sendump', $logfile_senone, 0,
 			  -moddeffn => $s3mdef,
 			  -mixwfn => $s3mixw,
 			  -mwfloor => 0.0000001,
 			  -sendumpfn => catfile($s2dir, 'sendump'));
-  #HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> completed </font>\n");
   exit $return_value if ($return_value);
 }
 
-Log ("    Make phone and map files\n");
+Log ("Phase 6: Make phone and map files\n");
 HTML_Print ("\t" . FormatURL("$logfile_s2phonemap", "Log File") . " ");
 
 $return_value = RunTool('mk_s2phonemap', $logfile_s2phonemap, 0,

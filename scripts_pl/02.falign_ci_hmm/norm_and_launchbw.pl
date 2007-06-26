@@ -85,14 +85,18 @@ for (my $i=1;$i<=$n_parts;$i++){
 }
 
 if ($num_done != $n_parts) {
+    print OUTPUT "Only $num_done parts of $n_parts of Baum Welch were successfully completed\n";
+    my $errmsg = "Parts ";
+    for (my $i=1;$i<=$n_parts;$i++) {
+        $errmsg .= "$i " if ($done[$i] == 0);
+    }
+    $errmsg .= "failed to run!\n";
     open OUTPUT,">$log";
     print OUTPUT "Only $num_done parts of $n_parts of Baum Welch were successfully completed\n";
-    print "Parts ";
-    for (my $i=1;$i<=$n_parts;$i++) {
-        print OUTPUT "$i " if ($done[$i] == 0);
-    }
-    print OUTPUT "failed to run!\n";
+    print OUTPUT $errmsg;
     close OUTPUT;
+    LogError("Only $num_done parts of $n_parts of Baum Welch were successfully completed");
+    LogError($errmsg);
     exit (0);
 }
 
@@ -157,7 +161,7 @@ if (defined($convg_ratio)) {
 
 if ($convg_ratio < 0) {
     print OUTPUT "*WARNING*: NEGATIVE CONVERGENCE RATIO! CHECK YOUR DATA AND TRASNCRIPTS\n";
-    print "*WARNING*: NEGATIVE CONVERGENCE RATIO AT ITER ${iter}! CHECK BW AND NORM LOGFILES\n";
+    LogWarning("*WARNING*: NEGATIVE CONVERGENCE RATIO AT ITER ${iter}! CHECK BW AND NORM LOGFILES");
 }
 
 if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO && $iter >= $ST::CFG_MAX_ITERATIONS) {
@@ -169,7 +173,8 @@ if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO && $iter >= $ST::CFG_MAX_ITERATION
     print OUTPUT "******************************TRAINING COMPLETE*************************\n";
     my $date = localtime;
     print OUTPUT "$date\n";
-    print "Maximum desired iterations $ST::CFG_MAX_ITERATIONS performed. Terminating CI training\n";
+    Log("Maximum desired iterations $ST::CFG_MAX_ITERATIONS performed. Terminating CI training",
+	'result');
     close OUTPUT;
     exit (0);
 }
@@ -179,7 +184,7 @@ if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO or $iter < $ST::CFG_MIN_ITERATIONS
     exit (0);
 }
 else {
-    print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
+    Log("Current Overall Likelihood Per Frame = $lkhd_per_frame", 'result');
     if ($ST::CFG_FALIGN_CI_MGAU eq 'yes') {
 	Launch_SplitGaussian($n_gau);
     }
@@ -195,8 +200,8 @@ else {
 sub Launch_BW {
     my ($n_gau, $iter) = @_;
     my $newiter = $iter + 1;
-    print "        Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
-    print "        Convergence Ratio = $convg_ratio\n" if defined $convg_ratio;
+    Log("Current Overall Likelihood Per Frame = $lkhd_per_frame", 'result');
+    Log("Convergence Ratio = $convg_ratio", 'result') if defined $convg_ratio;
     RunScript('slave_convg.pl', $newiter, $n_parts, $n_gau);
 }
 

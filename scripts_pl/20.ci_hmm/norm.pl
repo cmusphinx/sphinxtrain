@@ -88,11 +88,7 @@ my  $logdir              = "${ST::CFG_LOG_DIR}/$processpart";
 mkdir ($logdir,0777);
 my $logfile 	     = "$logdir/${ST::CFG_EXPTNAME}.${n_gau}.${iter}.norm.log";
 
-copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.20.norm.${n_gau}.$iter.state.gif";
-HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.20.norm.${n_gau}.$iter.state.gif") . " ");   
-Log ("    Normalization for iteration: $iter ");
-HTML_Print (FormatURL("$logfile", "Log File") . " ");
-
+Log("Normalization for iteration: $iter", 'result');
 my $return_value = RunTool
     ('norm', $logfile, 0,
      -accumdir => @bwaccumdirs,
@@ -104,7 +100,6 @@ my $return_value = RunTool
     );
 
 if ($return_value) {
-  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.20.norm.${n_gau}.$iter.state.gif";
-  LogError ("\tFailed to start norm \n");
+  LogError ("Failed to start norm");
 }
 exit ($return_value);

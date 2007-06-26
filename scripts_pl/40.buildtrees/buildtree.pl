@@ -92,8 +92,7 @@ sub BuildTree
 
     my $logfile = "$logdir/${ST::CFG_EXPTNAME}.buildtree.${phn}.${stt}.log";
 
-    Log ("\t\t${phn} ${stt} ");
-    HTML_Print (FormatURL("$logfile", "Log File") . " ");
+    Log("${phn} ${stt} ", 'result');
 
     # RAH 7.21.2000 - These were other possible values for these
     # variables, I'm not sure the circumstance that would dictate

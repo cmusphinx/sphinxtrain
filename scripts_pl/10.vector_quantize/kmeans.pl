@@ -62,7 +62,6 @@ use SphinxTrain::Util;
 my ($hmmdir,$outhmm,$segdmpdir,$dumpfile,$logfile);
 
 $| = 1; # Turn on autoflushing
-Log ("   KMeans ");
 
 # Definitions
 $hmmdir = "$ST::CFG_BASE_DIR/model_parameters";
@@ -79,8 +78,6 @@ $dumpfile = "$segdmpdir/${ST::CFG_EXPTNAME}.dmp";
 my $logdir = "$ST::CFG_LOG_DIR/10.vector_quantize";
 mkdir ($logdir,0777);
 $logfile = "$logdir/${ST::CFG_EXPTNAME}.kmeans.log";
-
-HTML_Print ("\t" . FormatURL("$logfile", "Log File") . " ");
 
 #set VQ = ~rsingh/09..sphinx3code/trainer/bin.alpha/kmeans_init
 #$VQ = "$ST::CFG_BIN_DIR/kmeans_init";

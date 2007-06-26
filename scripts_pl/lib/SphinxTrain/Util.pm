@@ -42,7 +42,8 @@ require Exporter;
 use vars qw(@ISA @EXPORT);
 @ISA=qw(Exporter);
 @EXPORT=qw(DateStr CreateHeader Log HTML_Print FormatURL
-           ImgSrc LogWarning LogError Converged RunTool
+           ImgSrc LogWarning LogError LogProgress
+           LogStatus Converged RunTool
            RunScript LaunchScript WaitForScript GetLists
 	   WaitForConvergence TiedWaitForConvergence);
 
@@ -78,29 +79,63 @@ sub CreateHeader {
 body {
  background: #f0f0f5;
 }
-
-h1, h2, h3 {
- text-align: center;
+p,span {
+ font-family: monospace;
+}
+p {
+ margin-right: 6em;
+}
+p.phase {
+ font-weight: bold;
+ margin-bottom: 0;
+}
+p.result, p.WARNING, p.error {
+ margin-top: 0;
+ margin-bottom: 0;
+ margin-left: 5em;
+}
+span.status {
+ float: right;
+ margin-top: -1em;
+}
+.passed, .completed {
+ color: #$ST::CFG_OKAY_COLOR;
+}
+.WARNING, .warning {
+ color: #$ST::CFG_WARNING_COLOR;
+}
+.FAILED, .error {
+ color: #$ST::CFG_ERROR_COLOR;
 }
 </style>
 </head>
 <body>
-<pre>
-<h1>${ST::CFG_BASE_DIR}/${ST::CFG_EXPTNAME}</h1>
-<h3>$hostname</h3>
-<hr>
+<h1 class="experiment">${ST::CFG_BASE_DIR}</h1>
+<h2 class="hostname">Training ${ST::CFG_EXPTNAME} on $hostname</h2>
 EOH
     close HTML_LOG;
 }
 
-sub Log
-{
-    my $message = shift;
+sub Log {
+    my ($message, $class) = @_;
     my (@time) = localtime(time());
     my ($day_str) = sprintf ("%4d-%02d-%02d %02d:%02d",(1900 + $time[5]), ($time[4]+1),$time[3],$time[2],$time[1]);
     my $logfile = "$ST::CFG_BASE_DIR/$ST::CFG_EXPTNAME.html";
 
-    print "$message" if $ST::CFG_VERBOSE;
+    chomp($message);
+    if (!defined($class) and $message =~ /^Phase/) {
+	$class = 'phase';
+    }
+
+    if ($class eq 'phase') {
+	print "    $message\n" if $ST::CFG_VERBOSE;
+    }
+    elsif ($class eq 'result') {
+	print "        $message\n" if $ST::CFG_VERBOSE;
+    }
+    else {
+	print "$message\n" if $ST::CFG_VERBOSE;
+    }
     if (!-s $logfile) {
         CreateHeader($logfile);
     }
@@ -108,14 +143,41 @@ sub Log
     if ($message =~ m/^(MODULE:).*/) {
         print HTML_LOG "<hr>\n";
         chomp ($message);
-	print HTML_LOG "<b>$message\t($day_str)</b>\n";	# Put Date information on Module headers
+	print HTML_LOG "<h3>$message\t($day_str)</h3>\n"; # Put Date information on Module headers
     } else {
-        print HTML_LOG "$message";
+	if (defined($class)) {
+	    print HTML_LOG "<p class='$class'>$message</p>\n";
+	}
+	else {
+	    print HTML_LOG "<p>$message</p>\n";
+	}
     }
     close HTML_LOG;
 }
 
-sub HTML_Print 
+sub LogProgress {
+    my $message = shift;
+    my $logfile = "$ST::CFG_BASE_DIR/$ST::CFG_EXPTNAME.html";
+
+    open HTML_LOG,">>$logfile";
+    print "$message" if $ST::CFG_VERBOSE;
+    print HTML_LOG "<span class='progress'>$message</span>\n";
+    close HTML_LOG;
+}
+
+sub LogStatus {
+    my $status = shift;
+    my $logfile = "$ST::CFG_BASE_DIR/$ST::CFG_EXPTNAME.html";
+
+    if (!-s $logfile) {
+        CreateHeader($logfile);
+    }
+    open HTML_LOG,">>$logfile";
+    print HTML_LOG "<span class='status $status'>$status</span>\n";
+    close HTML_LOG;
+}
+
+sub HTML_Print
 {
     my $message = shift;
     my $logfile = "$ST::CFG_BASE_DIR/$ST::CFG_EXPTNAME.html";
@@ -165,12 +227,12 @@ sub LogWarning
     my ($day_str) = sprintf ("%4d-%02d-%02d %02d:%02d",(1900 + $time[5]), ($time[4]+1),$time[3],$time[2],$time[1]);
     my $logfile = "$ST::CFG_BASE_DIR/$ST::CFG_EXPTNAME.html";
 
-    print "WARNING: $message" if $ST::CFG_VERBOSE;
+    print "WARNING: $message\n" if $ST::CFG_VERBOSE;
     if (! -s $logfile) {
         CreateHeader($logfile);
     }
     open HTML_LOG,">>$logfile";
-    print HTML_LOG "<p>WARNING: $message</p>";
+    print HTML_LOG "<p class='warning'>WARNING: $message</p>\n";
     close HTML_LOG;
 }
 
@@ -183,12 +245,12 @@ sub LogError
 
     chomp ($message);		# remove \n if it exists
 
-    print "$message" if $ST::CFG_VERBOSE;
+    print "$message\n" if $ST::CFG_VERBOSE;
     if (! -s $logfile) {
         CreateHeader($logfile);
     }
     open HTML_LOG,">>$logfile";
-    print HTML_LOG "<p>$message</p>";
+    print HTML_LOG "<p class='error'>$message</p>\n";
     close HTML_LOG;
 }
 
@@ -207,7 +269,7 @@ sub Converged
       $p = `grep \"overall>\" $logdir/${ST::CFG_EXPTNAME}.${tmp_iter}-*.bw.log | awk '{X += \$3;Y += \$6} END {print Y/X}'`;
       # Compute it's ratio
       $ratio = ($l-$p)/abs($p);
-      Log ("\t\tRatio: $ratio\n");
+      Log("Ratio: $ratio", 'result');
   }
 
   # Don't even bother checking convergence until we've reached a minimum number of loops
@@ -218,6 +280,8 @@ sub Converged
 
 sub RunTool {
   my ($cmd, $logfile, $ctl_counter, @args) = @_;
+
+  HTML_Print("<p class='result'>$cmd " . FormatURL($logfile, "Log File") . "</p>");
 
   unless ($cmd =~ / / or File::Spec->file_name_is_absolute($cmd)) {
       # TODO: Handle architecture-specific directories here
@@ -275,6 +339,10 @@ sub RunTool {
       die "Failed to open pipe: $!" unless defined($pid);
   }
 
+  if ($ctl_counter) {
+      print "        ";
+  }
+
   if ($pid == 0) {
       open STDERR, ">&STDOUT";
       exec $cmd, @args;
@@ -283,7 +351,7 @@ sub RunTool {
     while (<$pipe>) {
       print LOG "$_";
       if (/(FATAL).*/) {
-	LogError ($_ . "\n");
+	LogError($_);
         $returnvalue = 1;
         last;
       }
@@ -294,7 +362,7 @@ sub RunTool {
 	$processed_counter++  if (/.*(utt\>).*/);
 	my $percentage = int (($processed_counter / $ctl_counter) * 100);
 	if (!($percentage % 10)) {
-	  Log ("${percentage}% ") unless $printed;
+	  print "${percentage}% " unless $printed;
 	  $printed = 1;
 	} else {
 	  $printed = 0;
@@ -302,19 +370,25 @@ sub RunTool {
       }
     }
     close $pipe;
-    if (($error_count > 0) or ($warning_count > 0)) {
-      LogError ("\n\t\tThis step had $error_count ERROR messages and " .
-		    "$warning_count WARNING messages.\n" .
-		    "\t\tPlease check the log file for details.\n");
+    print "\n" if $ctl_counter;
+    if ($error_count > 0) {
+	LogError("This step had $error_count ERROR messages and " .
+		   "$warning_count WARNING messages.  " .
+		   "Please check the log file for details.");
+    }
+    elsif ($warning_count > 0) {
+	LogWarning("This step had $error_count ERROR messages and " .
+		   "$warning_count WARNING messages.  " .
+		   "Please check the log file for details.");
     }
   }
   my $date = localtime;
   print LOG "$date\n";
   close LOG;
   if ($returnvalue) {
-    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> FAILED </font>\n");
+      LogStatus('FAILED');
   } else {
-    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> completed </font>\n");
+      LogStatus('completed');
   }
 
   return ($returnvalue);
@@ -398,11 +472,11 @@ sub WaitForConvergence {
 	    open LOG, "<$norm_log" or last;
 	    while (<LOG>) {
 		if (/failed/ or /Aborting/) {
-		    Log("Training failed in iteration $iter\n");
+		    LogError("Training failed in iteration $iter");
 		    return -1;
 		}
 		elsif (/COMPLETE/) {
-		    Log("Training completed after $iter iterations\n");
+		    Log("Training completed after $iter iterations", 'result');
 		    return 0;
 		}
 		elsif (/Likelihood Per Frame = (\S+)/) {
@@ -413,7 +487,7 @@ sub WaitForConvergence {
 	}
 	--$iter;
 	if ($iter > $maxiter) {
-	    Log("    Baum-Welch iteration $iter Average log-likelihood $likeli\n");
+	    print "Baum-Welch iteration $iter Average log-likelihood $likeli\n";
 	    $maxiter = $iter;
 	}
 	sleep $interval;
@@ -446,10 +520,10 @@ sub TiedWaitForConvergence {
 		open LOG, "<$norm_log" or last ITER;
 		while (<LOG>) {
 		    if (/failed/ or /Aborting/) {
-			Log("Training failed in iteration $iter\n");
+			Log("Training failed in iteration $iter");
 			return -1;
 		    } elsif (/COMPLETE/) {
-			Log("Training for $ngau Gaussian(s) completed after $iter iterations\n");
+			Log("Training for $ngau Gaussian(s) completed after $iter iterations");
 			return 0;
 		    }
 		    elsif (/Likelihood Per Frame = (\S+)/) {
@@ -477,7 +551,7 @@ sub TiedWaitForConvergence {
 	    }
 	}
 	if ($maxngau > $lastngau or $maxiter > $lastiter) {
-	    Log("Baum-Welch gaussians $maxngau iteration $maxiter Average log-likelihood $likeli\n");
+	    print "Baum-Welch gaussians $maxngau iteration $maxiter Average log-likelihood $likeli\n";
 	    $lastngau = $maxngau;
 	    $lastiter = $maxiter;
 	}

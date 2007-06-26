@@ -100,10 +100,7 @@ close INPUT;
 $ctl_counter = int ($ctl_counter / $npart) if $npart;
 $ctl_counter = 1 unless ($ctl_counter);
 
-copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.03.force_align.$part.state.gif";
-HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.03.force_align.$part.state.gif") . " ");
-Log ("    Force alignment starting: ($part of $npart) ");
-HTML_Print (FormatURL("$logfile", "Log File") . "\n");
+Log("Force alignment starting: ($part of $npart) ", 'result');
 
 my @phsegdir;
 if (defined($ST::CFG_PHSEG_DIR)) {
@@ -142,6 +139,5 @@ my $return_value = RunTool
 
 if ($return_value) {
   copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.03.force_align.$part.state.gif";
-  LogError ("\tsphinx3_align failed\n");
 }
 exit ($return_value);

@@ -59,49 +59,50 @@ my $outdir = "$ST::CFG_BASE_DIR/falignout";
 Log("MODULE: 03 Force-aligning transcripts\n");
 
 if ( $ST::CFG_FORCEDALIGN eq "no" ) {
-    Log("    Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
+    Log("Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
     exit(0);
 }
 
 unless (-x catdir($ST::CFG_BIN_DIR, "sphinx3_align")
 	or -x catdir($ST::CFG_BIN_DIR, "sphinx3_align.exe")) {
-    Log("    Skipped: No sphinx3_align(.exe) found in $ST::CFG_BIN_DIR\n");
-    Log("    If you wish to do force-alignment, please copy or link the\n");
-    Log("    sphinx3_align binary from Sphinx 3 to $ST::CFG_BIN_DIR\n");
-    Log("    and either define \$CFG_MODEL_DIR in sphinx_train.cfg or\n");
-    Log("    run context-independent training first.\n");
+    Log("Skipped: No sphinx3_align(.exe) found in $ST::CFG_BIN_DIR\n");
+    Log("If you wish to do force-alignment, please copy or link the\n");
+    Log("sphinx3_align binary from Sphinx 3 to $ST::CFG_BIN_DIR\n");
+    Log("and either define \$CFG_MODEL_DIR in sphinx_train.cfg or\n");
+    Log("run context-independent training first.\n");
     exit 0;
 }
 
 unless (defined($ST::CFG_FORCE_ALIGN_MODELDIR)
 	or -f "$ST::CFG_MODEL_DIR/$ST::CFG_EXPTNAME.falign_ci_$ST::CFG_DIRLABEL/means") {
-    Log("    Skipped: No acoustic models available for force alignment\n");
-    Log("    If you wish to do force-alignment, please define \$CFG_MODEL_DIR\n");
-    Log("    in sphinx_train.cfg or run context-independent training first.\n");
+    Log("Skipped: No acoustic models available for force alignment\n");
+    Log("If you wish to do force-alignment, please define \$CFG_MODEL_DIR\n");
+    Log("in sphinx_train.cfg or run context-independent training first.\n");
     exit 0;
 }
 
-Log("    Cleaning up directories: logs...");
+Log("Phase 1: Cleaning up directories:");
+LogProgress("logs...");
 rmtree($logdir, 0, 1);
 mkdir($logdir,0777);
-Log("output...");
+LogProgress("output...");
 rmtree($outdir, 0, 1);
 mkdir($outdir,0777);
-Log("qmanager...");
+LogProgress("qmanager...");
 rmtree($ST::CFG_QMGR_DIR, 0, 1);
 mkdir($ST::CFG_QMGR_DIR,0777);
-Log("s2stseg...");
+LogProgress("s2stseg...");
 rmtree($ST::CFG_STSEG_DIR, 0, 1);
 mkdir($ST::CFG_STSEG_DIR,0777);
 if (defined($ST::CFG_PHSEG_DIR)) {
-    Log("phseg...");
+    LogProgress("phseg...");
     rmtree($ST::CFG_PHSEG_DIR, 0, 1);
     mkdir($ST::CFG_PHSEG_DIR,0777);
 }
-Log("\n");
+LogProgress("\n");
 
 # Build state segmentation directories
-Log("    Building state/phone segmentation directories...");
+Log("Phase 2: Building state/phone segmentation directories...");
 open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
 my %dirs;
 while (<INPUT>) {
@@ -118,7 +119,6 @@ while (<INPUT>) {
 	}
     }
 }
-Log("\n");
 close INPUT;
 
 my %silences = ();
@@ -128,7 +128,7 @@ unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN
     my $dict = "$outdir/$ST::CFG_EXPTNAME.falign.dict";
     my $fdict = "$outdir/$ST::CFG_EXPTNAME.falign.fdict";
 
-    Log("    Creating dictionary for alignment...");
+    Log("Phase 3: Creating dictionary for alignment...");
     open INFDICT, "<$ST::CFG_FILLERDICT" or die "Failed to open $ST::CFG_FILLERDICT: $!";
     open OUTFDICT, ">$fdict" or die "Failed to open $fdict: $!";
     my %fillers;
@@ -157,12 +157,11 @@ unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN
     }
     close INDICT;
     close OUTDICT;
-    Log("\n");
 }
 
 # Preprocess the transcript to remove extraneous <s> and </s> markers (argh)
 my $transcriptfile = "$outdir/$ST::CFG_EXPTNAME.aligninput";
-Log("    Creating transcript for alignment...");
+Log("Phase 4: Creating transcript for alignment...");
 open INPUT,"<$ST::CFG_TRANSCRIPTFILE" or die "Failed to open $ST::CFG_TRANSCRIPTFILE: $!";
 open OUTPUT,">$transcriptfile" or die "Failed to open $transcriptfile: $!";
 while (<INPUT>) {
@@ -184,10 +183,9 @@ while (<INPUT>) {
 }
 close INPUT;
 close OUTPUT;
-Log("\n");
 
 # Run n_parts of force alignment
-Log("Running force alignment in  $n_parts parts\n");
+Log("Phase 5: Running force alignment in  $n_parts parts\n");
 my @jobs;
 for (my $i = 1; $i <= $n_parts; ++$i) {
     push @jobs, LaunchScript("falign.$i", ['force_align.pl', $i, $n_parts]);
@@ -203,7 +201,6 @@ my $i = 1;
 my $return_value = 0;
 foreach my $job (@jobs) {
     WaitForScript($job);
-    Log("$i ");
     my $logfile = catfile($logdir, "${ST::CFG_EXPTNAME}.$i.falign.log");
     open LOG, "<$logfile" or die "Failed to open $logfile: $!";
     my $success = 0;
@@ -238,6 +235,5 @@ foreach my $job (@jobs) {
     }
     ++$i;
 }
-Log("\n");
 
 exit $return_value;

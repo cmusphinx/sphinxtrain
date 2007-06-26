@@ -49,6 +49,8 @@ use SphinxTrain::Util;
 $| = 1;				# Turn on autoflushing
 my $ret_value = 0;
 
+Log("MODULE: 00 verify training files");
+
 # My test files for OS case sensitivity
 my $lowercase_file = "tmp_case_sensitive_test";
 my $uppercase_file = "TMP_CASE_SENSITIVE_TEST";
@@ -65,20 +67,18 @@ if (open(TEST, "<$uppercase_file")) {
 # phones in a case insensitive manner
     $is_case_sensitive = 0;
     close(TEST);
-    Log("O.S. is case insensitive (\"A\" == \"a\").\n" .
-	   "Phones will be treated as case insensitive.\n");
+    Log("O.S. is case insensitive (\"A\" == \"a\").");
+    Log("Phones will be treated as case insensitive.");
 } else {
 # If unsuccessful, the OS is case sensitive, and we have to check for
 # phones in a case sensitive manner
     $is_case_sensitive = 1;
-    Log("O.S. is case sensitive (\"A\" != \"a\").\n" .
-	   "Phones will be treated as case sensitive.\n");
+    Log("O.S. is case sensitive (\"A\" != \"a\").");
+    Log("Phones will be treated as case sensitive.");
 }
 # Clean up the mess
 unlink $lowercase_file;
 unlink $uppercase_file;
-
-Log ("MODULE: 00 verify training files\n");
 
 # PHASE 1: Check to see if the phones in the dictionary are listed in the phonelist file
 # PHASE 2: Check to make sure there are not duplicate entries in the dictionary
@@ -89,7 +89,7 @@ my %phonelist_hash;
     my %dict_phone_hash = ();
     my %dict_hash = ();
 
-    Log ("    Phase 1: DICT - Checking to see if the dict and filler dict agrees with the phonelist file\n");
+    Log("Phase 1: DICT - Checking to see if the dict and filler dict agrees with the phonelist file.");
     # This is rather ugly, but it's late and I'm just trying to get the pieces together
     # Clean it up later
 
@@ -140,7 +140,7 @@ my %phonelist_hash;
 	if (m/\s/) {
 	  my $status = 'FAILED';
 	  $ret_value = -1;
-	  LogWarning("Phone \"$_\" has extra white spaces\n")
+	  LogWarning("Phone \"$_\" has extra white spaces")
 	}
 	$has_SIL = 1 if m/^SIL$/;
 	if ($is_case_sensitive) {
@@ -154,11 +154,11 @@ my %phonelist_hash;
     unless ($has_SIL) {
 	my $status = 'FAILED';
 	$ret_value = -1;
-	LogWarning ("The phonelist ($ST::CFG_RAWPHONEFILE) does not define the phone SIL (required!)\n");
+	LogWarning("The phonelist ($ST::CFG_RAWPHONEFILE) does not define the phone SIL (required!)");
       }
     
-    my @keys = keys %dict_phone_hash;
-    Log ("        Found $counter words using $#keys phones\n");
+    my $nkeys = keys %dict_phone_hash;
+    Log("Found $counter words using $nkeys phones", 'result');
     
     my $status = 'passed';
     for my $key (sort (keys %dict_phone_hash)){
@@ -167,8 +167,7 @@ my %phonelist_hash;
 	} else {
 	    my $status = 'FAILED';
 	    $ret_value = -1;
-	    copy("$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.00.1.state.gif");
-	    LogWarning ("This phone ($key) occurs in the dictionary ($ST::CFG_DICTIONARY), but not in the phonelist ($ST::CFG_RAWPHONEFILE)\n");
+	    LogWarning ("This phone ($key) occurs in the dictionary ($ST::CFG_DICTIONARY), but not in the phonelist ($ST::CFG_RAWPHONEFILE)");
 	}
     }
 
@@ -176,35 +175,29 @@ my %phonelist_hash;
       if ($phonelist_hash{$key} == 0) {
 	    my $status = 'FAILED';
 	    $ret_value = -1;
-	    copy("$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.00.1.state.gif");
-	    LogWarning ("This phone ($key) occurs in the phonelist ($ST::CFG_RAWPHONEFILE), but not in the dictionary ($ST::CFG_DICTIONARY)\n");
+	    LogWarning ("This phone ($key) occurs in the phonelist ($ST::CFG_RAWPHONEFILE), but not in the dictionary ($ST::CFG_DICTIONARY)");
 	}
     }
 
-    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if ($status eq 'passed');
-    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if ($status eq 'FAILED');
-#    Log("\t\t$status\n");
-
-    Log("    Phase 2: DICT - Checking to make sure there are not duplicate entries in the dictionary\n");
+    LogStatus($status);
+    Log("Phase 2: DICT - Checking to make sure there are not duplicate entries in the dictionary");
     my $duplicate_status = 'passed';
     for my $key (keys %dict_hash) {
 	if ($dict_hash{$key} > 1) {
 	    $ret_value = -2;
 	    $duplicate_status = 'FAILED';
 	    copy("$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.00.2.state.gif");
-	    LogWarning("This word ($key) has duplicate entries in ($ST::CFG_DICTIONARY)\n");
+	    LogWarning("This word ($key) has duplicate entries in ($ST::CFG_DICTIONARY)");
 	}
     }
-#    Log ("\t\t$duplicate_status\n");
-    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $duplicate_status </font>\n") if($duplicate_status eq 'passed');
-    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $duplicate_status </font>\n") if($duplicate_status eq 'FAILED');
+    LogStatus($duplicate_status);
 }
 
 
 # Check to make sure .ctl file is roughly of correct format
 # 3.) Check that each utterance specified in the .ctl file has a positive length
 #     Verify that the files listed are available and are not of size 0
-# 4.) Check number of lines in the transcript and in ctl - they should be the same\n";
+# 4.) Check number of lines in the transcript and in ctl - they should be the same";
 {
     my ($status,@ctl_lines,$ctl_line,$file,$start,$end,$number_ctl_lines,$number_lines_transcript);
     
@@ -215,7 +208,7 @@ my %phonelist_hash;
     # 3.) Check that each utterance specified in the .ctl file has a positive length
     #     Verify that the files listed are available and are not of size 0
 
-    Log("    Phase 3: CTL - Check general format; utterance length (must be positive); files exist\n");
+    Log("Phase 3: CTL - Check general format; utterance length (must be positive); files exist");
     $status = 'passed';
     my $estimated_training_data = 0;
     for $ctl_line (@ctl_lines) {
@@ -235,7 +228,7 @@ my %phonelist_hash;
 		if (! -s "$ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION") {
 		    $ret_value = -4;
 		    $status = 'FAILED';
-		    LogWarning ("This file, $ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION, does not exist\n");
+		    LogWarning ("This file, $ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION, does not exist");
 		}
 	    }
 	} else {
@@ -248,25 +241,22 @@ my %phonelist_hash;
 		if (! $size) {
 		    $ret_value = -4;
 		    $status = 'FAILED';
-		    LogWarning ("CTL file, $ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION, does not exist\n");
+		    LogWarning ("CTL file, $ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION, does not exist");
 		}
 	    } else {
 		$status = 'FAILED';
 		$ret_value = -5;
-		LogWarning ("CTL line does not parse correctly:\n$ctl_line\n");
+		LogWarning ("CTL line does not parse correctly:\n$ctl_line");
 	    }
 	}
     }
-
-#    Log ("\t\t$status\n");
-    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
-    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
+    LogStatus($status);
     
     $number_ctl_lines = $#ctl_lines + 1;
 
     
-    # 4) Check number of lines in the transcript and in ctl - they should be the same\n";
-    Log ("    Phase 4: CTL - Checking number of lines in the transcript should match lines in control file\n");
+    # 4) Check number of lines in the transcript and in ctl - they should be the same";
+    Log ("Phase 4: CTL - Checking number of lines in the transcript should match lines in control file");
     open TRN,"$ST::CFG_TRANSCRIPTFILE" or die "Can not open Transcript file ($ST::CFG_TRANSCRIPTFILE)";
     my $number_transcript_lines = 0;
     while (<TRN>) {
@@ -275,13 +265,10 @@ my %phonelist_hash;
     close TRN;
     
     $status = ($number_ctl_lines == $number_transcript_lines) ? 'passed' : 'FAILED';
-    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
-    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
-
+    LogStatus($status);
 
     # 5) Should already have estimates on the total training time, 
-
-    Log ("    Phase 5: CTL - Determine amount of training data, see if n_tied_states seems reasonable.\n");
+    Log ("Phase 5: CTL - Determine amount of training data, see if n_tied_states seems reasonable.");
     $status = 'passed';
     my $total_training_data = 0;
     for $ctl_line (@ctl_lines) {
@@ -299,29 +286,26 @@ my %phonelist_hash;
 
     if ($total_training_data) {
 	my $total_training_hours = ($total_training_data / 3600)/100;
-	Log("\t\tTotal Hours Training: $total_training_hours\n");
+	Log("Total Hours Training: $total_training_hours", 'result');
 	my $estimated_n_tied_states = 1000;
 	if ($total_training_hours < 10) {
 	    $status = 'WARNING';
-	    Log("\t\tThis is a small amount of data, no comment at this time\n");
+	    Log("This is a small amount of data, no comment at this time", 'result');
 	} else {
 	    if ($total_training_hours < 100) {
 		$status = 'WARNING';
 		$estimated_n_tied_states = 3000 if ($ST::CFG_HMM_TYPE eq '.cont.'); # Likely bogus 
 		$estimated_n_tied_states = 4000 if ($ST::CFG_HMM_TYPE eq '.semi.'); # 
-		Log("\t\tRule of thumb suggests $estimated_n_tied_states, however there is no correct answer\n");
+		Log("Rule of thumb suggests $estimated_n_tied_states, however there is no correct answer", 'result');
 	    } else {
 		$estimated_n_tied_states = 8000;
 		$status = 'passed';
-		Log("\t\t100+ hours of training data is goodly amount of data.\n");
-		Log("\t\tRule of thumb suggests $estimated_n_tied_states for 100 hours, you can adjust accordingly.\n");
+		Log("100+ hours of training data is goodly amount of data.", 'result');
+		Log("Rule of thumb suggests $estimated_n_tied_states for 100 hours, you can adjust accordingly.", 'result');
 	    }
 	}
     }
-    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
-    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
-    HTML_Print ("\t\t<font color=\"$ST::CFG_WARNING_COLOR\"> $status </font>\n") if($status eq 'WARNING');
-#    Log("\t\t$status\n");
+    LogStatus($status);
     @ctl_lines = ();
 }
 
@@ -330,11 +314,12 @@ my %transcript_phonelist_hash = ();
 # Verify that all transcription words are in the dictionary, and all
 # phones are covered
 {
-    Log("    Phase 6: TRANSCRIPT - Checking that all the words in the transcript are in the dictionary\n");
+    Log("Phase 6: TRANSCRIPT - Checking that all the words in the transcript are in the dictionary");
     open DICT,"$ST::CFG_DICTIONARY" or die "Can not open the dictionary ($ST::CFG_DICTIONARY)";
     my @dict = <DICT>;
     close DICT;
-    Log("        Words in dictionary: $#dict\n");
+    my $ndict = @dict;
+    Log("Words in dictionary: $ndict", 'result');
 
     my %d;
     for (@dict) {		# Create a hash of the dict entries
@@ -346,10 +331,11 @@ my %transcript_phonelist_hash = ();
 	}
     }
     
-    open DICT,"$ST::CFG_FILLERDICT" or die "Can not open filler dict ($ST::CFG_FILLERDICT)\n";
+    open DICT,"$ST::CFG_FILLERDICT" or die "Can not open filler dict ($ST::CFG_FILLERDICT)";
     my @fill_dict = <DICT>;
     close DICT;
-    Log ("        Words in filler dictionary: $#fill_dict\n");
+    $ndict = @fill_dict;
+    Log ("Words in filler dictionary: $ndict", 'result');
     
     for (@fill_dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
@@ -372,7 +358,7 @@ my %transcript_phonelist_hash = ();
 	    my @words = split /\s+/,$text;
 	    for my $word (@words) {
 		if ($ST::CFG_LTSOOV eq 'no' and !($d{$word}) and ($word =~ m/\S+/)) {
-		    LogWarning ("This word: $word was in the transcript file, but is not in the dictionary ($text). Do cases match?\n");
+		    LogWarning ("This word: $word was in the transcript file, but is not in the dictionary ($text). Do cases match?");
 		    $status = 'FAILED';
 		    $ret_value = -5;
 		} else {
@@ -385,29 +371,20 @@ my %transcript_phonelist_hash = ();
 	}
     }
     close TRN;
-
-    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
-    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
-    HTML_Print ("\t\t<font color=\"$ST::CFG_WARNING_COLOR\"> $status </font>\n") if($status eq 'WARNING');
-
+    LogStatus($status);
 }
 
 {
-    Log("    Phase 7: TRANSCRIPT - Checking that all the phones in the transcript are in the phonelist, and all phones in the phonelist appear at least once\n");
+    Log("Phase 7: TRANSCRIPT - Checking that all the phones in the transcript are in the phonelist, and all phones in the phonelist appear at least once");
     my $status = 'passed';
 
     for my $phone (sort keys %phonelist_hash) {
       if (!defined $transcript_phonelist_hash{$phone}) {
-	    LogWarning ("This phone ($phone) occurs in the phonelist ($ST::CFG_RAWPHONEFILE), but not in any word in the transcription ($ST::CFG_TRANSCRIPTFILE)\n");
+	    LogWarning ("This phone ($phone) occurs in the phonelist ($ST::CFG_RAWPHONEFILE), but not in any word in the transcription ($ST::CFG_TRANSCRIPTFILE)");
 	    $status = 'FAILED';
       }
     }
-
-
-    HTML_Print ("\t\t<font color=\"$ST::CFG_OKAY_COLOR\"> $status </font>\n") if($status eq 'passed');
-    HTML_Print ("\t\t<font color=\"$ST::CFG_ERROR_COLOR\"> $status </font>\n") if($status eq 'FAILED');
-    HTML_Print ("\t\t<font color=\"$ST::CFG_WARNING_COLOR\"> $status </font>\n") if($status eq 'WARNING');
-
+    LogStatus($status);
   }
 
 mkdir ($ST::CFG_LOG_DIR,0755);

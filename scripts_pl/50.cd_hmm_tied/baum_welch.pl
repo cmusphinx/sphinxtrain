@@ -49,9 +49,8 @@ use SphinxTrain::Config;
 use SphinxTrain::Util;
 
 #************************************************************************
-# this script performs baum-welch training using s3 code for a
-# continuous mdef file.
-# it needs as inputs an initial set of semicont models in s3 format
+# this script performs baum-welch training using
+# it needs as inputs an initial set of models in s3 format
 # a mdef file and cepstra with transcription files.
 #************************************************************************
 
@@ -144,10 +143,8 @@ close INPUT;
 $ctl_counter = int ($ctl_counter / $npart) if $npart;
 $ctl_counter = 1 unless ($ctl_counter);
 
-copy "$ST::CFG_GIF_DIR/green-ball.gif", "$ST::CFG_BASE_DIR/.50.bw.$n_gau.$iter.$part.state.gif";
-HTML_Print ("\t" . ImgSrc("$ST::CFG_BASE_DIR/.50.bw.$n_gau.$iter.$part.state.gif") . " ");        
-Log ("    Baum welch starting for $n_gau Gaussian(s), iteration: $iter ($part of $npart) ");
-HTML_Print (FormatURL("$logfile", "Log File") . "\n");
+Log("Baum welch starting for $n_gau Gaussian(s), iteration: $iter ($part of $npart)",
+    'result');
 
 my $return_value = RunTool
     ('bw', $logfile, $ctl_counter,
@@ -189,7 +186,6 @@ my $return_value = RunTool
 
 
 if ($return_value) {
-  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.50.bw.$n_gau.$iter.$part.state.gif";
-  LogError ("\tFailed to start bw \n");
+  LogError("Failed to start bw");
 }
 exit ($return_value);

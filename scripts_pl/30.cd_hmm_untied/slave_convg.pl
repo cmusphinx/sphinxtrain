@@ -70,25 +70,24 @@ mkdir ("$logdir",0777);
 #Read npart_untied from variables.def
 my $return_value = 0;
 if ($iter == 1) {
-   # Clean up junk from earlier runs
-   Log ("MODULE: 30 Training Context Dependent models\n");
-   Log ("    Cleaning up directories: accumulator...");
-
+    # Clean up junk from earlier runs
+    Log ("MODULE: 30 Training Context Dependent models\n");
+    Log("Phase 1: Cleaning up directories:");
+    LogProgress("\taccumulator...");
     rmtree ($ST::CFG_BWACCUM_DIR, 0, 1);
     mkdir ($ST::CFG_BWACCUM_DIR,0777);
-
-    Log ("logs...");
-    rmtree ($logdir, 0, 1);
+    LogProgress("logs...");
+    rmtree($logdir, 0, 1);
     mkdir ($logdir,0777);
-
-    Log ("qmanager...");
+    LogProgress("qmanager...\n");
     rmtree ($ST::CFG_QMGR_DIR, 0, 1);
     mkdir ($ST::CFG_QMGR_DIR,0777);
+    LogStatus('completed');
 
-    Log ("\n");
     # For the first iteration Flat initialize models.
     $return_value = Initialize();
     exit ($return_value) if ($return_value);
+    Log("Phase 3: Forward-Backward");
 }
 
 # Call baum_welch with iter part and n_parts,
@@ -116,11 +115,10 @@ sub Initialize () {
   my $logdir  =  "${ST::CFG_LOG_DIR}/30.cd_hmm_untied";
   mkdir ($logdir,0777);
 
-  Log ("    Initialization Make Untied Mdef\n");
+  Log ("Phase 2: Initialization");
   my $untiedmdef = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef";
   my $logfile = "$logdir/${ST::CFG_EXPTNAME}.make_alltriphonelist.log";
 
-  HTML_Print ("\t\tmk_untied_mdef " . FormatURL("$logfile", "Log File") . " ");
   my $rv = RunTool('mk_mdef_gen', $logfile, 0,
 		   -phnlstfn => $ST::CFG_RAWPHONEFILE,
 		   -dictfn => $ST::CFG_DICTIONARY,
@@ -131,9 +129,6 @@ sub Initialize () {
   return $rv if $rv;
 
   $logfile = "$logdir/${ST::CFG_EXPTNAME}.copycitocd.log";
-
-  Log ("    Initialization Copy CI to CD\n");
-  HTML_Print (FormatURL("$logfile", "Log File") . " ");
 
   my $cd_mdeffile = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef";
   $rv = RunTool

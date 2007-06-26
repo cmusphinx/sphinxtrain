@@ -90,16 +90,20 @@ mkdir ($modeldir,0777);
 # We have to clean up and run flat initialize if it is the first iteration
 if (($iter == 1) && (($n_gau == 1) || ($ST::CFG_HMM_TYPE eq ".semi."))) {
     Log ("MODULE: 50 Training Context dependent models\n");
-    Log ("    Cleaning up directories: accumulator...");
+    Log("Phase 1: Cleaning up directories:");
+    LogProgress("\taccumulator...");
     rmtree ($ST::CFG_BWACCUM_DIR, 0, 1);
     mkdir ($ST::CFG_BWACCUM_DIR,0777);
-    Log ("logs...\n");
-    rmtree ($logdir, 0, 1);
+    LogProgress("logs...");
+    rmtree($logdir, 0, 1);
     mkdir ($logdir,0777);
-    Log ("qmanager...");
+    LogProgress("qmanager...\n");
     rmtree ($ST::CFG_QMGR_DIR, 0, 1);
     mkdir ($ST::CFG_QMGR_DIR,0777);
+    LogStatus('completed');
+
     copyci2cd2initialize();
+    Log("Phase 3: Forward-Backward");
 }
 
 # Call baum_welch with iter part and n_parts,
@@ -120,7 +124,7 @@ exit $return_value;
 
 sub copyci2cd2initialize ()
 {
-    Log ("    Copy CI to CD initialize\n");
+    Log("Phase 2: Copy CI to CD initialize\n");
 
     #**************************************************************************
     # this script copies the mixw/mean/var/tmat from a ci (continuous) HMM
@@ -150,8 +154,6 @@ sub copyci2cd2initialize ()
     my $logdir = "$ST::CFG_LOG_DIR/50.cd_hmm_tied";
     mkdir ($logdir,0777);
     my $logfile = "$logdir/$ST::CFG_EXPTNAME.copy.ci.2.cd.log";
-
-    HTML_Print (FormatURL("$logfile", "Log File") . " ");
 
     my $rv = RunTool('init_mixw', $logfile, 0,
 		   -src_moddeffn => $src_moddeffn,

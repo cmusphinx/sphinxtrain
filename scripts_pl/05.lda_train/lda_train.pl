@@ -58,16 +58,16 @@ my $listoffiles = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles"
 
 Log("MODULE: 05 Train LDA transformation\n");
 if ($ST::CFG_HMM_TYPE eq ".semi.") {
-    Log("    Skipped for semi-continuous models\n");
+    Log("Skipped for semi-continuous models\n");
     exit 0;
 }
 
 unless (-r $listoffiles and -d $ST::CFG_STSEG_DIR) {
-    Log("    Skipped: No force-alignment was done\n");
+    Log("Skipped: No force-alignment was done\n");
     exit 0;
 }
 
-Log("    Cleaning up old log files...\n");
+Log("Cleaning up old log files...\n");
 rmtree($logdir, 0, 1);
 mkdir($logdir,0777);
 

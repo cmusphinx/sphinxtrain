@@ -57,8 +57,8 @@ die "Usage: $0 [-cfg <config file>] <current n_gaussians> <increase>\n"
     if @ARGV != 2;
 my ($n_current, $n_inc) = @ARGV;
 if ($n_current + $n_inc > $ST::CFG_FINAL_NUM_DENSITIES) {
-  Log("Increase in number of Gaussians beyond the desired total\n" .
-	  "Current: $n_current, increase by: $n_inc, desired total: $ST::CFG_FINAL_NUM_DENSITIES\n");
+  LogError("Increase in number of Gaussians beyond the desired total\n" .
+	   "Current: $n_current, increase by: $n_inc, desired total: $ST::CFG_FINAL_NUM_DENSITIES\n");
   exit -3;
 }
 
@@ -70,7 +70,7 @@ mkdir ($logdir,0777);
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777);
 
-Log ("    Split Gaussians, increase by $n_inc\n");
+Log ("Split Gaussians, increase by $n_inc\n", 'result');
 
 my $src_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/${ST::CFG_EXPTNAME}.falign_ci_${ST::CFG_DIRLABEL}";
 mkdir ($src_hmmdir,0777);
@@ -108,12 +108,12 @@ copy "$src_tmatfn", "$dest_tmatfn";
 # With semi continuous models, we already start with the right number
 # of components
 if ($ST::CFG_HMM_TYPE eq ".semi.") {
-  Log ("Split Gaussian not performed for semi continuous\n");
+  Log ("Split Gaussian not performed for semi continuous\n", 'phase');
   exit 0;
 }
 
 if ($ST::CFG_FALIGN_CI_MGAU ne "yes") {
-  Log ("Split Gaussian not performed unless \$CFG_FALIGN_CI_MGAU = 'yes'\n");
+  Log ("Split Gaussian not performed unless \$CFG_FALIGN_CI_MGAU = 'yes'\n", 'phase');
   exit 0;
 }
 
@@ -125,7 +125,6 @@ if ($n_inc <= 0) {
 my $logdir = "$ST::CFG_LOG_DIR/02.falign_ci_hmm";
 mkdir ($logdir,0777);
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.split_gaussians.$n_current.$n_inc.log";
-HTML_Print (FormatURL("$logfile", "Log File") . " ");
 
 my $rv = RunTool('inc_comp', $logfile, 0,
 		 -ninc => $n_inc,

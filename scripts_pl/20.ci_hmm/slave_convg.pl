@@ -70,22 +70,25 @@ my $return_value = 0;
 
 # We have to clean up and run flat initialize if it is the first iteration
 if ($iter == 1 and $n_gau == 1) {
-    Log ("MODULE: 20 Training Context Independent models\n");
-    Log ("    Cleaning up directories: accumulator...");
+    Log("MODULE: 20 Training Context Independent models\n");
+    Log("Phase 1: Cleaning up directories:");
+    LogProgress("\taccumulator...");
     rmtree($ST::CFG_BWACCUM_DIR, 0, 1);
     mkdir ($ST::CFG_BWACCUM_DIR,0777);
-    Log ("logs...");
+    LogProgress("logs...");
     rmtree($logdir, 0, 1);
     mkdir ($logdir,0777);
-    Log ("qmanager...");
+    LogProgress("qmanager...");
     rmtree ($ST::CFG_QMGR_DIR, 0, 1);
     mkdir ($ST::CFG_QMGR_DIR,0777);
-    Log ("models...\n");
+    LogProgress("models...\n");
     rmtree("$modeldir/${ST::CFG_EXPTNAME}.ci_$ST::CFG_DIRLABEL", 0, 1);
+    LogStatus('completed');
 
     # For the first iteration Flat initialize models.
     $return_value = FlatInitialize();
     exit ($return_value) if ($return_value);
+    Log("Phase 3: Forward-Backward");
 }
 
 if (defined($ST::CFG_PHSEG_DIR) and ! -d $ST::CFG_PHSEG_DIR) {
@@ -129,7 +132,7 @@ exit $return_value;
 
 sub FlatInitialize ()
 {
-    Log("    Flat initialize\n");
+    Log("Phase 2: Flat initialize\n");
 
     #**************************************************************************
     # this script given an mdef file and a  codebook (means/vars in S3 format)
@@ -177,7 +180,6 @@ sub FlatInitialize ()
 
 
     my $logfile = "$logdir/${ST::CFG_EXPTNAME}.make_ci_mdef_fromphonelist.log";
-    HTML_Print ("\t\tmk_mdef_gen " . FormatURL("$logfile", "Log File") . " ");
     #-------------------------------------------------------------------------
     # Decide on what topology to use for the hmms: 3 state, 5 state, blah state
     # or what, give it to the variable "statesperhmm" and use it to create
@@ -205,8 +207,6 @@ sub FlatInitialize ()
     my $FLAT = "$ST::CFG_BIN_DIR/mk_flat";
 
     $logfile = "$logdir/${ST::CFG_EXPTNAME}.makeflat_cihmm.log";
-    HTML_Print ("\t\tmk_flat " . FormatURL("$logfile", "Log File") . " ");
-
     if ($return_value = RunTool('mk_flat', $logfile, 0,
 				-moddeffn => $ci_mdeffile,
 				-topo => $topologyfile,
@@ -227,7 +227,6 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
 
     $logfile = "$logdir/${ST::CFG_EXPTNAME}.initmean_cihmm.log";
-    HTML_Print ("\t\taccum_mean " . FormatURL("$logfile", "Log File") . " ");
 
     open LOG,">$logfile";
 
@@ -262,7 +261,6 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
 
     $logfile = "$logdir/${ST::CFG_EXPTNAME}.normmean_cihmm.log";
-    HTML_Print ("\t\tnorm_mean " . FormatURL("$logfile", "Log File") . " ");
 
     if ($return_value = RunTool('norm', $logfile, 0,
 				-accumdir => $output_buffer_dir,
@@ -276,7 +274,6 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
 
     $logfile = "$logdir/${ST::CFG_EXPTNAME}.initvar_cihmm.log";
-    HTML_Print ("\t\taccum_var " . FormatURL("$logfile", "Log File") . " ");
 
     if ($return_value = RunTool('init_gau', $logfile, 0,
 				-meanfn => catfile($outhmm, "globalmean"),
@@ -301,7 +298,6 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
 
     $logfile = "$logdir/${ST::CFG_EXPTNAME}.normvar_cihmm.log";
-    HTML_Print ("\t\tnorm_var " . FormatURL("$logfile", "Log File") . " ");
 
     if ($return_value = RunTool('norm', $logfile, 0,
 				-accumdir => $output_buffer_dir,
@@ -331,7 +327,6 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
 
     $logfile = "$logdir/${ST::CFG_EXPTNAME}.cpmean_cihmm.log";
-    HTML_Print ("\t\tcp_mean " . FormatURL("$logfile", "Log File") . " ");
 
     if ($return_value = RunTool('cp_parm', $logfile, 0,
 				-cpopsfn => $ST::CFG_CP_OPERATION,
@@ -347,7 +342,6 @@ sub FlatInitialize ()
     #------------------------------------------------------------------------
 
     $logfile = "$logdir/${ST::CFG_EXPTNAME}.cpvar_cihmm.log";
-    HTML_Print ("\t\tcp_var " . FormatURL("$logfile", "Log File") . " ");
 
     my @varcpy;
     if ($ST::CFG_FULLVAR eq 'yes') {

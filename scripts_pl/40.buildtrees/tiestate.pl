@@ -63,8 +63,6 @@ mkdir ($logdir,0777);
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.tiestate.$n_tied_states.log";
 
 $| = 1; # Turn on autoflushing
-Log ("    Tie states\n");
-HTML_Print ("\t\t" . FormatURL("$logfile", "Log File") . " ");
 
 my @phnarg;
 if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
