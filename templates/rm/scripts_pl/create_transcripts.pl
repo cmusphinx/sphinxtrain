@@ -52,10 +52,10 @@ sub create_files {
     my ($outname, @fhs) = @_;
 
     local (*OUTLSN, *OUTCTL);
-    open OUTLSN, ">$opts{outdir}/$outname.lsn"
-	or die "Failed to open $opts{outdir}/$outname.lsn: $!";
-    open OUTCTL, ">$opts{outdir}/$outname.ctl"
-	or die "Failed to open $opts{outdir}/$outname.ctl: $!";
+    open OUTLSN, ">$opts{outdir}/$outname.transcription"
+	or die "Failed to open $opts{outdir}/$outname.transcription: $!";
+    open OUTCTL, ">$opts{outdir}/$outname.fileids"
+	or die "Failed to open $opts{outdir}/$outname.fileids: $!";
 
     local $_;
     foreach my $fh (@fhs) {
@@ -64,14 +64,15 @@ sub create_files {
 	    s/\r$//;
 	    next if /^;/;
 	    s,^/rm1/,,i;
-	    my $uttid = basename($_, '.wav');
+	    s/\.wav$//;
+	    my $uttid = basename($_);
 	    print OUTLSN $sents{uc($uttid)} . " ($uttid)\n";
 	    print OUTCTL "$_\n";
 	}
     }
 }
 
-create_files('rm_si_train',
+create_files('rm_train',
 	     try_opening($dirs{doc}, 'train', '72_indtr.ndx'));
 create_files('rm_aug_si_train',
 	     try_opening($dirs{doc}, 'train', '37_indtr.ndx'),
@@ -124,39 +125,39 @@ This script creates transcripts and control files for:
 
 =item The 72-speaker "standard" training set (2880 utterances)
 
-This will create the files etc/rm_si_train.ctl and etc/rm_si_train.lsn
+This will create the files etc/rm_train.fileids and etc/rm_train.transcription
 
 =item The 109-speaker "augmented" training set (3990 utterances)
 
-This will create the files etc/rm_aug_si_train.ctl and etc/rm_aug_si_train.lsn
+This will create the files etc/rm_aug_si_train.fileids and etc/rm_aug_si_train.transcription
 
 =item The 12-speaker speaker-dependent training set (7200 utterances)
 
-This will create the files etc/rm_sd_train.ctl and etc/rm_sd_train.lsn
+This will create the files etc/rm_sd_train.fileids and etc/rm_sd_train.transcription
 
 =item The March '87 speaker-independent (SI) and speaker-dependent (SD) test sets
 
-This will create the files etc/rm_si_0387.ctl, etc/rm_si_0387.lsn,
-etc/rm_sd_0387.ctl, and etc/rm_sd_0387.lsn
+This will create the files etc/rm_si_0387.fileids, etc/rm_si_0387.transcription,
+etc/rm_sd_0387.fileids, and etc/rm_sd_0387.transcription
 
 =item The October '87 SI and SD test sets
 
-This will create the files etc/rm_si_1087.ctl, etc/rm_si_1087.lsn,
-etc/rm_sd_1087.ctl, and etc/rm_sd_1087.lsn
+This will create the files etc/rm_si_1087.fileids, etc/rm_si_1087.transcription,
+etc/rm_sd_1087.fileids, and etc/rm_sd_1087.transcription
 
 =item The June '88 combined SI/SD test set
 
-This will create the files etc/rm_0688.ctl and etc/rm_0688.lsn
+This will create the files etc/rm_0688.fileids and etc/rm_0688.transcription
 
 =item The February '89 SI and SD test sets
 
-This will create the files etc/rm_si_0289.ctl, etc/rm_si_0289.lsn,
-etc/rm_sd_0289.ctl, and etc/rm_sd_0289.lsn
+This will create the files etc/rm_si_0289.fileids, etc/rm_si_0289.transcription,
+etc/rm_sd_0289.fileids, and etc/rm_sd_0289.transcription
 
 =item The October '89 SI and SD test sets
 
-This will create the files etc/rm_si_1089.ctl, etc/rm_si_1089.lsn,
-etc/rm_sd_1089.ctl, and etc/rm_sd_1089.lsn
+This will create the files etc/rm_si_1089.fileids, etc/rm_si_1089.transcription,
+etc/rm_sd_1089.fileids, and etc/rm_sd_1089.transcription
 
 =bak
 
