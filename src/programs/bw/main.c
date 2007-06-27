@@ -702,9 +702,11 @@ main_reestimate(model_inventory_t *inv,
     printf("\t<n_frame_del>\n");
     printf("\t<n_state_shmm>\n");
     printf("\t<avg_states_alpha>\n");
-    printf("\t<avg_states_beta>\n");
-    printf("\t<avg_states_reest>\n");
-    printf("\t<avg_posterior_prune>\n");
+    if (!cmd_ln_int32("-viterbi")) {
+	printf("\t<avg_states_beta>\n");
+	printf("\t<avg_states_reest>\n");
+	printf("\t<avg_posterior_prune>\n");
+    }
     printf("\t<frame_log_lik>\n");
     printf("\t<utt_log_lik>\n");
     printf("\t... timing info ... \n");
@@ -872,7 +874,9 @@ main_reestimate(model_inventory_t *inv,
 			       pdumpfh, lda) == S3_SUCCESS) {
 		total_frames += n_frame;
 		total_log_lik += log_lik;
-		printf(" %e", log_lik);
+		printf(" %e %e",
+		       (n_frame > 0 ? log_lik / n_frame : 0.0),
+		       log_lik);
 	    }
 	}
 	if (upd_timer)
