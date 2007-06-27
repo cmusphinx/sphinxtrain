@@ -1,0 +1,29 @@
+Wall Street Journal "from scratch" training/testing setup
+---------------------------------------------------------
+
+This setup relies on having the WSJ0 and WSJ1 corpora, LDC catalog
+numbers LDC93S6B and LDC94S13B (only the Sennheiser microphone speech
+is used), in a locally accessible directory.  Since this originally
+shipped on a number of CDs, to which you may or may not have access,
+you should edit the file etc/wsj_files.cfg to point to specific
+subdirectories in the corpus.  You will probably need to merge the
+contents of multiple CDs into a single directory.  Case of the
+filenames should not be important.
+
+You must have the 'sph2pipe' utility from the LDC on your $PATH. We
+are not able to distribute due to license restrictions, so you must
+obtain it from:
+
+ftp://ftp.ldc.upenn.edu/pub/ldc/misc_sw/sph2pipe_v2.5.tar.gz
+
+In order for the scripts included here to work, you must have Festival
+and the Perl scripts and binaries from cmuclmtk in your $PATH.  If you
+don't want to install them systemwide, then you can do it like this
+(replacing /path/to/cmuclmtk with the full path to wherever the source
+tree for it resides):
+
+export PATH="$PATH:/path/to/cmuclmtk/src:/path/to/cmuclmtk/perl"
+
+or, for those of you who still insist on using csh:
+
+setenv PATH "$PATH:/path/to/cmuclmtk/src:/path/to/cmuclmtk/perl"
