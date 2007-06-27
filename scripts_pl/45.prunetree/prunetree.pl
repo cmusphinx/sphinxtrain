@@ -33,9 +33,13 @@
 ## OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ##
 ## ====================================================================
-##
-## Author: Ricky Houghton
-##
+#*************************************************************************
+# This script prunes the trees computed earlier to have the desired number
+# of leaves. Each leaf corresponds to one tied state
+#*************************************************************************
+#
+#   Author: Alan W Black (awb@cs.cmu.edu)
+#
 
 use strict;
 use File::Copy;
@@ -43,27 +47,36 @@ use File::Basename;
 use File::Spec::Functions;
 use File::Path;
 
-use lib catdir(dirname($0), 'lib');
+use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-# What pieces would you like to compute.
-# We have to do VQ before training anything (even though the number sequence is wrong)
-my @sample_steps =
-    ("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
-     "$ST::CFG_SCRIPT_DIR/10.vector_quantize/slave.VQ.pl",
-     "$ST::CFG_SCRIPT_DIR/02.falign_ci_hmm/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/03.force_align/slave_align.pl",
-     "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
-     "$ST::CFG_SCRIPT_DIR/45.prunetree/slave.state-tying.pl",
-     "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/90.deleted_interpolation/deleted_interpolation.pl",
-     "$ST::CFG_SCRIPT_DIR/99.make_s2_models/make_s2_models.pl",
-     );
+die "USAGE: $0 <number of tied states>" if @ARGV != 1;
 
-foreach my $step (@sample_steps) {
-    my $ret_value = RunScript($step);
-    die "Something failed: ($step)\n" if $ret_value;
+my $n_tied_states = shift;
+my $occurance_threshold = 0;
+
+my $mdef_file = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.alltriphones.mdef";
+
+my $unprunedtreedir = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.unpruned";
+my $prunedtreedir  = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.$n_tied_states";
+mkdir ($prunedtreedir,0777);
+
+my $logdir = "$ST::CFG_LOG_DIR/45.prunetree";
+mkdir ($logdir,0777);
+my $logfile = "$logdir/$ST::CFG_EXPTNAME.prunetree.$n_tied_states.log";
+
+$| = 1; # Turn on autoflushing
+
+my @phnarg;
+if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
+    @phnarg = (-allphones => 'yes');
 }
+exit RunTool('prunetree', $logfile, 0,
+	     -itreedir => $unprunedtreedir,
+	     -nseno => $n_tied_states,
+	     -otreedir => $prunedtreedir,
+	     -moddeffn => $mdef_file,
+	     @phnarg,
+	     -psetfn => $ST::CFG_QUESTION_SET,
+	     -minocc => $occurance_threshold);

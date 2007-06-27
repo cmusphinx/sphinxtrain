@@ -33,13 +33,9 @@
 ## OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ##
 ## ====================================================================
-#*************************************************************************
-# This script prunes the trees computed earlier to have the desired number
-# of leaves. Each leaf corresponds to one tied state
-#*************************************************************************
-#
-#   Author: Alan W Black (awb@cs.cmu.edu)
-#
+##
+## Author: Ricky Houghton
+##
 
 use strict;
 use File::Copy;
@@ -51,32 +47,32 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-die "USAGE: $0 <number of tied states>" if @ARGV != 1;
-
-my $n_tied_states = shift;
-my $occurance_threshold = 0;
-
-my $mdef_file = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.alltriphones.mdef";
-
-my $unprunedtreedir = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.unpruned";
-my $prunedtreedir  = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.$n_tied_states";
-mkdir ($prunedtreedir,0777);
-
-my $logdir = "$ST::CFG_LOG_DIR/40.buildtrees";
+my $return_value = 0;
+my $scriptdir = "$ST::CFG_SCRIPT_DIR/45.prunetree";
+my $logdir = "${ST::CFG_LOG_DIR}/45.prunetree";
+Log("MODULE: 45 Prune Trees\n");
+rmtree ("$logdir");
 mkdir ($logdir,0777);
-my $logfile = "$logdir/$ST::CFG_EXPTNAME.prunetree.$n_tied_states.log";
 
 $| = 1; # Turn on autoflushing
 
-my @phnarg;
-if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
-    @phnarg = (-allphones => 'yes');
-}
-exit RunTool('prunetree', $logfile, 0,
-	     -itreedir => $unprunedtreedir,
-	     -nseno => $n_tied_states,
-	     -otreedir => $prunedtreedir,
-	     -moddeffn => $mdef_file,
-	     @phnarg,
-	     -psetfn => $ST::CFG_QUESTION_SET,
-	     -minocc => $occurance_threshold);
+# Build all triphone model
+my $logfile = "$logdir/$ST::CFG_EXPTNAME.build.alltriphones.mdef.log";
+my $modarchdir          = "$ST::CFG_BASE_DIR/model_architecture";
+my $ALLTRIPHONESMDDEF = "$modarchdir/$ST::CFG_EXPTNAME.alltriphones.mdef";
+my $phonefile           = "$modarchdir/$ST::CFG_EXPTNAME.phonelist";
+
+my $status = RunTool('mk_mdef_gen', $logfile, 0,
+		  -phnlstfn => $phonefile,
+		  -oalltphnmdef => $ALLTRIPHONESMDDEF,
+		  -dictfn => $ST::CFG_DICTIONARY,
+		  -fdictfn => $ST::CFG_FILLERDICT,
+		  -n_state_pm => $ST::CFG_STATESPERHMM);
+exit $status if $status;
+
+Log("Phase 1: Tree Pruning\n");
+$status = RunScript('prunetree.pl', $ST::CFG_N_TIED_STATES);
+exit $status if $status;
+
+Log("Phase 2: State Tying\n");
+exit RunScript('tiestate.pl', $ST::CFG_N_TIED_STATES);

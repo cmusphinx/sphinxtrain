@@ -114,23 +114,3 @@ foreach (@jobs) {
     WaitForScript($job);
 }
 
-# Build all triphone model
-my $logfile = "$logdir/$ST::CFG_EXPTNAME.build.alltriphones.mdef.log";
-my $modarchdir          = "$ST::CFG_BASE_DIR/model_architecture";
-my $ALLTRIPHONESMDDEF = "$modarchdir/$ST::CFG_EXPTNAME.alltriphones.mdef";
-my $phonefile           = "$modarchdir/$ST::CFG_EXPTNAME.phonelist";
-
-my $status = RunTool('mk_mdef_gen', $logfile, 0,
-		  -phnlstfn => $phonefile,
-		  -oalltphnmdef => $ALLTRIPHONESMDDEF,
-		  -dictfn => $ST::CFG_DICTIONARY,
-		  -fdictfn => $ST::CFG_FILLERDICT,
-		  -n_state_pm => $ST::CFG_STATESPERHMM);
-exit $status if $status;
-
-Log("Phase 4: Tree Pruning\n");
-$status = RunScript('prunetree.pl', $ST::CFG_N_TIED_STATES);
-exit $status if $status;
-
-Log("Phase 5: State Tying\n");
-exit RunScript('tiestate.pl', $ST::CFG_N_TIED_STATES);

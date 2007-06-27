@@ -39,10 +39,8 @@ for (my $nsen = $start; $nsen <= $end; $nsen += $incr) {
     my $rv;
     # We set this so that RunScript() will pass it on to sub-scripts
     $ST::CFG_FILE = $new_cfgfile;
-    $rv = RunScript(catfile($ST::CFG_SCRIPT_DIR, '40.buildtrees', 'prunetree.pl'), $nsen);
-    die "prunetree.pl failed: $rv" if $rv;
-    $rv = RunScript(catfile($ST::CFG_SCRIPT_DIR, '40.buildtrees', 'tiestate.pl'), $nsen);
-    die "tiestate.pl failed: $rv" if $rv;
+    $rv = RunScript(catfile($ST::CFG_SCRIPT_DIR, '45.prunetree', 'slave.state-tying.pl'));
+    die "prunetree and state tying failed: $rv" if $rv;
     $rv = RunScript(catfile($ST::CFG_SCRIPT_DIR, '50.cd_hmm_tied', 'slave_convg.pl'));
     die "cd_hmm_tied training failed: $rv" if $rv;
 
