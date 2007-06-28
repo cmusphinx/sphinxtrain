@@ -45,12 +45,27 @@ sub convert_dot {
 
 	# Remove useless characters
 	tr/\*/ /;
+	tr/<>/ /;
 	tr/\`/\'/;
 
 	# Upper case it
 	$_ = uc $_;
 	my @words;
 	foreach (split) {
+	    # Deal with partial words
+	    s/^-\([^\)]+\)/-/;
+	    s/\([^\)]+\)-/-/;
+	    # Sphinx3 (and ngram_pronounce) is stupid about
+	    # underscores in filler words
+	    if (/^\+\+.*\+\+$/) {
+		tr/_-//d;
+	    }
+	    # Remove superfluous punctuation
+	    next if $_ eq '.';
+	    next if $_ eq '~';
+	    next if $_ eq '~~';
+	    tr/://d unless $_ eq ':COLON';
+	    tr/!//d unless $_ eq '!EXCLAMATION-POINT';
 	    push @words, $_ unless $_ eq '.' or $_ eq '~';
 	}
 
@@ -100,7 +115,7 @@ sub convert_dots {
 	     my $bdir = $File::Find::dir;
 	     substr($bdir, 0, length($dotdir) + 1) = "";
 	     # The .dot file itself contains the file IDs
-	     convert_dot($File::Find::name, $bdir, \%index);
+	     convert_dot($File::Find::name, "$tag/$bdir", \%index);
 	 }, $dotdir);
     close OUTCTL;
     close OUTLSN;
@@ -115,11 +130,11 @@ convert_dots(catfile($opts{outdir}, "wsj_si200_train"),
 	     $dirs{wsj1_doc}, catfile('indices', 'si_tr_s.ndx'));
 
 convert_dots(catfile($opts{outdir}, "wsj_test"),
-	     $dirs{wsj0_si_et_05}, '',
+	     $dirs{wsj0}, 'si_et_05',
 	     $dirs{wsj0_doc}, catfile('indices', 'test', 'nvp', 'si_et_05.ndx'));
 
 convert_dots(catfile($opts{outdir}, "wsj_20k_test"),
-	     $dirs{wsj0_si_et_20}, '',
+	     $dirs{wsj0}, 'si_et_20',
 	     $dirs{wsj0_doc}, catfile('indices', 'test', 'nvp', 'si_et_20.ndx'));
 
 convert_dots(catfile($opts{outdir}, "wsj_devel"),
