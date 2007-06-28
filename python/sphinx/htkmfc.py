@@ -55,7 +55,7 @@ def open(f, mode=None, veclen=13):
 class HTKFeat_read(object):
     "Read HTK format feature files"
     def __init__(self, filename=None):
-        self.swap = (unpack('=i', pack('>i', 42)) != 42)
+        self.swap = (unpack('=i', pack('>i', 42))[0] != 42)
         if (filename != None):
             self.open(filename)
 
@@ -132,7 +132,7 @@ class HTKFeat_write(object):
         self.paramKind = paramKind
         self.dtype = 'f'
         self.filesize = 0
-        self.swap = (unpack('=i', pack('>i', 42)) != 42)
+        self.swap = (unpack('=i', pack('>i', 42))[0] != 42)
         if (filename != None):
             self.open(filename)
 

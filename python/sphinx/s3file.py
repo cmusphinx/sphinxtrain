@@ -53,7 +53,7 @@ class S3File(object):
             self.swap = ">"
         else:
             raise Exception("Invalid byte-order mark %08x" % spam)
-        self.otherend = (unpack('=i', pack(self.swap + 'i', spam)) == spam)
+        self.otherend = (unpack('=i', pack(self.swap + 'i', spam))[0] == spam)
         self.data_start = self.fh.tell()
 
     def read3d(self):
