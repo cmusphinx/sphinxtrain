@@ -79,7 +79,6 @@ H = \
   dcep_frame.h \
   ddcep_frame.h \
   del_sil_seg.h \
-  feat_config.h \
   norm.h \
   r_agc_noise.h \
   s2_cep.h \
