@@ -204,6 +204,12 @@ feat_set(const char *id_name)
 	return S3_SUCCESS;
     }
 
+    /* HACK, continued: "s3_1x39" is an alias for one of the sphinx-III variants. */
+    if (strcmp(id_name, "s3_1x39") == 0) {
+	fid = FEAT_ID_V1;
+	return S3_SUCCESS;
+    }
+
     for (i = 0; name2id[i]; i++) {
 	if (strcmp(id_name, name2id[i]) == 0) {
 	    fid = i;
