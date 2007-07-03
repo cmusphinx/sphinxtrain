@@ -202,8 +202,11 @@ chmod 0755, @dirlist;
 
 # Finally, we generate the config file for this specific task
 print "Generating SphinxTrain specific scripts and config file\n";
-open (CFGIN, "$SPHINXTRAINDIR/etc/sphinx_train.cfg") or 
-  die "Can't open $SPHINXTRAINDIR/etc/sphinx_train.cfg\n";
+# Look for a config template in the target directory
+unless (open (CFGIN, "<etc/sphinx_train.template")) {
+    open (CFGIN, "<$SPHINXTRAINDIR/etc/sphinx_train.cfg") or
+	die "Can't open etc/sphinx_train.template or $SPHINXTRAINDIR/etc/sphinx_train.cfg\n";
+}
 open (CFGOUT, ">etc/sphinx_train.cfg") or die "Can't open etc/sphinx_train.cfg\n";
 while (<CFGIN>) {
   chomp;
