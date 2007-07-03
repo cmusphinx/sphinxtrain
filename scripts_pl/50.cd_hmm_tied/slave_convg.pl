@@ -91,9 +91,12 @@ mkdir ($modeldir,0777);
 if (($iter == 1) && (($n_gau == 1) || ($ST::CFG_HMM_TYPE eq ".semi."))) {
     Log ("MODULE: 50 Training Context dependent models\n");
     Log("Phase 1: Cleaning up directories:");
-    LogProgress("\taccumulator...");
-    rmtree ($ST::CFG_BWACCUM_DIR, 0, 1);
-    mkdir ($ST::CFG_BWACCUM_DIR,0777);
+    # Don't do this on a queue, because of NFS bugs
+    unless ($ST::CFG_QUEUE_TYPE eq 'Queue::PBS') {
+	LogProgress("\taccumulator...");
+	rmtree ($ST::CFG_BWACCUM_DIR, 0, 1);
+	mkdir ($ST::CFG_BWACCUM_DIR,0777);
+    }
     LogProgress("logs...");
     rmtree($logdir, 0, 1);
     mkdir ($logdir,0777);

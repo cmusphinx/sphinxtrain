@@ -138,9 +138,6 @@ my $return_value = RunTool
      );
 
 if ($return_value) {
-    LogStatus('failed');
-}
-else {
-    LogStatus('completed');
+  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.03.force_align.$part.state.gif";
 }
 exit ($return_value);

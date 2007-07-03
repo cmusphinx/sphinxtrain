@@ -76,9 +76,12 @@ if ($iter == 1 and $n_gau == 1) {
 	exit(0);
     }
     Log("Phase 1: Cleaning up directories:");
-    LogProgress("\taccumulator...");
-    rmtree($ST::CFG_BWACCUM_DIR, 0, 1);
-    mkdir ($ST::CFG_BWACCUM_DIR,0777);
+    # Don't do this on a queue, because of NFS bugs
+    unless ($ST::CFG_QUEUE_TYPE eq 'Queue::PBS') {
+	LogProgress("\taccumulator...");
+	rmtree ($ST::CFG_BWACCUM_DIR, 0, 1);
+	mkdir ($ST::CFG_BWACCUM_DIR,0777);
+    }
     LogProgress("logs...");
     rmtree($logdir, 0, 1);
     mkdir ($logdir,0777);
