@@ -73,9 +73,15 @@ foreach my $dir (@dirs) {
 	    die "sph2pipe failed: $rv" unless $rv == 0;
 	    print $tmpfh "$o\n";
 	}
+	# Optimized feature parameters (similar to HTK ones)
 	my $rv = system('sphinx_fe',
 			-di => $outdir, -do => $outdir,
 			-ei => 'sph', -eo => 'mfc',
+			-lowerf => 1, -upperf => 8000,
+			-nfilt => 26,
+			-transform => 'dct',
+			-round_filters => 'no',
+			-remove_dc => 'yes',
 			-c => $tmpfile, -nist => 'yes');
 	foreach my $p (@l) {
 	    my $o = lc($p);
