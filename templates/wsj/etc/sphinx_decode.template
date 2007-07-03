@@ -76,6 +76,8 @@ if (($DEC_CFG_HMM_TYPE ne ".semi.") and ($DEC_CFG_HMM_TYPE ne ".cont.")) {
 		 'c/0..L-1/dd/0..L-1/'                          => 'INVALID',
 		 '4s_12c_24d_3p_12dd'                           => 's2_4x',
 		 '1s_12c_12d_3p_12dd'                           => 's3_1x39',
+		 's2_4x' 	                                => 's2_4x',
+		 's3_1x39'            	                        => 's3_1x39',
 		 '1s_c_d_dd'                                    => '1s_c_d_dd',
 		 '1s_c_d'                                       => 'cep_dcep',
 		 '1s_c'                                         => 'cep',
@@ -85,8 +87,9 @@ if (($DEC_CFG_HMM_TYPE ne ".semi.") and ($DEC_CFG_HMM_TYPE ne ".cont.")) {
 		 '1s_c_d_ld_dd'                                 => 'INVALID',
 		);
 
-((exists $feature_type{$CFG_FEATURE}) and ($DEC_CFG_FEATURE = $feature_type{$CFG_FEATURE}) 
- or ($DEC_CFG_FEATURE = "INVALID"));
+$DEC_CFG_FEATURE = "INVALID"
+    unless ((exists $feature_type{$CFG_FEATURE})
+	    and ($DEC_CFG_FEATURE = $feature_type{$CFG_FEATURE}));
 
 if ($DEC_CFG_FEATURE eq "INVALID") {
   die "Feature type used for training, $CFG_FEATURE, cannot be used for decoding.\n" .
