@@ -76,9 +76,9 @@ foreach my $dir (@dirs) {
 	# Optimized feature parameters (similar to HTK ones)
 	my $rv = system('sphinx_fe',
 			-di => $outdir, -do => $outdir,
-			-ei => 'sph', -eo => 'mfc',
-			-lowerf => 1, -upperf => 8000,
-			-nfilt => 26,
+			-ei => 'sph', -eo => 'mfc8',
+			-lowerf => 1, -upperf => 4000,
+			-nfilt => 20,
 			-transform => 'dct',
 			-round_filters => 'no',
 			-remove_dc => 'yes',
