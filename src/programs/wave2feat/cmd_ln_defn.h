@@ -285,8 +285,8 @@ static arg_def_t defn[] = {
   { "-dither",
     CMD_LN_BOOLEAN,
     CMD_LN_NO_VALIDATION,
-    "no",
-    "Add 1/2-bit noise" },
+    "yes",
+    "Add 1/2-bit noise to avoid zero energy frames" },
   
   { "-seed",
     CMD_LN_INT32,
