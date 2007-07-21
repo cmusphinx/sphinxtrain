@@ -89,7 +89,7 @@ if (defined $ctl) {
   close CTL;
 
   # Now run wave2feat (should maybe be sphinx_fe eventually)
-  system("bin/wave2feat -verbose yes -c \"$ctl\" -$ST::WAVFILE_TYPE yes " .
+  system("bin/wave2feat -dither yes -verbose yes -c \"$ctl\" -$ST::WAVFILE_TYPE yes " .
 	 "-di \"$ST::WAVFILES_DIR\" -ei \"$ST::CFG_WAVFILE_EXTENSION\" ".
 	 "-do \"$ST::CFG_FEATFILES_DIR\" " .
 	 "-eo \"$ST::CFG_FEATFILE_EXTENSION\"");
