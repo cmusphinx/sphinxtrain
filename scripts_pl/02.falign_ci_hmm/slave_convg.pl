@@ -347,6 +347,12 @@ sub FlatInitialize ()
     # it in Sphinx3 and PocketSphinx
     copy($ci_mdeffile, catfile($outhmm, 'mdef'))
 	or die "Failed to copy $ci_mdeffile to $outhmm/mdef: $!";
+    # Also the noise dictionary file
+    copy($ST::CFG_FILLERDICT, catfile($outhmm, 'noisedict'))
+	or die "Failed to copy $ST::CFG_FILLERDICT to $outhmm/noisedict: $!";
+    # And the feature parameter file
+    SubstParams(catfile($ST::CFG_BASE_DIR, 'etc', 'feat.params'),
+		catfile($outhmm, 'feat.params'));
 
     return $return_value;
 }

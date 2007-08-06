@@ -111,3 +111,5 @@ copy($moddeffn, catfile($hmm_dir, 'mdef'))
     or die "Failed to copy $moddeffn to $hmm_dir/mdef: $!";
 copy($ST::CFG_FILLERDICT, catfile($hmm_dir, 'noisedict'))
     or die "Failed to copy $ST::CFG_FILLERDICT to $hmm_dir/noisedict: $!";
+SubstParams(catfile($ST::CFG_BASE_DIR, 'etc', 'feat.params'),
+	    catfile($hmm_dir, 'feat.params'));

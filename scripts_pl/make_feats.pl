@@ -99,9 +99,9 @@ if (defined $ctl) {
 -dither yes
 -doublebw no
 -nfilt 40
--ncep $ST::CFG_VECTOR_LENGTH
--lowerf 133
--upperf 6855
+-ncep 13
+-lowerf 133.33334
+-upperf 6855.4976
 -nfft 512
 -wlen 0.0256
 EOP
@@ -115,13 +115,13 @@ EOP
 	 "-eo \"$ST::CFG_FEATFILE_EXTENSION\"");
 
   open PARAM, ">$param_file" or die "Failed to open param file $param_file for writing: $!";
+  print PARAM $default_params;
   print PARAM <<"EOP";
-$default_params -transform legacy
--feat $ST::CFG_FEATURE
--agc $ST::CFG_AGC
--cmn $ST::CFG_CMN
--varnorm $ST::CFG_VARNORM
--ceplen $ST::CFG_VECTOR_LENGTH
+-transform legacy
+-feat __CFG_FEATURE__
+-agc __CFG_AGC__
+-cmn __CFG_CMN__
+-varnorm __CFG_VARNORM__
 EOP
   close PARAM;
 } else {

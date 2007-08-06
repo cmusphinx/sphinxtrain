@@ -192,6 +192,9 @@ replace_file("$SPHINXTRAINDIR/scripts_pl/make_feats.pl",
 replace_file("$SPHINXTRAINDIR/scripts_pl/make_dict",
 	     "bin/make_dict",
 	     $replace_mode);
+replace_file("$SPHINXTRAINDIR/etc/feat.params",
+	     "etc/feat.params",
+	     $replace_mode);
 
 # Set the permissions to executable;
 opendir(DIR, "bin") or die "Can't open bin directory\n";

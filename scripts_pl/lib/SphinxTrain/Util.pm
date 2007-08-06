@@ -43,7 +43,7 @@ use vars qw(@ISA @EXPORT);
 @ISA=qw(Exporter);
 @EXPORT=qw(DateStr CreateHeader Log HTML_Print FormatURL
            ImgSrc LogWarning LogError LogProgress
-           LogStatus Converged RunTool
+           LogStatus Converged RunTool SubstParams
            RunScript LaunchScript WaitForScript GetLists
 	   WaitForConvergence TiedWaitForConvergence);
 
@@ -572,6 +572,21 @@ sub GetLists {
     return ($listoffiles, $transcriptfile);
 }
 
+sub SubstParams {
+    my ($in, $out) = @_;
+
+    local (*IN, *OUT);
+    open IN, "<$in" or die "Failed to open $in: $!";
+    open OUT, ">$out" or die "Failed to open $out: $!";
+    no strict 'refs';
+    while (<IN>) {
+	s/__(\w+)__/${"ST::$1"}/ge;
+	print OUT;
+    }
+    close IN;
+    close OUT or die "Failed to close $out: $!";
+}
+
 1;
 __END__
 
@@ -620,6 +635,8 @@ This module exports various utility functions used by the Sphinx trainer.
 =item WaitForConvergence
 
 =item TiedWaitForConvergence
+
+=item SubstParams
 
 =back
 
