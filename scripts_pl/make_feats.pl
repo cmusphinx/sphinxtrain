@@ -50,7 +50,8 @@ Getopt::Long::Configure('no_auto_abbrev', 'pass_through');
 
 GetOptions('help|h' => \$help,
 	   'ctl=s' => \$ctl,
-	   'cfg=s' => \$cfg_file);
+	   'cfg=s' => \$cfg_file,
+	   'param=s' => \$param_file);
 
 
 if ($help) {
@@ -63,6 +64,11 @@ if ($help) {
 if (!defined $cfg_file) {
   print ("-cfg not specified, using the default ./etc/sphinx_train.cfg\n");
   $cfg_file = "./etc/sphinx_train.cfg";
+}
+
+if (!defined $param_file) {
+  print ("-param not specified, using the default ./etc/feat.params\n");
+  $param_file = "./etc/feat.params";
 }
 
 if (defined $ctl) {
@@ -88,13 +94,44 @@ if (defined $ctl) {
   }
   close CTL;
 
-  # Now run wave2feat (should maybe be sphinx_fe eventually)
-  system("bin/wave2feat -dither yes -verbose yes -c \"$ctl\" -$ST::WAVFILE_TYPE yes " .
+  $default_params = <<"EOP";
+-alpha 0.97
+-dither yes
+-doublebw no
+-nfilt 40
+-ncep $ST::CFG_VECTOR_LENGTH
+-lowerf 133
+-upperf 6855
+-nfft 512
+-wlen 0.0256
+EOP
+
+  # Now run sphinx_fe
+  $params = $default_params;
+  $params =~ s/\n/ /gs;
+  system("bin/wave2feat -verbose yes $params -c \"$ctl\" -$ST::WAVFILE_TYPE yes " .
 	 "-di \"$ST::WAVFILES_DIR\" -ei \"$ST::CFG_WAVFILE_EXTENSION\" ".
 	 "-do \"$ST::CFG_FEATFILES_DIR\" " .
 	 "-eo \"$ST::CFG_FEATFILE_EXTENSION\"");
+
+  open PARAM, ">$param_file" or die "Failed to open param file $param_file for writing: $!";
+  print PARAM <<"EOP";
+$default_params -transform legacy
+-feat $ST::CFG_FEATURE
+-agc $ST::CFG_AGC
+-cmn $ST::CFG_CMN
+-varnorm $ST::CFG_VARNORM
+-ceplen $ST::CFG_VECTOR_LENGTH
+EOP
+  close PARAM;
 } else {
   system("bin/wave2feat @ARGV");
+  open PARAM, ">$param_file" or die "Failed to open param file $param_file for writing: $!";
+  while (@ARGV) {
+      ($k, $v) = splice @ARGV, 0, 2;
+      print PARAM "$k $v\n";
+  }
+  close PARAM;
 }
 
 __END__
