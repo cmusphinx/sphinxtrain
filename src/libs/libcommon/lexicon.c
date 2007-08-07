@@ -256,11 +256,11 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
 	/* Check that all the phones are in the mdef (we have real
 	 * problems if not!) */
 	for (i = 0; i < cur->phone_cnt; ++i) {
-	    fprintf(stderr, "%s ", cur->phone[i]);
+	    E_INFOCONT("%s ", cur->phone[i]);
 	    cur->ci_acmod_id[i] =
 		acmod_set_name2id(lex->phone_set, cur->phone[i]);
 	    if (cur->ci_acmod_id[i] == NO_ACMOD) {
-		fprintf(stderr, "\n");
+		E_INFOCONT("\n");
 		E_ERROR("Unknown phone %s\n", cur->phone[i]);
 		ckd_free(cur->phone);
 		cur->phone = NULL;
@@ -270,7 +270,7 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
 		return NULL;
 	    }
 	}
-	fprintf(stderr, "\n");
+	E_INFOCONT("\n");
 	word = ckd_salloc(ortho);
 	if (add_word(word, wid, lex, cur) != S3_SUCCESS) {
 	    E_ERROR("Failed to add LTS pronunciation to lexicon!\n");

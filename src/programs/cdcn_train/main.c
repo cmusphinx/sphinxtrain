@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 		for (i = 0; i < length; i += stride) {
 			if (numvecs >= vector_alloc) {
 				vector_alloc = numvecs + 1000000;
-				E_INFO(" (Reallocating to %d frames) ", vector_alloc);
+				E_INFOCONT(" (Reallocating to %d frames) ", vector_alloc);
 				vector = ckd_realloc(vector, sizeof(vector_t *) * vector_alloc);
 				vector[0] = ckd_realloc(vector[0],
 							Ndim*sizeof(float)*vector_alloc);

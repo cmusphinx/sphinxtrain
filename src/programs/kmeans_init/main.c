@@ -325,10 +325,9 @@ setup_obs_multiclass(uint32 ts, uint32 strm, uint32 n_frame, const uint32 *vecle
     if (o2d) {
 	E_INFO("o_ts == %u ->", ts);
 	for (k = 0; k < n_o2d[ts]; k++) {
-	    fprintf(stderr, " %d", o2d[ts][k]);
+	    E_INFOCONT(" %d", o2d[ts][k]);
 	}
-	fprintf(stderr, "\n");
-	fflush(stderr);
+	E_INFOCONT("\n");
 	
 	for (k = 0, o = 0; k < n_o2d[ts]; k++) {
 	    d_ts = o2d[ts][k];
@@ -1545,31 +1544,30 @@ main(int argc, char *argv[])
 	if (n_tot_frame > 0) {
 	    E_INFO("TOTALS:");
 	    if (km_timer) {
-		fprintf(stderr, " km %4.3fx %4.3e", 
+		E_INFOCONT(" km %4.3fx %4.3e", 
 			km_timer->t_cpu / (n_tot_frame * 0.01),
 			(km_timer->t_cpu > 0 ?
 			 km_timer->t_elapsed / km_timer->t_cpu : 0.0));
 	    }
 	    if (var_timer) {
-		fprintf(stderr, " var %4.3fx %4.3e", 
+		E_INFOCONT(" var %4.3fx %4.3e", 
 			var_timer->t_cpu / (n_tot_frame * 0.01),
 			(var_timer->t_cpu > 0 ?
 			 var_timer->t_elapsed / var_timer->t_cpu : 0.0));
 	    }
 	    if (em_timer) {
-		fprintf(stderr, " em %4.3fx %4.3e", 
+		E_INFOCONT(" em %4.3fx %4.3e", 
 			em_timer->t_cpu / (n_tot_frame * 0.01),
 			(em_timer->t_cpu > 0 ?
 			 em_timer->t_elapsed / em_timer->t_cpu : 0.0));
 	    }
 	    if (all_timer) {
-		fprintf(stderr, " all %4.3fx %4.3e", 
+		E_INFOCONT(" all %4.3fx %4.3e", 
 			all_timer->t_cpu / (n_tot_frame * 0.01),
 			(all_timer->t_cpu > 0 ?
 			 all_timer->t_elapsed / all_timer->t_cpu : 0.0));
 	    }
-	    fprintf(stderr, "\n");
-	    fflush(stderr);
+	    E_INFOCONT("\n");
 	}
 	
 	if (cmd_ln_access("-tsrngfn") != NULL) {
@@ -1621,31 +1619,30 @@ main(int argc, char *argv[])
 	if (n_tot_frame > 0) {
 	    E_INFO("TOTALS:");
 	    if (km_timer) {
-		fprintf(stderr, " km %4.3fx %4.3e", 
+		E_INFOCONT(" km %4.3fx %4.3e", 
 			km_timer->t_cpu / (n_tot_frame * 0.01),
 			(km_timer->t_cpu > 0 ?
 			 km_timer->t_elapsed / km_timer->t_cpu : 0.0));
 	    }
 	    if (var_timer) {
-		fprintf(stderr, " var %4.3fx %4.3e", 
+		E_INFOCONT(" var %4.3fx %4.3e", 
 			var_timer->t_cpu / (n_tot_frame * 0.01),
 			(var_timer->t_cpu > 0 ?
 			 var_timer->t_elapsed / var_timer->t_cpu : 0.0));
 	    }
 	    if (em_timer) {
-		fprintf(stderr, " em %4.3fx %4.3e", 
+		E_INFOCONT(" em %4.3fx %4.3e", 
 			em_timer->t_cpu / (n_tot_frame * 0.01),
 			(em_timer->t_cpu > 0 ?
 			 em_timer->t_elapsed / em_timer->t_cpu : 0.0));
 	    }
 	    if (all_timer) {
-		fprintf(stderr, " all %4.3fx %4.3e", 
+		E_INFOCONT(" all %4.3fx %4.3e", 
 			all_timer->t_cpu / (n_tot_frame * 0.01),
 			(all_timer->t_cpu > 0 ?
 			 all_timer->t_elapsed / all_timer->t_cpu : 0.0));
 	    }
-	    fprintf(stderr, "\n");
-	    fflush(stderr);
+	    E_INFOCONT("\n");
 	}
     }
 

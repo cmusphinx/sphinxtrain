@@ -154,11 +154,9 @@ gauden_set_feat(gauden_t *g,
     
     E_INFO("%d feature streams (", n_feat);
     for (i = 0; i < n_feat; i++) {
-	printf("|%d|=%d ", i, veclen[i]);
+	E_INFOCONT("|%d|=%d ", i, veclen[i]);
     }
-    printf(")\n");
-
-    fflush(stdout);
+    E_INFOCONT(")\n");
 
     return S3_SUCCESS;
 }
@@ -1915,12 +1913,13 @@ gauden_var_thresh_percentile(vector_t ***var,
 	}
     }
 
+    E_INFO("var_extrema:\n");
     for (j = 0; j < n_stream; j++) {
-	E_INFO("var_extrema:\n");
-	E_INFO("\tstream %u: ", j);
+	E_INFOCONT("\tstream %u: ", j);
 	for (l = 0; l < veclen[j]; l++) {
-	    fprintf(stderr, "\t\t[%.4e %.4e]", min[j][l], max[j][l]);
+	    E_INFOCONT("\t\t[%.4e %.4e]", min[j][l], max[j][l]);
 	}
+        E_INFOCONT("\n");
     }
 
     for (j = 0; j < n_stream; j++) {
@@ -1959,12 +1958,13 @@ gauden_var_thresh_percentile(vector_t ***var,
 	}
     }
     
+    E_INFO("var_extrema:\n");
     for (j = 0; j < n_stream; j++) {
-	E_INFO("var_extrema:\n");
-	E_INFO("\tstream %u: ", j);
+	E_INFOCONT("\tstream %u: ", j);
 	for (l = 0; l < veclen[j]; l++) {
-	    fprintf(stderr, "\t\t%.4e", var_thresh[j][l]);
+	    E_INFOCONT("\t\t%.4e", var_thresh[j][l]);
 	}
+        E_INFOCONT("\n");
     }
 
     return S3_SUCCESS;

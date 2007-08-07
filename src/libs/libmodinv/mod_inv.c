@@ -404,10 +404,9 @@ mod_inv_read_mixw(model_inventory_t *minv,
 	if (n_err_norm > 0) {
 	    E_INFO("Norm failed for %d mixw:", n_err_norm);
 	    for (i = 0; i < n_err_norm; i++) {
-		fprintf(stderr, " %u", err_norm[i]);
+		E_INFOCONT(" %u", err_norm[i]);
 	    }
-	    fprintf(stderr, "\n");
-	    fflush(stderr);
+	    E_INFOCONT("\n");
 
 	    ckd_free(err_norm);
 	}

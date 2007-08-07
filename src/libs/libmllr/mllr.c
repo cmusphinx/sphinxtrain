@@ -63,7 +63,7 @@ regmat_read (const char    *accumdir,
     static uint32 oldmllrmult, oldmllradd, oldnfeat;
     static const uint32 *in_veclen;
 
-    E_INFO("Reading MLLR accumulator from %s..",accumdir);
+    E_INFO("Reading MLLR accumulator from %s...\n",accumdir);
     sprintf(accbuffer,"%s/regmat_counts",accumdir);
 
     if (s3regmatcnt_read (accbuffer, &lregr, &lregl, &nclass, &nfeat, &len, 

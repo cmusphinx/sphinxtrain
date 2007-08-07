@@ -220,7 +220,7 @@ k_means_label(codew_t *label,
     for (i = 0, sqerr = 0; i < n_obs; i++, sqerr += b_d) {
 	c = get_obs(i);
 	if (c == NULL) {
-	    E_INFO("No observations for %u, but expected up through %u", i, n_obs-1);
+	    E_INFO("No observations for %u, but expected up through %u\n", i, n_obs-1);
 	}
 
 	/* Get an estimate of best distance (b_d) and codeword (b_j) */
@@ -318,7 +318,7 @@ k_means_label_trineq(codew_t *label,
     for (i = 0, sqerr = 0; i < n_obs; i++) {
 	c = get_obs(i);
 	if (c == NULL) {
-	    E_INFO("No observations for %u, but expected up through %u", i, n_obs-1);
+	    E_INFO("No observations for %u, but expected up through %u\n", i, n_obs-1);
 	}
 
 	/* Get an estimate of b_d */
@@ -412,7 +412,7 @@ k_means_update(vector_t *mean,
 
 	c = get_obs(i);
 	if (c == NULL) {
-	    E_INFO("No observations for %u, but expected up through %u", i, n_obs-1);
+	    E_INFO("No observations for %u, but expected up through %u\n", i, n_obs-1);
 	}
 
 	for (l = 0; l < veclen; l++) {

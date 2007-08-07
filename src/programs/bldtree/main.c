@@ -93,10 +93,10 @@ mk_stwt(float32 *ostwt, float32 *stwt, uint32 t_s, uint32 n_stwt)
     }
     E_INFO("nrm stwt: ");
     for (i = 0; i < n_stwt; i++) {
-	fprintf(stderr, "%5.3f ", ostwt[i]);
+	E_INFOCONT("%5.3f ", ostwt[i]);
     }
 
-    fprintf(stderr, "\n");
+    E_INFOCONT("\n");
 }
 
 
@@ -245,7 +245,7 @@ init(model_def_t **out_mdef,
     }
 
     E_INFO("Building trees for [%s]", acmod_set_id2name(mdef->acmod_set, p_s));
-    fprintf(stderr, " through [%s]\n", acmod_set_id2name(mdef->acmod_set, p_e));
+    E_INFOCONT(" through [%s]\n", acmod_set_id2name(mdef->acmod_set, p_e));
 
     for (p = p_s, i = mdef->defn[p_s].state[0]-1; p <= p_e; p++) {
 	for (j = 0; j < mdef->defn[p].n_state; j++) {

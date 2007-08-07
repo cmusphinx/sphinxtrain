@@ -1729,11 +1729,6 @@ mk_comp_quest(float64 *wt_ent_dec,
 
     free_tree(tr);
 
-#if 0
-    E_INFO("Prior to simplify: ");
-    print_comp_quest(stderr, pset, q);
-    fprintf(stderr, "\n");
-#endif
     if (simplify_comp_quest(q, n_base_phone)) {
     }
 

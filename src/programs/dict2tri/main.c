@@ -157,15 +157,15 @@ main(int argc, char *argv[])
 
     E_INFO("%u word begin left context:", n_lctxt);
     for (i = 0; i < n_lctxt; i++) {
-	fprintf(stderr, " %s", acmod_set_id2name(tri, lctxt[i]));
+	E_INFOCONT(" %s", acmod_set_id2name(tri, lctxt[i]));
     }
-    fprintf(stderr, "\n");
+    E_INFOCONT("\n");
 
     E_INFO("%u word end right context:", n_rctxt);
     for (i = 0; i < n_rctxt; i++) {
-	fprintf(stderr, " %s", acmod_set_id2name(tri, rctxt[i]));
+	E_INFOCONT(" %s", acmod_set_id2name(tri, rctxt[i]));
     }
-    fprintf(stderr, "\n");
+    E_INFOCONT("\n");
 
     for (e = lex->head; e; e = e->next) {
 	if (o_f != e->ortho[0]) {
