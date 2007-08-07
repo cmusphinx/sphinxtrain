@@ -34,6 +34,6 @@ $cmd .= "-ctlfn $ctlfn ";
 test_this("$cmd",$exec_resdir,"DRY RUN TEST for 100 utterances");
 test_this("$bin_printp -gaucntfn $gd_cnt > $gd_out ",$exec_resdir,"printp gau count for 100 utterances");
 compare_these_two($gd_out,$matchfn,$exec_resdir,"LDA Gau count generation for 100 utterances");
-copy("./gauden_counts","./init_gau/gauden_counts_lda.100");
+#copy($gd_cnt,"./$exec_resdir/$gd_cnt"."_lda.100");
 
 unlink($gd_cnt,$gd_out);

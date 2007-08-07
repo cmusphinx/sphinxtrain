@@ -46,7 +46,7 @@ foreach my $i (@params)
     }
     compare_these_two($lda_out,$matchfn,$exec_resdir,
 		      "LDA training for $i utterances", 0.002, 1);
-    copy("./lda.mat","./lda_train/lda.mat.$i");
+    #copy($lda,"./$exec_resdir/$lda.$i");
 }
 
 unlink($lda,$lda_out);
