@@ -351,8 +351,7 @@ sub FlatInitialize ()
     copy($ST::CFG_FILLERDICT, catfile($outhmm, 'noisedict'))
 	or die "Failed to copy $ST::CFG_FILLERDICT to $outhmm/noisedict: $!";
     # And the feature parameter file
-    SubstParams(catfile($ST::CFG_BASE_DIR, 'etc', 'feat.params'),
-		catfile($outhmm, 'feat.params'));
+    SubstParams($ST::CFG_FEATPARAMS, catfile($outhmm, 'feat.params'));
 
     return $return_value;
 }

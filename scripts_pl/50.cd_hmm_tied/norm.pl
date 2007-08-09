@@ -81,8 +81,7 @@ if ($iter == 1) {
 	or die "Failed to copy $mdeffile to $hmmdir/mdef: $!";
     copy($ST::CFG_FILLERDICT, catfile($hmmdir, 'noisedict'))
 	or die "Failed to copy $ST::CFG_FILLERDICT to $hmmdir/noisedict: $!";
-    SubstParams(catfile($ST::CFG_BASE_DIR, 'etc', 'feat.params'),
-		catfile($hmmdir, 'feat.params'));
+    SubstParams($ST::CFG_FEATPARAMS, catfile($hmmdir, 'feat.params'));
 }
 
 my  $logdir              = "${ST::CFG_LOG_DIR}/$processpart";

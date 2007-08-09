@@ -12,11 +12,15 @@ use SimpleConfig;
 
 my %opts = (config => 'etc/wsj_files.cfg',
 	    outdir => 'feat',
+	    outext => 'mfc',
+	    params => 'etc/feat16k.params',
 	    parts => 'si84,devtest');
 GetOptions(\%opts,
 	   'config=s',
 	   'parts=s',
+	   'params|p=s',
 	   'outdir|o=s',
+	   'outext|e=s',
 	   'help|h|?')
     or pod2usage(2);
 pod2usage(0) if $opts{help};
@@ -39,6 +43,16 @@ my %dirmap = (si84 => ['wsj0_si_tr_s'],
 
 foreach my $p (@parts) {
     push @dirs, @{$dirmap{$p}};
+}
+
+my @feat_params;
+if (open PARAMS, "<$opts{params}") {
+    while (<PARAMS>) {
+	chomp;
+	# Skip the templated parameters which are all dynamic feature related
+	next if /__\w+__/;
+	push @feat_params, split;
+    }
 }
 
 foreach my $dir (@dirs) {
@@ -76,12 +90,8 @@ foreach my $dir (@dirs) {
 	# Optimized feature parameters (similar to HTK ones)
 	my $rv = system('sphinx_fe',
 			-di => $outdir, -do => $outdir,
-			-ei => 'sph', -eo => 'mfc8',
-			-lowerf => 1, -upperf => 4000,
-			-nfilt => 20,
-			-transform => 'dct',
-			-round_filters => 'no',
-			-remove_dc => 'yes',
+			-ei => 'sph', -eo => $opts{outext},
+			@feat_params,
 			-c => $tmpfile, -nist => 'yes');
 	foreach my $p (@l) {
 	    my $o = lc($p);
