@@ -64,6 +64,7 @@ $CFG_RAWPHONEFILE   = "$CFG_LIST_DIR/$CFG_DB_NAME.phone";
 $CFG_FILLERDICT     = "$CFG_LIST_DIR/$CFG_DB_NAME.filler";
 $CFG_LISTOFFILES    = "$CFG_LIST_DIR/${CFG_DB_NAME}_train.fileids";
 $CFG_TRANSCRIPTFILE = "$CFG_LIST_DIR/${CFG_DB_NAME}_train.transcription";
+$CFG_FEATPARAMS     = "$CFG_LIST_DIR/feat16k.params";
 
 #*******variables used in characterizing models*******
 
