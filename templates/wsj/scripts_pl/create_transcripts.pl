@@ -21,7 +21,7 @@ pod2usage(0) if $opts{help};
 my %dirs = parse_config($opts{config});
 
 sub convert_dot {
-    my ($file, $bdir, $index) = @_;
+    my ($file, $bdir, $index, $pattern) = @_;
 
     open DOT, "<$file" or die "Failed to open $file: $!";
     while (<DOT>) {
@@ -32,9 +32,9 @@ sub convert_dot {
 	if (%$index) {
 	    next unless exists $index->{$uttid};
 	}
-	else {
+	elsif (defined($pattern)) {
 	    # HACK for devel data, only use the closed vocab part
-	    next unless $uttid =~ /...c..../;
+	    next unless $uttid =~ /$pattern/;
 	}
 
 	# Remove escaped things
@@ -79,7 +79,8 @@ sub convert_dots {
     my ($outbase, $basedir, $tag, $ndxbase, $ndxfile) = @_;
 
     my %index;
-    if (defined($ndxbase)) {
+    my $pattern;
+    if (defined($ndxbase) and defined($ndxfile)) {
 	my $ndx = catdir($ndxbase, $ndxfile);
 	if (! -e $ndx) {
 	    $ndx = catdir($ndxbase, uc $ndxfile);
@@ -98,25 +99,37 @@ sub convert_dots {
 	}
 	close INDEX;
     }
+    elsif (defined($ndxbase)) {
+	$pattern = $ndxbase;
+    }
 
-    my $dotdir = catdir($basedir, $tag);
-    if (! -e $dotdir) {
-	$dotdir = catdir($basedir, uc $tag);
-	if (! -e $dotdir) {
-	    die "Transcript directory $basedir/$tag not found!\n";
-	}
+    my @tags;
+    if (ref($tag)) {
+	@tags = @$tag;
+    }
+    else {
+	@tags = $tag;
     }
     open OUTCTL, ">$outbase.fileids"
 	or die "Failed to open $outbase.fileids: $!";
     open OUTLSN, ">$outbase.transcription"
 	or die "Failed to open $outbase.transcription: $!";
-    find(sub {
-	     return unless /\.dot/i;
-	     my $bdir = $File::Find::dir;
-	     substr($bdir, 0, length($dotdir) + 1) = "";
-	     # The .dot file itself contains the file IDs
-	     convert_dot($File::Find::name, "$tag/$bdir", \%index);
-	 }, $dotdir);
+    foreach my $tag (@tags) {
+	my $dotdir = catdir($basedir, $tag);
+	if (! -e $dotdir) {
+	    $dotdir = catdir($basedir, uc $tag);
+	    if (! -e $dotdir) {
+		die "Transcript directory $basedir/$tag not found!\n";
+	    }
+	}
+	find(sub {
+		 return unless /\.dot/i;
+		 my $bdir = $File::Find::dir;
+		 substr($bdir, 0, length($dotdir) + 1) = "";
+		 # The .dot file itself contains the file IDs
+		 convert_dot($File::Find::name, "$tag/$bdir", \%index, $pattern);
+	     }, $dotdir);
+    }
     close OUTCTL;
     close OUTLSN;
 }
@@ -129,6 +142,23 @@ convert_dots(catfile($opts{outdir}, "wsj_si200_train"),
 	     $dirs{wsj1_trans}, 'si_tr_s',
 	     $dirs{wsj1_doc}, catfile('indices', 'si_tr_s.ndx'));
 
+convert_dots(catfile($opts{outdir}, "wsj_sd_train"),
+	     $dirs{wsj0_transcrp}, 'sd_tr_s',
+	     $dirs{wsj0_doc}, catfile('indices', 'train', 'tr_l_wv1.ndx'));
+
+convert_dots(catfile($opts{outdir}, "wsj_sd_long_train"),
+	     $dirs{wsj0_transcrp}, ['sd_tr_s', 'sd_tr_l'],
+	     $dirs{wsj0_doc}, catfile('indices', 'train', 'tr_v_wv1.ndx'));
+
+convert_dots(catfile($opts{outdir}, "wsj_1200_train"),
+	     $dirs{wsj1_trans}, 'si_tr_l');
+
+convert_dots(catfile($opts{outdir}, "wsj_j200_train"),
+	     $dirs{wsj1_trans}, 'si_tr_j');
+
+convert_dots(catfile($opts{outdir}, "wsj_jspon_train"),
+	     $dirs{wsj1_trans}, 'si_tr_jd');
+
 convert_dots(catfile($opts{outdir}, "wsj_test"),
 	     $dirs{wsj0}, 'si_et_05',
 	     $dirs{wsj0_doc}, catfile('indices', 'test', 'nvp', 'si_et_05.ndx'));
@@ -138,11 +168,10 @@ convert_dots(catfile($opts{outdir}, "wsj_20k_test"),
 	     $dirs{wsj0_doc}, catfile('indices', 'test', 'nvp', 'si_et_20.ndx'));
 
 convert_dots(catfile($opts{outdir}, "wsj_devel"),
-	     $dirs{wsj0_transcrp}, 'si_dt_05');
+	     $dirs{wsj0_transcrp}, 'si_dt_05', qr/...c..../);
 
 convert_dots(catfile($opts{outdir}, "wsj_20k_devel"),
-	     $dirs{wsj0_transcrp}, 'si_dt_20');
-
+	     $dirs{wsj0_transcrp}, 'si_dt_20', qr/...c..../);
 
 # Just concatenate SI-84 and SI-200 to get SI-284
 
