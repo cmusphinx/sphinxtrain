@@ -343,15 +343,5 @@ sub FlatInitialize ()
 
     unlink $ST::CFG_CP_OPERATION;
 
-    # Copy the mdef file into the HMM directory so that -hmm will find
-    # it in Sphinx3 and PocketSphinx
-    copy($ci_mdeffile, catfile($outhmm, 'mdef'))
-	or die "Failed to copy $ci_mdeffile to $outhmm/mdef: $!";
-    # Also the noise dictionary file
-    copy($ST::CFG_FILLERDICT, catfile($outhmm, 'noisedict'))
-	or die "Failed to copy $ST::CFG_FILLERDICT to $outhmm/noisedict: $!";
-    # And the feature parameter file
-    SubstParams($ST::CFG_FEATPARAMS, catfile($outhmm, 'feat.params'));
-
     return $return_value;
 }
