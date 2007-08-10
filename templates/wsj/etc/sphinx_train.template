@@ -3,9 +3,9 @@
 $CFG_VERBOSE = 1;		# Determines how much goes to the screen.
 
 # These are filled in at configuration time
-$CFG_DB_NAME = 'wsj_si84';
-$CFG_BASE_DIR = '___BASE_DIR___';
-$CFG_SPHINXTRAIN_DIR = '___SPHINXTRAIN_DIR___';
+$CFG_DB_NAME = "wsj_si84";
+$CFG_BASE_DIR = "___BASE_DIR___";
+$CFG_SPHINXTRAIN_DIR = "___SPHINXTRAIN_DIR___";
 
 # Directory containing SphinxTrain binaries
 $CFG_BIN_DIR = "$CFG_BASE_DIR/bin";
@@ -23,7 +23,7 @@ $CFG_FEATFILES_DIR = "$CFG_BASE_DIR/feat";
 $CFG_FEATFILE_EXTENSION = 'mfc';
 $CFG_VECTOR_LENGTH = 13;
 
-$CFG_MIN_ITERATIONS = 7;  # BW Iterate at least this many times
+$CFG_MIN_ITERATIONS = 5;  # BW Iterate at least this many times
 $CFG_MAX_ITERATIONS = 10; # BW Don't iterate more than this, somethings likely wrong.
 
 # (none/max) Type of AGC to apply to input files
@@ -111,7 +111,7 @@ $CFG_CI_MGAU = 'no';
 # Number of tied states (senones) to create in decision-tree clustering
 $CFG_N_TIED_STATES = 2800;
 # How many parts to run Forward-Backward estimatinon in
-$CFG_NPART = 1;
+$CFG_NPART = 20;
 
 # (yes/no) Train a single decision tree for all phones (actually one
 # per state) (useful for grapheme-based models, use 'no' otherwise)

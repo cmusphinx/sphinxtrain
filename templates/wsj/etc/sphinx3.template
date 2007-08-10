@@ -7,10 +7,10 @@
 $DEC_CFG_VERBOSE = 1;		# Determines how much goes to the screen.
 
 # These are filled in at configuration time
-$DEC_CFG_DB_NAME = 'wsj_si84';
-$DEC_CFG_BASE_DIR = '___BASE_DIR___';
-$DEC_CFG_SPHINXDECODER_DIR = '___SPHINXDECODER_DIR___';
-$DEC_CFG_SPHINXTRAIN_CFG = '___SPHINXTRAIN_CFG___';
+$DEC_CFG_DB_NAME = "wsj_si84";
+$DEC_CFG_BASE_DIR = "___BASE_DIR___";
+$DEC_CFG_SPHINXDECODER_DIR = "___SPHINXDECODER_DIR___";
+$DEC_CFG_SPHINXTRAIN_CFG = "___SPHINXTRAIN_CFG___";
 
 require $DEC_CFG_SPHINXTRAIN_CFG;
 
