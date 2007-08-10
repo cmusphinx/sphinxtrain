@@ -186,7 +186,6 @@ my %phonelist_hash;
 	if ($dict_hash{$key} > 1) {
 	    $ret_value = -2;
 	    $duplicate_status = 'FAILED';
-	    copy("$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.00.2.state.gif");
 	    LogWarning("This word ($key) has duplicate entries in ($ST::CFG_DICTIONARY)");
 	}
     }
