@@ -88,9 +88,19 @@ if ($iter == 1 and $n_gau == 1) {
     rmtree("$modeldir/${ST::CFG_EXPTNAME}.ci_$ST::CFG_DIRLABEL", 0, 1);
     LogStatus('completed');
 
-    # For the first iteration Flat initialize models.
-    $return_value = FlatInitialize();
-    exit ($return_value) if ($return_value);
+    # If we previously force aligned with single-Gaussian models, use
+    # them for initialization to save some time.
+    if ($ST::CFG_FORCEDALIGN eq 'yes'
+	and $ST::CFG_FALIGN_CI_MGAU eq 'no'
+	and -e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means')) {
+	$return_value = CopyInitialize();
+	exit ($return_value) if ($return_value);
+    }
+    else {
+	# For the first iteration Flat initialize models.
+	$return_value = FlatInitialize();
+	exit ($return_value) if ($return_value);
+    }
     Log("Phase 3: Forward-Backward");
 }
 
@@ -133,7 +143,23 @@ if ($iter == 1 && $n_gau == 1) {
 }
 exit $return_value;
 
-sub FlatInitialize ()
+sub CopyInitialize {
+    Log("Phase 2: Copy initialize from falign model\n");
+    my $hmmdir = catdir($ST::CFG_BASE_DIR, "model_parameters");
+    my $outhmm = catdir($hmmdir, "${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial");
+    my $modarchdir = catdir($ST::CFG_BASE_DIR, "model_architecture");
+    mkdir ($outhmm,0777);
+    foreach (qw(means variances mixture_weights transition_matrices)) {
+	copy(catfile($ST::CFG_FORCE_ALIGN_MODELDIR, $_), catfile($outhmm, $_))
+	    or return -1;
+    }
+    my $ci_mdeffile = catfile($modarchdir, "$ST::CFG_EXPTNAME.falign_ci.mdef");
+    my $out_mdeffile = catfile($modarchdir, "$ST::CFG_EXPTNAME.ci.mdef");
+    copy($ci_mdeffile, $out_mdeffile);
+    return 0;
+}
+
+sub FlatInitialize
 {
     Log("Phase 2: Flat initialize\n");
 
