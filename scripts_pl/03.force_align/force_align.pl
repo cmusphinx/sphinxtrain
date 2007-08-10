@@ -138,6 +138,6 @@ my $return_value = RunTool
      );
 
 if ($return_value) {
-  copy "$ST::CFG_GIF_DIR/red-ball.gif", "$ST::CFG_BASE_DIR/.03.force_align.$part.state.gif";
+  LogError("Failed to run sphinx3_align");
 }
 exit ($return_value);
