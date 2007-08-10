@@ -26,8 +26,8 @@ sub convert_dot {
     open DOT, "<$file" or die "Failed to open $file: $!";
     while (<DOT>) {
 	chomp;
-	s/\r$//;
-	s/\s*\(([^\)]+)\)$//;
+	s/\r$//; # Remove DOS newline residue
+	s/\s*\(([^\)\(]+)\)$//; # Remove and save utterance ID
 	my $uttid = $1;
 	if (%$index) {
 	    next unless exists $index->{$uttid};
@@ -55,6 +55,8 @@ sub convert_dot {
 	    # Deal with partial words
 	    s/^-\([^\)]+\)/-/;
 	    s/\([^\)]+\)-/-/;
+	    # Not sure where this came from
+	    s/\+\+\/$/\+\+/;
 	    # Sphinx3 (and ngram_pronounce) is stupid about
 	    # underscores in filler words
 	    if (/^\+\+.*\+\+$/) {
@@ -64,6 +66,10 @@ sub convert_dot {
 	    next if $_ eq '.';
 	    next if $_ eq '~';
 	    next if $_ eq '~~';
+	    next if $_ eq '-';
+	    next if $_ eq "'";
+	    next if $_ eq ",";
+
 	    tr/://d unless $_ eq ':COLON';
 	    tr/!//d unless $_ eq '!EXCLAMATION-POINT';
 	    push @words, $_ unless $_ eq '.' or $_ eq '~';
