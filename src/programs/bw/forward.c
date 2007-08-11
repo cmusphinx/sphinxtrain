@@ -216,7 +216,7 @@ forward(float64 **active_alpha,
     uint32 ***now_den_idx;
     uint32 retval = S3_SUCCESS;
     uint32 n_l_cb;
-    uint32 *acbflag;
+    int32 *acbframe; /* Frame in which a codebook was last active */
     timing_t *gau_timer = NULL;
     float64 *outprob;
     /* Can we prune this frame using phseg? */
@@ -229,8 +229,8 @@ forward(float64 **active_alpha,
     /* # of distinct codebooks referenced by this utterance */
     n_l_cb = inv->n_cb_inverse;
 
-    /* active codebook flags */
-    acbflag = ckd_calloc(n_l_cb, sizeof(uint32));
+    /* active codebook frame index */
+    acbframe = ckd_calloc(n_l_cb, sizeof(*acbframe));
 
     g = inv->gauden;
     as = inv->mdef->acmod_set;
@@ -239,7 +239,6 @@ forward(float64 **active_alpha,
 					 sizeof(float64));
     now_den_idx = (uint32 ***)ckd_calloc_3d(n_l_cb, gauden_n_feat(g), gauden_n_top(g),
 					    sizeof(uint32));
-
     /* Mixing weight array */
     mixw = inv->mixw;
 
@@ -276,7 +275,6 @@ forward(float64 **active_alpha,
      */
 
     /* compute alpha for the initial state at t == 0 */
-
     if (gau_timer)
 	timing_start(gau_timer);
 
@@ -285,7 +283,7 @@ forward(float64 **active_alpha,
 		       now_den_idx[state_seq[0].l_cb],
 		       feature[0],
 		       g,
-		       state_seq[0].cb);
+		       state_seq[0].cb, NULL);
 
     active_l_cb[0] = state_seq[0].l_cb;
 
@@ -339,17 +337,11 @@ forward(float64 **active_alpha,
 
     /* Compute scaled alpha over all remaining time in the utterance */
     for (t = 1; t < n_obs; t++) {
-
 	/* Find active phone for this timepoint. */
 	if (phseg) {
 	    /* Move the pointer forward if necessary. */
 	    if (t > phseg->ef)
 		phseg = phseg->next;
-	}
-
-	/* clear the active density flag array */
-	for (i = 0; i < n_active_l_cb; i++) {
-	    acbflag[active_l_cb[i]] = FALSE;
 	}
 	n_active_l_cb = 0;
 
@@ -386,7 +378,7 @@ forward(float64 **active_alpha,
 		    if (amap[j] == INACTIVE) {
 			l_cb = state_seq[j].l_cb;
 			
-			if (acbflag[l_cb] == FALSE) {
+			if (acbframe[l_cb] != t) {
 			    /* Component density values not yet computed */
 			    if (gau_timer)
 				timing_start(gau_timer);
@@ -394,10 +386,18 @@ forward(float64 **active_alpha,
 					       now_den_idx[l_cb],
 					       feature[t],
 					       g,
-					       state_seq[j].cb);
+					       state_seq[j].cb,
+					       /* Preinitializing topn
+						  only really makes a
+						  difference for
+						  semi-continuous
+						  (n_l_cb == 1)
+						  models. */
+					       n_l_cb == 1
+					       ? now_den_idx[l_cb] : NULL);
 
 			    active_l_cb[n_active_l_cb++] = l_cb;
-			    acbflag[l_cb] = TRUE;
+			    acbframe[l_cb] = t;
 
 			    if (gau_timer)
 				timing_stop(gau_timer);
@@ -725,7 +725,7 @@ cleanup:
     ckd_free(amap);
 
     ckd_free(active_l_cb);
-    ckd_free(acbflag);
+    ckd_free(acbframe);
 
     ckd_free(outprob);
     ckd_free(best_pred);

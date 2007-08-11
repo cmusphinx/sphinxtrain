@@ -483,7 +483,8 @@ viterbi_update(float64 *log_forw_prob,
 			   now_den_idx[l_cb],
 			   feature[t],
 			   g,
-			   state_seq[j].cb);
+			   state_seq[j].cb,
+			   NULL);
 	active_cb[n_active_cb++] = l_cb;
 
 	if (l_cb != l_ci_cb) {
@@ -491,7 +492,8 @@ viterbi_update(float64 *log_forw_prob,
 			       now_den_idx[l_ci_cb],
 			       feature[t],
 			       g,
-			       state_seq[j].ci_cb);
+			       state_seq[j].ci_cb,
+			       NULL);
 	    active_cb[n_active_cb++] = l_ci_cb;
 	}
 	gauden_scale_densities_bwd(now_den, now_den_idx,

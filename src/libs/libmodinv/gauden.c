@@ -989,7 +989,8 @@ log_topn_densities(float64 *den,
 		   vector_t obs,
 		   vector_t *mean,
 		   vector_t *var,
-		   float32 *log_norm)
+		   float32 *log_norm,
+		   uint32 *prev_den_idx)
 {
     uint32 i, j, k;
     vector_t m;
@@ -999,11 +1000,30 @@ log_topn_densities(float64 *den,
     float64 worst;	/* worst density value of the top N density values
 			   seen so far */
 
-    /* a better initialization for this would be to use
-       the top N indices from the prior frame and compute
-       the density values for them for the given frame */
-    for (i = 0; i < n_top; i++) {
-	den[i] = MIN_IEEE_NORM_NEG_FLOAT64;
+    /* Initialize topn using the previous frame's top codeword indices */
+    if (prev_den_idx) {
+	for (j = 0; j < n_top; j++) {
+	    i = prev_den_idx[j];
+	    d = log_diag_eval(obs, log_norm[i],
+				   mean[i], var[i], veclen);
+	    den_idx[j] = i;
+	    den[j] = d;
+	    if (j == 0)
+		continue;
+	    /* Insertion sort them */
+	    for (k = j; k > 0 && d > den[k-1]; --k) {
+		den_idx[k] = den_idx[k-1];
+		den[k] = den[k-1];
+	    }
+	    den_idx[k] = i;
+	    den[k] = d;
+	}
+    }
+    else {
+	for (j = 0; j < n_top; j++) {
+	    den[j] = MIN_IEEE_NORM_NEG_FLOAT64;
+	    den_idx[j] = n_density + 1; /* A non-negative invalid value */
+	}
     }
 
     worst = den[n_top-1];
@@ -1021,34 +1041,26 @@ log_topn_densities(float64 *den,
 	    diff = obs[j] - m[j];
 	    d -= diff * diff * v[j];
 	}
+	/* Not in topn, so keep going */
+	if (j < veclen || d <= worst)
+	    continue;
 
-	if (d > worst) {
-	    /*
-	    * codeword i is more likely than the Nth of the top N
-	    * observed so far.
-	    */
-
-	    /* find the insertion point for the new codeword
-	       and log liklihood */
-	    for (j = 0; j < n_top; j++)
-		if (d > den[j])
-		    break;
-
-	    /* make room for the new entry at position j */
-	    for (k = n_top-1; k > j; k--) {
-		den[k] = den[k-1];
-		den_idx[k] = den_idx[k-1];
-	    }
-
-	    assert(j == k);
-
-	    /* insert the new values */
-	    den[k] = d;
-	    den_idx[k] = i;
-
-	    worst = den[n_top-1];
+	/* This may already have been in topn from the initialization pass */
+	for (j = 0; j < n_top; j++)
+	    if (den_idx[j] == i)
+		break;
+	if (j < n_top)
+	    continue; /* It's already there, don't insert it */
+	for (k = n_top-1; k > 0 && d > den[k-1]; --k) {
+	    den_idx[k] = den_idx[k-1];
+	    den[k] = den[k-1];
 	}
+	den_idx[k] = i;
+	den[k] = d;
+
+	worst = den[n_top-1];
     }
+    worst = den[n_top-1];
 }
 
 static void
@@ -1139,7 +1151,8 @@ gauden_compute(float64 **den,		/* density array for a mixture Gaussian */
 	       uint32 **den_idx,	/* density index array for n_top < n_density eval */
 	       vector_t *obs,		/* observation vector for some time */
 	       gauden_t *g,		/* Gaussian density structure */
-	       uint32 mgau)		/* id of the mixture Gau. to evaluate */
+	       uint32 mgau,		/* id of the mixture Gau. to evaluate */
+	       uint32 **prev_den_idx)   /* Previous frame's top N densities (or NULL) */
 {
     uint32 j, k;
 
@@ -1192,7 +1205,8 @@ gauden_compute(float64 **den,		/* density array for a mixture Gaussian */
 			       obs[j],
 			       g->mean[mgau][j],
 			       g->var[mgau][j],
-			       g->norm[mgau][j]);
+			       g->norm[mgau][j],
+			       prev_den_idx ? prev_den_idx[j] : NULL);
 
 	    for (k = 0; k < g->n_top; k++) {
 		den[j][k] = EXPF( den[j][k] );
@@ -1215,7 +1229,8 @@ gauden_compute_log(float64 **den,		/* density array for a mixture Gaussian */
 		   uint32 **den_idx,	/* density index array for n_top < n_density eval */
 		   vector_t *obs,		/* observation vector for some time */
 		   gauden_t *g,		/* Gaussian density structure */
-		   uint32 mgau)		/* id of the mixture Gau. to evaluate */
+		   uint32 mgau,		/* id of the mixture Gau. to evaluate */
+		   uint32 **prev_den_idx)   /* Previous frame's top N densities (or NULL) */
 {
     uint32 j;
 
@@ -1260,7 +1275,8 @@ gauden_compute_log(float64 **den,		/* density array for a mixture Gaussian */
 			       obs[j],
 			       g->mean[mgau][j],
 			       g->var[mgau][j],
-			       g->norm[mgau][j]);
+			       g->norm[mgau][j],
+			       prev_den_idx ? prev_den_idx[j] : NULL);
 	}
     }
 

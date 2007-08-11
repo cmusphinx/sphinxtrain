@@ -368,7 +368,7 @@ backward_update(float64 **active_alpha,
     uint32 n_reest_tot = 0;
     uint32 n_active_tot = 0;
 
-    uint32 *adflag;
+    int32 *acbframe;
     uint32 n_active_cb;
 
     timing_t *gau_timer = NULL;
@@ -503,8 +503,8 @@ backward_update(float64 **active_alpha,
        for the utterance */
     tacc = inv->l_tmat_acc;
 
-
-    adflag = ckd_calloc(n_lcl_cb, sizeof(uint32));
+    /* Initializing this with zero is okay since we start at the last frame... */
+    acbframe = ckd_calloc(n_lcl_cb, sizeof(int32));
     n_active_cb = 0;
 
     now_den = (float64 ***)ckd_calloc_3d(n_lcl_cb,
@@ -622,7 +622,6 @@ backward_update(float64 **active_alpha,
 #endif
 
     for (t = n_obs-2; t >= 0; t--) {
-
 #if BACKWARD_DEBUG
       E_INFO("At time %d\n",t);
 #endif
@@ -632,9 +631,6 @@ backward_update(float64 **active_alpha,
 	    goto free;
 	}
 
-	for (i = 0; i < n_active_cb; i++) {
-	    adflag[active_cb[i]] = FALSE;
-	}
 	n_active_cb = 0;
 
 	/* zero beta at time t */
@@ -658,7 +654,7 @@ backward_update(float64 **active_alpha,
 	    l_cb = state_seq[j].l_cb;
 	    l_ci_cb = state_seq[j].l_ci_cb;
 	    
-	    if (adflag[l_cb] == FALSE) {
+	    if (acbframe[l_cb] != t+1) {
 		/* The top N densities for the observation
 		   at time t+1 and their indices */
 		if (gau_timer)
@@ -668,22 +664,31 @@ backward_update(float64 **active_alpha,
 				   now_den_idx[l_cb],
 				   feature[t+1],
 				   g,
-				   state_seq[j].cb);
+				   state_seq[j].cb,
+                                   /* Preinitializing topn only really
+                                      makes a difference for
+                                      semi-continuous (n_lcl_cb == 1)
+                                      models.  Also don't do it in the
+                                      last frame. */
+				   (t == n_obs-2 || n_lcl_cb > 1)
+                                   ? NULL : now_den_idx[l_cb]);
 
 		active_cb[n_active_cb++] = l_cb;
-		adflag[l_cb] = TRUE;
+		acbframe[l_cb] = t+1;
 
 		if (l_cb != l_ci_cb) {
-		    if (adflag[l_ci_cb] == FALSE) {
+		    if (acbframe[l_ci_cb] != t+1) {
 			gauden_compute_log(now_den[l_ci_cb],
 					   now_den_idx[l_ci_cb],
 					   feature[t+1],
 					   g,
-					   state_seq[j].ci_cb);
+					   state_seq[j].ci_cb,
+                                           /* See above. */
+                                           NULL);
 			
 			active_cb[n_active_cb++] = l_ci_cb;
 
-			adflag[l_ci_cb] = TRUE;
+			acbframe[l_ci_cb] = t+1;
 		    }
 		}
 
@@ -1091,7 +1096,8 @@ backward_update(float64 **active_alpha,
 		       now_den_idx[state_seq[0].l_cb],
 		       feature[0],
 		       g,
-		       state_seq[0].cb);
+		       state_seq[0].cb,
+                       NULL);
 
     active_cb[0] = state_seq[0].l_cb;
 
@@ -1236,7 +1242,7 @@ free:
     ckd_free(tmp_non_emit);
     ckd_free(asf_a);
     ckd_free(asf_b);
-    ckd_free(adflag);
+    ckd_free(acbframe);
 
     if (denacc != NULL)
 	ckd_free_3d((void ***)denacc);

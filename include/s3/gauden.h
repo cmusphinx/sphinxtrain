@@ -172,14 +172,16 @@ gauden_compute(float64 **den,
 	       uint32 **den_idx,
 	       vector_t *obs,
 	       gauden_t *g,
-	       uint32 mgau);
+	       uint32 mgau,
+	       uint32 **prev_den_idx);   /* Previous frame's top N densities (or NULL) */
 
 int
 gauden_compute_log(float64 **den,
 		   uint32 **den_idx,
 		   vector_t *obs,
 		   gauden_t *g,
-		   uint32 mgau);
+		   uint32 mgau,
+		   uint32 **prev_den_idx);   /* Previous frame's top N densities (or NULL) */
 
 float64 *
 gauden_scale_densities_fwd(float64 ***den,
