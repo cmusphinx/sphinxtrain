@@ -285,38 +285,12 @@ gauden_set_const_dim_mgau(gauden_t *g,
     return S3_SUCCESS;
 }
 
-uint32 gauden_n_mgau(gauden_t *g)
-{
-    return g->n_mgau;
-}
-
-uint32 gauden_n_density(gauden_t *g)
-{
-    return g->n_density;
-}
-
-uint32 gauden_n_top(gauden_t *g)
-{
-    return g->n_top;
-}
-
-uint32 gauden_n_feat(gauden_t *g)
-{
-    return g->n_feat;
-}
-
 vector_t ***
 gauden_mean(gauden_t *g)
 {
     return g->mean;
 }
-
-const uint32 *
-gauden_veclen(gauden_t *g)
-{
-    return g->veclen;
-}
-
+
 int
 gauden_set_mean(gauden_t *g, vector_t ***mean)
 {
@@ -324,13 +298,13 @@ gauden_set_mean(gauden_t *g, vector_t ***mean)
 
     return S3_SUCCESS;
 }
-
+
 vector_t ***
 gauden_var(gauden_t *g)
 {
     return g->var;
 }
-
+
 int
 gauden_set_var(gauden_t *g, vector_t ***variance)
 {
@@ -343,7 +317,7 @@ gauden_fullvar(gauden_t *g)
 {
     return g->fullvar;
 }
-
+
 int
 gauden_set_fullvar(gauden_t *g, vector_t ****variance)
 {
@@ -1507,31 +1481,24 @@ gauden_mixture(float64 **den,
 	       float32 **w,
 	       gauden_t *g)
 {
-    float64 oprob[MAX_N_FEAT];
     float64 out;
-    uint32 j, kk, k;
-    uint32 n_top;
-    uint32 n_feat;
+    uint32 j;
 
-    n_top = g->n_top;
-    n_feat = g->n_feat;
+    out = 1.0;
+    for (j = 0; j < g->n_feat; j++) {
+	uint32 kk;
+	float64 oprob;
 
-    assert(n_feat < MAX_N_FEAT);
-
-    for (j = 0; j < n_feat; j++) {
-	k = den_idx[j][0];
-	oprob[j] = w[j][k] * den[j][0];
-
-	for (kk = 1; kk < n_top; kk++) {
+	oprob = 0;
+	kk = 0;
+ 	while (kk < g->n_top) {
+	    uint32 k;
 	    k = den_idx[j][kk];
-	    oprob[j] += w[j][k] * den[j][kk];
+	    oprob += w[j][k] * den[j][kk];
+	    ++kk;
 	}
-    }
 
-    /* combine all n_feat independent stream output prob */
-    out = oprob[0];
-    for (j = 1; j < n_feat; j++) {
-	out *= oprob[j];
+	out *= oprob;
     }
 
     return out;

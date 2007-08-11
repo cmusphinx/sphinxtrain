@@ -149,20 +149,11 @@ gauden_set_const_dim_mgau(gauden_t *g,
 			  uint32 n_mgau,	/* # of mixture gaussians */
 			  uint32 n_density);	/* # of densities per mixture gaussian */
 
-uint32
-gauden_n_mgau(gauden_t *g);
-
-uint32
-gauden_n_density(gauden_t *g);
-
-uint32
-gauden_n_top(gauden_t *g);
-
-uint32
-gauden_n_feat(gauden_t *g);
-
-const uint32 *
-gauden_veclen(gauden_t *g);
+#define gauden_n_mgau(g) (g)->n_mgau
+#define gauden_n_top(g) (g)->n_top
+#define gauden_n_feat(g) (g)->n_feat
+#define gauden_n_density(g) (g)->n_density
+#define gauden_veclen(g) (g)->veclen
 
 int
 gauden_s2_set_mean(gauden_t *g,
