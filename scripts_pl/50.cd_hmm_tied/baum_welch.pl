@@ -125,10 +125,18 @@ if ( $ST::CFG_FORCEDALIGN eq "no" ) {
 
 my $topn;
 if ($iter == 1) {
-    $topn = 99;
+    if ($ST::CFG_HMM_TYPE eq '.cont') {
+	$topn = $n_gau;
+    }
+    else {
+	$topn = 128;
+    }
 }
 else {
     $topn = 16;
+    if ($ST::CFG_HMM_TYPE eq '.cont.' and $n_gau < 16) {
+	$topn = $n_gau;
+    }
 }
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.${n_gau}.$iter-$part.bw.log";
