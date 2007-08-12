@@ -124,7 +124,7 @@ if ( $ST::CFG_FORCEDALIGN eq "no" ) {
 }
 
 my $topn     = 4;
-if ($n_gau < 4) {
+if ($ST::CFG_HMM_TYPE eq '.cont.' and $n_gau < 4) {
     $topn = $n_gau;
 }
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";
