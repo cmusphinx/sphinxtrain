@@ -191,7 +191,7 @@ sub FlatInitialize ()
     #-------------------------------------------------------------------------
     # make the flat models using the above topology file and the mdef file
     #------------------------------------------------------------------------
-    my $outhmm               = "$hmmdir/${ST::CFG_EXPTNAME}.falign_ci_${ST::CFG_DIRLABEL}_flatinitial";
+    my $outhmm               = "$hmmdir/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
     mkdir ($outhmm,0777);
 
     my $FLAT = "$ST::CFG_BIN_DIR/mk_flat";

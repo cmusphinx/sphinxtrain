@@ -62,7 +62,7 @@ $n_gau = 1 unless defined($n_gau);
 
 my $modelinitialname;
 if ($n_gau == 1) {
-    $modelinitialname = "${ST::CFG_EXPTNAME}.falign_ci_${ST::CFG_DIRLABEL}_flatinitial";
+    $modelinitialname = "${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
 }
 else {
     $modelinitialname = "${ST::CFG_EXPTNAME}.falign_ci_${ST::CFG_DIRLABEL}_initial";

@@ -76,7 +76,7 @@ my $transition_matrices = "$hmmdir/transition_matrices";
 
 if ($iter == 1) {
     my $mdeffile = catfile($ST::CFG_BASE_DIR, 'model_architecture',
-			   "${ST::CFG_EXPTNAME}.ci.mdef");
+			   "${ST::CFG_EXPTNAME}.falign_ci.mdef");
     # Copy the mdef and fillerdict files into the new HMM directory
     copy($mdeffile, catfile($hmmdir, 'mdef'))
 	or die "Failed to copy $mdeffile to $hmmdir/mdef: $!";
