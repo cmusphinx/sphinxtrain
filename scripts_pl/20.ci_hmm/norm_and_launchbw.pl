@@ -179,7 +179,17 @@ if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO && $iter >= $ST::CFG_MAX_ITERATION
     exit (0);
 }
 
-if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO or $iter < $ST::CFG_MIN_ITERATIONS) {
+if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO) {
+    Launch_BW($n_gau, $iter);
+    exit (0);
+}
+# If we previously force aligned with single-Gaussian models, we used
+# them for initialization, therefore don't enforce the minimum number
+# of iterations.
+elsif ($iter < $ST::CFG_MIN_ITERATIONS
+       and ($ST::CFG_FORCEDALIGN eq 'no'
+	    or $ST::CFG_FALIGN_CI_MGAU eq 'yes'
+	    or !-e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means'))) {
     Launch_BW($n_gau, $iter);
     exit (0);
 }

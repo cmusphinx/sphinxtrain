@@ -89,7 +89,8 @@ if ($iter == 1 and $n_gau == 1) {
     LogStatus('completed');
 
     # If we previously force aligned with single-Gaussian models, use
-    # them for initialization to save some time.
+    # them for initialization to save some time.  (See note in
+    # norm_and_launch_bw.pl as well)
     if ($ST::CFG_FORCEDALIGN eq 'yes'
 	and $ST::CFG_FALIGN_CI_MGAU eq 'no'
 	and -e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means')) {
