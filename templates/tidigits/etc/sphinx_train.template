@@ -1,0 +1,176 @@
+# Configuration script for sphinx trainer                  -*-mode:Perl-*-
+
+$CFG_VERBOSE = 1;		# Determines how much goes to the screen.
+
+# These are filled in at configuration time
+$CFG_DB_NAME = "___DB_NAME___";
+$CFG_BASE_DIR = "___BASE_DIR___";
+$CFG_SPHINXTRAIN_DIR = "___SPHINXTRAIN_DIR___";
+
+# Directory containing SphinxTrain binaries
+$CFG_BIN_DIR = "$CFG_BASE_DIR/bin";
+$CFG_GIF_DIR = "$CFG_BASE_DIR/gifs";
+$CFG_SCRIPT_DIR = "$CFG_BASE_DIR/scripts_pl";
+
+# Experiment name, will be used to name model files and log files
+$CFG_EXPTNAME = "$CFG_DB_NAME";
+
+# Audio waveform and feature file information
+$CFG_WAVFILES_DIR = "$CFG_BASE_DIR/wav";
+$CFG_WAVFILE_EXTENSION = 'sph';
+$CFG_WAVFILE_TYPE = 'nist'; # one of nist, mswav, raw
+$CFG_FEATFILES_DIR = "$CFG_BASE_DIR/feat";
+$CFG_FEATFILE_EXTENSION = 'mfc';
+$CFG_VECTOR_LENGTH = 13;
+
+$CFG_MIN_ITERATIONS = 7;  # BW Iterate at least this many times
+$CFG_MAX_ITERATIONS = 30; # BW Don't iterate more than this, somethings likely wrong.
+
+# (none/max) Type of AGC to apply to input files
+$CFG_AGC = 'none';
+# (current/none) Type of cepstral mean subtraction/normalization
+# to apply to input files
+$CFG_CMN = 'current';
+# (yes/no) Normalize variance of input files to 1.0
+$CFG_VARNORM = 'no';
+# (yes/no) Use letter-to-sound rules to guess pronunciations of
+# unknown words (English, 40-phone specific)
+$CFG_LTSOOV = 'no';
+# (yes/no) Train full covariance matrices
+$CFG_FULLVAR = 'no';
+# (yes/no) Use diagonals only of full covariance matrices for
+# Forward-Backward evaluation (recommended if CFG_FULLVAR is yes)
+$CFG_DIAGFULL = 'no';
+
+# Directory to write queue manager logs to
+$CFG_QMGR_DIR = "$CFG_BASE_DIR/qmanager";
+# Directory to write training logs to
+$CFG_LOG_DIR = "$CFG_BASE_DIR/logdir";
+# Directory for re-estimation counts
+$CFG_BWACCUM_DIR = "$CFG_BASE_DIR/bwaccumdir";
+# Directory for state segmentations (output of force alignment, input
+# to LDA training)
+$CFG_STSEG_DIR = "$CFG_BASE_DIR/stseg";
+# Directory to write model parameter files to
+$CFG_MODEL_DIR = "$CFG_BASE_DIR/model_parameters";
+
+# Directory containing transcripts and control files for
+# speaker-adaptive training
+$CFG_LIST_DIR = "$CFG_BASE_DIR/etc";
+
+#*******variables used in main training of models*******
+$CFG_DICTIONARY     = "$CFG_LIST_DIR/$CFG_DB_NAME.dic";
+$CFG_RAWPHONEFILE   = "$CFG_LIST_DIR/$CFG_DB_NAME.phone";
+$CFG_FILLERDICT     = "$CFG_LIST_DIR/$CFG_DB_NAME.filler";
+$CFG_LISTOFFILES    = "$CFG_LIST_DIR/${CFG_DB_NAME}_train.fileids";
+$CFG_TRANSCRIPTFILE = "$CFG_LIST_DIR/${CFG_DB_NAME}_train.transcription";
+$CFG_FEATPARAMS     = "$CFG_LIST_DIR/feat16k.params";
+
+#*******variables used in characterizing models*******
+
+$CFG_HMM_TYPE = '.cont.'; # Sphinx III
+#$CFG_HMM_TYPE  = '.semi.'; # Sphinx II
+
+if (($CFG_HMM_TYPE ne ".semi.") and ($CFG_HMM_TYPE ne ".cont.")) {
+  die "Please choose one CFG_HMM_TYPE out of '.cont.' or '.semi.', " .
+    "currently $CFG_HMM_TYPE\n";
+}
+
+
+if ($CFG_HMM_TYPE eq '.semi.') {
+  $CFG_DIRLABEL = 'semi';
+  $CFG_STATESPERHMM = 5;
+  $CFG_SKIPSTATE = 'yes';
+# Four (4) stream features for Sphinx II
+  $CFG_FEATURE = "s2_4x";
+  $CFG_NUM_STREAMS = 4;
+  $CFG_INITIAL_NUM_DENSITIES = 256;
+  $CFG_FINAL_NUM_DENSITIES = 256;
+  die "For semi continuous models, the initial and final models have the same density" 
+    if ($CFG_INITIAL_NUM_DENSITIES != $CFG_FINAL_NUM_DENSITIES);
+} elsif ($CFG_HMM_TYPE eq '.cont.') {
+  $CFG_DIRLABEL = 'cont';
+  $CFG_STATESPERHMM = 3;
+  $CFG_SKIPSTATE = 'no';
+# Single stream features - Sphinx 3
+  $CFG_FEATURE = "1s_c_d_dd";
+  $CFG_NUM_STREAMS = 1;
+  $CFG_INITIAL_NUM_DENSITIES = 1;
+  $CFG_FINAL_NUM_DENSITIES = 8;
+  die "The initial has to be less than the final number of densities" 
+    if ($CFG_INITIAL_NUM_DENSITIES > $CFG_FINAL_NUM_DENSITIES);
+}
+
+# (yes/no) Train multiple-gaussian context-independent models (useful
+# for alignment, use 'no' otherwise) in the models created
+# specifically for forced alignment
+$CFG_FALIGN_CI_MGAU = 'no';
+# (yes/no) Train multiple-gaussian context-independent models (useful
+# for alignment, use 'no' otherwise)
+$CFG_CI_MGAU = 'no';
+# Number of tied states (senones) to create in decision-tree clustering
+$CFG_N_TIED_STATES = 500;
+# How many parts to run Forward-Backward estimatinon in
+$CFG_NPART = 1;
+
+# (yes/no) Train a single decision tree for all phones (actually one
+# per state) (useful for grapheme-based models, use 'no' otherwise)
+$CFG_CROSS_PHONE_TREES = 'no';
+
+# Use force-aligned transcripts (if available) as input to training
+$CFG_FORCEDALIGN = 'no';
+
+# Use a specific set of models for force alignment.  If not defined,
+# context-independent models for the current experiment will be used.
+$CFG_FORCE_ALIGN_MDEF = "$CFG_BASE_DIR/model_architecture/$CFG_EXPTNAME.falign_ci.mdef";
+if ($CFG_FALIGN_CI_MGAU eq  'yes') {
+  $CFG_FORCE_ALIGN_MODELDIR = "$CFG_MODEL_DIR/$CFG_EXPTNAME.falign_ci_${CFG_DIRLABEL}_$CFG_FINAL_NUM_DENSITIES";
+}
+else {
+  $CFG_FORCE_ALIGN_MODELDIR = "$CFG_MODEL_DIR/$CFG_EXPTNAME.falign_ci_$CFG_DIRLABEL";
+}
+
+# Use a specific dictionary and filler dictionary for force alignment.
+# If these are not defined, a dictionary and filler dictionary will be
+# created from $CFG_DICTIONARY and $CFG_FILLERDICT, with noise words
+# removed from the filler dictionary and added to the dictionary (this
+# is because the force alignment is not very good at inserting them)
+
+# $CFG_FORCE_ALIGN_DICTIONARY = "$ST::CFG_BASE_DIR/falignout$ST::CFG_EXPTNAME.falign.dict";;
+# $CFG_FORCE_ALIGN_FILLERDICT = "$ST::CFG_BASE_DIR/falignout/$ST::CFG_EXPTNAME.falign.fdict";;
+
+# Use a particular beam width for force alignment.  The wider
+# (i.e. smaller numerically) the beam, the fewer sentences will be
+# rejected for bad alignment.
+$CFG_FORCE_ALIGN_BEAM = 1e-60;
+
+# Transformation file to use for LDA.  LDA will be done if this is
+# defined and the file exists.  03.lda_train will generate this for
+# you (but you must run force alignment first)
+$CFG_LDA_TRANSFORM = "${CFG_MODEL_DIR}/${CFG_EXPTNAME}.lda";
+# Dimensionality of LDA output
+$CFG_LDA_DIMENSION = 29;
+
+#set convergence_ratio = 0.004
+$CFG_CONVERGENCE_RATIO = 0.04;
+
+# Queue::POSIX for multiple CPUs on a local machine
+# Queue::PBS to use a PBS/TORQUE queue
+$CFG_QUEUE_TYPE = "Queue";
+
+# Name of queue to use for PBS/TORQUE
+$CFG_QUEUE_NAME = "workq";
+
+# (yes/no) Build questions for decision tree clustering automatically
+$CFG_MAKE_QUESTS = "yes";
+# If CFG_MAKE_QUESTS is yes, questions are written to this file.
+# If CFG_MAKE_QUESTS is no, questions are read from this file.
+$CFG_QUESTION_SET = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.tree_questions";
+#$CFG_QUESTION_SET = "${CFG_BASE_DIR}/linguistic_questions";
+
+$CFG_CP_OPERATION = "${CFG_BASE_DIR}/model_architecture/${CFG_EXPTNAME}.cpmeanvar";
+
+# This variable has to be defined, otherwise utils.pl will not load.
+$CFG_DONE = 1;
+
+return 1;

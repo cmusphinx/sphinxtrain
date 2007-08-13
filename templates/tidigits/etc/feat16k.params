@@ -1,0 +1,14 @@
+-alpha 0.97
+-dither yes
+-nfilt 26
+-ncep 13
+-lowerf 1
+-upperf 8000
+-wlen 0.025
+-transform dct
+-round_filters no
+-remove_dc yes
+-feat __CFG_FEATURE__
+-agc __CFG_AGC__
+-cmn __CFG_CMN__
+-varnorm __CFG_VARNORM__
