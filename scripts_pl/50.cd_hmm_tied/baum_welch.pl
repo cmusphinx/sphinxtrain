@@ -129,7 +129,7 @@ if ($iter == 1) {
 	$topn = $n_gau;
     }
     else {
-	$topn = 128;
+	$topn = $ST::CFG_FINAL_NUM_DENSITIES;
     }
 }
 else {
