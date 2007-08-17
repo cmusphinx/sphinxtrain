@@ -21,6 +21,7 @@ GetOptions(\%opts,
 	   'params|p=s',
 	   'outdir|o=s',
 	   'outext|e=s',
+	   'wv2',
 	   'help|h|?')
     or pod2usage(2);
 pod2usage(0) if $opts{help};
@@ -55,6 +56,7 @@ if (open PARAMS, "<$opts{params}") {
     }
 }
 
+my $fileext = $opts{wv2} ? 'wv2' : 'wv1';
 foreach my $dir (@dirs) {
     my $indir = $dirs{$dir};
     my ($od) = ($dir =~ /^wsj[01]_(.*)/);
@@ -67,7 +69,7 @@ foreach my $dir (@dirs) {
 	     substr($relpath, 0, length($indir)) = "";
 	     $relpath =~ s/^\/+//;
 
-	     if (-f $File::Find::name and $File::Find::name =~ /\.wv1/i) {
+	     if (-f $File::Find::name and $File::Find::name =~ /\.$fileext/i) {
 		 push @files, $relpath;
 	     }
 	     elsif (-d $File::Find::name and !/^\.\.?$/) {
@@ -80,13 +82,14 @@ foreach my $dir (@dirs) {
 	my ($tmpfh, $tmpfile) = tempfile();
 	foreach my $p (@l) {
 	    my $o = lc($p);
-	    $o =~ s/\.wv1$//;
+	    $o =~ s/\.$fileext$//;
 	    my $rv = system("sph2pipe",
 			    catfile($indir, $p),
 			    catfile($outdir, "$o.sph"));
 	    die "sph2pipe failed: $rv" unless $rv == 0;
 	    print $tmpfh "$o\n";
 	}
+	# Optimized feature parameters (similar to HTK ones)
 	my $rv = system('sphinx_fe',
 			-di => $outdir, -do => $outdir,
 			-ei => 'sph', -eo => $opts{outext},
