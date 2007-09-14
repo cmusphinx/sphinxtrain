@@ -46,14 +46,17 @@ class S3File(object):
                 break
             k, v = spam.split()
             self.fileattr[k] = v
+        # This is 0x11223344 in the file's byte order
         spam = unpack("<i", self.fh.read(4))[0]
         if spam == 0x11223344:
-            self.swap = "<"
+            self.swap = "<" # little endian
         elif spam == 0x44332211:
-            self.swap = ">"
+            self.swap = ">" # big endian
         else:
             raise Exception("Invalid byte-order mark %08x" % spam)
-        self.otherend = (unpack('=i', pack(self.swap + 'i', spam))[0] == spam)
+        # Now determine whether we need to swap to get to native
+        # byteorder (shouldn't this be easier???)
+        self.otherend = (unpack('=i', pack(self.swap + 'i', spam))[0] != spam)
         self.data_start = self.fh.tell()
 
     def read3d(self):
