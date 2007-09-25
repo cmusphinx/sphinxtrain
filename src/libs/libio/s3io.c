@@ -211,7 +211,8 @@ wr_bin_hdr(FILE *fp)
 
     /* Align to an 8-byte boundary (guarantees natural alignment for
      * whatever follows) */
-    padding = 8 - (ftell(fp) & 7);
+    padding = ftell(fp) + strlen("endhdr\n");
+    padding = 8 - (padding & 7);
     if (padding != 8) {
 	fwrite("        ", 1, padding, fp);
     }
