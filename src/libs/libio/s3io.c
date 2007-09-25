@@ -192,6 +192,7 @@ static int
 wr_bin_hdr(FILE *fp)
 {
     uint32 i;
+    long padding;
     int ret;
 
     if (fprintf(fp, "s3\n") != 3) {
@@ -206,6 +207,13 @@ wr_bin_hdr(FILE *fp)
 	    E_ERROR_SYSTEM("Error while attrib/value pair\n");
 	    goto error_loc;
 	}
+    }
+
+    /* Align to an 8-byte boundary (guarantees natural alignment for
+     * whatever follows) */
+    padding = 8 - (ftell(fp) & 7);
+    if (padding != 8) {
+	fwrite("        ", 1, padding, fp);
     }
 
     ret = fprintf(fp, "endhdr\n");
