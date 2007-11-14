@@ -42,6 +42,8 @@ use Cwd;
 use Getopt::Long;
 use Pod::Usage;
 use File::stat;
+use File::Find;
+use File::Spec::Functions;
 
 if ($#ARGV == -1) {
   pod2usage(2);
@@ -153,36 +155,11 @@ foreach my $executable (@dirlist) {
 	      $replace_mode);
 }
 
-# We copy the scripts from the scripts_pl directory directly.
-mkdir "scripts_pl" unless -d scripts_pl;
-my $scriptdir = "$SPHINXTRAINDIR/scripts_pl";
-print "Copying scripts from $scriptdir\n";
-opendir(DIR, "$scriptdir") or die "Can't open $scriptdir\n";
-@dirlist = grep /^(\d\d.*|mc|lib)$/, readdir DIR;
-closedir(DIR);
+# Copy the scripts from the scripts_pl directory
+replace_tree("$SPHINXTRAINDIR/scripts_pl",
+	     "scripts_pl", $replace_mode, qr/\.p[lm]$/);
 
-push @dirlist, ".";
-opendir(DIR, "$scriptdir/lib") or die "Can't open $scriptdir\n";
-push @dirlist, map "lib/$_", grep {-d "$scriptdir/lib/$_" and !/^\./ } readdir DIR;
-closedir(DIR);
-
-# Copy the directory tree. We do so by creating each directory, and
-# then copying it to the correct location here. We also set the permissions.
-foreach my $directory (@dirlist) {
-  mkdir "scripts_pl/$directory" unless -d "scripts_pl/$directory";
-  opendir(SUBDIR, "$scriptdir/$directory") or 
-    die "Can't open subdir $directory\n";
-  my @subdirlist = grep /\.p[lm]$/, readdir SUBDIR;
-  closedir(SUBDIR);
-  foreach my $executable (@subdirlist) {
-    replace_file("$scriptdir/$directory/$executable",
-		 "scripts_pl/$directory/$executable",
-		 $replace_mode);
-    chmod 0755, "scripts_pl/$directory/$executable";
-  }
-}
-
-# We now copy additional files
+# Copy additional files
 replace_file("$SPHINXTRAINDIR/scripts_pl/maketopology.pl",
 	     "bin/maketopology.pl",
 	     $replace_mode);
@@ -195,6 +172,10 @@ replace_file("$SPHINXTRAINDIR/scripts_pl/make_dict",
 replace_file("$SPHINXTRAINDIR/etc/feat.params",
 	     "etc/feat.params",
 	     $replace_mode);
+
+# Copy the Python modules
+replace_tree("$SPHINXTRAINDIR/python/build/lib",
+	     "python", $replace_mode);
 
 # Set the permissions to executable;
 opendir(DIR, "bin") or die "Can't open bin directory\n";
@@ -269,6 +250,31 @@ sub replace_file {
       copy("$source", "$destination");
     }
   }
+}
+
+sub replace_tree {
+    my ($src, $dest, $mode, $pattern) = @_;
+
+    find({ wanted => sub {
+	       my $sf = $File::Find::name;
+	       my $df = $sf;
+	       substr($df, 0, length($src)) = "";
+	       $df = catfile($dest, $df);
+	       return if ($sf =~ /~$/); # Skip Emacs tempfiles
+	       return if ($sf =~ /\/\./); # Skip dotfiles and dotdirs
+	       if (-d $sf) {
+		   mkdir $df, 0777;
+	       }
+	       else {
+		   if (defined($pattern)) {
+		       return unless $sf =~ /$pattern/;
+		   }
+		   replace_file($sf, $df, $mode);
+		   chmod 0755, $df;
+	       }
+	   },
+	   no_chdir => 1,
+	 }, $src);
 }
 
 __END__
