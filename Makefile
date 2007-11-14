@@ -42,8 +42,8 @@
 # ====================================================================
 TOP=.
 DIRNAME=.
-BUILD_DIRS = include src 
-ALL_DIRS=config etc doc $(BUILD_DIRS) python scripts_pl
+BUILD_DIRS = include src python
+ALL_DIRS=config etc doc $(BUILD_DIRS) scripts_pl
 CONFIG=config.guess config.sub configure configure.in \
        install-sh missing mkinstalldirs
 FILES = Makefile README.txt README.tracing COPYING $(CONFIG)

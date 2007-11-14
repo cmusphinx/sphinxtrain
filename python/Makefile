@@ -59,6 +59,11 @@ MODULES =					\
 
 FILES = Makefile $(MODULES)
 
+ALL = compile
+
 include $(TOP)/config/common_make_rules
 
 LOCAL_CLEAN = *.pyc
+
+compile:
+	python setup.py build
