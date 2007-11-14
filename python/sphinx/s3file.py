@@ -125,7 +125,7 @@ class S3File_write:
         for k,v in self.fileattr.iteritems():
             self.fh.write("%s %s\n" % (k,v))
         # Make sure the binary data lives on a 4-byte boundary
-        lsb = (self.fh.tell() + len("endhdr\n")) & ~3
+        lsb = (self.fh.tell() + len("endhdr\n")) & 3
         if lsb != 0:
             align = 4-lsb
         self.fh.write("%sendhdr\n" % (" " * align))
