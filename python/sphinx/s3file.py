@@ -42,7 +42,7 @@ class S3File(object):
             spam = self.fh.readline()
             if spam == "":
                 raise Exception("EOF while reading headers")
-            if spam == "endhdr\n":
+            if spam.endswith("endhdr\n"):
                 break
             k, v = spam.split()
             self.fileattr[k] = v
@@ -124,7 +124,11 @@ class S3File_write:
         self.fh.write("s3\n")
         for k,v in self.fileattr.iteritems():
             self.fh.write("%s %s\n" % (k,v))
-        self.fh.write("endhdr\n")
+        # Make sure the binary data lives on a 4-byte boundary
+        lsb = (self.fh.tell() + len("endhdr\n")) & ~3
+        if lsb != 0:
+            align = 4-lsb
+        self.fh.write("%sendhdr\n" % (" " * align))
         self.fh.write(pack("=i", 0x11223344))
         self.data_start = self.fh.tell()
 
