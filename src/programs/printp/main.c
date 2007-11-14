@@ -310,6 +310,9 @@ print_gau_cnt(const char *fn)
     if (wt_var == NULL) {
 	E_INFO("No variance counts\n");
     }
+    if (pass2var) {
+	E_INFO("-2passvar yes\n");
+    }
 
     sf = *(int32 *)cmd_ln_access("-sigfig");
 

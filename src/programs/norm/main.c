@@ -350,6 +350,8 @@ normalize()
 	} while (err > 1);
     }
 
+    if (pass2var)
+	    E_INFO("-2passvar yes\n");
     if (oaccum_dir && (wt_mean || wt_var || wt_fullvar)) {
 	/* write the total mixing Gau. den reest. accumulators */
 
