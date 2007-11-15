@@ -67,7 +67,7 @@ If you specific only -mllradd, then only b will be estimated. ";
 	  CMD_LN_STRING_LIST,
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
-	  "Paths containing reestimation sums from bw" },
+	  "One or more paths containing reestimation sums from bw" },
 
 	{ "-meanfn",
 	  CMD_LN_STRING,

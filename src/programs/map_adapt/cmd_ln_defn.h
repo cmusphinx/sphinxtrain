@@ -76,7 +76,7 @@ const char examplestr[] =
 	  CMD_LN_STRING_LIST,
 	  CMD_LN_NO_VALIDATION,
 	  CMD_LN_NO_DEFAULT,
-	  "Paths containing reestimation sums from running bw on adaptation data" },
+	  "One or more paths containing reestimation sums from running bw on adaptation data" },
 
 	{ "-fixedtau",
 	  CMD_LN_BOOLEAN,
