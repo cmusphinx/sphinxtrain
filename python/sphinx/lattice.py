@@ -11,6 +11,7 @@ format."""
 import gzip
 import re
 import math
+import numpy
 
 LOGZERO = -100000
 
@@ -254,23 +255,6 @@ class Dag(list):
                           sum(map(lambda y:
                                   len(tuple(self.edges(y))), x.itervalues())), self)))
 
-    def paths(self, start, lm=None, lw=3.5, ip=0.7):
-        """Return all paths exiting start along with their scores.  WARNING:
-        This will cause a combinatorial explosion, and is not actually
-        recommended."""
-        if start == self.end:
-            return (([start],0),)
-        paths = []
-        if lm:
-            for next, frame, ascr, lscr in self.edges(start, lm):
-                for path, pscore in self.paths(next, lm):
-                    paths.append(([start] + path, ascr + lw * lscr + math.log(ip) + pscore))
-        else:
-            for next, frame, score in self.edges(start):
-                for path, pscore in self.paths(next):
-                    paths.append(([start] + path, score + pscore))
-        return paths
-
     def bestpath(self, lm=None, lw=3.5, ip=0.7, start=None):
         """Find best path through lattice using Dijkstra's algorithm"""
         Q = self.nodes()
@@ -295,6 +279,115 @@ class Dag(list):
                 if u.score + score > v.score:
                     v.score = u.score + score
                     v.prev = u
+
+    def minimum_error(self, hyp, start=None):
+        """Find the minimum word error rate path through lattice."""
+        # Get the set of nodes
+        nodes = self.nodes()
+        # Initialize the alignment matrix
+        align_matrix = numpy.ones((len(hyp),len(nodes)), 'i') * 999999999
+        # And the backpointer matrix
+        bp_matrix = numpy.zeros((len(hyp),len(nodes)), 'O')
+        # Figure out the minimum distance to each node from the start
+        # of the lattice, and the set of predecessors for each node
+        for u in nodes:
+            u.score = 999999999
+            u.prev = []
+        if start == None:
+            start = self.start
+        start.score = 0
+        for i,u in enumerate(nodes):
+            for v, frame, ascr, lscr in self.edges(u):
+                dist = u.score + 1
+                if dist < v.score:
+                    v.score = dist
+                if not i in v.prev:
+                    v.prev.append(i)
+        def find_pred(ii, jj):
+            bestscore = 999999999
+            bestp = -1
+            if len(nodes[jj].prev) == 0:
+                return bestp, bestscore
+            for k in nodes[jj].prev:
+                if align_matrix[ii,k] < bestscore:
+                    bestp = k
+                    bestscore = align_matrix[ii,k]
+            return bestp, bestscore
+        # Now fill in the alignment matrix
+        for i, w in enumerate(hyp):
+            # FIXME: This assumes that the nodes are topologically
+            # sorted (which they probably aren't).  So it might not
+            # give you the correct answer in some cases.
+            for j, u in enumerate(nodes):
+                # Insertion = cost(w, prev(u)) + 1
+                if len(u.prev) == 0: # start node
+                    bestp = -1
+                    inscost = i + 1 # Distance from start of ref
+                else:
+                    # Find best predecessor
+                    bestp, bestscore = find_pred(i, j)
+                    inscost = align_matrix[i,bestp] + 1
+                # Deletion  = cost(prev(w), u) + 1
+                if i == 0: # start symbol
+                    delcost = u.score + 1 # Distance from start of hyp
+                else:
+                    delcost = align_matrix[i-1,j] + 1
+                # Substitution = cost(prev(w), prev(u)) + (w != u)
+                if i == 0 and bestp == -1: # Start node, start of ref
+                    subcost = int(w != u.sym)
+                elif i == 0: # Start of ref
+                    subcost = nodes[bestp].score + int(w != u.sym)
+                elif bestp == -1: # Start node
+                    subcost = i - 1 + int(w != u.sym)
+                else:
+                    subcost = align_matrix[i-1,bestp] + int(w != u.sym)
+                align_matrix[i,j] = min(subcost, inscost, delcost)
+                # Now find the argmin
+                if align_matrix[i,j] == subcost:
+                    bp_matrix[i,j] = (i-1, bestp)
+                elif align_matrix[i,j] == inscost:
+                    bp_matrix[i,j] = (i, bestp)
+                else:
+                    bp_matrix[i,j] = (i-1, j)
+        # Find last node's index
+        last = 0
+        for i, u in enumerate(nodes):
+            if u == self.end:
+                last = i
+        # Backtrace to get an alignment
+        i = len(hyp)-1
+        j = last
+        bt = []
+        while True:
+            ip,jp = bp_matrix[i,j]
+            if ip == i: # Insertion
+                bt.append(('INS', nodes[j].sym))
+            elif jp == j: # Deletion
+                bt.append((hyp[i], 'DEL'))
+            else:
+                bt.append((hyp[i], nodes[j].sym))
+            # If we consume both ref and hyp, we are done
+            if ip == -1 and jp == -1:
+                break
+            # If we hit the beginning of the ref, fill with insertions
+            if ip == -1:
+                while True:
+                    bt.append(('INS', nodes[jp].sym))
+                    bestp, bestscore = find_pred(i,jp)
+                    if bestp == -1:
+                        break
+                    jp = bestp
+                break
+            # If we hit the beginning of the hyp, fill with deletions
+            if jp == -1:
+                while ip >= 0:
+                    bt.append((hyp[ip], 'DEL'))
+                    ip = ip - 1
+                break
+            # Follow the pointer
+            i,j = ip,jp
+        bt.reverse()
+        return align_matrix[-1,last], bt
 
     def backtrace(self, end=None):
         """Return a backtrace from an optional end node after bestpath"""
