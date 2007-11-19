@@ -246,7 +246,7 @@ class Dag(list):
 
     def nodes(self):
         """Return all the nodes in the DAG"""
-        return [self.start] + reduce(lambda x,y: x+y, map(lambda x: x.values(), self))
+        return reduce(lambda x,y: x+y, map(lambda x: x.values(), self))
 
     def n_edges(self):
         """Return the number of edges in the DAG"""
@@ -280,10 +280,28 @@ class Dag(list):
                     v.score = u.score + score
                     v.prev = u
 
+    def traverse_depth(self, start=None):
+        """Depth-first traversal of DAG nodes"""
+        if start == None:
+            start = self.start
+        # Initialize the agenda (set of root nodes)
+        roots = [start]
+        # Keep a table of already seen nodes
+        seen = {start:1}
+        # Repeatedly pop the first one off of the agenda and prepend
+        # all of its successors
+        while roots:
+            r = roots.pop()
+            for v, f, s, l in self.edges(r):
+                if v not in seen:
+                    roots.append(v)
+                seen[v] = 1
+            yield r
+
     def minimum_error(self, hyp, start=None):
         """Find the minimum word error rate path through lattice."""
-        # Get the set of nodes
-        nodes = self.nodes()
+        # Get the set of nodes in topological order
+        nodes = tuple(self.traverse_depth())
         # Initialize the alignment matrix
         align_matrix = numpy.ones((len(hyp),len(nodes)), 'i') * 999999999
         # And the backpointer matrix
@@ -295,7 +313,7 @@ class Dag(list):
             u.prev = []
         if start == None:
             start = self.start
-        start.score = 0
+        start.score = 1
         for i,u in enumerate(nodes):
             for v, frame, ascr, lscr in self.edges(u):
                 dist = u.score + 1
@@ -309,22 +327,20 @@ class Dag(list):
             if len(nodes[jj].prev) == 0:
                 return bestp, bestscore
             for k in nodes[jj].prev:
-                if align_matrix[ii,k] < bestscore:
+                if nodes[k].score == nodes[jj].score - 1 \
+                        and align_matrix[ii,k] < bestscore:
                     bestp = k
                     bestscore = align_matrix[ii,k]
             return bestp, bestscore
         # Now fill in the alignment matrix
         for i, w in enumerate(hyp):
-            # FIXME: This assumes that the nodes are topologically
-            # sorted (which they probably aren't).  So it might not
-            # give you the correct answer in some cases.
             for j, u in enumerate(nodes):
                 # Insertion = cost(w, prev(u)) + 1
                 if len(u.prev) == 0: # start node
                     bestp = -1
-                    inscost = i + 1 # Distance from start of ref
+                    inscost = i + 2 # Distance from start of ref
                 else:
-                    # Find best predecessor
+                    # Find best predecessor in the same reference position
                     bestp, bestscore = find_pred(i, j)
                     inscost = align_matrix[i,bestp] + 1
                 # Deletion  = cost(prev(w), u) + 1
@@ -340,6 +356,8 @@ class Dag(list):
                 elif bestp == -1: # Start node
                     subcost = i - 1 + int(w != u.sym)
                 else:
+                    # Find best predecessor in the previous reference position
+                    bestp, bestscore = find_pred(i-1, j)
                     subcost = align_matrix[i-1,bestp] + int(w != u.sym)
                 align_matrix[i,j] = min(subcost, inscost, delcost)
                 # Now find the argmin
