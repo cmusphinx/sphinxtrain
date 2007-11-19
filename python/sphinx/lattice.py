@@ -347,6 +347,8 @@ class Dag(list):
             start = self.start
         start.score = 1
         for i,u in enumerate(nodes):
+            if is_filler(u.sym):
+                continue
             for v, frame, ascr, lscr in self.edges(u):
                 dist = u.score + 1
                 if dist < v.score:
