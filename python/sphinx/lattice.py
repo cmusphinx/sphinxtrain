@@ -83,7 +83,7 @@ class Dag(list):
     fieldre = re.compile(r'(\S+)=(?:"((?:[^\\"]+|\\.)*)"|(\S+))')
     def htk2dag(self, htkfile):
         """Read an HTK-format lattice file to populate a DAG."""
-        fh = open(htkfile)
+        fh = gzip.open(htkfile)
         del self[0:len(self)]
         self.header = {}
         state='header'
@@ -242,7 +242,7 @@ class Dag(list):
 
     def n_nodes(self):
         """Return the number of nodes in the DAG"""
-        return 1 + sum(map(len, self))
+        return sum(map(len, self))
 
     def nodes(self):
         """Return all the nodes in the DAG"""
@@ -306,6 +306,20 @@ class Dag(list):
         align_matrix = numpy.ones((len(hyp),len(nodes)), 'i') * 999999999
         # And the backpointer matrix
         bp_matrix = numpy.zeros((len(hyp),len(nodes)), 'O')
+        # Remove filler nodes from the reference
+        def is_filler(sym):
+            """Is this a filler word?"""
+            if sym == '<s>' or sym == '</s>': return False
+            return ((sym[0] == '<' and sym[-1] == '>') or
+                    (sym[0] == '+' and sym[-1] == '+'))
+        hyp = filter(lambda x: not is_filler(x), hyp)
+        # Bypass filler nodes in the lattice
+        for u in nodes:
+            for v, frame, ascr, lscr in self.edges(u):
+                if is_filler(v.sym):
+                    for vv, frame, ascr, lscr in self.edges(v):
+                        if not is_filler(vv.sym):
+                            u.exits.append((vv.entry, 0))
         # Figure out the minimum distance to each node from the start
         # of the lattice, and the set of predecessors for each node
         for u in nodes:
