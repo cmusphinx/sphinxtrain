@@ -288,7 +288,7 @@ class Dag(list):
         roots = [start]
         # Keep a table of already seen nodes
         seen = {start:1}
-        # Repeatedly pop the first one off of the agenda and prepend
+        # Repeatedly pop the first one off of the agenda and push
         # all of its successors
         while roots:
             r = roots.pop()
@@ -298,10 +298,28 @@ class Dag(list):
                 seen[v] = 1
             yield r
 
+    def traverse_breadth(self, start=None):
+        """Breadth-first traversal of DAG nodes"""
+        if start == None:
+            start = self.start
+        # Initialize the agenda (set of active nodes)
+        roots = [start]
+        # Keep a table of already seen nodes
+        seen = {start:1}
+        # Repeatedly pop the first one off of the agenda and shift
+        # all of its successors
+        while roots:
+            r = roots.pop()
+            for v, f, s, l in self.edges(r):
+                if v not in seen:
+                    roots.insert(0, v)
+                seen[v] = 1
+            yield r
+
     def minimum_error(self, hyp, start=None):
         """Find the minimum word error rate path through lattice."""
-        # Get the set of nodes in topological order
-        nodes = tuple(self.traverse_depth())
+        # Get the set of nodes in proper order
+        nodes = tuple(self.traverse_breadth())
         # Initialize the alignment matrix
         align_matrix = numpy.ones((len(hyp),len(nodes)), 'i') * 999999999
         # And the backpointer matrix
