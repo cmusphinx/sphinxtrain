@@ -327,8 +327,7 @@ class Dag(list):
             if len(nodes[jj].prev) == 0:
                 return bestp, bestscore
             for k in nodes[jj].prev:
-                if nodes[k].score == nodes[jj].score - 1 \
-                        and align_matrix[ii,k] < bestscore:
+                if align_matrix[ii,k] < bestscore:
                     bestp = k
                     bestscore = align_matrix[ii,k]
             return bestp, bestscore
