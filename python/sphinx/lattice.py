@@ -15,6 +15,14 @@ import numpy
 
 LOGZERO = -100000
 
+def logadd(x,y):
+    if x < y:
+        return logadd(y,x)
+    if y == LOGZERO:
+        return x
+    else:
+        return x + math.log(1 + math.exp(y-x))
+
 class LatticeEntry(object):
     """Backpointer entry in a phone/word lattice"""
     __slots__ = 'frame', 'sym', 'score', 'prev'
@@ -58,6 +66,12 @@ class Lattice(list):
 
         backtrace.reverse()
         return backtrace
+
+def is_filler(sym):
+    """Is this a filler word?"""
+    if sym == '<s>' or sym == '</s>': return False
+    return ((sym[0] == '<' and sym[-1] == '>') or
+            (sym[0] == '+' and sym[-1] == '+'))
 
 class DagNode(object):
     """Node in a DAG representation of a phone/word lattice"""
@@ -169,7 +183,7 @@ class Dag(list):
                         tofr = nodes[int(tonode)].entry
                         # FIXME: Not sure if this is a good idea
                         if not (tofr,ascr) in nodes[int(fromnode)].exits:
-                            nodes[int(fromnode)].exits.append((nodes[int(tonode)].entry, ascr))
+                            nodes[int(fromnode)].exits.append((tofr, ascr))
 
     def dag2htk(self, htkfile):
         """Write out an HTK-format lattice file from a DAG."""
@@ -244,10 +258,6 @@ class Dag(list):
         """Return the number of nodes in the DAG"""
         return sum(map(len, self))
 
-    def nodes(self):
-        """Return all the nodes in the DAG"""
-        return reduce(lambda x,y: x+y, map(lambda x: x.values(), self))
-
     def n_edges(self):
         """Return the number of edges in the DAG"""
         return (len(tuple(self.edges(self.start)))
@@ -255,9 +265,15 @@ class Dag(list):
                           sum(map(lambda y:
                                   len(tuple(self.edges(y))), x.itervalues())), self)))
 
+    def nodes(self):
+        """Return a generator over all the nodes in the DAG"""
+        for frame in self:
+            for node in frame.values():
+                yield node
+
     def bestpath(self, lm=None, lw=3.5, ip=0.7, start=None):
         """Find best path through lattice using Dijkstra's algorithm"""
-        Q = self.nodes()
+        Q = list(self.nodes())
         for u in Q:
             u.score = LOGZERO
         if start == None:
@@ -280,7 +296,7 @@ class Dag(list):
                     v.score = u.score + score
                     v.prev = u
 
-    def traverse_depth(self, start=None):
+    def traverse_depth(self, start=None, lm=None):
         """Depth-first traversal of DAG nodes"""
         if start == None:
             start = self.start
@@ -292,13 +308,13 @@ class Dag(list):
         # all of its successors
         while roots:
             r = roots.pop()
-            for v, f, s, l in self.edges(r):
+            for v, f, s, l in self.edges(r, lm):
                 if v not in seen:
                     roots.append(v)
                 seen[v] = 1
             yield r
 
-    def traverse_breadth(self, start=None):
+    def traverse_breadth(self, start=None, lm=None):
         """Breadth-first traversal of DAG nodes"""
         if start == None:
             start = self.start
@@ -310,11 +326,40 @@ class Dag(list):
         # all of its successors
         while roots:
             r = roots.pop()
-            for v, f, s, l in self.edges(r):
+            for v, f, s, l in self.edges(r, lm):
                 if v not in seen:
                     roots.insert(0, v)
                 seen[v] = 1
             yield r
+
+    def reverse_breadth(self, end=None, lm=None):
+        """Breadth-first reverse traversal of DAG nodes"""
+        if end == None:
+            end = self.end
+        if end.prev == None:
+            self.find_preds()
+        # Initialize the agenda (set of active nodes)
+        roots = [end]
+        # Keep a table of already seen nodes
+        seen = {end:1}
+        # Repeatedly pop the first one off of the agenda and shift
+        # all of its successors
+        while roots:
+            r = roots.pop()
+            for v in r.prev:
+                if v not in seen:
+                    roots.insert(0, v)
+                seen[v] = 1
+            yield r
+
+    def bypass_fillers(self):
+        """Bypass filler nodes in the lattice."""
+        for u in self.traverse_breadth():
+            for v, frame, ascr, lscr in self.edges(u):
+                if is_filler(v.sym):
+                    for vv, frame, ascr, lscr in self.edges(v):
+                        if not is_filler(vv.sym):
+                            u.exits.append((vv.entry, 0))
 
     def minimum_error(self, hyp, start=None):
         """Find the minimum word error rate path through lattice."""
@@ -325,19 +370,9 @@ class Dag(list):
         # And the backpointer matrix
         bp_matrix = numpy.zeros((len(hyp),len(nodes)), 'O')
         # Remove filler nodes from the reference
-        def is_filler(sym):
-            """Is this a filler word?"""
-            if sym == '<s>' or sym == '</s>': return False
-            return ((sym[0] == '<' and sym[-1] == '>') or
-                    (sym[0] == '+' and sym[-1] == '+'))
         hyp = filter(lambda x: not is_filler(x), hyp)
         # Bypass filler nodes in the lattice
-        for u in nodes:
-            for v, frame, ascr, lscr in self.edges(u):
-                if is_filler(v.sym):
-                    for vv, frame, ascr, lscr in self.edges(v):
-                        if not is_filler(vv.sym):
-                            u.exits.append((vv.entry, 0))
+        self.bypass_fillers()
         # Figure out the minimum distance to each node from the start
         # of the lattice, and the set of predecessors for each node
         for u in nodes:
@@ -450,3 +485,80 @@ class Dag(list):
             end = end.prev
         backtrace.reverse()
         return backtrace
+
+    def find_preds(self):
+        """Find predecessor nodes for each node in the lattice and store them
+           in its 'prev' field."""
+        for u in self.nodes():
+            u.prev = []
+        for w in self.traverse_breadth():
+            for f, s in w.exits:
+                for u in self[f].itervalues():
+                    if w not in u.prev:
+                        u.prev.append(w)
+
+    def forward(self, lm=None):
+        """Compute forward variable for all arcs in the lattice."""
+        for w in self.nodes():
+            w.prev = []
+        # For each node in self
+        for w in self.traverse_breadth(lm):
+            # For each outgoing arc from w
+            for i,x in enumerate(w.exits):
+                wf, wa = x
+                # This is alpha_t(w)
+                alpha = LOGZERO
+                # For each successor node to w
+                for u in self[wf].itervalues():
+                    # Add w to list of predecessors
+                    if w not in u.prev:
+                        u.prev.append(w)
+                # If w has no predecessors the previous alpha is 1.0
+                if len(w.prev) == 0:
+                    alpha = wa
+                # For each predecessor node to w
+                for v in w.prev:
+                    # Get language model score P(w|v) (bigrams only for now...)
+                    if lm:
+                        lscr = lm.score(v.sym, w.sym)
+                    else:
+                        lscr = 0
+                    # Find the arc from v to w to get its alpha
+                    for vf, vs in v.exits:
+                        vascr, valpha, vbeta = vs
+                        if vf == w.entry:
+                            # Accumulate alpha for this arc
+                            alpha = logadd(alpha, valpha + lscr + wa)
+                # Update the acoustic score to hold alpha and beta
+                w.exits[i] = (wf, (wa, alpha, LOGZERO))
+
+    def backward(self, lm=None):
+        """Compute backward variable for all arcs in the lattice."""
+        # If predecessor nodes were not annotated, do that now
+        if self.end.prev == None:
+            self.find_preds()
+        # For each node in self (in reverse):
+        for w in self.reverse_breadth(lm):
+            # For each predecessor to w
+            for v in w.prev:
+                # Beta for arcs into </s> = 1.0
+                if w == self.end:
+                    beta = 0
+                else:
+                    beta = LOGZERO
+                    # Get language model score P(w|v) (bigrams only for now...)
+                    if lm:
+                        lscr = lm.score(v.sym, w.sym)
+                    else:
+                        lscr = 0
+                    # For each outgoing arc from w
+                    for wf, ws in w.exits:
+                        wascr, walpha, wbeta = ws
+                        # Accumulate beta for arc from v to w
+                        beta = logadd(beta, wbeta + lscr + wascr)
+                # Find the arc from v to w to update its beta
+                for i, arc in enumerate(v.exits):
+                    vf, vs = arc
+                    if vf == w.entry:
+                        vascr, valpha, spam = vs
+                        v.exits[i] = (vf, (vascr, valpha, beta))
