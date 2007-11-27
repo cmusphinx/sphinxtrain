@@ -271,6 +271,12 @@ class Dag(list):
             for node in frame.values():
                 yield node
 
+    def all_edges(self):
+        for sf in self:
+            for node in sf.itervalues():
+                for ef, ascr in node.exits:
+                    yield ef, ascr, node
+
     def bestpath(self, lm=None, lw=3.5, ip=0.7, start=None):
         """Find best path through lattice using Dijkstra's algorithm"""
         Q = list(self.nodes())
@@ -296,7 +302,7 @@ class Dag(list):
                     v.score = u.score + score
                     v.prev = u
 
-    def traverse_depth(self, start=None, lm=None):
+    def traverse_depth(self, start=None):
         """Depth-first traversal of DAG nodes"""
         if start == None:
             start = self.start
@@ -308,13 +314,13 @@ class Dag(list):
         # all of its successors
         while roots:
             r = roots.pop()
-            for v, f, s, l in self.edges(r, lm):
+            for v, f, s, l in self.edges(r):
                 if v not in seen:
                     roots.append(v)
                 seen[v] = 1
             yield r
 
-    def traverse_breadth(self, start=None, lm=None):
+    def traverse_breadth(self, start=None):
         """Breadth-first traversal of DAG nodes"""
         if start == None:
             start = self.start
@@ -326,13 +332,13 @@ class Dag(list):
         # all of its successors
         while roots:
             r = roots.pop()
-            for v, f, s, l in self.edges(r, lm):
+            for v, f, s, l in self.edges(r):
                 if v not in seen:
                     roots.insert(0, v)
                 seen[v] = 1
             yield r
 
-    def reverse_breadth(self, end=None, lm=None):
+    def reverse_breadth(self, end=None):
         """Breadth-first reverse traversal of DAG nodes"""
         if end == None:
             end = self.end
@@ -497,25 +503,37 @@ class Dag(list):
                     if w not in u.prev:
                         u.prev.append(w)
 
+    def remove_unreachable(self):
+        """Remove unreachable nodes and dangling edges."""
+        if self.end.prev == None:
+            self.find_preds()
+        for w in self.reverse_breadth():
+            w.score = 42
+        for frame in self:
+            for sym in frame.keys():
+                if frame[sym].score != 42:
+                    del frame[sym]
+        for frame in self:
+            for node in frame.itervalues():
+                newexits = []
+                for ef, ascr in node.exits:
+                    if len(self[ef]) > 0:
+                        newexits.append((ef, ascr))
+                node.exits = newexits
+
     def forward(self, lm=None):
         """Compute forward variable for all arcs in the lattice."""
-        for w in self.nodes():
-            w.prev = []
+        self.remove_unreachable()
         # For each node in self
-        for w in self.traverse_breadth(lm):
+        for w in self.traverse_breadth():
             # For each outgoing arc from w
             for i,x in enumerate(w.exits):
-                wf, wa = x
+                wf, wascr = x
                 # This is alpha_t(w)
                 alpha = LOGZERO
-                # For each successor node to w
-                for u in self[wf].itervalues():
-                    # Add w to list of predecessors
-                    if w not in u.prev:
-                        u.prev.append(w)
                 # If w has no predecessors the previous alpha is 1.0
                 if len(w.prev) == 0:
-                    alpha = wa
+                    alpha = wascr
                 # For each predecessor node to w
                 for v in w.prev:
                     # Get language model score P(w|v) (bigrams only for now...)
@@ -528,17 +546,14 @@ class Dag(list):
                         vascr, valpha, vbeta = vs
                         if vf == w.entry:
                             # Accumulate alpha for this arc
-                            alpha = logadd(alpha, valpha + lscr + wa)
+                            alpha = logadd(alpha, valpha + lscr + wascr)
                 # Update the acoustic score to hold alpha and beta
-                w.exits[i] = (wf, (wa, alpha, LOGZERO))
+                w.exits[i] = (wf, (wascr, alpha, LOGZERO))
 
     def backward(self, lm=None):
         """Compute backward variable for all arcs in the lattice."""
-        # If predecessor nodes were not annotated, do that now
-        if self.end.prev == None:
-            self.find_preds()
         # For each node in self (in reverse):
-        for w in self.reverse_breadth(lm):
+        for w in self.reverse_breadth():
             # For each predecessor to w
             for v in w.prev:
                 # Beta for arcs into </s> = 1.0
@@ -562,3 +577,19 @@ class Dag(list):
                     if vf == w.entry:
                         vascr, valpha, spam = vs
                         v.exits[i] = (vf, (vascr, valpha, beta))
+
+    def posterior(self):
+        """Compute arc posterior probabilities."""
+        # Sum over alpha for arcs entering the end node to get normalizer
+        norm = LOGZERO
+        for v in self.end.prev:
+            for ef, ascr in v.exits:
+                if ef == self.end.entry:
+                    ascr, alpha, beta = ascr
+                    norm = logadd(norm, alpha)
+        # Iterate over all arcs and normalize
+        for w in self.nodes():
+            for i, x in enumerate(w.exits):
+                ef, ascr = x
+                ascr, alpha, beta = ascr
+                w.exits[i] = (ef, (ascr, alpha, beta, alpha + beta - norm))
