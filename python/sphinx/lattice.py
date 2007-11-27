@@ -9,7 +9,7 @@ includes routines for loading and saving lattices in Sphinx3 and HTK
 format."""
 
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
-__version__ = "$Revision: 6546 $"
+__version__ = "$Revision$"
 
 import gzip
 import re
