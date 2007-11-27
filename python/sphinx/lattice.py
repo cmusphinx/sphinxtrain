@@ -274,9 +274,7 @@ class Dag(list):
 
     def reverse_nodes(self):
         """Return a generator over all the nodes in the DAG, in reverse time order"""
-        foo = self
-        foo.reverse()
-        for frame in foo:
+        for frame in reversed(self):
             for node in frame.values():
                 yield node
 
@@ -532,7 +530,7 @@ class Dag(list):
                         newexits.append((ef, ascr))
                 node.exits = newexits
 
-    def forward(self, lm=None):
+    def forward(self, lm=None, lw=3.5, ip=0.7):
         """Compute forward variable for all arcs in the lattice."""
         self.find_preds()
         self.remove_unreachable()
@@ -547,12 +545,12 @@ class Dag(list):
                 alpha = LOGZERO
                 # If w has no predecessors the previous alpha is 1.0
                 if len(w.prev) == 0:
-                    alpha = wascr
+                    alpha = wascr / lw
                 # For each predecessor node to w
                 for v in w.prev:
                     # Get language model score P(w|v) (bigrams only for now...)
                     if lm:
-                        lscr = lm.score(v.sym, w.sym)
+                        lscr = lm.score(v.sym, w.sym) + math.log(ip)
                     else:
                         lscr = 0
                     # Find the arc from v to w to get its alpha
@@ -560,11 +558,11 @@ class Dag(list):
                         vascr, valpha, vbeta = vs
                         if vf == w.entry:
                             # Accumulate alpha for this arc
-                            alpha = logadd(alpha, valpha + lscr + wascr)
+                            alpha = logadd(alpha, valpha + lscr + wascr / lw)
                 # Update the acoustic score to hold alpha and beta
                 w.exits[i] = (wf, (wascr, alpha, LOGZERO))
 
-    def backward(self, lm=None):
+    def backward(self, lm=None, lw=3.5, ip=0.7):
         """Compute backward variable for all arcs in the lattice."""
         # For each node in self (in reverse):
         for w in self.reverse_nodes():
@@ -577,14 +575,14 @@ class Dag(list):
                     beta = LOGZERO
                     # Get language model score P(w|v) (bigrams only for now...)
                     if lm:
-                        lscr = lm.score(v.sym, w.sym)
+                        lscr = lm.score(v.sym, w.sym) + math.log(ip)
                     else:
                         lscr = 0
                     # For each outgoing arc from w
                     for wf, ws in w.exits:
                         wascr, walpha, wbeta = ws
                         # Accumulate beta for arc from v to w
-                        beta = logadd(beta, wbeta + lscr + wascr)
+                        beta = logadd(beta, wbeta + lscr + wascr / lw)
                 # Find the arc from v to w to update its beta
                 for i, arc in enumerate(v.exits):
                     vf, vs = arc
