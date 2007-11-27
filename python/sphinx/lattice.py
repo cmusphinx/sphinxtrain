@@ -12,6 +12,7 @@ import gzip
 import re
 import math
 import numpy
+import sys
 
 LOGZERO = -100000
 
@@ -266,8 +267,16 @@ class Dag(list):
                                   len(tuple(self.edges(y))), x.itervalues())), self)))
 
     def nodes(self):
-        """Return a generator over all the nodes in the DAG"""
+        """Return a generator over all the nodes in the DAG, in time order"""
         for frame in self:
+            for node in frame.values():
+                yield node
+
+    def reverse_nodes(self):
+        """Return a generator over all the nodes in the DAG, in reverse time order"""
+        foo = self
+        foo.reverse()
+        for frame in foo:
             for node in frame.values():
                 yield node
 
@@ -314,10 +323,11 @@ class Dag(list):
         # all of its successors
         while roots:
             r = roots.pop()
-            for v, f, s, l in self.edges(r):
-                if v not in seen:
-                    roots.append(v)
-                seen[v] = 1
+            for ef, ascr in r.exits:
+                for v in self[ef].itervalues():
+                    if v not in seen:
+                        roots.append(v)
+                        seen[v] = 1
             yield r
 
     def traverse_breadth(self, start=None):
@@ -332,10 +342,11 @@ class Dag(list):
         # all of its successors
         while roots:
             r = roots.pop()
-            for v, f, s, l in self.edges(r):
-                if v not in seen:
-                    roots.insert(0, v)
-                seen[v] = 1
+            for ef, ascr in r.exits:
+                for v in self[ef].itervalues():
+                    if v not in seen:
+                        roots.insert(0, v)
+                        seen[v] = 1
             yield r
 
     def reverse_breadth(self, end=None):
@@ -497,7 +508,7 @@ class Dag(list):
            in its 'prev' field."""
         for u in self.nodes():
             u.prev = []
-        for w in self.traverse_breadth():
+        for w in self.nodes():
             for f, s in w.exits:
                 for u in self[f].itervalues():
                     if w not in u.prev:
@@ -523,9 +534,12 @@ class Dag(list):
 
     def forward(self, lm=None):
         """Compute forward variable for all arcs in the lattice."""
+        self.find_preds()
         self.remove_unreachable()
-        # For each node in self
-        for w in self.traverse_breadth():
+        # For each node in self (they sort forward by time, which is
+        # actually the only thing that guarantees that a nodes'
+        # predecessors will be touched before it)
+        for w in self.nodes():
             # For each outgoing arc from w
             for i,x in enumerate(w.exits):
                 wf, wascr = x
@@ -553,7 +567,7 @@ class Dag(list):
     def backward(self, lm=None):
         """Compute backward variable for all arcs in the lattice."""
         # For each node in self (in reverse):
-        for w in self.reverse_breadth():
+        for w in self.reverse_nodes():
             # For each predecessor to w
             for v in w.prev:
                 # Beta for arcs into </s> = 1.0
@@ -575,8 +589,8 @@ class Dag(list):
                 for i, arc in enumerate(v.exits):
                     vf, vs = arc
                     if vf == w.entry:
-                        vascr, valpha, spam = vs
-                        v.exits[i] = (vf, (vascr, valpha, beta))
+                        vascr, valpha, vbeta = vs
+                        v.exits[i] = (vf, (vascr, valpha, logadd(vbeta, beta)))
 
     def posterior(self):
         """Compute arc posterior probabilities."""
