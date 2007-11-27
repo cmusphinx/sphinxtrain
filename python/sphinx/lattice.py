@@ -8,11 +8,13 @@ lattices in both backpointer table and DAG format.  The DAG format
 includes routines for loading and saving lattices in Sphinx3 and HTK
 format."""
 
+__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__version__ = "$Revision: 6546 $"
+
 import gzip
 import re
 import math
 import numpy
-import sys
 
 LOGZERO = -100000
 
