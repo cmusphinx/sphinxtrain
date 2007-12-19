@@ -3,10 +3,12 @@
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
 
-"""This package contains implementations of speech recognition
-lattices in both backpointer table and DAG format.  The DAG format
-includes routines for loading and saving lattices in Sphinx3 and HTK
-format."""
+"""
+Word lattices for speech recognition.
+
+Includes routines for loading lattices in Sphinx3 and HTK format,
+searching them, and calculating word posterior probabilities.
+"""
 
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
@@ -19,6 +21,16 @@ import numpy
 LOGZERO = -100000
 
 def logadd(x,y):
+    """
+    For M{x=log(a)} and M{y=log(b)}, return M{z=log(a+b)}.
+
+    @param x: M{log(a)}
+    @type x: float
+    @param y: M{log(b)}
+    @type y: float
+    @return: M{log(a+b)}
+    @rtype: float
+    """
     if x < y:
         return logadd(y,x)
     if y == LOGZERO:
@@ -26,76 +38,75 @@ def logadd(x,y):
     else:
         return x + math.log(1 + math.exp(y-x))
 
-class LatticeEntry(object):
-    """Backpointer entry in a phone/word lattice"""
-    __slots__ = 'frame', 'sym', 'score', 'prev'
-    def __init__(self, frame, sym, score, prev):
-        self.frame = frame
-        self.sym = sym
-        self.score = score
-        self.prev = prev
-    def __str__(self):
-        if self.prev:
-            prev = (self.prev.sym, self.prev.frame)
-        else:
-            prev = None
-        return "(%d, %s, %f, %s)" % (self.frame, self.sym, self.score, prev)
-
-class Lattice(list):
-    """Backpointer table representation of a phone/word lattice"""
-    def enter(self, frame, sym, score, history):
-        while frame >= len(self):
-            self.append([])
-        entry = len(self[frame])
-        if history:
-            score -= history.score
-        self[frame].append(LatticeEntry(frame, sym, score, history))
-        return self[frame][-1]
-
-    def backtrace(self, frame=-1):
-        if frame == -1:
-            frame = len(self)-1
-
-        bestscore = LOGZERO
-        for e in self[frame]:
-            if e.score > bestscore:
-                bestscore = e.score
-                bestentry = e
-
-        backtrace = []
-        while bestentry:
-            backtrace.append(bestentry)
-            bestentry = bestentry.prev
-
-        backtrace.reverse()
-        return backtrace
-
 def is_filler(sym):
-    """Is this a filler word?"""
+    """
+    Returns true if C{sym} is a filler word.
+    @param sym: Word string to test
+    @type sym: string
+    @return: True if C{sym} is a filler word (but not <s> or </s>)
+    @rtype: boolean
+    """
     if sym == '<s>' or sym == '</s>': return False
     return ((sym[0] == '<' and sym[-1] == '>') or
             (sym[0] == '+' and sym[-1] == '+'))
 
-class DagNode(object):
-    """Node in a DAG representation of a phone/word lattice"""
-    __slots__ = 'sym', 'entry', 'exits', 'score', 'prev'
-    def __init__(self, sym, entry):
-        self.sym = sym
-        self.entry = entry
-        self.exits = []
-        self.score = LOGZERO
-        self.prev = None
-    def __str__(self):
-        return "(%s, %d, %s)" % (self.sym, self.entry, self.exits)
-
 class Dag(list):
-    """Directed acyclic graph representation of a phone/word lattice"""
+    """
+    Directed acyclic graph representation of a phone/word lattice.
+    """
     __slots__ = 'start', 'end', 'header', 'frate'
-    def __init__(self, lattice=None, frate=100):
-        "Construct a DAG, optionally from a pre-existing backpointer lattice."
+
+    class Node(object):
+        """
+        Node in a DAG representation of a phone/word lattice.
+
+        @ivar sym: Word corresponding to this node.  All arcs out of
+                   this node represent hypothesized instances of this
+                   word starting at frame C{entry}.
+        @type sym: string
+        @ivar entry: Entry frame for this node.
+        @type entry: int
+        @ivar exits: List of arcs out of this node.
+        @type exits: list of (int, object)
+        @ivar score: Viterbi (or other) score for this node, used in
+                     bestpath calculation.
+        @type score: int
+        @ivar prev: Backtrace pointer for this node, used in bestpath
+                    calculation.  Alternately used to store list of
+                    predecessors in forward-backward calculation.
+        @type prev: object
+        """
+        __slots__ = 'sym', 'entry', 'exits', 'score', 'prev'
+        def __init__(self, sym, entry):
+            self.sym = sym
+            self.entry = entry
+            self.exits = []
+            self.score = LOGZERO
+            self.prev = None
+        def __str__(self):
+            return "(%s, %d, %s)" % (self.sym, self.entry, self.exits)
+
+    def __init__(self, sphinx_file=None, htk_file=None, frate=100):
+        """
+        Construct a DAG, optionally loading contents from a file.
+
+        @param frate: Number of frames per second.  This is important
+                      when loading HTK word graphs since times in them
+                      are specified in decimal.  The default is
+                      probably okay.
+        @type frate: int
+        @param sphinx_file: Sphinx-III format word lattice file to
+                            load (optionally).
+        @type sphinx_file: string
+        @param htk_file: HTK SLF format word lattice file to
+                         load (optionally).
+        @type htk_file: string
+        """
         self.frate = frate
-        if lattice != None:
-            self.lat2dag(lattice)
+        if sphinx_file != None:
+            self.sphinx2dag(sphinx_file)
+        elif htk_file != None:
+            self.htk2dag(htk_file)
 
     fieldre = re.compile(r'(\S+)=(?:"((?:[^\\"]+|\\.)*)"|(\S+))')
     def htk2dag(self, htkfile):
@@ -119,7 +130,7 @@ class Dag(list):
             else:
                 if 'I' in fields:
                     frame = int(float(fields['t']) * self.frate)
-                    node = DagNode(fields['W'], frame)
+                    node = self.Node(fields['W'], frame)
                     nodes[int(fields['I'])] = node
                     while len(self) <= frame:
                         self.append({})
@@ -140,7 +151,7 @@ class Dag(list):
 
     headre = re.compile(r'# (-\S+) (\S+)')
     def sphinx2dag(self, s3file):
-        """Read a Sphinx3-format lattice file to populate a DAG."""
+        """Read a Sphinx-III format lattice file to populate a DAG."""
         fh = gzip.open(s3file)
         del self[0:len(self)]
         self.header = {}
@@ -177,7 +188,7 @@ class Dag(list):
                 else:
                     if state == 'nodes':
                         nodeid, word, sf, fef, lef = fields
-                        node = DagNode(word, int(sf))
+                        node = self.Node(word, int(sf))
                         nodes[int(nodeid)] = node
                         self[int(sf)][word] = node
                     elif state == 'edges':
@@ -188,55 +199,16 @@ class Dag(list):
                         if not (tofr,ascr) in nodes[int(fromnode)].exits:
                             nodes[int(fromnode)].exits.append((tofr, ascr))
 
-    def dag2htk(self, htkfile):
-        """Write out an HTK-format lattice file from a DAG."""
-        fh = open(htkfile, 'w')
-
-    def dag2sphinx(self, s3file):
-        """Write out a Sphinx3-format lattice file from a DAG."""
-        fh = gzip.open(s3file, 'wb')
-
-    def lat2dag(self, lattice):
-        """Turn a lattice inside-out to populate a DAG."""
-        del self[0:len(self)]
-        for i in range(0,len(lattice)):
-            self.append({})
-        # Don't include the start node in the lattice as it would
-        # create a loop!
-        self.start = DagNode('<s>', 0)
-        self.start.exits.append((0, 0))
-        # Create an end node for all the last exits to point to
-        self.end = DagNode('</s>', len(lattice))
-        self[-1]['</s>'] = self.end
-        # A dummy start word if needed
-        sword = LatticeEntry(0, '<s>', 0, None)
-        # Build word nodes from history table
-        for i, exits in enumerate(lattice):
-            for e in exits:
-                if e.prev == None:
-                    e.prev = sword
-                if e.sym in self[e.prev.frame]:
-                    self[e.prev.frame][e.sym].exits.append((i, e.score))
-                else:
-                    self[e.prev.frame][e.sym] = DagNode(e.sym, e.prev.frame)
-                    self[e.prev.frame][e.sym].exits.append((i, e.score))
-        # Now clean up the lattice
-        for frame in reversed(self):
-            # First prune away word exits that go nowhere
-            for node in frame.itervalues():
-                # Remove dangling pointers
-                node.exits = filter(lambda x: self[x[0]], node.exits)
-                # Sort descending by score (actually this may be meaningless)
-                node.exits.sort(lambda x,y: cmp(y[1], x[1]))
-            # Now remove nodes that don't have any exits
-            for sym in filter(lambda x: len(frame[x].exits) == 0, frame.iterkeys()):
-                # But NOT the end node!!!
-                if frame[sym] == self.end:
-                    continue
-                del frame[sym]
-
     def edges(self, node, lm=None):
-        """Return a generator for the set of edges exiting node."""
+        """
+        Return a generator for the set of edges exiting node.
+        @param node: Node whose edges to iterate over.
+        @type node: Dag.Node
+        @param lm: Language model to use for scoring edges.
+        @type lm: sphinx.arpalm.ArpaLM (or equivalent)
+        @return: Tuple of (successor, exit-frame, acoustic-score, language-score)
+        @rtype: (Dag.Node, int, int, int)
+        """
         for frame, score in node.exits:
             for next in self[frame].itervalues():
                 if lm:
@@ -258,41 +230,80 @@ class Dag(list):
                     yield next, frame, score, 0
 
     def n_nodes(self):
-        """Return the number of nodes in the DAG"""
+        """
+        Return the number of nodes in the DAG
+        @return: Number of nodes in the DAG
+        @rtype: int
+        """
         return sum(map(len, self))
 
     def n_edges(self):
-        """Return the number of edges in the DAG"""
+        """
+        Return the number of edges in the DAG
+        @return: Number of edges in the DAG
+        @rtype: int
+        """
         return (len(tuple(self.edges(self.start)))
                 + sum(map(lambda x:
                           sum(map(lambda y:
                                   len(tuple(self.edges(y))), x.itervalues())), self)))
 
     def nodes(self):
-        """Return a generator over all the nodes in the DAG, in time order"""
+        """
+        Return a generator over all the nodes in the DAG, in time order
+        @return: Generator over all nodes in the DAG, in time order
+        @rtype: generator(Dag.Node)
+        """
         for frame in self:
             for node in frame.values():
                 yield node
 
     def reverse_nodes(self):
-        """Return a generator over all the nodes in the DAG, in reverse time order"""
+        """
+        Return a generator over all the nodes in the DAG, in reverse time order
+        @return: Generator over all nodes in the DAG, in reverse time order
+        @rtype: generator(Dag.Node)
+        """
         for frame in reversed(self):
             for node in frame.values():
                 yield node
 
     def all_edges(self):
+        """
+        Return a generator over all the edges in the DAG, in time order
+        @return: Generator over all edges in the DAG, in time order
+        @rtype: generator((int,object,Dag.Node))
+        """
         for sf in self:
             for node in sf.itervalues():
                 for ef, ascr in node.exits:
                     yield ef, ascr, node
 
-    def bestpath(self, lm=None, lw=3.5, ip=0.7, start=None):
-        """Find best path through lattice using Dijkstra's algorithm"""
+    def bestpath(self, lm=None, lw=7.5, ip=0.7, start=None, end=None):
+        """
+        Find best path through lattice using Dijkstra's algorithm.
+
+        @param lm: Language model to use in search
+        @type lm: sphinx.arpalm.ArpaLM (or equivalent)
+        @param lw: Language model weight
+        @type lw: float
+        @param ip: Word insertion penalty
+        @type ip: float
+        @param start: Node to start search from
+        @type start: Dag.Node
+        @param end: Node to end search at
+        @type end: Dag.Node
+        @return: Final node in search (same as C{end})
+        @rtype: Dag.Node
+        """
         Q = list(self.nodes())
         for u in Q:
             u.score = LOGZERO
+            u.prev = None
         if start == None:
             start = self.start
+        if end == None:
+            end = self.end
         start.score = 0
         while Q:
             bestscore = LOGZERO
@@ -303,75 +314,19 @@ class Dag(list):
                     bestscore = u.score
             u = Q[bestidx]
             del Q[bestidx]
-            if u == self.end:
+            if u == end:
                 return u
             for v, frame, ascr, lscr in self.edges(u, lm):
+                if isinstance(ascr, tuple):
+                    ascr = ascr[0]
                 score = ascr + lw * lscr + math.log(ip)
                 if u.score + score > v.score:
                     v.score = u.score + score
                     v.prev = u
 
-    def traverse_depth(self, start=None):
-        """Depth-first traversal of DAG nodes"""
-        if start == None:
-            start = self.start
-        # Initialize the agenda (set of root nodes)
-        roots = [start]
-        # Keep a table of already seen nodes
-        seen = {start:1}
-        # Repeatedly pop the first one off of the agenda and push
-        # all of its successors
-        while roots:
-            r = roots.pop()
-            for ef, ascr in r.exits:
-                for v in self[ef].itervalues():
-                    if v not in seen:
-                        roots.append(v)
-                        seen[v] = 1
-            yield r
-
-    def traverse_breadth(self, start=None):
-        """Breadth-first traversal of DAG nodes"""
-        if start == None:
-            start = self.start
-        # Initialize the agenda (set of active nodes)
-        roots = [start]
-        # Keep a table of already seen nodes
-        seen = {start:1}
-        # Repeatedly pop the first one off of the agenda and shift
-        # all of its successors
-        while roots:
-            r = roots.pop()
-            for ef, ascr in r.exits:
-                for v in self[ef].itervalues():
-                    if v not in seen:
-                        roots.insert(0, v)
-                        seen[v] = 1
-            yield r
-
-    def reverse_breadth(self, end=None):
-        """Breadth-first reverse traversal of DAG nodes"""
-        if end == None:
-            end = self.end
-        if end.prev == None:
-            self.find_preds()
-        # Initialize the agenda (set of active nodes)
-        roots = [end]
-        # Keep a table of already seen nodes
-        seen = {end:1}
-        # Repeatedly pop the first one off of the agenda and shift
-        # all of its successors
-        while roots:
-            r = roots.pop()
-            for v in r.prev:
-                if v not in seen:
-                    roots.insert(0, v)
-                seen[v] = 1
-            yield r
-
     def bypass_fillers(self):
         """Bypass filler nodes in the lattice."""
-        for u in self.traverse_breadth():
+        for u in self.nodes():
             for v, frame, ascr, lscr in self.edges(u):
                 if is_filler(v.sym):
                     for vv, frame, ascr, lscr in self.edges(v):
@@ -379,9 +334,14 @@ class Dag(list):
                             u.exits.append((vv.entry, 0))
 
     def minimum_error(self, hyp, start=None):
-        """Find the minimum word error rate path through lattice."""
+        """
+        Find the minimum word error rate path through lattice,
+        returning the number of errors and an alignment.
+        @return: Tuple of (error-count, alignment of (hyp, ref) pairs)
+        @rtype: (int, list(string, string))
+        """
         # Get the set of nodes in proper order
-        nodes = tuple(self.traverse_breadth())
+        nodes = tuple(self.nodes())
         # Initialize the alignment matrix
         align_matrix = numpy.ones((len(hyp),len(nodes)), 'i') * 999999999
         # And the backpointer matrix
@@ -493,7 +453,14 @@ class Dag(list):
         return align_matrix[-1,last], bt
 
     def backtrace(self, end=None):
-        """Return a backtrace from an optional end node after bestpath"""
+        """
+        Return a backtrace from an optional end node after bestpath.
+
+        @param end: End node to backtrace from (default is final node in DAG)
+        @type end: Dag.Node
+        @return: Best path through lattice from start to end.
+        @rtype: list of Dag.Node
+        """
         if end == None:
             end = self.end
         backtrace = []
@@ -504,8 +471,10 @@ class Dag(list):
         return backtrace
 
     def find_preds(self):
-        """Find predecessor nodes for each node in the lattice and store them
-           in its 'prev' field."""
+        """
+        Find predecessor nodes for each node in the lattice and store them
+        in its 'prev' field.
+        """
         for u in self.nodes():
             u.prev = []
         for w in self.nodes():
@@ -513,6 +482,64 @@ class Dag(list):
                 for u in self[f].itervalues():
                     if w not in u.prev:
                         u.prev.append(w)
+
+    def traverse_depth(self, start=None):
+        """Depth-first traversal of DAG nodes"""
+        if start == None:
+            start = self.start
+        # Initialize the agenda (set of root nodes)
+        roots = [start]
+        # Keep a table of already seen nodes
+        seen = {start:1}
+        # Repeatedly pop the first one off of the agenda and push
+        # all of its successors
+        while roots:
+            r = roots.pop()
+            for ef, ascr in r.exits:
+                for v in self[ef].itervalues():
+                    if v not in seen:
+                        roots.append(v)
+                        seen[v] = 1
+            yield r
+
+    def traverse_breadth(self, start=None):
+        """Breadth-first traversal of DAG nodes"""
+        if start == None:
+            start = self.start
+        # Initialize the agenda (set of active nodes)
+        roots = [start]
+        # Keep a table of already seen nodes
+        seen = {start:1}
+        # Repeatedly pop the first one off of the agenda and shift
+        # all of its successors
+        while roots:
+            r = roots.pop()
+            for ef, ascr in r.exits:
+                for v in self[ef].itervalues():
+                    if v not in seen:
+                        roots.insert(0, v)
+                        seen[v] = 1
+            yield r
+
+    def reverse_breadth(self, end=None):
+        """Breadth-first reverse traversal of DAG nodes"""
+        if end == None:
+            end = self.end
+        if end.prev == None:
+            self.find_preds()
+        # Initialize the agenda (set of active nodes)
+        roots = [end]
+        # Keep a table of already seen nodes
+        seen = {end:1}
+        # Repeatedly pop the first one off of the agenda and shift
+        # all of its successors
+        while roots:
+            r = roots.pop()
+            for v in r.prev:
+                if v not in seen:
+                    roots.insert(0, v)
+                seen[v] = 1
+            yield r
 
     def remove_unreachable(self):
         """Remove unreachable nodes and dangling edges."""
@@ -532,8 +559,17 @@ class Dag(list):
                         newexits.append((ef, ascr))
                 node.exits = newexits
 
-    def forward(self, lm=None, lw=3.5, ip=0.7):
-        """Compute forward variable for all arcs in the lattice."""
+    def forward(self, lm=None, lw=7.5, ip=0.7):
+        """
+        Compute forward variable for all arcs in the lattice.
+
+        @param lm: Language model to use in computation
+        @type lm: sphinx.arpalm.ArpaLM (or equivalent)
+        @param lw: Language model weight
+        @type lw: float
+        @param ip: Word insertion penalty
+        @type ip: float
+        """
         self.find_preds()
         self.remove_unreachable()
         # For each node in self (they sort forward by time, which is
@@ -564,8 +600,17 @@ class Dag(list):
                 # Update the acoustic score to hold alpha and beta
                 w.exits[i] = (wf, (wascr, alpha, LOGZERO))
 
-    def backward(self, lm=None, lw=3.5, ip=0.7):
-        """Compute backward variable for all arcs in the lattice."""
+    def backward(self, lm=None, lw=7.5, ip=0.7):
+        """
+        Compute backward variable for all arcs in the lattice.
+
+        @param lm: Language model to use in computation
+        @type lm: sphinx.arpalm.ArpaLM (or equivalent)
+        @param lw: Language model weight
+        @type lw: float
+        @param ip: Word insertion penalty
+        @type ip: float
+        """
         # For each node in self (in reverse):
         for w in self.reverse_nodes():
             # For each predecessor to w
@@ -592,8 +637,24 @@ class Dag(list):
                         vascr, valpha, vbeta = vs
                         v.exits[i] = (vf, (vascr, valpha, logadd(vbeta, beta)))
 
-    def posterior(self):
-        """Compute arc posterior probabilities."""
+    def posterior(self, lm=None, lw=7.5, ip=0.7):
+        """
+        Compute arc posterior probabilities.
+
+        @param lm: Language model to use in computation
+        @type lm: sphinx.arpalm.ArpaLM (or equivalent)
+        @param lw: Language model weight
+        @type lw: float
+        @param ip: Word insertion penalty
+        @type ip: float
+        """
+        # Run forward and backward if not already done
+        frame, ascr = self.start.exits[0]
+        if not isinstance(ascr, tuple):
+            self.forward(lm, lw, ip)
+        frame, ascr = self.start.exits[0]
+        if ascr[2] == LOGZERO:
+            self.backward(lm, lw, ip)
         # Sum over alpha for arcs entering the end node to get normalizer
         norm = LOGZERO
         for v in self.end.prev:
