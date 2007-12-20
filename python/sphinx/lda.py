@@ -18,19 +18,19 @@ import s3lda
 import s3gaucnt
 import itertools
 
-def makelda(gauden_counts=None, covfile=None, countfile=None):
-    """Calculate an LDA matrix from a set of mean/full-covariance
-    counts as output by the 'bw' program from SphinxTrain"""
+def makelda(gauden_counts):
+    """
+    Calculate an LDA matrix from a set of mean/full-covariance
+    counts as output by the 'bw' program from SphinxTrain.
+
+    @param gauden_counts: Set of full covariance occupation counts.
+    @type gauden_counts: sphinx.s3gaucnt.S3FullGauCntFile
+    """
     if not gauden_counts.pass2var:
         raise Exception, "Please re-run bw with '-2passvar yes'"
     mean = numpy.array(map(lambda x: x[0][0], gauden_counts.getmeans()))
     var = numpy.array(map(lambda x: x[0][0], gauden_counts.getvars()))
     dnom = numpy.array(map(lambda x: x[0][0], gauden_counts.getdnom()))
-    if covfile != None:
-        var = s3lda.open(covfile).getall()
-    if countfile != None:
-        dfh = open(countfile)
-        dnom = numpy.array(map(lambda x: int(x.rstrip()), dfh))
 
     # If CMN was used, this should actually be very close to zero
     globalmean = mean.sum(0) / dnom.sum()
