@@ -63,8 +63,8 @@ if ( $ST::CFG_FORCEDALIGN eq "no" ) {
     exit(0);
 }
 
-unless (-x catdir($ST::CFG_BIN_DIR, "sphinx3_align")
-	or -x catdir($ST::CFG_BIN_DIR, "sphinx3_align.exe")) {
+unless (-x catfile($ST::CFG_BIN_DIR, "sphinx3_align")
+	or -x catfile($ST::CFG_BIN_DIR, "sphinx3_align.exe")) {
     Log("Skipped: No sphinx3_align(.exe) found in $ST::CFG_BIN_DIR\n");
     Log("If you wish to do force-alignment, please copy or link the\n");
     Log("sphinx3_align binary from Sphinx 3 to $ST::CFG_BIN_DIR\n");
