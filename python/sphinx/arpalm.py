@@ -13,17 +13,36 @@ __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
 import numpy
+import gzip
 import re
+
+LOG10TOLOG = numpy.log(10)
 
 class ArpaLM(object):
     "Class for reading ARPA-format language models"
+
     def __init__(self, path=None):
+        """
+        Initialize an ArpaLM object.
+
+        @param path: Path to an ARPA format file to (optionally) load
+                     language model from.  This file can be
+                     gzip-compressed if you like.
+        @type path: string
+        """
         if path != None:
             self.read(path)
 
     def read(self, path):
-        "Load an ARPA format language model from a file in its entirety"
-        fh = file(path)
+        """
+        Load an ARPA format language model from a file in its entirety.
+
+        @param path: Path to an ARPA format file to (optionally) load
+                     language model from.  This file can be
+                     gzip-compressed if you like.
+        @type path: string
+        """
+        fh = gzip.open(path)
         # Skip header
         while True:
             spam = fh.readline().rstrip()
@@ -66,7 +85,8 @@ class ArpaLM(object):
             p,w,b = spam.split()
             self.ngmap[0][w] = wordid
             self.widmap.append(w)
-            self.ngrams[0][wordid,:] = float(p), float(b)
+            self.ngrams[0][wordid,:] = (float(p) * LOG10TOLOG,
+                                        float(b) * LOG10TOLOG)
             wordid = wordid + 1
         
         # Read N-grams
@@ -86,13 +106,13 @@ class ArpaLM(object):
                 ngramid = 0
             else:
                 spam = spam.split()
-                p = float(spam[0])
+                p = float(spam[0]) * LOG10TOLOG
                 if n == self.n:
                     ng = tuple(spam[1:])
                     b = 0.0
                 else:
                     ng = tuple(spam[1:-1])
-                    b = float(spam[-1])
+                    b = float(spam[-1]) * LOG10TOLOG
                 # N-Gram info
                 self.ngrams[n-1][ngramid,:] = p, b
                 self.ngmap[n-1][ng] = ngramid
@@ -105,8 +125,17 @@ class ArpaLM(object):
                 ngramid = ngramid + 1
 
     def save(self, path):
-        "Save an ARPA format language model to a file"
-        fh = file(path, 'w')
+        """
+        Save an ARPA format language model to a file.
+
+        @param path: Path to save the file to.  If this ends in '.gz',
+                     the file contents will be gzip-compressed.
+        @type path: string
+        """
+        if path.endswith('.gz'):
+            fh = gzip.open(path, 'w')
+        else:
+            fh = open(path, 'w')
         fh.write("# Written by arpalm.py\n")
         fh.write("\\data\\\n")
         for n in range(1, self.n+1):
@@ -137,12 +166,26 @@ class ArpaLM(object):
         fh.close()
 
     def successors(self, *syms):
+        """
+        Return all successor words for an M-Gram
+
+        @return: The list of end words for all (M+1)-Grams begining
+                 with the words given.
+        @rtype: [string]
+        """
         try:
             return self.succmap[syms]
         except:
             return []
 
     def score(self, *syms):
+        """
+        Return the language model log-probability for an N-Gram
+
+        @return: The log probability for the N-Gram consisting of the
+                 words given, in base e (natural log).
+        @rtype: float
+        """
         # It makes the most sense to do this recursively
         n = len(syms)
         if n == 1:
@@ -185,11 +228,11 @@ class ArpaLM(object):
             # Construct a temporary list mapping for the unigrams
             vmap = map(lambda w: self.ngmap[0][w], vocab)
             # Get the original unigrams
-            og = 10 ** self.ngrams[0][:,0].take(vmap)
+            og = numpy.exp(self.ngrams[0][:,0].take(vmap))
             # Compute the individual scaling factors
             ascale = unigram * og.sum() / og
             # Put back the normalized version of unigram
-            self.ngrams[0][:,0].put(numpy.log10(unigram * og.sum()), vmap)
+            self.ngrams[0][:,0].put(numpy.log(unigram * og.sum()), vmap)
             # Now reconstruct vocab as a dictionary mapping words to
             # scaling factors
             vv = {}
@@ -197,8 +240,8 @@ class ArpaLM(object):
                 vv[w] = i
             vocab = vv
         else:
-            ascale = unigram / (10 ** self.ngrams[0][:,0])
-            self.ngrams[0][:,0] = numpy.log10(unigram)
+            ascale = unigram / numpy.exp(self.ngrams[0][:,0])
+            self.ngrams[0][:,0] = numpy.log(unigram)
 
         for n in range(1, self.n):
             # Total discounted probabilities for each history
@@ -211,12 +254,12 @@ class ArpaLM(object):
                 if n == 1: # Quirk of unigrams
                     h = h[0]
                 w = ng[-1]
-                prob = 10 ** self.ngrams[n][idx,0]
+                prob = numpy.exp(self.ngrams[n][idx,0])
                 tprob[self.ngmap[n-1][h]] += prob
                 if vocab == None or w in vocab:
                     prob = prob * ascale[vocab[w]]
                 newtprob[self.ngmap[n-1][h]] += prob
-                self.ngrams[n][idx,0] = numpy.log10(prob)
+                self.ngrams[n][idx,0] = numpy.log(prob)
             # Now renormalize everything
             norm = tprob / newtprob
             for ng,idx in self.ngmap[n].iteritems():
@@ -224,5 +267,5 @@ class ArpaLM(object):
                 if n == 1: # Quirk of unigrams
                     h = h[0]
                 w = ng[-1]
-                prob = 10 ** self.ngrams[n][idx,0]
-                self.ngrams[n][idx,0] = numpy.log10(prob * norm[self.ngmap[n-1][h]])
+                prob = numpy.exp(self.ngrams[n][idx,0])
+                self.ngrams[n][idx,0] = numpy.log(prob * norm[self.ngmap[n-1][h]])
