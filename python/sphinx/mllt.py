@@ -51,9 +51,11 @@ class MLLTModel(object):
         fh.close()
         
     def objective(self, A, r, c):
-        """Log-likelihood function and gradient for MLLT:
-        L(A) = N|A| - \sum_j \frac{N_j}{2} \log |diag(A \Sigma_j A^T)|
-        \nabla L(A) = N(A^T)^{-1} - \sum_j N_j diag(A \Sigma_j A^T)^{-1}A\Sigma_j
+        """
+        Log-likelihood function and gradient for MLLT::
+
+          L(A) = N|A| - \\sum_j \\frac{N_j}{2} \\log |diag(A \\Sigma_j A^T)|
+          \\nabla L(A) = N(A^T)^{-1} - \\sum_j N_j diag(A \\Sigma_j A^T)^{-1}A\\Sigma_j
         """
         # Note: A has been flattened to make it acceptable to scipy.optimize
         A = A.reshape((r,c))

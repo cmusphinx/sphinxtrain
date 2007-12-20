@@ -28,12 +28,15 @@ class S3File(object):
         self.readheader()
 
     def readheader(self):
-        """Read binary header.  Sets the following attributes:
-        fileattr (a dictionary of attribute-value pairs)
-        swap (a byteswap string as used by the struct module)
-        otherend (a flag indicating if the file is wrong-endian
+        """
+	Read binary header.  Sets the following attributes:
+
+          - fileattr (a dictionary of attribute-value pairs)
+          - swap (a byteswap string as used by the struct module)
+          - otherend (a flag indicating if the file is wrong-endian
                   for the current platform)
-        data_start (offset of the start of data in the file)"""
+          - data_start (offset of the start of data in the file)
+	"""
 	spam = self.fh.readline()
         self.fileattr = {}
         if spam != "s3\n":
