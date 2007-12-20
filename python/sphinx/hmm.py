@@ -267,19 +267,19 @@ class HMM(object):
 
 def forward_evaluate(hmm, gmms, alpha=None):
     """
-    Calculate the forward variable \alpha over an HMM or HMMGraph
-    for a frame of observations.  The forward variable is defined as:
+    Calculate the forward variable \\alpha over an HMM or HMMGraph
+    for a frame of observations.  The forward variable is defined as::
 
-      \alpha_t(j) = P(o_1, ..., o_j, q_t = j | \lambda)
-      \alpha_0(0) = 1.0
-      \alpha_t(j) = \sum_i \alpha_{t-1}(i) a_{ij} b_j(o_t)
+      \\alpha_t(j) = P(o_1, ..., o_j, q_t = j | \lambda)
+      \\alpha_0(0) = 1.0
+      \\alpha_t(j) = \sum_i \\alpha_{t-1}(i) a_{ij} b_j(o_t)
 
-    Or, for non-emitting states j_N:
+    Or, for non-emitting states j_N::
 
-      \alpha_t(j_N) = \sum_i \alpha_{t}(i) a_{ij_N}
+      \\alpha_t(j_N) = \sum_i \\alpha_{t}(i) a_{ij_N}
 
     Note that non-emitting states transition from the current frame,
-    and thus we need to fully calculate \alpha_{t}(i) for all their
+    and thus we need to fully calculate \\alpha_{t}(i) for all their
     predecessors before calculating their alpha values.  In other
     words we need to make sure that transitions *into* non-emitting
     states are ordered *after* all others.
@@ -306,16 +306,16 @@ def forward_evaluate(hmm, gmms, alpha=None):
 
 def backward_evaluate(hmm, gmms, beta=None):
     """
-    Calculate the backward variable \beta over an HMM or HMMGraph
-    for a frame of observations.  The backward variable is defined as:
+    Calculate the backward variable \\beta over an HMM or HMMGraph
+    for a frame of observations.  The backward variable is defined as::
 
-      \beta_t(i) = P(o_{t+1}, ..., o_T | q_t = i, \lambda)
-      \beta_T(i) = 1.0 for all final states i
-      \beta_t(i) = \sum_j \beta_{t+1}(j) a_{ij} b_j(o_t+1)
+      \\beta_t(i) = P(o_{t+1}, ..., o_T | q_t = i, \lambda)
+      \\beta_T(i) = 1.0 for all final states i
+      \\beta_t(i) = \sum_j \\beta_{t+1}(j) a_{ij} b_j(o_t+1)
 
-    Or, for non-emitting states i_N:
+    Or, for non-emitting states i_N::
     
-      \beta_t(i_N) = \sum_j\beta_{t}(j) a_{i_Nj} b_j(o_{t})
+      \\beta_t(i_N) = \sum_j\\beta_{t}(j) a_{i_Nj} b_j(o_{t})
 
     Since we only have access to one frame of emissions at a time,
     this means that we must calculate beta_{t+1}(i) for non-emitting
@@ -331,9 +331,9 @@ def backward_evaluate(hmm, gmms, beta=None):
     @param hmm: HMM or HMMGraph to evaluate backward variable in
     @param gmms: Collection of GMM scores for current frame, indexed
                  by senone ID.
-    @param alpha: List of arrays of following frames' beta variables,
-                  or None to create a new one.
-    @type alpha: [numpy.ndarray]
+    @param beta: List of arrays of following frames' beta variables,
+                 or None to create a new one.
+    @type beta: [numpy.ndarray]
     @return: Updated list of beta variables
     @rtype: [numpy.ndarray]
     """
