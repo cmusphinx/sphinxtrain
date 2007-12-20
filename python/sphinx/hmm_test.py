@@ -78,7 +78,7 @@ class TestHMMGraph(unittest.TestCase):
         self.assertEquals(hg[8], h3[0])
 
     def test_forward_backward(self):
-        mfcc = s2mfc.open(os.path.join(self.testdir, 'man.ah.1b.mfc')).getall()
+        mfcc = s2mfc.open(os.path.join(self.testdir, 'man.ah.111a.mfc')).getall()
         mfcc -= mfcc.mean(0)
         feat = _1s_c_d_dd.compute(mfcc)
         hg = hmm.HMMGraph(self.factory.create('SIL'),
