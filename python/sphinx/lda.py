@@ -50,7 +50,7 @@ def makelda(gauden_counts):
     u = u.take(top)
     # Remember, the eigenvalues are in the columns, but Sphinx expects
     # them to be in the rows.
-    v = v.T.take(top)
+    v = v.T.take(top, 0)
 
     print "u:\n", u
     print "v:\n", v
@@ -66,4 +66,4 @@ if __name__ == '__main__':
     accumdirs = sys.argv[2:]
     gauden = s3gaucnt.accumdirs_full(accumdirs)
     lda = makelda(gauden)
-    s3lda.open(ldafn, 'w').writeall([lda])
+    s3lda.open(ldafn, 'w').writeall(lda[numpy.newaxis,:])
