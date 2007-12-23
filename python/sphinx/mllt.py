@@ -105,7 +105,7 @@ if __name__ == '__main__':
     mllt = m.train()
     if ldafn != None:
         # Compose this with the LDA transform if given
-        lda = s3lda.open(ldafn).getall()
+        lda = s3lda.open(ldafn).getall()[0]
         ldadim = mllt.shape[1]
         ldamllt = dot(mllt, lda[0:ldadim])
         s3lda.open(mlltfn, 'w').writeall(ldamllt[newaxis,:])
