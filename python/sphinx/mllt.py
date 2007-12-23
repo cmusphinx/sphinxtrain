@@ -2,7 +2,7 @@
 
 This module implements the MLLT technique as described in
 R. A. Gopinath, "Maximum Likelihood Modeling with Gaussian
-Distributions for Classification", in proceedings of ICASSP 1998.
+nDistributions for Classification", in proceedings of ICASSP 1998.
 """
 
 # Copyright (c) 2006 Carnegie Mellon University
@@ -13,7 +13,7 @@ Distributions for Classification", in proceedings of ICASSP 1998.
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
-from numpy import dot, prod, diag, log, eye, sqrt
+from numpy import dot, prod, diag, log, eye, sqrt, newaxis
 from numpy.random import random
 from numpy.linalg import det, inv
 from scipy.optimize import fmin_l_bfgs_b
@@ -21,6 +21,7 @@ from scipy.optimize import fmin_l_bfgs_b
 import sys
 import s3gaucnt
 import s3lda
+import getopt
 
 class MLLTModel(object):
     """Train MLLT (maximum likelihood linear transformation) from a
@@ -80,14 +81,33 @@ class MLLTModel(object):
         return AA.reshape(A.shape)
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        sys.stderr.write("Usage: %s OUTFILE ACCUMDIRS...\n" % (sys.argv[0]))
-        sys.exit(1)
+    def usage:
+        sys.stderr.write("Usage: %s [-l INFILE] OUTFILE ACCUMDIRS...\n" % (sys.argv[0]))
 
-    mlltfn = sys.argv[1]
-    accumdirs = sys.argv[2:]
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hl:", ["help", "lda="])
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)
+    if len(args) < 3:
+        usage()
+        sys.exit(2)
+    ldafn = None
+    for o, a in opts:
+        if o in ('-h', '--help'):
+            usage()
+            sys.exit()
+        if o in ('-l', '--lda'):
+            ldafn = a
+    mlltfn, accumdirs = args
     gauden = s3gaucnt.accumdirs_full(accumdirs)
     m = MLLTModel(gauden)
     mllt = m.train()
-    s3lda.open(mlltfn, 'w').writeall(mllt[numpy.newaxis,:])
-    
+    if ldafn != None:
+        # Compose this with the LDA transform if given
+        lda = s3lda.open(ldafn).getall()
+        ldadim = mllt.shape[1]
+        ldamllt = dot(mllt, lda[0:ldadim])
+        s3lda.open(mlltfn, 'w').writeall(ldamllt[newaxis,:])
+    else:
+        s3lda.open(mlltfn, 'w').writeall(mllt[newaxis,:])
