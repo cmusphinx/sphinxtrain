@@ -89,5 +89,5 @@ if __name__ == '__main__':
     gauden = s3gaucnt.accumdirs_full(accumdirs)
     m = MLLTModel(gauden)
     mllt = m.train()
-    s3lda.open(mlltfn, 'w').writeall([mllt])
+    s3lda.open(mlltfn, 'w').writeall(mllt[numpy.newaxis,:])
     
