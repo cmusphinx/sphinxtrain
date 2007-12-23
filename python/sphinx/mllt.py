@@ -2,7 +2,7 @@
 
 This module implements the MLLT technique as described in
 R. A. Gopinath, "Maximum Likelihood Modeling with Gaussian
-nDistributions for Classification", in proceedings of ICASSP 1998.
+Distributions for Classification", in proceedings of ICASSP 1998.
 """
 
 # Copyright (c) 2006 Carnegie Mellon University
@@ -24,14 +24,22 @@ import s3lda
 import getopt
 
 class MLLTModel(object):
-    """Train MLLT (maximum likelihood linear transformation) from a
-    set of full covariance observation counts."""
+    """
+    Object for training MLLT (maximum likelihood linear
+    transformation) from a set of full covariance observation counts.
+    """
     def __init__(self, gauden_counts, ldadim=None):
+        """
+        Initialize an MLLTModel before training.
+        
+        @param gauden_counts: Full covariance observation counts, as
+        returned by C{sphinx.s3gaucnt.accumdirs_full}.
+        @type gauden_counts: sphinx.s3gaucnt.S3GauCntFull
+        @param ldadim: Output dimensionality of this model
+        @type ldadim: int
+        """
         if not gauden_counts.pass2var:
             raise Exception, "Please re-run bw with '-2passvar yes'"
-        self.init_gauden(gauden_counts, ldadim)
-
-    def init_gauden(self, gauden_counts, ldadim=None):
         if ldadim == None:
             ldadim = gauden_counts.veclen[0]
         self.cov = map(lambda x: x[0][0][0:ldadim,0:ldadim], gauden_counts.getvars())
@@ -44,6 +52,15 @@ class MLLTModel(object):
 
           L(A) = N|A| - \\sum_j \\frac{N_j}{2} \\log |diag(A \\Sigma_j A^T)|
           \\nabla L(A) = N(A^T)^{-1} - \\sum_j N_j diag(A \\Sigma_j A^T)^{-1}A\\Sigma_j
+
+        @param A: Flattened MLLT transformation matrix
+        @type A: numpy.ndarray
+        @param r: Actual number of rows in MLLT transformation
+        @type r: int
+        @param c: Actual number of columns in MLLT transformation
+        @type c: int
+        @return: negated log-likelihood and (flattened) gradient
+        @rtype: (float, numpy.ndarray)
         """
         # Note: A has been flattened to make it acceptable to scipy.optimize
         A = A.reshape((r,c))
@@ -63,7 +80,14 @@ class MLLTModel(object):
         return -ll, -lg
 
     def train(self, A=None):
-        """Train an MLLT transform from an optional starting point."""
+        """
+        Train an MLLT transform from an optional starting point.
+
+        @param A: Initial MLLT matrix to start training.
+        @type A: numpy.ndarray
+        @return: Optimized MLLT transformation matrix
+        @rtype: numpy.ndarray
+        """
         if A == None:
             # Initialize it with a random positive-definite matrix of
             # the same shape as the covariances
@@ -81,7 +105,7 @@ class MLLTModel(object):
         return AA.reshape(A.shape)
 
 if __name__ == '__main__':
-    def usage:
+    def usage():
         sys.stderr.write("Usage: %s [-l INFILE] OUTFILE ACCUMDIRS...\n" % (sys.argv[0]))
 
     try:
@@ -99,7 +123,8 @@ if __name__ == '__main__':
             sys.exit()
         if o in ('-l', '--lda'):
             ldafn = a
-    mlltfn, accumdirs = args
+    mlltfn = args[0]
+    accumdirs = args[1:]
     gauden = s3gaucnt.accumdirs_full(accumdirs)
     m = MLLTModel(gauden)
     mllt = m.train()
