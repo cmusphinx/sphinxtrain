@@ -56,7 +56,7 @@ use SphinxTrain::Util;
 # jobs as the number of parts we wish to split the training into.
 #***************************************************************************
 
-my ($iter, $n_parts, $n_gau) = @ARGV;
+my ($iter, $n_parts, $n_gau, $force) = @ARGV;
 $iter = 1 unless defined $iter;
 $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
 $n_gau = 1 unless defined $n_gau;
@@ -91,7 +91,8 @@ if ($iter == 1 and $n_gau == 1) {
     # If we previously force aligned with single-Gaussian models, use
     # them for initialization to save some time.  (See note in
     # norm_and_launch_bw.pl as well)
-    if ($ST::CFG_FORCEDALIGN eq 'yes'
+    if (!$force
+	and $ST::CFG_FORCEDALIGN eq 'yes'
 	and $ST::CFG_FALIGN_CI_MGAU eq 'no'
 	and -e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means')) {
 	$return_value = CopyInitialize();
