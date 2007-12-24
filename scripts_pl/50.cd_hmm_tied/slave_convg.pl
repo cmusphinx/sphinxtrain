@@ -48,14 +48,6 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-#***************************************************************************
-# This script launches all the ci - continuous training jobs in the proper
-# order. First it cleans up the directories, then launches the
-# flat initialization, and the baum-welch and norm jobs for the required
-# number of iterations. Within each iteration it launches as many baumwelch
-# jobs as the number of parts we wish to split the training into.
-#***************************************************************************
-
 # For the first iteration, we initialize the number of gaussian
 # components to 1. That's how we start with continuous models, and
 # it is irrelevant for semi continuous
@@ -174,4 +166,3 @@ sub copyci2cd2initialize ()
 		   -fullvar => $ST::CFG_FULLVAR);
     return $rv;
 }
-

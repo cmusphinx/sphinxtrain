@@ -56,7 +56,7 @@ use SphinxTrain::Util;
 # jobs as the number of parts we wish to split the training into.
 #***************************************************************************
 
-my ($iter, $n_parts, $n_gau, $force) = @ARGV;
+my ($iter, $n_parts, $n_gau) = @ARGV;
 $iter = 1 unless defined $iter;
 $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
 $n_gau = 1 unless defined $n_gau;
@@ -90,8 +90,11 @@ if ($iter == 1 and $n_gau == 1) {
 
     # If we previously force aligned with single-Gaussian models, use
     # them for initialization to save some time.  (See note in
-    # norm_and_launch_bw.pl as well)
-    if (!$force
+    # norm_and_launch_bw.pl as well).  However, if there is an MLLT
+    # transformation, we need to re-initialize from scratch since the
+    # features have changed.
+    my $mlltfile = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+    if ((not -r $mlltfile)
 	and $ST::CFG_FORCEDALIGN eq 'yes'
 	and $ST::CFG_FALIGN_CI_MGAU eq 'no'
 	and -e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means')) {
@@ -264,11 +267,12 @@ sub FlatInitialize
     my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_1";
     mkdir ($output_buffer_dir,0777);
 
-    # if there is an LDA transformation, use it
+    # if there is an MLLT transformation, use it
+    my $mlltfile = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
     my @lda_args;
-    if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
+    if (-r $mlltfile) {
 	push(@lda_args,
-	     -ldafn => $ST::CFG_LDA_TRANSFORM,
+	     -ldafn => $mlltfile,
 	     -ldadim => $ST::CFG_LDA_DIMENSION);
     }
     if ($return_value = RunTool('init_gau', $logfile, 0,

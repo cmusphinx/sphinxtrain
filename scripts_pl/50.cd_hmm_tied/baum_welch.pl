@@ -87,11 +87,12 @@ my $meanfn  = "$hmm_dir/means";
 my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 
-# if there is an LDA transformation, use it
+# Add the MLLT transform if it exists
 my @extra_args;
-if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
+my $mlltfile = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+if (-r $mlltfile) {
     push(@extra_args,
-	 -ldafn => $ST::CFG_LDA_TRANSFORM,
+	 -ldafn => $mlltfile,
 	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
 

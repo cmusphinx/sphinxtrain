@@ -75,7 +75,7 @@ mkdir ($segdmpdir,0777);
 
 $dumpfile = "$segdmpdir/${ST::CFG_EXPTNAME}.dmp";
 
-my $logdir = "$ST::CFG_LOG_DIR/10.vector_quantize";
+my $logdir = "$ST::CFG_LOG_DIR/01.vector_quantize";
 mkdir ($logdir,0777);
 $logfile = "$logdir/${ST::CFG_EXPTNAME}.kmeans.log";
 

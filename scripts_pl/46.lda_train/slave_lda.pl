@@ -48,6 +48,11 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
+if ($ST::CFG_LDA_MLLT ne 'yes') {
+    Log("MODULE: 46 Train LDA transformation\n");
+    Log("Skipped (set \$CFG_LDA_MLLT = 'yes' to enable)\n");
+}
+
 my $iter = 1;
 if (@ARGV) {
     $iter = shift;

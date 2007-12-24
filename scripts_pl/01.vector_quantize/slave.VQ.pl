@@ -44,55 +44,36 @@
 ##
 
 use strict;
+use File::Copy;
 use File::Basename;
-use File::Spec::Functions;
-use lib catdir(dirname($0), updir(), 'lib');
+use File::Spec;
+use File::Path;
+
+use lib File::Spec->catdir(dirname($0), File::Spec->updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-my ($AGG_SEG,$len,$stride,$segdmpdir,$dumpfile,$logfile);
+#*****************************************************************************
+# The agg_seg script aggregates all the training feature vectors into a 
+# single dump file and the kmeans script uses the contents of this dump
+# file to compute the vq centroids in the vector space 
+#*****************************************************************************
 
-$| = 1; # Turn on autoflushing
+#Clean up from previous runs
+my $logdir = "$ST::CFG_LOG_DIR/01.vector_quantize";
 
-$AGG_SEG  = "$ST::CFG_BIN_DIR/agg_seg";
-
-#unlimit
-#limit core 0k
-
-#Compute VQ codebooks on no more than 1 million vectors for sanity
-#That should be about 2500 files assuming about 10 seconds of speech per file
-# 1000*10*100 = 1 mil
-
-#Instead of calling wc let's open the file. (Note on WIN32, wc may not exist)
-open CTL,"$ST::CFG_LISTOFFILES";
-$len =0;
-while (<CTL>) {
-    $len++;
-}
-close CTL;
-
-$stride = 1 unless int($stride = $len/2500);
-
-my $logdir = "$ST::CFG_LOG_DIR/10.vector_quantize";
+rmtree($logdir) unless ! -d $logdir;
 mkdir ($logdir,0777);
 
-$segdmpdir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_1";
-mkdir ($segdmpdir,0777);
+$| = 1; # Turn on autoflushing
+# No error checking
+Log ("MODULE: 01 Vector Quantization\n");
+my $return_value = 0;
+if ($ST::CFG_HMM_TYPE eq ".semi.") {
+  $return_value = (RunScript('agg_seg.pl')
+		   or RunScript('kmeans.pl'));
+} else {
+  Log("Skipped for continuous models\n");
+}
+exit ($return_value != 0);
 
-$dumpfile = "$segdmpdir/${ST::CFG_EXPTNAME}.dmp";
-$logfile = "$logdir/${ST::CFG_EXPTNAME}.vq.agg_seg.log";
-
-# run it here 
-exit RunTool('agg_seg',, $logfile, 0,
-	     -segdmpdirs => $segdmpdir,
-	     -segdmpfn => $dumpfile,
-	     -segtype => 'all',
-	     -ctlfn => $ST::CFG_LISTOFFILES,
-	     -cepdir => $ST::CFG_FEATFILES_DIR,
-	     -cepext => $ST::CFG_FEATFILE_EXTENSION,
-	     -ceplen => $ST::CFG_VECTOR_LENGTH,
-	     -agc => $ST::CFG_AGC,
-	     -cmn => $ST::CFG_CMN,
-	     -varnorm => $ST::CFG_VARNORM,
-	     -feat => $ST::CFG_FEATURE,
-	     -stride => $stride);
