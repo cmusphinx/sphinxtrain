@@ -79,7 +79,7 @@ sub submit_job {
     if (defined($self->{tempfile})) {
 	$tmpnam = $self->{tempfile};
 	open $tmpfh, ">$tmpnam" or die "Failed to open $tmpnam: $!";
-    }
+     }
     else {
 	($tmpfh, $tmpnam) = tempfile();
     }
@@ -101,6 +101,10 @@ sub submit_job {
     local $Data::Dumper::Terse = 1;
     print $tmpfh "#!/usr/bin/perl\n";
     if (defined($job->{command})) {
+	# Carry over the PATH and PYTHONPATH envvars
+	foreach my $var (qw(PATH PYTHONPATH)) {
+	    print $tmpfh "\$ENV{'$var'} = ", Dumper($ENV{$var}), ";\n";
+	}
 	print $tmpfh "exec(";
 	foreach (@{$job->{command}}) {
 	    print $tmpfh Dumper($_), ",\n\t";
