@@ -48,40 +48,28 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-my $processname = "05.lda_train";
-my $logdir   = "$ST::CFG_LOG_DIR/$processname";
-my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.lda_train.log";
-my $moddeffn = defined($ST::CFG_FORCE_ALIGN_MDEF)
-    ? $ST::CFG_FORCE_ALIGN_MDEF
-    : "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.ci.mdef";
-my $listoffiles = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
+my $processname = "46.lda_train";
+my $logdir   = catdir($ST::CFG_LOG_DIR, $processname);
+my $logfile  = catfile($logdir, "${ST::CFG_EXPTNAME}.lda_train.log");
+my $ldafile  = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.lda");
 
-Log("MODULE: 05 Train LDA transformation\n");
-if ($ST::CFG_HMM_TYPE eq ".semi.") {
-    Log("Skipped for semi-continuous models\n");
-    exit 0;
+opendir(ACCUMDIR, $ST::CFG_BWACCUM_DIR)
+    or die "Could not open $ST::CFG_BWACCUM_DIR: $!";
+my @bwaccumdirs = map catdir($ST::CFG_BWACCUM_DIR, $_),
+    grep /^\Q${ST::CFG_EXPTNAME}_buff_/, readdir(ACCUMDIR);
+closedir(ACCUMDIR);
+
+# Add PYTHONPATH
+$ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_BASE_DIR, 'python');
+my $rv = RunTool(catfile($ST::CFG_BASE_DIR, 'python', 'sphinx', 'lda.py'),
+		 $logfile, 0,
+		 $ldafile, @bwaccumdirs);
+if ($rv != 0) {
+    LogError("lda.py failed with status $rv");
 }
-
-unless (-r $listoffiles and -d $ST::CFG_STSEG_DIR) {
-    Log("Skipped: No force-alignment was done\n");
-    exit 0;
+else {
+    open LOG, ">>$logfile" or die "Failed to open $logfile: $!";
+    print LOG "LDA training complete\n";
+    close LOG;
 }
-
-Log("Cleaning up old log files...\n");
-rmtree($logdir, 0, 1);
-mkdir($logdir,0777);
-
-HTML_Print ("\t\tlda_train " . FormatURL("$logfile", "Log File") . " ");
-
-exit RunTool('lda_train', $logfile, 0,
-	     -moddeffn => $moddeffn,
-	     -ctlfn => $listoffiles,
-	     -segdir => $ST::CFG_STSEG_DIR,
-	     -cepdir => $ST::CFG_FEATFILES_DIR,
-	     -cepext => $ST::CFG_FEATFILE_EXTENSION,
-	     -agc => $ST::CFG_AGC,
-	     -cmn => $ST::CFG_CMN,
-	     -varnorm => $ST::CFG_VARNORM,
-	     -feat => $ST::CFG_FEATURE,
-	     -ceplen => $ST::CFG_VECTOR_LENGTH,
-	     -outfn => $ST::CFG_LDA_TRANSFORM);
+exit $rv;
