@@ -89,6 +89,7 @@ if ($iter == 1) {
     # Now flat initialize
     my $return_value = FlatInitialize();
     exit $return_value if $return_value;
+    Log("Phase 3: Forward-Backward");
 }
 
 if ($iter eq 'N') {
@@ -100,7 +101,6 @@ if ($iter eq 'N') {
     LaunchScript("mllt", "mllt_train.pl", \@deps);
 }
 else {
-    Log("Phase 3: Forward-Backward");
     my @deps;
     for (my $i=1; $i<=$n_parts; $i++) {
 	push @deps, LaunchScript("bw.mllt.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, 'no']);

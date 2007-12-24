@@ -88,6 +88,7 @@ if ($iter == 1) {
     mkdir ($ST::CFG_QMGR_DIR,0777);
     LogStatus('completed');
     copyci2cd2initialize();
+    Log("Phase 3: Forward-Backward");
 }
 
 if ($iter eq 'N') {
@@ -99,7 +100,6 @@ if ($iter eq 'N') {
     LaunchScript("lda", "lda_train.pl", \@deps);
 }
 else {
-    Log("Phase 3: Forward-Backward");
     my @deps;
     for (my $i=1; $i<=$n_parts; $i++) {
 	push @deps, LaunchScript("bw.lda.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, 'no']);
