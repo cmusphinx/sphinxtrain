@@ -104,7 +104,11 @@ Log("Force alignment starting: ($part of $npart) ", 'result');
 
 my @phsegdir;
 if (defined($ST::CFG_PHSEG_DIR)) {
-    @phsegdir = (-phsegdir => "$ST::CFG_PHSEG_DIR$ctlext");
+    push @phsegdir, (-phsegdir => "$ST::CFG_PHSEG_DIR$ctlext");
+}
+if (defined($ST::CFG_STSEG_DIR)) {
+    push @phsegdir, (-s2stsegdir => "$ST::CFG_STSEG_DIR$ctlext",
+		     -s2cdsen => 'yes');
 }
 
 my $return_value = RunTool
@@ -126,8 +130,6 @@ my $return_value = RunTool
      -cepext => ".$ST::CFG_FEATFILE_EXTENSION",
      -insent => $transcriptfile,
      -outsent => $outfile,
-     -s2stsegdir => "$ST::CFG_STSEG_DIR$ctlext",
-     -s2cdsen => 'yes',
      @phsegdir,
      -beam => $beam,
      -agc => $ST::CFG_AGC,

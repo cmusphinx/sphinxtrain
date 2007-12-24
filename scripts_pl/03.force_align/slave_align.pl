@@ -91,9 +91,11 @@ mkdir($outdir,0777);
 LogProgress("qmanager...");
 rmtree($ST::CFG_QMGR_DIR, 0, 1);
 mkdir($ST::CFG_QMGR_DIR,0777);
-LogProgress("s2stseg...");
-rmtree($ST::CFG_STSEG_DIR, 0, 1);
-mkdir($ST::CFG_STSEG_DIR,0777);
+if (defined($ST::CFG_STSEG_DIR)) {
+    LogProgress("stseg...");
+    rmtree($ST::CFG_STSEG_DIR, 0, 1);
+    mkdir($ST::CFG_STSEG_DIR,0777);
+}
 if (defined($ST::CFG_PHSEG_DIR)) {
     LogProgress("phseg...");
     rmtree($ST::CFG_PHSEG_DIR, 0, 1);
@@ -102,20 +104,22 @@ if (defined($ST::CFG_PHSEG_DIR)) {
 LogProgress("\n");
 
 # Build state segmentation directories
-Log("Phase 2: Building state/phone segmentation directories...");
-open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
-my %dirs;
-while (<INPUT>) {
-    chomp;
-    my @fields = split;
-    my $uttid = pop @fields;
-    my $basedir = dirname($uttid);
-    next if $basedir eq ".";
-    unless ($dirs{$basedir}) {
-	$dirs{$basedir}++;
-	mkpath(catdir($ST::CFG_STSEG_DIR, $basedir), 0, 0777);
-	if (defined($ST::CFG_PHSEG_DIR)) {
-	    mkpath(catdir($ST::CFG_PHSEG_DIR, $basedir), 0, 0777);
+if (defined($ST::CFG_PHSEG_DIR) or defined($ST::CFG_STSEG_DIR)) {
+    Log("Phase 2: Building state/phone segmentation directories...");
+    open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
+    my %dirs;
+    while (<INPUT>) {
+	chomp;
+	my @fields = split;
+	my $uttid = pop @fields;
+	my $basedir = dirname($uttid);
+	next if $basedir eq ".";
+	unless ($dirs{$basedir}) {
+	    $dirs{$basedir}++;
+	    mkpath(catdir($ST::CFG_STSEG_DIR, $basedir), 0, 0777)
+		if defined($ST::CFG_STSEG_DIR);
+	    mkpath(catdir($ST::CFG_PHSEG_DIR, $basedir), 0, 0777)
+		if defined($ST::CFG_PHSEG_DIR);
 	}
     }
 }
