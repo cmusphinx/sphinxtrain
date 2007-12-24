@@ -81,7 +81,13 @@ if ($iter == 1) {
 	or die "Failed to copy $mdeffile to $hmmdir/mdef: $!";
     copy($ST::CFG_FILLERDICT, catfile($hmmdir, 'noisedict'))
 	or die "Failed to copy $ST::CFG_FILLERDICT to $hmmdir/noisedict: $!";
+    # Create the feat.params file in the new HMM directory
     SubstParams($ST::CFG_FEATPARAMS, catfile($hmmdir, 'feat.params'));
+    # Copy a feature space transform if any
+    my $mlltfile = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+    if (-r $mlltfile) {
+	copy($mlltfile, catfile($hmmdir, 'feature_transform'));
+    }
 }
 
 my  $logdir              = "${ST::CFG_LOG_DIR}/$processpart";
