@@ -1,4 +1,7 @@
-"""Calculate Fisher's linear discriminant for acoustic models.
+#!/usr/bin/env python
+
+"""
+Calculate Fisher's linear discriminant for acoustic models.
 
 This module implements Linear Discriminant Analysis for single
 stream Sphinx-III acoustic models.

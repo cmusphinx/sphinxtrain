@@ -1,4 +1,7 @@
-"""Train maximum-likelihood linear transforms.
+#!/usr/bin/env python
+
+"""
+Train maximum-likelihood linear transforms.
 
 This module implements the MLLT technique as described in
 R. A. Gopinath, "Maximum Likelihood Modeling with Gaussian
