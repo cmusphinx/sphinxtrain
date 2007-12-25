@@ -51,6 +51,7 @@ use SphinxTrain::Util;
 if ($ST::CFG_LDA_MLLT ne 'yes') {
     Log("MODULE: 47 Train MLLT transformation\n");
     Log("Skipped (set \$CFG_LDA_MLLT = 'yes' to enable)\n");
+    exit 0;
 }
 
 my $iter = 1;

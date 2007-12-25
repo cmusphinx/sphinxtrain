@@ -82,7 +82,7 @@ foreach my $step (@steps1) {
 
 # If MLLT is being used, we need to train the transforms, then retrain
 # and retie the states for best performance.
-if ($ST::CFG_LDA_MLLT) {
+if ($ST::CFG_LDA_MLLT eq 'yes') {
     foreach my $step (@extra_mllt_steps) {
 	my $ret_value = RunScript($step);
 	die "Something failed: ($step)\n" if $ret_value;
