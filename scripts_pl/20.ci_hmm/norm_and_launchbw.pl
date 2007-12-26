@@ -56,6 +56,7 @@ die "USAGE: $0 <iter> <n_parts> [<ngau>]" if (@ARGV < 2);
 
 my ($iter, $n_parts, $n_gau) = @ARGV;
 
+$n_gau = 1 unless defined $n_gau;
 my $processname="20.ci_hmm";
 
 my $logdir ="$ST::CFG_LOG_DIR/$processname";
