@@ -16,7 +16,7 @@ Distributions for Classification", in proceedings of ICASSP 1998.
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
-from numpy import dot, prod, diag, log, eye, sqrt, newaxis
+from numpy import dot, prod, diag, log, eye, sqrt, newaxis, concatenate
 from numpy.random import random
 from numpy.linalg import det, inv
 from scipy.optimize import fmin_l_bfgs_b
@@ -45,8 +45,9 @@ class MLLTModel(object):
             raise Exception, "Please re-run bw with '-2passvar yes'"
         if ldadim == None:
             ldadim = gauden_counts.veclen[0]
-        self.cov = map(lambda x: x[0][0][0:ldadim,0:ldadim], gauden_counts.getvars())
-        self.count = map(lambda x: x[0][0], gauden_counts.getdnom())
+        self.cov = concatenate([x[0] for x in gauden_counts.getvars()])
+        self.cov = self.cov[:,0:ldadim,0:ldadim]
+        self.count = gauden_counts.getdnom().ravel()
         self.totalcount = sum(self.count)
         
     def objective(self, A, r, c):
@@ -116,7 +117,7 @@ if __name__ == '__main__':
     except getopt.GetoptError:
         usage()
         sys.exit(2)
-    if len(args) < 2:
+    if len(args) < 3:
         usage()
         sys.exit(2)
     ldafn = None
