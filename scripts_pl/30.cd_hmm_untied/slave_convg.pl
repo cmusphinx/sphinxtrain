@@ -122,11 +122,22 @@ sub Initialize () {
   my $untiedmdef = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef";
   my $logfile = "$logdir/${ST::CFG_EXPTNAME}.make_alltriphonelist.log";
 
+  # aligned transcripts and the list of aligned files is obtained as a result
+  # of (03.) forced alignment
+  my ($listoffiles, $transcriptfile);
+  if ( $ST::CFG_FORCEDALIGN eq "no" ) {
+      $listoffiles = $ST::CFG_LISTOFFILES;
+      $transcriptfile = $ST::CFG_TRANSCRIPTFILE;
+  } else {
+      $listoffiles   = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
+      $transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedtranscripts";
+  }
+
   my $rv = RunTool('mk_mdef_gen', $logfile, 0,
 		   -phnlstfn => $ST::CFG_RAWPHONEFILE,
 		   -dictfn => $ST::CFG_DICTIONARY,
 		   -fdictfn => $ST::CFG_FILLERDICT,
-		   -lsnfn => $ST::CFG_TRANSCRIPTFILE,
+		   -lsnfn => $transcriptfile,
 		   -ountiedmdef => $untiedmdef,
 		   -n_state_pm => $ST::CFG_STATESPERHMM);
   return $rv if $rv;
