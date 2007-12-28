@@ -144,6 +144,12 @@ $ctl_counter = 1 unless ($ctl_counter);
 Log("Baum welch starting for $n_gau Gaussian(s), iteration: $iter ($part of $npart)",
     'result');
 
+# Sometimes NFS causes the mixture weight file to not be visible yet (?!!)
+until (-f $mixwfn) {
+    print "Waiting for $mixwfn\n";
+    sleep 1;
+}
+
 my $return_value = RunTool
     ('bw', $logfile, $ctl_counter,
      -moddeffn => $moddeffn,
