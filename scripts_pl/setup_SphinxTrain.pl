@@ -107,15 +107,6 @@ mkdir "bwaccumdir" unless -d bwaccumdir;
 mkdir "model_parameters" unless -d model_parameters;
 mkdir "model_architecture" unless -d model_architecture;
 
-# have to find these somewhere
-mkdir "gifs" unless -d gifs;
-replace_file("$SPHINXTRAINDIR/etc/images/green-ball.gif",
-	     "gifs/green-ball.gif",
-	     $replace_mode);
-replace_file("$SPHINXTRAINDIR/etc/images/red-ball.gif",
-	     "gifs/red-ball.gif",
-	     $replace_mode);
-
 # Figure out the platform string definition
 my $PLATFORM = "";
 if (open (SYSDESC, "$SPHINXTRAINDIR/config/system.mak")) {
