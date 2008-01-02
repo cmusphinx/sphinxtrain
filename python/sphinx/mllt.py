@@ -102,7 +102,7 @@ class MLLTModel(object):
                 d = det(A)
             
         # Flatten out the matrix so scipy.optimize can handle it
-        AA, f, d = fmin_l_bfgs_b(self.objective, A.ravel(), args=A.shape)
+        AA, f, d = fmin_l_bfgs_b(self.objective, A.ravel(), args=A.shape, factr=10)
         if d['warnflag']:
             print "WARNING! MLLT optimization failed to converge"
         # Unflatten the return matrix
