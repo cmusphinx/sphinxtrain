@@ -144,7 +144,7 @@ $CFG_FORCE_ALIGN_BEAM = 1e-80;
 # Calculate an LDA/MLLT transform?
 $CFG_LDA_MLLT = 'yes';
 # Output dimensionality of LDA/MLLT transform
-$CFG_LDA_DIMENSION = 29;
+$CFG_LDA_DIMENSION = 25;
 
 #set convergence_ratio = 0.004
 $CFG_CONVERGENCE_RATIO = 0.04;
