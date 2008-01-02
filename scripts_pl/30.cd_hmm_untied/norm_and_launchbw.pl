@@ -56,7 +56,16 @@ die "USAGE: $0 <iter> <n_parts>" if (@ARGV != 2);
 
 my ($iter, $n_parts) = @ARGV;
 
-my $processname="30.cd_hmm_untied";
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+if (-r $MLLT_FILE) {
+    $MODEL_TYPE = 'mllt_cd';
+}
+else {
+    $MODEL_TYPE = 'cd';
+}
+my $processname="30.${MODEL_TYPE}_hmm_untied";
 
 my $logdir ="$ST::CFG_LOG_DIR/$processname";
 mkdir ($logdir,0777);

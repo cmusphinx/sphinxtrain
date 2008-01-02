@@ -47,9 +47,19 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+
 my $return_value = 0;
-my $scriptdir = "$ST::CFG_SCRIPT_DIR/45.prunetree";
-my $logdir = "${ST::CFG_LOG_DIR}/45.prunetree";
+my $logdir;
+if (-r $MLLT_FILE) {
+    $logdir = "${ST::CFG_LOG_DIR}/45.mllt_prunetree";
+}
+else {
+    $logdir = "${ST::CFG_LOG_DIR}/45.prunetree";
+}
+
 Log("MODULE: 45 Prune Trees\n");
 rmtree ("$logdir");
 mkdir ($logdir,0777);
@@ -59,12 +69,12 @@ $| = 1; # Turn on autoflushing
 # Build all triphone model
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.build.alltriphones.mdef.log";
 my $modarchdir          = "$ST::CFG_BASE_DIR/model_architecture";
-my $ALLTRIPHONESMDDEF = "$modarchdir/$ST::CFG_EXPTNAME.alltriphones.mdef";
 my $phonefile           = "$modarchdir/$ST::CFG_EXPTNAME.phonelist";
+my $ALLTRIPHONESMDEF = "$modarchdir/$ST::CFG_EXPTNAME.alltriphones.mdef";
 
 my $status = RunTool('mk_mdef_gen', $logfile, 0,
 		  -phnlstfn => $phonefile,
-		  -oalltphnmdef => $ALLTRIPHONESMDDEF,
+		  -oalltphnmdef => $ALLTRIPHONESMDEF,
 		  -dictfn => $ST::CFG_DICTIONARY,
 		  -fdictfn => $ST::CFG_FILLERDICT,
 		  -n_state_pm => $ST::CFG_STATESPERHMM);

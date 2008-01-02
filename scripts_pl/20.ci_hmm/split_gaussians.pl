@@ -62,9 +62,17 @@ if ($n_current + $n_inc > $ST::CFG_FINAL_NUM_DENSITIES) {
   exit -3;
 }
 
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+if (-r $MLLT_FILE) {
+    $MODEL_TYPE = 'mllt_ci';
+}
+else {
+    $MODEL_TYPE = 'ci';
+}
 $| = 1; # Turn on autoflushing
-my $scriptdir = "$ST::CFG_SCRIPT_DIR/20.ci_hmm";
-my $logdir = "$ST::CFG_LOG_DIR/20.ci_hmm";
+my $logdir = "$ST::CFG_LOG_DIR/20.${MODEL_TYPE}_hmm";
 mkdir ($logdir,0777);
 
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
@@ -72,7 +80,7 @@ mkdir ($modeldir,0777);
 
 Log ("Split Gaussians, increase by $n_inc\n", 'result');
 
-my $src_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}";
+my $src_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}";
 mkdir ($src_hmmdir,0777);
 
 my $src_mixwfn = "$src_hmmdir/mixture_weights";
@@ -80,7 +88,7 @@ my $src_meanfn = "$src_hmmdir/means";
 my $src_varfn = "$src_hmmdir/variances";
 my $src_tmatfn = "$src_hmmdir/transition_matrices";
 
-my $dest_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.ci_${ST::CFG_DIRLABEL}_initial";
+my $dest_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_initial";
 mkdir ($dest_hmmdir,0777);
 
 my $dest_mixwfn = "$dest_hmmdir/mixture_weights";
@@ -88,7 +96,7 @@ my $dest_meanfn = "$dest_hmmdir/means";
 my $dest_varfn = "$dest_hmmdir/variances";
 my $dest_tmatfn = "$dest_hmmdir/transition_matrices";
 
-my $backup_hmmdir =  "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.ci_${ST::CFG_DIRLABEL}_${n_current}";
+my $backup_hmmdir =  "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_${n_current}";
 mkdir ($backup_hmmdir,0777);
 
 my $backup_mixwfn = "$backup_hmmdir/mixture_weights";
@@ -122,8 +130,6 @@ if ($n_inc <= 0) {
   exit 0;
 }
 
-my $logdir = "$ST::CFG_LOG_DIR/20.ci_hmm";
-mkdir ($logdir,0777);
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.split_gaussians.$n_current.$n_inc.log";
 
 # if there is an LDA transformation, use it

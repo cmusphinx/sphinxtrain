@@ -57,17 +57,38 @@ die "USAGE: $0 <phone> " if @ARGV != 1;
 
 my $phone = shift;
 
-my $scriptdir = "{$ST::CFG_SCRIPT_DIR}/40.buildtrees";
-my $logdir = "${ST::CFG_LOG_DIR}/40.buildtrees";
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+if (-r $MLLT_FILE) {
+    $MODEL_TYPE = 'mllt_cd';
+}
+else {
+    $MODEL_TYPE = 'cd';
+}
+
+my $logdir;
+if (-r $MLLT_FILE) {
+    $logdir = "${ST::CFG_LOG_DIR}/40.mllt_buildtrees";
+}
+else {
+    $logdir = "${ST::CFG_LOG_DIR}/40.buildtrees";
+}
 mkdir ($logdir,0777);
 
 $| = 1; # Turn on autoflushing
 
 my $mdef_file       = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.untied.mdef";
-my $mixture_wt_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied/mixture_weights";
-my $means_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied/means";
-my $variances_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied/variances";
-my $tree_base_dir   = "${ST::CFG_BASE_DIR}/trees";
+my $mixture_wt_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_untied/mixture_weights";
+my $means_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_untied/means";
+my $variances_file = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_untied/variances";
+my $tree_base_dir;
+if (-r $MLLT_FILE) {
+    $tree_base_dir = "${ST::CFG_BASE_DIR}/mllt_trees";
+}
+else {
+    $tree_base_dir = "${ST::CFG_BASE_DIR}/trees";
+}
 my $unprunedtreedir = "$tree_base_dir/${ST::CFG_EXPTNAME}.unpruned";
 mkdir ($tree_base_dir,0777);
 mkdir ($unprunedtreedir,0777);

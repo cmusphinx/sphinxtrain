@@ -62,9 +62,17 @@ if ($n_current + $n_inc > $ST::CFG_FINAL_NUM_DENSITIES) {
   exit -3;
 }
 
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+if (-r $MLLT_FILE) {
+    $MODEL_TYPE = 'mllt_cd';
+}
+else {
+    $MODEL_TYPE = 'cd';
+}
 $| = 1; # Turn on autoflushing
-my $scriptdir = "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied";
-my $logdir = "$ST::CFG_LOG_DIR/50.cd_hmm_tied";
+my $logdir = "$ST::CFG_LOG_DIR/50.${MODEL_TYPE}_hmm_tied";
 mkdir ($logdir,0777);
 
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
@@ -80,25 +88,21 @@ Log ("Split Gaussians, increase by $n_inc\n", 'result');
 # convergence problems..
 # *************************************************************************
 
-my $src_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}";
+my $src_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}";
 mkdir ($src_hmmdir,0777);
-
-my $src_moddeffn = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.$ST::CFG_N_TIED_STATES.mdef";
 my $src_mixwfn = "$src_hmmdir/mixture_weights";
 my $src_meanfn = "$src_hmmdir/means";
 my $src_varfn = "$src_hmmdir/variances";
 my $src_tmatfn = "$src_hmmdir/transition_matrices";
 
-my $dest_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_initial";
+my $dest_hmmdir = "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_initial";
 mkdir ($dest_hmmdir,0777);
-
-my $dest_moddeffn = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.$ST::CFG_N_TIED_STATES.mdef";
 my $dest_mixwfn = "$dest_hmmdir/mixture_weights";
 my $dest_meanfn = "$dest_hmmdir/means";
 my $dest_varfn = "$dest_hmmdir/variances";
 my $dest_tmatfn = "$dest_hmmdir/transition_matrices";
 
-my $backup_hmmdir =  "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}_${n_current}";
+my $backup_hmmdir =  "$ST::CFG_BASE_DIR/model_parameters/$ST::CFG_EXPTNAME.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}_${n_current}";
 mkdir ($backup_hmmdir,0777);
 
 my $backup_mixwfn = "$backup_hmmdir/mixture_weights";
@@ -127,10 +131,7 @@ if ($n_inc <= 0) {
   exit 0;
 }
 
-my $logdir = "$ST::CFG_LOG_DIR/50.cd_hmm_tied";
-mkdir ($logdir,0777);
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.split_gaussians.$n_current.$n_inc.log";
-
 my $rv = RunTool('inc_comp', $logfile, 0,
 		 -ninc => $n_inc,
 		 -dcountfn => $src_mixwfn,

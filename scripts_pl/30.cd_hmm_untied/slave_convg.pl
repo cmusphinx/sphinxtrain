@@ -63,8 +63,20 @@ $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_part
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777);
 
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE $MODEL_TYPE $CI_MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+if (-r $MLLT_FILE) {
+    $MODEL_TYPE = 'mllt_cd';
+    $CI_MODEL_TYPE = 'mllt_ci';
+}
+else {
+    $MODEL_TYPE = 'cd';
+    $CI_MODEL_TYPE = 'ci';
+}
+
 $| = 1; # Turn on autoflushing
-my $logdir = "${ST::CFG_LOG_DIR}/30.cd_hmm_untied";
+my $logdir = "${ST::CFG_LOG_DIR}/30.${MODEL_TYPE}_hmm_untied";
 mkdir ("$logdir",0777);
 
 #Read npart_untied from variables.def
@@ -111,11 +123,11 @@ exit $return_value;
 exit 0;
 
 sub Initialize () {
-  my $cihmmdir = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}";
-  my $cdhmmdir = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied";
+  my $cihmmdir = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.${CI_MODEL_TYPE}_${ST::CFG_DIRLABEL}";
+  my $cdhmmdir = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_untied";
   mkdir ($cdhmmdir,0777);
 
-  my $logdir  =  "${ST::CFG_LOG_DIR}/30.cd_hmm_untied";
+  my $logdir  =  "${ST::CFG_LOG_DIR}/30.${MODEL_TYPE}_hmm_untied";
   mkdir ($logdir,0777);
 
   Log ("Phase 2: Initialization");

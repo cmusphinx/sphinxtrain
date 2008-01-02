@@ -68,6 +68,13 @@ $| = 1; # Turn on autoflushing
 my $logdir = "$ST::CFG_LOG_DIR/20.ci_hmm";
 my $return_value = 0;
 
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+if (-r $MLLT_FILE) {
+    $logdir = "$ST::CFG_LOG_DIR/20.mllt_ci_hmm";
+}
+
 # We have to clean up and run flat initialize if it is the first iteration
 if ($iter == 1 and $n_gau == 1) {
     Log("MODULE: 20 Training Context Independent models\n");
@@ -85,7 +92,12 @@ if ($iter == 1 and $n_gau == 1) {
     rmtree ($ST::CFG_QMGR_DIR, 0, 1);
     mkdir ($ST::CFG_QMGR_DIR,0777);
     LogProgress("models...\n");
-    rmtree("$modeldir/${ST::CFG_EXPTNAME}.ci_$ST::CFG_DIRLABEL", 0, 1);
+    if (-r $MLLT_FILE) {
+	rmtree("$modeldir/${ST::CFG_EXPTNAME}.mllt_ci_$ST::CFG_DIRLABEL", 0, 1);
+    }
+    else {
+	rmtree("$modeldir/${ST::CFG_EXPTNAME}.ci_$ST::CFG_DIRLABEL", 0, 1);
+    }
     LogStatus('completed');
 
     # If we previously force aligned with single-Gaussian models, use
@@ -93,8 +105,7 @@ if ($iter == 1 and $n_gau == 1) {
     # norm_and_launch_bw.pl as well).  However, if there is an MLLT
     # transformation, we need to re-initialize from scratch since the
     # features have changed.
-    my $mlltfile = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-    if ((not -r $mlltfile)
+    if ((not -r $MLLT_FILE)
 	and $ST::CFG_FORCEDALIGN eq 'yes'
 	and $ST::CFG_FALIGN_CI_MGAU eq 'no'
 	and -e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means')) {
@@ -179,6 +190,10 @@ sub FlatInitialize
     my $logdir              = "$ST::CFG_LOG_DIR/20.ci_hmm";
     my $modarchdir          = "$ST::CFG_BASE_DIR/model_architecture";
     my $hmmdir              = "$ST::CFG_BASE_DIR/model_parameters";
+    # Use a different log directory if MLLT is in effect
+    if (-r $MLLT_FILE) {
+	$logdir = "$ST::CFG_LOG_DIR/20.mllt_ci_hmm";
+    }
     mkdir ($logdir,0777);
     mkdir ($modarchdir,0777);
     mkdir ($hmmdir,0777);
@@ -236,6 +251,10 @@ sub FlatInitialize
     # make the flat models using the above topology file and the mdef file
     #------------------------------------------------------------------------
     my $outhmm               = "$hmmdir/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
+    # Use a different HMM directory if MLLT is in effect
+    if (-r $MLLT_FILE) {
+	$outhmm = "$hmmdir/${ST::CFG_EXPTNAME}.mllt_ci_${ST::CFG_DIRLABEL}_flatinitial";
+    }
     mkdir ($outhmm,0777);
 
     my $FLAT = "$ST::CFG_BIN_DIR/mk_flat";
@@ -268,11 +287,10 @@ sub FlatInitialize
     mkdir ($output_buffer_dir,0777);
 
     # if there is an MLLT transformation, use it
-    my $mlltfile = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
     my @lda_args;
-    if (-r $mlltfile) {
+    if (-r $MLLT_FILE) {
 	push(@lda_args,
-	     -ldafn => $mlltfile,
+	     -ldafn => $MLLT_FILE,
 	     -ldadim => $ST::CFG_LDA_DIMENSION);
     }
     if ($return_value = RunTool('init_gau', $logfile, 0,

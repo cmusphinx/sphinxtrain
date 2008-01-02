@@ -59,10 +59,20 @@ $| = 1; # Turn on autoflushing
 die "USAGE: $0 <iter> <part> <npart>" if @ARGV != 3;
 my ($iter, $part, $npart) = @ARGV;
 
-my $modelinitialname="${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_untied";
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+if (-r $MLLT_FILE) {
+    $MODEL_TYPE = 'mllt_cd';
+}
+else {
+    $MODEL_TYPE = 'cd';
+}
+
+my $modelinitialname="${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_untied";
 my $modelname="$modelinitialname";  # same for both in the case
 my $mdefname="${ST::CFG_EXPTNAME}.untied.mdef";
-my $processname="30.cd_hmm_untied";
+my $processname="30.${MODEL_TYPE}_hmm_untied";
 
 my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_${part}";
 mkdir ($output_buffer_dir,0777);
@@ -87,10 +97,9 @@ my $minvar  = 1e-4;
 
 # if there is an MLLT transformation, use it
 my @lda_args;
-my $mlltfile = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-if (-r $mlltfile) {
+if (-r $MLLT_FILE) {
     push(@lda_args,
-	 -ldafn => $mlltfile,
+	 -ldafn => $MLLT_FILE,
 	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
 

@@ -56,13 +56,23 @@ die "USAGE: $0 <number of tied states>" if @ARGV != 1;
 my $n_tied_states = shift;
 my $occurance_threshold = 0;
 
-my $mdef_file = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.alltriphones.mdef";
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
 
-my $unprunedtreedir = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.unpruned";
-my $prunedtreedir  = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.$n_tied_states";
+my ($mdef_file, $unprunedtreedir, $prunedtreedir, $logdir);
+$mdef_file = "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.alltriphones.mdef";
+if (-r $MLLT_FILE) {
+    $unprunedtreedir = "$ST::CFG_BASE_DIR/mllt_trees/$ST::CFG_EXPTNAME.unpruned";
+    $prunedtreedir  = "$ST::CFG_BASE_DIR/mllt_trees/$ST::CFG_EXPTNAME.$n_tied_states";
+    $logdir = "$ST::CFG_LOG_DIR/45.mllt_prunetree";
+}
+else {
+    $unprunedtreedir = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.unpruned";
+    $prunedtreedir  = "$ST::CFG_BASE_DIR/trees/$ST::CFG_EXPTNAME.$n_tied_states";
+    $logdir = "$ST::CFG_LOG_DIR/45.prunetree";
+}
 mkdir ($prunedtreedir,0777);
-
-my $logdir = "$ST::CFG_LOG_DIR/45.prunetree";
 mkdir ($logdir,0777);
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.prunetree.$n_tied_states.log";
 

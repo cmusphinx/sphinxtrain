@@ -57,8 +57,18 @@ die "USAGE: $0 <iter> <n_parts> [<ngau>]" if (@ARGV < 2);
 my ($iter, $n_parts, $n_gau) = @ARGV;
 
 $n_gau = 1 unless defined $n_gau;
-my $processname="20.ci_hmm";
 
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+if (-r $MLLT_FILE) {
+    $MODEL_TYPE = 'mllt_ci';
+}
+else {
+    $MODEL_TYPE = 'ci';
+}
+
+my $processname="20.${MODEL_TYPE}_hmm";
 my $logdir ="$ST::CFG_LOG_DIR/$processname";
 mkdir ($logdir,0777);
 my $log = "$logdir/${ST::CFG_EXPTNAME}.$n_gau.$iter.norm.log";

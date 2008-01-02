@@ -58,8 +58,17 @@ $| = 1; # Turn on autoflushing
 die "USAGE: $0 <ngau> <iter>" if @ARGV != 2;
 my ($n_gau, $iter) = @ARGV;
 
-my $modelname="${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_$ST::CFG_N_TIED_STATES";
-my $processpart="50.cd_hmm_tied";
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+if (-r $MLLT_FILE) {
+    $MODEL_TYPE = 'mllt_cd';
+}
+else {
+    $MODEL_TYPE = 'cd';
+}
+my $modelname="${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_$ST::CFG_N_TIED_STATES";
+my $processpart="50.${MODEL_TYPE}_hmm_tied";
 
 opendir(ACCUMDIR, $ST::CFG_BWACCUM_DIR)
     or die "Could not open $ST::CFG_BWACCUM_DIR: $!";
@@ -74,8 +83,14 @@ my $mixture_weights     = "$hmmdir/mixture_weights";
 my $transition_matrices = "$hmmdir/transition_matrices";
 
 if ($iter == 1) {
-    my $mdeffile = catfile($ST::CFG_BASE_DIR, 'model_architecture',
-			   "${ST::CFG_EXPTNAME}.$ST::CFG_N_TIED_STATES.mdef");
+    my $mdefname;
+    if (-r $MLLT_FILE) {
+	$mdefname = "${ST::CFG_EXPTNAME}.mllt.$ST::CFG_N_TIED_STATES.mdef";
+    }
+    else {
+	$mdefname = "${ST::CFG_EXPTNAME}.$ST::CFG_N_TIED_STATES.mdef";
+    }
+    my $mdeffile = catfile($ST::CFG_BASE_DIR, 'model_architecture', $mdefname);
     # Copy the mdef and fillerdict files into the new HMM directory
     copy($mdeffile, catfile($hmmdir, 'mdef'))
 	or die "Failed to copy $mdeffile to $hmmdir/mdef: $!";

@@ -60,16 +60,30 @@ die "USAGE: $0 <iter> <part> <npart> [<ngau>]" if @ARGV < 3;
 my ($iter, $part, $npart, $n_gau) = @ARGV;
 $n_gau = 1 unless defined($n_gau);
 
-my $modelinitialname;
-if ($n_gau == 1) {
-    $modelinitialname = "${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
+# If this is being run with an MLLT transformation keep the models and logs separate.
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+if (-r $MLLT_FILE) {
+    $MODEL_TYPE = 'mllt_ci';
 }
 else {
-    $modelinitialname = "${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_initial";
+    $MODEL_TYPE = 'ci';
 }
-my $modelname="${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}";
+
+my $modelinitialname;
+if ($n_gau == 1) {
+    $modelinitialname = "${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_flatinitial";
+}
+else {
+    $modelinitialname = "${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_initial";
+}
+my $modelname="${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}";
 my $mdefname="${ST::CFG_EXPTNAME}.ci.mdef";
-my $processname ="20.ci_hmm";
+my $processname ="20.${MODEL_TYPE}_hmm";
+
+my $logdir   = "$ST::CFG_LOG_DIR/$processname";
+my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.${n_gau}.$iter-$part.bw.log";
+mkdir ($logdir,0777);
 
 my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_${part}";
 mkdir ($output_buffer_dir,0777);
@@ -95,10 +109,9 @@ my $minvar  = 1e-4;
 
 # if there is an MLLT transformation, use it
 my @lda_args;
-my $mlltfile = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-if (-r $mlltfile) {
+if (-r $MLLT_FILE) {
     push(@lda_args,
-	 -ldafn => $mlltfile,
+	 -ldafn => $MLLT_FILE,
 	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
 if (defined($ST::CFG_PHSEG_DIR)) {
@@ -128,9 +141,6 @@ my $topn     = 4;
 if ($ST::CFG_HMM_TYPE eq '.cont.' and $n_gau < 4) {
     $topn = $n_gau;
 }
-my $logdir   = "$ST::CFG_LOG_DIR/$processname";
-my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.${n_gau}.$iter-$part.bw.log";
-mkdir ($logdir,0777);
 
 my $ctl_counter = 0;
 open INPUT,"<$listoffiles" or die "Failed to open $listoffiles: $!";
