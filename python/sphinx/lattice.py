@@ -264,7 +264,7 @@ class Dag(list):
         @return: Generator over all nodes in the DAG, in reverse time order
         @rtype: generator(Dag.Node)
         """
-        for frame in reversed(self):
+        for frame in self[::-1]: # reversed() isn't in Python 2.3
             for node in frame.values():
                 yield node
 
