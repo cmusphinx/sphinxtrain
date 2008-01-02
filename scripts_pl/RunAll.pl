@@ -48,49 +48,24 @@ use SphinxTrain::Config;
 use SphinxTrain::Util;
 
 # What pieces would you like to compute.
-my @steps1 =
+my @steps =
     ("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
      "$ST::CFG_SCRIPT_DIR/01.vector_quantize/slave.VQ.pl",
      "$ST::CFG_SCRIPT_DIR/02.falign_ci_hmm/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/03.force_align/slave_align.pl",
+     "$ST::CFG_SCRIPT_DIR/05.lda_train/slave_lda.pl",
+     "$ST::CFG_SCRIPT_DIR/06.mllt_train/slave_mllt.pl",
      "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
      "$ST::CFG_SCRIPT_DIR/45.prunetree/slave.state-tying.pl",
-     );
-
-my @extra_mllt_steps =
-    ("$ST::CFG_SCRIPT_DIR/46.lda_train/slave_lda.pl",
-     "$ST::CFG_SCRIPT_DIR/47.mllt_train/slave_mllt.pl",
-     "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
-     "$ST::CFG_SCRIPT_DIR/45.prunetree/slave.state-tying.pl",
-     );
-
-my @steps2 =
-    ("$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
+     "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/90.deleted_interpolation/deleted_interpolation.pl",
      "$ST::CFG_SCRIPT_DIR/99.make_s2_models/make_s2_models.pl",
     );
 
 # Do the common initialization and state tying steps
-foreach my $step (@steps1) {
-    my $ret_value = RunScript($step);
-    die "Something failed: ($step)\n" if $ret_value;
-}
-
-# If MLLT is being used, we need to train the transforms, then retrain
-# and retie the states for best performance.
-if ($ST::CFG_LDA_MLLT eq 'yes') {
-    foreach my $step (@extra_mllt_steps) {
-	my $ret_value = RunScript($step);
-	die "Something failed: ($step)\n" if $ret_value;
-    }
-}
-
-# Now run the final context-dependent training
-foreach my $step (@steps2) {
+foreach my $step (@steps) {
     my $ret_value = RunScript($step);
     die "Something failed: ($step)\n" if $ret_value;
 }
