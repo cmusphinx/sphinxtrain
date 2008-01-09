@@ -109,7 +109,7 @@ EOP
   # Now run sphinx_fe
   $params = $default_params;
   $params =~ s/\n/ /gs;
-  system("bin/wave2feat -verbose yes $params -c \"$ctl\" -$ST::WAVFILE_TYPE yes " .
+  system("bin/wave2feat -verbose yes $params -c \"$ctl\" -$ST::CFG_WAVFILE_TYPE yes " .
 	 "-di \"$ST::WAVFILES_DIR\" -ei \"$ST::CFG_WAVFILE_EXTENSION\" ".
 	 "-do \"$ST::CFG_FEATFILES_DIR\" " .
 	 "-eo \"$ST::CFG_FEATFILE_EXTENSION\"");
