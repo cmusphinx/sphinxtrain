@@ -132,14 +132,6 @@ if ($n_inc <= 0) {
 
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.split_gaussians.$n_current.$n_inc.log";
 
-# if there is an LDA transformation, use it
-my @feat;
-if (defined($ST::CFG_LDA_TRANSFORM) and -r $ST::CFG_LDA_TRANSFORM) {
-    @feat = (-feat => '1s_c', -ceplen => $ST::CFG_LDA_DIMENSION);
-}
-else {
-    @feat = (-feat => $ST::CFG_FEATURE, -ceplen => $ST::CFG_VECTOR_LENGTH);
-}
 my $rv = RunTool('inc_comp', $logfile, 0,
 		 -ninc => $n_inc,
 		 -dcountfn => $src_mixwfn,
@@ -149,6 +141,5 @@ my $rv = RunTool('inc_comp', $logfile, 0,
 		 -outmeanfn=> $dest_meanfn,
 		 -invarfn  => $src_varfn,
 		 -outvarfn => $dest_varfn,
-		 -fullvar => $ST::CFG_FULLVAR,
-		 @feat);
+		 -fullvar => $ST::CFG_FULLVAR);
 exit $rv;
