@@ -111,6 +111,14 @@ static char *fmtdesc[] = {
 #endif
 #endif
 
+/* For Pocketsphinx ONLY: Allocate 0..159 for negated quantized
+ * mixture weights and 0..96 for negated normalized acoustic scores,
+ * so that the combination of the two (for a single mixture) can never
+ * exceed 255. */
+#define MAX_NEG_MIXW 159 /**< Maximum negated mixture weight value. */
+#define MAX_NEG_ASCR 96  /**< Maximum negated acoustic score value. */
+
+
 float64 vector_sum_norm (float32 *vec, int32 len)
 {
     float64 sum, f;
@@ -574,7 +582,11 @@ static int32 senone_mixw_read(senone_t *s, char *file_name, float64 mixwfloor)
 	    for (c = 0; c < n_cw; c++) {
 		p = -(logs3(pdf[c]));
 		p += (1 << (s->shift-1)) - 1;	/* Rounding before truncation */
-		p = (p < (255 << s->shift)) ? (p >> s->shift) : 255;	/* Trunc/shift */
+		if (pocketsphinx)
+			p = (p < (MAX_NEG_MIXW << s->shift))
+				? (p >> s->shift) : MAX_NEG_MIXW; /* Trunc/shift */
+		else
+			p = (p < (255 << s->shift)) ? (p >> s->shift) : 255;	/* Trunc/shift */
 		fw[f].prob[j][c] = p;
 	    }
 	}
@@ -696,7 +708,6 @@ int main (int32 argc, char **argv)
     feattype = "s2_4x";
 
     mdeffile = (char *)cmd_ln_access("-moddeffn");
-/*    mgaumap = (char *)cmd_ln_access("-mgaumap"); */
     mgaumap = ".semi.";
     senfile = (char *)cmd_ln_access("-mixwfn");
     wtflr = (float64)(*(float32 *)cmd_ln_access("-mwfloor"));

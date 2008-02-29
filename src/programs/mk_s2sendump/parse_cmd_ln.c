@@ -64,9 +64,7 @@ Convert s3 model definition file and s3 mixture weight file to a s2 senddump fil
   const char examplestr[]=
 "Example: \n\
 \n\
-mk_s2sendump -moddeffn s3mdef -mixwfn s3mixw -tpfloor 0.0000001 \n\
--sendumpfn s2dir/sendump";
-
+mk_s2sendump -moddeffn s3mdef -mixwfn s3mixw -sendumpfn s2dir/sendump\n";
 
     static arg_def_t defn[] = {
 	{ "-help",
@@ -101,13 +99,6 @@ mk_s2sendump -moddeffn s3mdef -mixwfn s3mixw -tpfloor 0.0000001 \n\
 	  CMD_LN_NO_VALIDATION,
 	  "no",
 	  "Write a PocketSphinx-format senone dump file"},
-
-	{ "-tpfloor",
-	      CMD_LN_FLOAT32,
-	      CMD_LN_NO_VALIDATION,
-	      "0.0001",
-	      "Transition probability smoothing floor" },
-
 	{ "-mwfloor",
 	  CMD_LN_FLOAT32,
 	  CMD_LN_NO_VALIDATION,
