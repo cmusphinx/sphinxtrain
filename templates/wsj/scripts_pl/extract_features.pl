@@ -22,6 +22,7 @@ GetOptions(\%opts,
 	   'outdir|o=s',
 	   'outext|e=s',
 	   'wv2',
+	   'keep-audio',
 	   'help|h|?')
     or pod2usage(2);
 pod2usage(0) if $opts{help};
@@ -98,7 +99,8 @@ foreach my $dir (@dirs) {
 	foreach my $p (@l) {
 	    my $o = lc($p);
 	    $o =~ s/\.wv1$//;
-	    unlink(catfile($outdir, "$o.sph"));
+	    unlink(catfile($outdir, "$o.sph"))
+		unless $opts{'keep-audio'};
 	}
 	unlink $tmpfile;
     }
