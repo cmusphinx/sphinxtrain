@@ -53,6 +53,10 @@ def is_filler(sym):
 class Dag(list):
     """
     Directed acyclic graph representation of a phone/word lattice.
+    
+    This data structure is represented as a list, with one entry per
+    frame of audio.  Each entry in the list contains a dictionary
+    mapping word names to lattice nodes.
     """
     __slots__ = 'start', 'end', 'header', 'frate'
 
@@ -152,7 +156,10 @@ class Dag(list):
     headre = re.compile(r'# (-\S+) (\S+)')
     def sphinx2dag(self, s3file):
         """Read a Sphinx-III format lattice file to populate a DAG."""
-        fh = gzip.open(s3file)
+        if s3file.endswith('.gz'): # DUMB
+            fh = gzip.open(s3file)
+        else:
+            fh = open(s3file)
         del self[0:len(self)]
         self.header = {}
         state = 'header'
@@ -198,6 +205,10 @@ class Dag(list):
                         # FIXME: Not sure if this is a good idea
                         if not (tofr,ascr) in nodes[int(fromnode)].exits:
                             nodes[int(fromnode)].exits.append((tofr, ascr))
+        # For various dumb reasons there might be multiple </s> nodes
+        # starting in the same frame (KILL!!!).  So make sure self.end
+        # points to something that's actually in the lattice.
+        self[self.end.entry][self.end.sym] = self.end
 
     def edges(self, node, lm=None):
         """
@@ -328,10 +339,11 @@ class Dag(list):
         """Bypass filler nodes in the lattice."""
         for u in self.nodes():
             for v, frame, ascr, lscr in self.edges(u):
-                if is_filler(v.sym):
+                if is_filler(v.sym) and v != self.end:
                     for vv, frame, ascr, lscr in self.edges(v):
-                        if not is_filler(vv.sym):
-                            u.exits.append((vv.entry, 0))
+                        if vv == self.end or not is_filler(vv.sym):
+                            if (vv.entry, 0) not in u.exits:
+                                u.exits.append((vv.entry, 0))
 
     def minimum_error(self, hyp, start=None):
         """
