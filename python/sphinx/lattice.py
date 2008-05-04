@@ -88,8 +88,10 @@ class Dag(object):
         @ivar prev: Backtrace pointer for this node, used in bestpath
                     calculation.
         @type prev: object
+        @ivar fan: Temporary fan-in or fan-out counter used in edge traversal
+        @type fan: int
         """
-        __slots__ = 'sym', 'entry', 'exits', 'entries', 'score', 'prev'
+        __slots__ = 'sym', 'entry', 'exits', 'entries', 'score', 'prev', 'fan'
         def __init__(self, sym, entry):
             self.sym = sym
             self.entry = entry
@@ -97,6 +99,7 @@ class Dag(object):
             self.entries = []
             self.score = LOGZERO
             self.prev = None
+            self.fan = 0
 
     class Link(object):
         """
@@ -376,12 +379,12 @@ class Dag(object):
             end = self.end
         # Find number of links into each node
         for w in self.nodes:
-            w.prev = 0
+            w.fan = 0
         for w in self.nodes:
             if is_filler(w.sym) and w != end:
                 continue
             for x in w.exits:
-                x.dest.prev += 1
+                x.dest.fan += 1
         # Agenda of optimally scored paths
         Q = []
         # Initialize agenda with path scores for all links exiting start
@@ -420,8 +423,8 @@ class Dag(object):
                         bestend = f
                         bestescr = f.pscr
             # Decrease fan-in count for destination node
-            e.dest.prev -= 1
-            if e.dest.prev == 0:
+            e.dest.fan -= 1
+            if e.dest.fan == 0:
                 # If we have searched all links entering the end node,
                 # return the best one.
                 if e.dest == end:
@@ -652,8 +655,6 @@ class Dag(object):
                 begone[w] = 1
                 self.nodes[i] = None
         self.nodes = [w for w in self.nodes if w != None]
-        # Rebuild frame pointers
-        self.build_frame_pointers()
         # Remove links to unreachable nodes
         for w in self.nodes:
             newexits = []
@@ -671,6 +672,53 @@ class Dag(object):
                     newentries.append(x)
             w.entries = newentries
 
+    def traverse_edges_breadth(self, start=None, end=None):
+        """
+        Traverse edges breadth-first, ensuring that all predecessors
+        to a given edge have been traversed before that edge.
+        """
+        for w in self.nodes:
+            w.fan = 0
+        for x in self.edges():
+            x.dest.fan += 1
+        if start == None: start = self.start
+        if end == None: end = self.end
+        # Agenda of closed edges
+        Q = start.exits[:]
+        while Q:
+            e = Q[0]
+            del Q[0]
+            yield e
+            e.dest.fan -= 1
+            if e.dest.fan == 0:
+                if e.dest == end:
+                    break
+                Q.extend(e.dest.exits)
+            
+    def reverse_edges_breadth(self, start=None, end=None):
+        """
+        Traverse edges breadth-first in reverse, ensuring that all
+        successors to a given edge have been traversed before that
+        edge.
+        """
+        for w in self.nodes:
+            w.fan = 0
+        for x in self.edges():
+            x.src.fan += 1
+        if start == None: start = self.start
+        if end == None: end = self.end
+        # Agenda of closed edges
+        Q = end.entries[:]
+        while Q:
+            e = Q[0]
+            del Q[0]
+            yield e
+            e.src.fan -= 1
+            if e.src.fan == 0:
+                if e.src == start:
+                    break
+                Q.extend(e.src.entries)
+            
     def forward(self, lm=None, lw=1.0, aw=1.0):
         """
         Compute forward variable for all arcs in the lattice.
@@ -678,28 +726,22 @@ class Dag(object):
         @param lm: Language model to use in computation
         @type lm: sphinxbase.ngram_model (or equivalent)
         """
-        # For each node in self (they sort forward by time, which is
-        # actually the only thing that guarantees that a nodes'
-        # predecessors will be touched before it)
-        for w in self.nodes:
-            # For each outgoing arc from w
-            for wx in w.exits:
-                # This is alpha_t(w)
-                wx.alpha = LOGZERO
-                # If w has no predecessors the previous alpha is 1.0
-                if len(w.entries) == 0:
-                    wx.alpha = wx.ascr * aw
-                # For each predecessor node to w
-                for vx in w.entries:
-                    v = vx.src
-                    # Get unscaled language model score P(w|v) (bigrams only for now...)
-                    if lm:
-                        lscr = lm.prob(baseword(w.sym),
-                                       baseword(v.sym))[0] * lw
-                    else:
-                        lscr = 0
-                    # Accumulate alpha for this arc
-                    wx.alpha = logadd(wx.alpha, vx.alpha + lscr + wx.ascr * aw)
+        for wx in self.traverse_edges_breadth():
+            # This is alpha_t(w)
+            wx.alpha = LOGZERO
+            # If wx.src has no predecessors the previous alpha is 1.0
+            if len(wx.src.entries) == 0:
+                wx.alpha = wx.ascr * aw
+            # For each predecessor node to wx.src
+            for vx in wx.src.entries:
+                # Get unscaled language model score P(w|v) (bigrams only for now...)
+                if lm:
+                    lscr = lm.prob(baseword(wx.src.sym),
+                                   baseword(vx.src.sym))[0] * lw
+                else:
+                    lscr = 0
+                # Accumulate alpha for this arc
+                wx.alpha = logadd(wx.alpha, vx.alpha + lscr + wx.ascr * aw)
 
     def backward(self, lm=None, lw=1.0, aw=1.0):
         """
@@ -708,28 +750,24 @@ class Dag(object):
         @param lm: Language model to use in computation
         @type lm: sphinxbase.ngram_model.NGramModel (or equivalent)
         """
-        # For each node in self (in reverse):
-        for w in self.nodes[::-1]:
-            # For each predecessor to w
-            for vx in w.entries:
-                v = vx.src
-                # Beta for arcs into </s> = 1.0
-                if w == self.end:
-                    beta = 0
+        for vx in self.reverse_edges_breadth():
+            # Beta for arcs into </s> = 1.0
+            if vx.dest == self.end:
+                beta = 0
+            else:
+                beta = LOGZERO
+                # Get unscaled language model probability P(w|v) (bigrams only for now...)
+                if lm:
+                    lscr = lm.prob(baseword(vx.dest.sym),
+                                   baseword(vx.src.sym))[0] * lw
                 else:
-                    beta = LOGZERO
-                    # Get unscaled language model probability P(w|v) (bigrams only for now...)
-                    if lm:
-                        lscr = lm.prob(baseword(w.sym),
-                                       baseword(v.sym))[0] * lw
-                    else:
-                        lscr = 0
-                    # For each outgoing arc from w
-                    for wx in w.exits:
-                        # Accumulate beta for arc from v to w
-                        beta = logadd(beta, wx.beta + lscr + wx.ascr * aw)
-                # Update beta for this arc
-                vx.beta = logadd(vx.beta, beta)
+                    lscr = 0
+                # For each outgoing arc from vx.dest
+                for wx in vx.dest.exits:
+                    # Accumulate beta for this arc
+                    beta = logadd(beta, wx.beta + lscr + wx.ascr * aw)
+            # Update beta for this arc
+            vx.beta = logadd(vx.beta, beta)
 
     def posterior(self, lm=None, lw=1.0, aw=1.0):
         """
