@@ -16,7 +16,11 @@ __version__ = "$Revision$"
 import gzip
 import re
 import math
-import numpy
+import os
+try:
+    import numpy
+except:
+    pass
 
 LOGZERO = -100000
 
@@ -50,16 +54,44 @@ def is_filler(sym):
     return ((sym[0] == '<' and sym[-1] == '>') or
             (sym[0] == '+' and sym[-1] == '+'))
 
-class Dag(list):
+def baseword(sym):
+    """
+    Returns base word (no pronunciation variant) for sym.
+    """
+    paren = sym.rfind('(')
+    if paren != -1:
+        return sym[0:paren]
+    else:
+        return sym
+
+
+def node_lmscore(v, u, lm, silpen=0, fillpen=0):
+    if lm == None:
+        return 0
+    elif v.sym == '<sil>':
+        return silpen, 1
+    elif is_filler(v.sym):
+        return fillpen, 1
+    else:
+        syms = [baseword(v.sym)]
+        # Trace back to find previous non-filler word.
+        hist = u
+        while hist and is_filler(hist.sym):
+            hist = hist.prev
+        if hist:
+            syms.append(baseword(hist.sym))
+        # And the one before that too.
+        hist = hist.prev
+        while hist and is_filler(hist.sym):
+            hist = hist.prev
+        if hist:
+            syms.append(baseword(hist.sym))
+        return lm.score(*syms)
+
+class Dag(object):
     """
     Directed acyclic graph representation of a phone/word lattice.
-    
-    This data structure is represented as a list, with one entry per
-    frame of audio.  Each entry in the list contains a dictionary
-    mapping word names to lattice nodes.
     """
-    __slots__ = 'start', 'end', 'header', 'frate'
-
     class Node(object):
         """
         Node in a DAG representation of a phone/word lattice.
@@ -71,24 +103,84 @@ class Dag(list):
         @ivar entry: Entry frame for this node.
         @type entry: int
         @ivar exits: List of arcs out of this node.
-        @type exits: list of (int, object)
+        @type exits: list of Dag.Link
+        @ivar entries: List of arcs into this node
+        @type entries: list of Dag.Link
         @ivar score: Viterbi (or other) score for this node, used in
                      bestpath calculation.
-        @type score: int
+        @type score: float
         @ivar prev: Backtrace pointer for this node, used in bestpath
-                    calculation.  Alternately used to store list of
-                    predecessors in forward-backward calculation.
+                    calculation.
         @type prev: object
         """
-        __slots__ = 'sym', 'entry', 'exits', 'score', 'prev'
+        __slots__ = 'sym', 'entry', 'exits', 'entries', 'score', 'prev'
         def __init__(self, sym, entry):
             self.sym = sym
             self.entry = entry
             self.exits = []
+            self.entries = []
             self.score = LOGZERO
             self.prev = None
-        def __str__(self):
-            return "(%s, %d, %s)" % (self.sym, self.entry, self.exits)
+
+    class Link(object):
+        """
+        Link in DAG representation of a phone/word lattice.
+
+        @ivar src: Start node for this link.
+        @type src: Dag.Node
+        @ivar dest: End node for this link.
+        @type dst: Dag.Node
+        @ivar ascr: Acoustic score for this link.
+        @type ascr: float
+        @ivar lscr: Best language model score for this link
+        @type lscr: float
+        @type lback: Best language model backoff mode for this link
+        @type lback: int
+        @ivar pscr: Dijkstra path score for this link
+        @type pscr: float
+        @ivar alpha: Joint log-probability of all paths ending in this link
+        @type alpha: float
+        @ivar beta: Conditional log-probability of all paths following this link
+        @type beta: float
+        @ivar post: Posterior log-probability of this link
+        @type post: float
+        @ivar prev: Previous link in best path
+        @type prev: Dag.Link
+        """
+        __slots__ = ('src', 'dest', 'ascr', 'lscr', 'pscr', 'alpha', 'beta',
+                     'post', 'lback', 'prev')
+        def __init__(self, src, dest, ascr,
+                     lscr=LOGZERO, pscr=LOGZERO,
+                     alpha=LOGZERO, beta=LOGZERO,
+                     post=LOGZERO, lback=0):
+            self.src = src
+            self.dest = dest
+            self.ascr = ascr
+            self.lscr = lscr
+            self.pscr = pscr
+            self.alpha = alpha
+            self.beta = beta
+            self.post = post
+            self.lback = lback
+            self.prev = None
+
+        def __cmp__(self, other):
+            return (other.pscr + other.dest.score) - (self.pscr + self.dest.score) 
+
+        def __le__(self, other):
+            return (self.pscr + self.dest.score) >= (other.pscr + other.dest.score)
+
+        def __ge__(self, other):
+            return (self.pscr + self.dest.score) <= (other.pscr + other.dest.score)
+
+        def __lt__(self, other):
+            return (self.pscr + self.dest.score) > (other.pscr + other.dest.score)
+
+        def __gt__(self, other):
+            return (self.pscr + self.dest.score) < (other.pscr + other.dest.score)
+
+        def __eq__(self, other):
+            return (self.pscr + self.dest.score) == (other.pscr + other.dest.score)
 
     def __init__(self, sphinx_file=None, htk_file=None, frate=100):
         """
@@ -116,42 +208,67 @@ class Dag(list):
     def htk2dag(self, htkfile):
         """Read an HTK-format lattice file to populate a DAG."""
         fh = gzip.open(htkfile)
-        del self[0:len(self)]
         self.header = {}
+        self.n_frames = 0
         state='header'
+        # Read everything
         for spam in fh:
             if spam.startswith('#'):
                 continue
             fields = dict(map(lambda (x,y,z): (x, y or z), self.fieldre.findall(spam.rstrip())))
+            # Number of nodes and links
             if 'N' in fields:
                 nnodes = int(fields['N'])
-                nodes = [None] * nnodes
+                self.nodes = [None] * nnodes
                 nlinks = int(fields['L'])
-                links = [None] * nlinks
+                self.links = [None] * nlinks
                 state = 'items'
             if state == 'header':
                 self.header.update(fields)
             else:
+                # This is a node
                 if 'I' in fields:
                     frame = int(float(fields['t']) * self.frate)
                     node = self.Node(fields['W'], frame)
-                    nodes[int(fields['I'])] = node
-                    while len(self) <= frame:
-                        self.append({})
-                    self[frame][fields['W']] = node
+                    self.nodes[int(fields['I'])] = node
+                    if frame > self.n_frames:
+                        self.n_frames = frame
+                # This is a link
                 elif 'J' in fields:
                     # Link up existing nodes
                     fromnode = int(fields['S'])
                     tonode = int(fields['E'])
-                    tofr = nodes[fromnode].entry
                     ascr = float(fields['a'])
                     lscr = float(fields['n'])
-                    # FIXME: Not sure if this is a good idea
-                    if not (tofr,ascr) in nodes[int(fromnode)].exits:
-                        nodes[int(fromnode)].exits.append((nodes[int(tonode)].entry, ascr))
+                    self.nodes[int(fromnode)].exits.append(
+                        self.Link(fromnode, tonode, ascr, lscr))
         # FIXME: Not sure if the first and last nodes are always the start and end?
-        self.start = nodes[0]
-        self.end = nodes[-1]
+        self.start = self.nodes[0]
+        self.end = self.nodes[-1]
+        # Snap links to nodes to point to the objects themselves
+        self.snap_links()
+        # Sort nodes to be in time order
+        self.sort_nodes_forward()
+
+    def snap_links(self):
+        for n in self.nodes:
+            for x in n.exits:
+                x.src = self.nodes[int(x.src)]
+                x.dest = self.nodes[int(x.dest)]
+                x.dest.entries.append(x)
+
+    def sort_nodes_forward(self):
+        # Sort nodes by starting point
+        self.nodes.sort(lambda x,y: cmp(x.entry, y.entry))
+        # Sort edges by ending point
+        for n in self.nodes:
+            n.exits.sort(lambda x,y: cmp(x.dest.entry, y.dest.entry))
+
+    def build_frame_pointers(self):
+        self.frames = [None] * (self.nodes[-1].entry + 1)
+        for i,n in enumerate(self.nodes):
+            if self.frames[n.entry] == None:
+                self.frames[n.entry] = i
 
     headre = re.compile(r'# (-\S+) (\S+)')
     def sphinx2dag(self, s3file):
@@ -160,10 +277,10 @@ class Dag(list):
             fh = gzip.open(s3file)
         else:
             fh = open(s3file)
-        del self[0:len(self)]
         self.header = {}
+        self.getcwd = None
         state = 'header'
-        logbase = math.log(1.0001)
+        logbase = math.log(1.0003)
         for spam in fh:
             spam = spam.rstrip()
             m = self.headre.match(spam)
@@ -172,22 +289,23 @@ class Dag(list):
                 self.header[arg] = val
                 if arg == '-logbase':
                     logbase = math.log(float(val))
+            if spam.startswith('# getcwd:'):
+                self.getcwd = spam[len('# getcwd:'):].strip()
             if spam.startswith('#'):
                 continue
             else:
                 fields = spam.split()
                 if fields[0] == 'Frames':
-                    for i in range(0,int(fields[1]) + 1):
-                        self.append({})
+                    self.n_frames = int(fields[1])
                 elif fields[0] == 'Nodes':
                     state='nodes'
                     nnodes = int(fields[1])
-                    nodes = [None] * nnodes
+                    self.nodes = [None] * nnodes
                 elif fields[0] == 'Initial':
                     state = 'crud'
-                    self.start = nodes[int(fields[1])]
+                    self.start = self.nodes[int(fields[1])]
                 elif fields[0] == 'Final':
-                    self.end = nodes[int(fields[1])]
+                    self.end = self.nodes[int(fields[1])]
                 elif fields[0] == 'Edges':
                     state='edges'
                 elif fields[0] == 'End':
@@ -196,49 +314,76 @@ class Dag(list):
                     if state == 'nodes':
                         nodeid, word, sf, fef, lef = fields
                         node = self.Node(word, int(sf))
-                        nodes[int(nodeid)] = node
-                        self[int(sf)][word] = node
+                        self.nodes[int(nodeid)] = node
                     elif state == 'edges':
                         fromnode, tonode, ascr = fields
                         ascr = float(ascr) * logbase
-                        tofr = nodes[int(tonode)].entry
-                        # FIXME: Not sure if this is a good idea
-                        if not (tofr,ascr) in nodes[int(fromnode)].exits:
-                            nodes[int(fromnode)].exits.append((tofr, ascr))
-        # For various dumb reasons there might be multiple </s> nodes
-        # starting in the same frame (KILL!!!).  So make sure self.end
-        # points to something that's actually in the lattice.
-        self[self.end.entry][self.end.sym] = self.end
+                        self.nodes[int(fromnode)].exits.append(
+                            self.Link(fromnode, tonode, ascr))
+        if self.getcwd == None:
+            self.getcwd = os.getcwd()
+        # Snap links to nodes to point to the objects themselves
+        self.snap_links()
+        # Sort nodes to be in time order
+        self.sort_nodes_forward()
+        # Build frame pointers
+        self.build_frame_pointers()
 
-    def edges(self, node, lm=None):
-        """
-        Return a generator for the set of edges exiting node.
-        @param node: Node whose edges to iterate over.
-        @type node: Dag.Node
-        @param lm: Language model to use for scoring edges.
-        @type lm: sphinx.arpalm.ArpaLM (or equivalent)
-        @return: Tuple of (successor, exit-frame, acoustic-score, language-score)
-        @rtype: (Dag.Node, int, int, int)
-        """
-        for frame, score in node.exits:
-            for next in self[frame].itervalues():
-                if lm:
-                    # Build history for LM score if it exists
-                    if node.prev:
-                        syms = []
-                        prev = node.prev
-                        for i in range(2,lm.n):
-                            if prev == None:
-                                break
-                            syms.append(prev.sym)
-                            prev = prev.prev
-                        syms.reverse()
-                        syms.extend((node.sym, next.sym))
-                        yield next, frame, score, lm.score(*syms)
-                    else:
-                        yield next, frame, score, lm.score(node.sym, next.sym)
-                else:
-                    yield next, frame, score, 0
+    def dag2sphinx(self, outfile, logbase=1.0003):
+        if outfile.endswith('.gz'): # DUMB
+            fh = gzip.open(outfile, "w")
+        else:
+            fh = open(outfile, "w")
+        fh.write("# getcwd: %s\n" % self.getcwd)
+        fh.write("# -logbase %e\n" % logbase)
+        for arg, val in self.header.iteritems():
+            if arg != '-logbase':
+                fh.write("# %s %s\n" % (arg,val))
+        fh.write("#\n")
+        fh.write("Frames %d\n" % self.n_frames)
+        fh.write("#\n")
+        fh.write("Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n"
+                 % self.n_nodes())
+        links = []
+        idmap = {}
+        for i,n in enumerate(self.nodes):
+            fef = self.n_frames
+            lef = 0
+            for x in n.exits:
+                fr = x.dest.entry - 1
+                if fr > lef: lef = fr
+                if fr < fef: fef = fr
+            if fef == self.n_frames: lef = fef = self.n_frames
+            idmap[n] = i
+            fh.write("%d %s %d %d %d\n" % (i, n.sym, n.entry, fef, lef))
+        fh.write("#\n")
+        fh.write("Initial %d\n" % idmap[self.start])
+        fh.write("Final %d\n" % idmap[self.end])
+        fh.write("BestSegAscr 0 (NODEID ENDFRAME ASCORE)\n#\n")
+        fh.write("Edges (FROM-NODEID TO-NODEID ASCORE)\n")
+        logfactor = 1./math.log(logbase)
+        for u in self.nodes:
+            for x in u.exits:
+                fh.write("%d %d %d\n" % (idmap[u], idmap[x.dest],
+                                         int(x.ascr * logfactor)))
+        fh.write("End\n")
+        fh.close()
+
+    def dag2dot(self, outfile):
+        fh = open(outfile, "w")
+        fh.write("digraph lattice {\n\trankdir=LR;\n\t")
+        nodeid = {}
+        fh.write("\tnode [shape=circle];")
+        for i,u in enumerate(self.nodes):
+            nodeid[u] = '"%s/%d"' % (u.sym, u.entry)
+            if u != self.end:
+                fh.write(" %s" % nodeid[u])
+        fh.write(";\n\tnode [shape=doublecircle]; %s;\n\n" % nodeid[self.end])
+        for x in self.edges():
+            fh.write("\t%s -> %s [label=\"%.2f\"];\n"
+                     % (nodeid[x.src], nodeid[x.dest], x.ascr))
+        fh.write("}\n")
+        fh.close()
 
     def n_nodes(self):
         """
@@ -246,7 +391,7 @@ class Dag(list):
         @return: Number of nodes in the DAG
         @rtype: int
         """
-        return sum(map(len, self))
+        return len(self.nodes)
 
     def n_edges(self):
         """
@@ -254,52 +399,118 @@ class Dag(list):
         @return: Number of edges in the DAG
         @rtype: int
         """
-        return (len(tuple(self.edges(self.start)))
-                + sum(map(lambda x:
-                          sum(map(lambda y:
-                                  len(tuple(self.edges(y))), x.itervalues())), self)))
+        return sum([len(n.exits) for n in self.nodes])
 
-    def nodes(self):
+    def edges(self):
         """
-        Return a generator over all the nodes in the DAG, in time order
-        @return: Generator over all nodes in the DAG, in time order
-        @rtype: generator(Dag.Node)
+        Return an iterator over all edges in the DAG
         """
-        for frame in self:
-            for node in frame.values():
-                yield node
+        for n in self.nodes:
+            for x in n.exits:
+                yield x
 
-    def reverse_nodes(self):
+    def bestpath_edges(self, lm=None, start=None, end=None):
         """
-        Return a generator over all the nodes in the DAG, in reverse time order
-        @return: Generator over all nodes in the DAG, in reverse time order
-        @rtype: generator(Dag.Node)
-        """
-        for frame in self[::-1]: # reversed() isn't in Python 2.3
-            for node in frame.values():
-                yield node
+        Find best path through lattice over edges.
 
-    def all_edges(self):
-        """
-        Return a generator over all the edges in the DAG, in time order
-        @return: Generator over all edges in the DAG, in time order
-        @rtype: generator((int,object,Dag.Node))
-        """
-        for sf in self:
-            for node in sf.itervalues():
-                for ef, ascr in node.exits:
-                    yield ef, ascr, node
+        It is assumed that filler words have been bypassed before this
+        function is called.  You may also want to remove unreachable
+        nodes, as it will run faster.
 
-    def bestpath(self, lm=None, lw=7.5, ip=0.7, start=None, end=None):
+        This function does shortest-path search over edges rather than
+        nodes, which makes it possible to do full trigram expansion.
+        """
+        if start == None:
+            start = self.start
+        if end == None:
+            end = self.end
+        # Find number of links into each node
+        for w in self.nodes:
+            w.prev = 0
+        for w in self.nodes:
+            if is_filler(w.sym) and w != end:
+                continue
+            for x in w.exits:
+                x.dest.prev += 1
+        # Agenda of optimally scored paths
+        Q = []
+        # Initialize agenda with path scores for all links exiting start
+        for e in start.exits:
+            if is_filler(e.dest.sym) and e.dest != end:
+                continue
+            e.lscr, e.lback = lm.score(baseword(e.dest.sym),
+                                       baseword(e.src.sym))
+            e.pscr = e.ascr + e.lscr
+            Q.append(e)
+        # Track the best link entering the end node
+        bestend = None
+        bestescr = LOGZERO
+        # Now go to work
+        nlinks = 0
+        while Q:
+            # Remove the first path in the queue
+            e = Q[0]
+            del Q[0]
+            nlinks += 1
+            # Update scores for all paths exiting e.dest
+            for f in e.dest.exits:
+                if is_filler(f.dest.sym) and f.dest != end:
+                    continue
+                lscr, lback = lm.score(baseword(f.dest.sym),
+                                       baseword(e.dest.sym),
+                                       baseword(e.src.sym))
+                pscr = e.pscr + f.ascr + lscr
+                # Update its score
+                if pscr > f.pscr:
+                    f.pscr = pscr
+                    f.lscr = lscr
+                    f.lback = lback
+                    f.prev = e
+                    if f.dest == end and f.pscr > bestescr:
+                        bestend = f
+                        bestescr = f.pscr
+            # Decrease fan-in count for destination node
+            e.dest.prev -= 1
+            if e.dest.prev == 0:
+                # If we have searched all links entering the end node,
+                # return the best one.
+                if e.dest == end:
+                    break
+                # All incoming links to e have been evaluated, so its
+                # outgoing links all have the best scores.  Insert
+                # them in the queue.
+                for f in e.dest.exits:
+                    if is_filler(f.dest.sym) and f.dest != end:
+                        continue
+                    Q.append(f)
+        #print "Searched %d links of %d" % (nlinks, sum([len(x.exits) for x in self.nodes]))
+        return bestend
+
+    def backtrace_edges(self, end):
+        """
+        Return a backtrace from an end link after bestpath.
+
+        @param end: End link
+        @type end: Dag.Link
+        @return: Best path through lattice from start to end.
+        @rtype: list of Dag.Node
+        """
+        backtrace = [end.dest]
+        while end:
+            backtrace.append(end.src)
+            end = end.prev
+        backtrace.reverse()
+        return backtrace
+
+    def bestpath(self, lm=None, start=None, end=None):
         """
         Find best path through lattice using Dijkstra's algorithm.
 
+        It is assumed that filler words have been bypassed before this
+        function is called.
+
         @param lm: Language model to use in search
-        @type lm: sphinx.arpalm.ArpaLM (or equivalent)
-        @param lw: Language model weight
-        @type lw: float
-        @param ip: Word insertion penalty
-        @type ip: float
+        @type lm: sphinxbase.ngram_model (or equivalent)
         @param start: Node to start search from
         @type start: Dag.Node
         @param end: Node to end search at
@@ -307,7 +518,8 @@ class Dag(list):
         @return: Final node in search (same as C{end})
         @rtype: Dag.Node
         """
-        Q = list(self.nodes())
+        # Reset all path scores and backpointers
+        Q = self.nodes[:]
         for u in Q:
             u.score = LOGZERO
             u.prev = None
@@ -320,6 +532,8 @@ class Dag(list):
             bestscore = LOGZERO
             bestidx = 0
             for i,u in enumerate(Q):
+                if is_filler(u.sym) and u != end:
+                    continue
                 if u.score > bestscore:
                     bestidx = i
                     bestscore = u.score
@@ -327,142 +541,19 @@ class Dag(list):
             del Q[bestidx]
             if u == end:
                 return u
-            for v, frame, ascr, lscr in self.edges(u, lm):
-                if isinstance(ascr, tuple):
-                    ascr = ascr[0]
-                score = ascr + lw * lscr + math.log(ip)
-                if u.score + score > v.score:
-                    v.score = u.score + score
+            for x in u.exits:
+                v = x.dest
+                # Recaculate the language model score based on the
+                # best history (FIXME: This is an approximation, since
+                # there might be a higher scoring trigram?)
+                syms = [baseword(v.sym), baseword(u.sym)]
+                if u.prev:
+                    syms.append(baseword(u.prev.sym))
+                x.lscr, x.lback = lm.score(*syms)
+                x.pscr = u.score + x.ascr + x.lscr
+                if x.pscr > v.score:
+                    v.score = x.pscr
                     v.prev = u
-
-    def bypass_fillers(self):
-        """Bypass filler nodes in the lattice."""
-        for u in self.nodes():
-            for v, frame, ascr, lscr in self.edges(u):
-                if is_filler(v.sym) and v != self.end:
-                    for vv, frame, ascr, lscr in self.edges(v):
-                        if vv == self.end or not is_filler(vv.sym):
-                            if (vv.entry, 0) not in u.exits:
-                                u.exits.append((vv.entry, 0))
-
-    def minimum_error(self, hyp, start=None):
-        """
-        Find the minimum word error rate path through lattice,
-        returning the number of errors and an alignment.
-        @return: Tuple of (error-count, alignment of (hyp, ref) pairs)
-        @rtype: (int, list(string, string))
-        """
-        # Get the set of nodes in proper order
-        nodes = tuple(self.nodes())
-        # Initialize the alignment matrix
-        align_matrix = numpy.ones((len(hyp),len(nodes)), 'i') * 999999999
-        # And the backpointer matrix
-        bp_matrix = numpy.zeros((len(hyp),len(nodes)), 'O')
-        # Remove filler nodes from the reference
-        hyp = filter(lambda x: not is_filler(x), hyp)
-        # Bypass filler nodes in the lattice
-        self.bypass_fillers()
-        # Figure out the minimum distance to each node from the start
-        # of the lattice, and the set of predecessors for each node
-        for u in nodes:
-            u.score = 999999999
-            u.prev = []
-        if start == None:
-            start = self.start
-        start.score = 1
-        for i,u in enumerate(nodes):
-            if is_filler(u.sym):
-                continue
-            for v, frame, ascr, lscr in self.edges(u):
-                dist = u.score + 1
-                if dist < v.score:
-                    v.score = dist
-                if not i in v.prev:
-                    v.prev.append(i)
-        def find_pred(ii, jj):
-            bestscore = 999999999
-            bestp = -1
-            if len(nodes[jj].prev) == 0:
-                return bestp, bestscore
-            for k in nodes[jj].prev:
-                if align_matrix[ii,k] < bestscore:
-                    bestp = k
-                    bestscore = align_matrix[ii,k]
-            return bestp, bestscore
-        # Now fill in the alignment matrix
-        for i, w in enumerate(hyp):
-            for j, u in enumerate(nodes):
-                # Insertion = cost(w, prev(u)) + 1
-                if len(u.prev) == 0: # start node
-                    bestp = -1
-                    inscost = i + 2 # Distance from start of ref
-                else:
-                    # Find best predecessor in the same reference position
-                    bestp, bestscore = find_pred(i, j)
-                    inscost = align_matrix[i,bestp] + 1
-                # Deletion  = cost(prev(w), u) + 1
-                if i == 0: # start symbol
-                    delcost = u.score + 1 # Distance from start of hyp
-                else:
-                    delcost = align_matrix[i-1,j] + 1
-                # Substitution = cost(prev(w), prev(u)) + (w != u)
-                if i == 0 and bestp == -1: # Start node, start of ref
-                    subcost = int(w != u.sym)
-                elif i == 0: # Start of ref
-                    subcost = nodes[bestp].score + int(w != u.sym)
-                elif bestp == -1: # Start node
-                    subcost = i - 1 + int(w != u.sym)
-                else:
-                    # Find best predecessor in the previous reference position
-                    bestp, bestscore = find_pred(i-1, j)
-                    subcost = align_matrix[i-1,bestp] + int(w != u.sym)
-                align_matrix[i,j] = min(subcost, inscost, delcost)
-                # Now find the argmin
-                if align_matrix[i,j] == subcost:
-                    bp_matrix[i,j] = (i-1, bestp)
-                elif align_matrix[i,j] == inscost:
-                    bp_matrix[i,j] = (i, bestp)
-                else:
-                    bp_matrix[i,j] = (i-1, j)
-        # Find last node's index
-        last = 0
-        for i, u in enumerate(nodes):
-            if u == self.end:
-                last = i
-        # Backtrace to get an alignment
-        i = len(hyp)-1
-        j = last
-        bt = []
-        while True:
-            ip,jp = bp_matrix[i,j]
-            if ip == i: # Insertion
-                bt.append(('INS', nodes[j].sym))
-            elif jp == j: # Deletion
-                bt.append((hyp[i], 'DEL'))
-            else:
-                bt.append((hyp[i], nodes[j].sym))
-            # If we consume both ref and hyp, we are done
-            if ip == -1 and jp == -1:
-                break
-            # If we hit the beginning of the ref, fill with insertions
-            if ip == -1:
-                while True:
-                    bt.append(('INS', nodes[jp].sym))
-                    bestp, bestscore = find_pred(i,jp)
-                    if bestp == -1:
-                        break
-                    jp = bestp
-                break
-            # If we hit the beginning of the hyp, fill with deletions
-            if jp == -1:
-                while ip >= 0:
-                    bt.append((hyp[ip], 'DEL'))
-                    ip = ip - 1
-                break
-            # Follow the pointer
-            i,j = ip,jp
-        bt.reverse()
-        return align_matrix[-1,last], bt
 
     def backtrace(self, end=None):
         """
@@ -482,18 +573,13 @@ class Dag(list):
         backtrace.reverse()
         return backtrace
 
-    def find_preds(self):
-        """
-        Find predecessor nodes for each node in the lattice and store them
-        in its 'prev' field.
-        """
-        for u in self.nodes():
-            u.prev = []
-        for w in self.nodes():
-            for f, s in w.exits:
-                for u in self[f].itervalues():
-                    if w not in u.prev:
-                        u.prev.append(w)
+    def time_range(self, start, end):
+        """Return all nodes starting in a certain time range."""
+        while self.frames[start] == None:
+            start += 1
+        while self.frames[end] == None:
+            end -= 1
+        return self.nodes[self.frames[start]:self.frames[end]]
 
     def traverse_depth(self, start=None):
         """Depth-first traversal of DAG nodes"""
@@ -507,11 +593,10 @@ class Dag(list):
         # all of its successors
         while roots:
             r = roots.pop()
-            for ef, ascr in r.exits:
-                for v in self[ef].itervalues():
-                    if v not in seen:
-                        roots.append(v)
-                        seen[v] = 1
+            for x in r.exits:
+                if x.dest not in seen:
+                    roots.append(x.dest)
+                    seen[x.dest] = 1
             yield r
 
     def traverse_breadth(self, start=None):
@@ -526,19 +611,16 @@ class Dag(list):
         # all of its successors
         while roots:
             r = roots.pop()
-            for ef, ascr in r.exits:
-                for v in self[ef].itervalues():
-                    if v not in seen:
-                        roots.insert(0, v)
-                        seen[v] = 1
+            for x in r.exits:
+                if x.dest not in seen:
+                    roots.insert(0, x.dest)
+                    seen[x.dest] = 1
             yield r
 
     def reverse_breadth(self, end=None):
         """Breadth-first reverse traversal of DAG nodes"""
         if end == None:
             end = self.end
-        if end.prev == None:
-            self.find_preds()
         # Initialize the agenda (set of active nodes)
         roots = [end]
         # Keep a table of already seen nodes
@@ -547,136 +629,283 @@ class Dag(list):
         # all of its successors
         while roots:
             r = roots.pop()
-            for v in r.prev:
-                if v not in seen:
-                    roots.insert(0, v)
-                seen[v] = 1
+            for v in r.entries:
+                if v.src not in seen:
+                    roots.insert(0, v.src)
+                seen[v.src] = 1
             yield r
+
+    def update_link(self, src, dest, ascr):
+        """Add a link from src to dest if none exists, or update the
+        acoustic score if one does and ascr is better."""
+        for x in src.exits:
+            if x.dest == dest:
+                if ascr > x.ascr:
+                    x.ascr = ascr
+                # Found a link, return
+                return x.ascr
+        link = self.Link(src, dest, ascr)
+        src.exits.append(link)
+        dest.entries.append(link)
+
+    def bypass_fillers(self, lm=None, silprob=0.1, fillprob=0.1):
+        """Add links to bypass filler nodes."""
+        if lm:
+            silpen = math.log(silprob) * lm.lw + math.log(lm.wip)
+            fillpen = math.log(fillprob) * lm.lw + math.log(lm.wip)
+        else:
+            silpen = math.log(silprob)
+            fillpen = math.log(fillprob)
+        def fill_score(link):
+            if link.dest.sym == '<sil>':
+                return link.ascr + silpen
+            else:
+                return link.ascr + fillpen
+        # Do transitive closure on filler nodes
+        for n in self.nodes:
+            if is_filler(n.sym):
+                continue
+            # Traverse the outgoing filler links until all non-fillers
+            # are reached.
+            agenda = []
+            leaves = []
+            for nx in n.exits:
+                if is_filler(nx.dest.sym) and nx.dest != self.end:
+                    fscr = fill_score(nx)
+                    agenda.append((nx, fscr))
+            while len(agenda):
+                link, fscr = agenda.pop()
+                for nx in link.dest.exits:
+                    if is_filler(nx.dest.sym) and nx.dest != self.end:
+                        fscr2 = fill_score(nx)
+                        agenda.append((nx, fscr + fscr2))
+                    else:
+                        self.update_link(n, nx.dest, fscr + nx.ascr)
 
     def remove_unreachable(self):
         """Remove unreachable nodes and dangling edges."""
-        if self.end.prev == None:
-            self.find_preds()
+        # Mark reachable nodes from the end
         for w in self.reverse_breadth():
             w.score = 42
-        for frame in self:
-            for sym in frame.keys():
-                if frame[sym].score != 42:
-                    del frame[sym]
-        for frame in self:
-            for node in frame.itervalues():
-                newexits = []
-                for ef, ascr in node.exits:
-                    if len(self[ef]) > 0:
-                        newexits.append((ef, ascr))
-                node.exits = newexits
+        # Find and remove unreachable ones
+        begone = {}
+        for i, w in enumerate(self.nodes):
+            if w.score != 42:
+                begone[w] = 1
+                self.nodes[i] = None
+        self.nodes = [w for w in self.nodes if w != None]
+        # Rebuild frame pointers
+        self.build_frame_pointers()
+        # Remove links to unreachable nodes
+        for w in self.nodes:
+            newexits = []
+            for x in w.exits:
+                if x.dest in begone:
+                    pass
+                else:
+                    newexits.append(x)
+            w.exits = newexits
+            newentries = []
+            for x in w.entries:
+                if x.src in begone:
+                    pass
+                else:
+                    newentries.append(x)
+            w.entries = newentries
 
-    def forward(self, lm=None, lw=7.5, ip=0.7):
+    def forward(self, lm=None, lw=1.0, aw=1.0):
         """
         Compute forward variable for all arcs in the lattice.
 
         @param lm: Language model to use in computation
-        @type lm: sphinx.arpalm.ArpaLM (or equivalent)
-        @param lw: Language model weight
-        @type lw: float
-        @param ip: Word insertion penalty
-        @type ip: float
+        @type lm: sphinxbase.ngram_model (or equivalent)
         """
-        self.find_preds()
-        self.remove_unreachable()
         # For each node in self (they sort forward by time, which is
         # actually the only thing that guarantees that a nodes'
         # predecessors will be touched before it)
-        for w in self.nodes():
+        for w in self.nodes:
             # For each outgoing arc from w
-            for i,x in enumerate(w.exits):
-                wf, wascr = x
+            for wx in w.exits:
                 # This is alpha_t(w)
-                alpha = LOGZERO
+                wx.alpha = LOGZERO
                 # If w has no predecessors the previous alpha is 1.0
-                if len(w.prev) == 0:
-                    alpha = wascr / lw
+                if len(w.entries) == 0:
+                    wx.alpha = wx.ascr * aw
                 # For each predecessor node to w
-                for v in w.prev:
-                    # Get language model score P(w|v) (bigrams only for now...)
+                for vx in w.entries:
+                    v = vx.src
+                    # Get unscaled language model score P(w|v) (bigrams only for now...)
                     if lm:
-                        lscr = lm.score(v.sym, w.sym) + math.log(ip)
+                        lscr = lm.prob(baseword(w.sym),
+                                       baseword(v.sym))[0] * lw
                     else:
                         lscr = 0
-                    # Find the arc from v to w to get its alpha
-                    for vf, vs in v.exits:
-                        vascr, valpha, vbeta = vs
-                        if vf == w.entry:
-                            # Accumulate alpha for this arc
-                            alpha = logadd(alpha, valpha + lscr + wascr / lw)
-                # Update the acoustic score to hold alpha and beta
-                w.exits[i] = (wf, (wascr, alpha, LOGZERO))
+                    # Accumulate alpha for this arc
+                    wx.alpha = logadd(wx.alpha, vx.alpha + lscr + wx.ascr * aw)
 
-    def backward(self, lm=None, lw=7.5, ip=0.7):
+    def backward(self, lm=None, lw=1.0, aw=1.0):
         """
         Compute backward variable for all arcs in the lattice.
 
         @param lm: Language model to use in computation
-        @type lm: sphinx.arpalm.ArpaLM (or equivalent)
-        @param lw: Language model weight
-        @type lw: float
-        @param ip: Word insertion penalty
-        @type ip: float
+        @type lm: sphinxbase.ngram_model.NGramModel (or equivalent)
         """
         # For each node in self (in reverse):
-        for w in self.reverse_nodes():
+        for w in self.nodes[::-1]:
             # For each predecessor to w
-            for v in w.prev:
+            for vx in w.entries:
+                v = vx.src
                 # Beta for arcs into </s> = 1.0
                 if w == self.end:
                     beta = 0
                 else:
                     beta = LOGZERO
-                    # Get language model score P(w|v) (bigrams only for now...)
+                    # Get unscaled language model probability P(w|v) (bigrams only for now...)
                     if lm:
-                        lscr = lm.score(v.sym, w.sym) + math.log(ip)
+                        lscr = lm.prob(baseword(w.sym),
+                                       baseword(v.sym))[0] * lw
                     else:
                         lscr = 0
                     # For each outgoing arc from w
-                    for wf, ws in w.exits:
-                        wascr, walpha, wbeta = ws
+                    for wx in w.exits:
                         # Accumulate beta for arc from v to w
-                        beta = logadd(beta, wbeta + lscr + wascr / lw)
-                # Find the arc from v to w to update its beta
-                for i, arc in enumerate(v.exits):
-                    vf, vs = arc
-                    if vf == w.entry:
-                        vascr, valpha, vbeta = vs
-                        v.exits[i] = (vf, (vascr, valpha, logadd(vbeta, beta)))
+                        beta = logadd(beta, wx.beta + lscr + wx.ascr * aw)
+                # Update beta for this arc
+                vx.beta = logadd(vx.beta, beta)
 
-    def posterior(self, lm=None, lw=7.5, ip=0.7):
+    def posterior(self, lm=None, lw=1.0, aw=1.0):
         """
         Compute arc posterior probabilities.
 
         @param lm: Language model to use in computation
-        @type lm: sphinx.arpalm.ArpaLM (or equivalent)
-        @param lw: Language model weight
-        @type lw: float
-        @param ip: Word insertion penalty
-        @type ip: float
+        @type lm: sphinxbase.ngram_model.NGramModel (or equivalent)
         """
-        # Run forward and backward if not already done
-        frame, ascr = self.start.exits[0]
-        if not isinstance(ascr, tuple):
-            self.forward(lm, lw, ip)
-        frame, ascr = self.start.exits[0]
-        if ascr[2] == LOGZERO:
-            self.backward(lm, lw, ip)
+        # Clear alphas, betas, and posteriors
+        for w in self.nodes:
+            for wx in w.exits:
+                wx.alpha = wx.beta = wx.post = LOGZERO
+        # Run forward and backward
+        self.forward(lm, lw, aw)
+        self.backward(lm, lw, aw)
         # Sum over alpha for arcs entering the end node to get normalizer
         norm = LOGZERO
-        for v in self.end.prev:
-            for ef, ascr in v.exits:
-                if ef == self.end.entry:
-                    ascr, alpha, beta = ascr
-                    norm = logadd(norm, alpha)
+        for vx in self.end.entries:
+            norm = logadd(norm, vx.alpha)
         # Iterate over all arcs and normalize
-        for w in self.nodes():
-            for i, x in enumerate(w.exits):
-                ef, ascr = x
-                ascr, alpha, beta = ascr
-                w.exits[i] = (ef, (ascr, alpha, beta, alpha + beta - norm))
+        for w in self.nodes:
+            for wx in w.exits:
+                wx.post = wx.alpha + wx.beta - norm
+
+    def minimum_error(self, hyp):
+        """
+        Find the minimum word error rate path through lattice,
+        returning the number of errors and an alignment.
+        @return: Tuple of (error-count, alignment of (hyp, ref) pairs)
+        @rtype: (int, list(string, string))
+        """
+        # Initialize the alignment matrix
+        align_matrix = numpy.ones((len(hyp),len(self.nodes)), 'i') * 999999999
+        # And the backpointer matrix
+        bp_matrix = numpy.zeros((len(hyp),len(self.nodes)), 'O')
+        # Remove filler nodes from the reference
+        hyp = filter(lambda x: not is_filler(x), hyp)
+        # Bypass filler nodes in the lattice
+        self.bypass_fillers()
+        # Figure out the minimum distance to each node from the start
+        # of the lattice, and construct a node to ID mapping
+        nodeid = {}
+        for i,u in enumerate(self.nodes):
+            u.score = 999999999
+            nodeid[u] = i
+        self.start.score = 1
+        for u in self.nodes:
+            if is_filler(u.sym):
+                continue
+            for x in u.exits:
+                dist = u.score + 1
+                if dist < x.dest.score:
+                    x.dest.score = dist
+        def find_pred(ii, jj):
+            bestscore = 999999999
+            bestp = -1
+            if len(self.nodes[jj].entries) == 0:
+                return bestp, bestscore
+            for e in self.nodes[jj].entries:
+                k = nodeid[e.src]
+                if align_matrix[ii,k] < bestscore:
+                    bestp = k
+                    bestscore = align_matrix[ii,k]
+            return bestp, bestscore
+        # Now fill in the alignment matrix
+        for i, w in enumerate(hyp):
+            for j, u in enumerate(self.nodes):
+                # Insertion = cost(w, prev(u)) + 1
+                if u == self.start: # start node
+                    bestp = -1
+                    inscost = i + 2 # Distance from start of ref
+                else:
+                    # Find best predecessor in the same reference position
+                    bestp, bestscore = find_pred(i, j)
+                    inscost = align_matrix[i,bestp] + 1
+                # Deletion  = cost(prev(w), u) + 1
+                if i == 0: # start symbol
+                    delcost = u.score + 1 # Distance from start of hyp
+                else:
+                    delcost = align_matrix[i-1,j] + 1
+                # Substitution = cost(prev(w), prev(u)) + (w != u)
+                if i == 0 and bestp == -1: # Start node, start of ref
+                    subcost = int(baseword(w) != baseword(u.sym))
+                elif i == 0: # Start of ref
+                    subcost = (self.nodes[bestp].score
+                               + int(baseword(w) != baseword(u.sym)))
+                elif bestp == -1: # Start node
+                    subcost = i - 1 + int(baseword(w) != baseword(u.sym))
+                else:
+                    # Find best predecessor in the previous reference position
+                    bestp, bestscore = find_pred(i-1, j)
+                    subcost = (align_matrix[i-1,bestp]
+                               + int(baseword(w) != baseword(u.sym)))
+                align_matrix[i,j] = min(subcost, inscost, delcost)
+                # Now find the argmin
+                if align_matrix[i,j] == subcost:
+                    bp_matrix[i,j] = (i-1, bestp)
+                elif align_matrix[i,j] == inscost:
+                    bp_matrix[i,j] = (i, bestp)
+                else:
+                    bp_matrix[i,j] = (i-1, j)
+        # Find last node's index
+        last = nodeid[self.end]
+        # Backtrace to get an alignment
+        i = len(hyp)-1
+        j = last
+        bt = []
+        while True:
+            ip,jp = bp_matrix[i,j]
+            if ip == i: # Insertion
+                bt.append(('INS', baseword(self.nodes[j].sym)))
+            elif jp == j: # Deletion
+                bt.append((hyp[i], 'DEL'))
+            else:
+                bt.append((hyp[i], baseword(self.nodes[j].sym)))
+            # If we consume both ref and hyp, we are done
+            if ip == -1 and jp == -1:
+                break
+            # If we hit the beginning of the ref, fill with insertions
+            if ip == -1:
+                while True:
+                    bt.append(('INS', baseword(self.nodes[jp].sym)))
+                    bestp, bestscore = find_pred(i,jp)
+                    if bestp == -1:
+                        break
+                    jp = bestp
+                break
+            # If we hit the beginning of the hyp, fill with deletions
+            if jp == -1:
+                while ip >= 0:
+                    bt.append((hyp[ip], 'DEL'))
+                    ip = ip - 1
+                break
+            # Follow the pointer
+            i,j = ip,jp
+        bt.reverse()
+        return align_matrix[-1,last], bt
