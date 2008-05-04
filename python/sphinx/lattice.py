@@ -64,30 +64,6 @@ def baseword(sym):
     else:
         return sym
 
-
-def node_lmscore(v, u, lm, silpen=0, fillpen=0):
-    if lm == None:
-        return 0
-    elif v.sym == '<sil>':
-        return silpen, 1
-    elif is_filler(v.sym):
-        return fillpen, 1
-    else:
-        syms = [baseword(v.sym)]
-        # Trace back to find previous non-filler word.
-        hist = u
-        while hist and is_filler(hist.sym):
-            hist = hist.prev
-        if hist:
-            syms.append(baseword(hist.sym))
-        # And the one before that too.
-        hist = hist.prev
-        while hist and is_filler(hist.sym):
-            hist = hist.prev
-        if hist:
-            syms.append(baseword(hist.sym))
-        return lm.score(*syms)
-
 class Dag(object):
     """
     Directed acyclic graph representation of a phone/word lattice.
@@ -163,24 +139,6 @@ class Dag(object):
             self.post = post
             self.lback = lback
             self.prev = None
-
-        def __cmp__(self, other):
-            return (other.pscr + other.dest.score) - (self.pscr + self.dest.score) 
-
-        def __le__(self, other):
-            return (self.pscr + self.dest.score) >= (other.pscr + other.dest.score)
-
-        def __ge__(self, other):
-            return (self.pscr + self.dest.score) <= (other.pscr + other.dest.score)
-
-        def __lt__(self, other):
-            return (self.pscr + self.dest.score) > (other.pscr + other.dest.score)
-
-        def __gt__(self, other):
-            return (self.pscr + self.dest.score) < (other.pscr + other.dest.score)
-
-        def __eq__(self, other):
-            return (self.pscr + self.dest.score) == (other.pscr + other.dest.score)
 
     def __init__(self, sphinx_file=None, htk_file=None, frate=100):
         """
@@ -264,12 +222,6 @@ class Dag(object):
         for n in self.nodes:
             n.exits.sort(lambda x,y: cmp(x.dest.entry, y.dest.entry))
 
-    def build_frame_pointers(self):
-        self.frames = [None] * (self.nodes[-1].entry + 1)
-        for i,n in enumerate(self.nodes):
-            if self.frames[n.entry] == None:
-                self.frames[n.entry] = i
-
     headre = re.compile(r'# (-\S+) (\S+)')
     def sphinx2dag(self, s3file):
         """Read a Sphinx-III format lattice file to populate a DAG."""
@@ -326,8 +278,6 @@ class Dag(object):
         self.snap_links()
         # Sort nodes to be in time order
         self.sort_nodes_forward()
-        # Build frame pointers
-        self.build_frame_pointers()
 
     def dag2sphinx(self, outfile, logbase=1.0003):
         if outfile.endswith('.gz'): # DUMB
@@ -573,13 +523,21 @@ class Dag(object):
         backtrace.reverse()
         return backtrace
 
-    def time_range(self, start, end):
+    def node_range(self, start, end):
         """Return all nodes starting in a certain time range."""
-        while self.frames[start] == None:
-            start += 1
-        while self.frames[end] == None:
-            end -= 1
-        return self.nodes[self.frames[start]:self.frames[end]]
+        return [n for n in self.nodes
+                if n.entry >= start
+                and n.entry < end]
+
+    def edge_slice(self, time):
+        """Return all edges active at a certain time point."""
+        return self.edge_range(time, time)
+
+    def edge_range(self, start, end):
+        """Return all edges active in a certain time range."""
+        return [e for e in self.edges()
+                if e.src.entry <= end
+                and e.dest.entry > start]
 
     def traverse_depth(self, start=None):
         """Depth-first traversal of DAG nodes"""
