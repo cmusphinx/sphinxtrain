@@ -89,14 +89,18 @@ partial_op(float64 *p_op,
 	    f_op += mixw[j][k] * den[j][kk];
 	}
 	
-	/* figure out partial output probability excluding
+	/* Figure out partial output probability excluding
 	 * the given feature stream j. */
+        /* That is technically correct but quite confusing, because
+         * actually what we are trying to achieve here is a
+         * normalization by f_op when we go to compute the mixture
+         * posteriors.  See below. */
 	p_op[j] = op / f_op;
     }
 }
 
 void
-partial_ci_op(float64 *p_op,
+partial_ci_op(float64 *p_ci_op,
 
 	      float64 **den,
 	      uint32  **den_idx,
@@ -119,7 +123,8 @@ partial_ci_op(float64 *p_op,
 	    f_op += mixw[j][k] * den[j][kk];
 	}
 
-	p_op[j] = f_op;
+        /* Oh look, and we do it the opposite way for CI models... */
+	p_ci_op[j] = f_op;
     }
 }
 
@@ -173,6 +178,31 @@ den_terms(float64 **d_term,
 	    /* density index k for one of the n_top density values */
 	    k = den_idx[j][kk];
 
+            /* Remember that p_reest_term is equal to the posterior
+             * probability of transition (i,j) divided by the output
+             * density of state j (i.e. post_j / op).  Thus, in the
+             * single-stream case, this equation works out to:
+             *
+             * dt[k] = post * (mixw[k] * density[k]) / output_density
+             *       = post * (mixw[k] * density[k]) / sum_k(mixw[k] * density[k])
+             *
+             * in other words, the transition posterior times the
+             * mixture posterior.
+             *
+             * In the multi-stream case, where p_op[j] = (output /
+             * output[j]), we get this:
+             *
+             * dt[j][k]
+             * = (post / output) * (mixw[j][k] * density[j][k] * output) / (output[j])
+             * = post * (mixw[j][k] * density[j][k]) / sum_k(mixw[j][k] * density[j][k])
+             *
+             * in other words the transition posterior times the
+             * mixture posterior for stream j.
+             *
+             * It probably has to be this way in order to accomodate
+             * the single and multi-stream cases with the same code,
+             * but it's kind of confusing.
+             */
 	    d_term[j][kk] = mixw[j][k] * den[j][kk] * p_op[j] * p_reest_term;
 	}
     }
@@ -713,7 +743,9 @@ backward_update(float64 **active_alpha,
 	    j = active[s];
 	    l_cb = state_seq[j].l_cb;
 	    l_ci_cb = state_seq[j].l_ci_cb;
-	    
+
+            /* Output probability (actually a density) for state j at
+             * timepoint t+1. */
 	    op = gauden_mixture(now_den[l_cb],
 				now_den_idx[l_cb],
 				mixw[state_seq[j].mixw],
@@ -805,12 +837,16 @@ backward_update(float64 **active_alpha,
 
 		    /* Update the transition matrix accumulators if necessary */
 		    if (tmat_reest) {
+                        /* post_j is the posterior probability of
+                         * state j followed by state i, a.k.a. the
+                         * fractional count of transitions i->j. */
 			tacc[i][j-i] += post_j;
 		    }
 
 		    /* Compute the output probability excluding the contribution
 		     * of each feature stream.  i.e. p_op[0] is the output
-		     * probability excluding feature stream 0 */
+		     * probability excluding feature stream 0.  For single-stream models,
+                     * p_op[0] = 1.0, and thus we don't actually need to do this. */
 		    partial_op(p_op,
 			       op,
 			       now_den[l_cb],
@@ -819,7 +855,8 @@ backward_update(float64 **active_alpha,
 			       n_feat,
 			       n_top);
 
-		    /* compute the probability of each (of possibly topn) density */
+		    /* Compute the posterior probability (also known as the fractional
+                     * occupation count) of each (of possibly topn) density. */
 		    den_terms(d_term,
 			      p_reest_term,
 			      p_op,
@@ -877,8 +914,11 @@ backward_update(float64 **active_alpha,
 			}
 		    }
 		    
-		    /* accumulate the probability for each density in the 
-		     * density reestimation accumulators */
+		    /* accumulate the probability for each density in
+		     * the density reestimation accumulators (these
+		     * are the same values as the mixture weight
+		     * accumulators, we will use them to compute the
+		     * density accumulators below). */
 		    if (mean_reest || var_reest) {
 			accum_den_terms(denacc[l_cb], d_term,
 					now_den_idx[l_cb], n_feat, n_top);
@@ -1059,6 +1099,13 @@ backward_update(float64 **active_alpha,
 	    /* Update the mean and variance reestimation accumulators */
 	    if (pdumpfh)
 		fprintf(pdumpfh, "time %d:\n", t+1);
+            /* We accumulated the posterior probabilities
+             * (a.k.a. fractional counts) for each density above - in
+             * actual fact they are the same as the mixture weight
+             * counts, which are the same as the "dnom" counts.  So
+             * now we just have to multiply them by the feature vector
+             * to get the "mean" counts, and do one of two things for
+             * the "variance" counts. */
 	    accum_gauden(denacc,
 			 cb_inv,
 			 n_lcl_cb,
