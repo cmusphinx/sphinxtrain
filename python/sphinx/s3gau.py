@@ -120,17 +120,29 @@ class S3FullGauFile(S3GauFile):
 class S3GauFile_write(S3File_write):
     "Write Sphinx-III format Gaussian parameter files"
     def writeall(self, stuff):
-        # This will break for multi-stream files
-        n_mgau, n_feat, density, veclen = shape(stuff)
-        if n_feat != 1:
-            raise Exception, "Multi-stream files not supported"
-        # Write the header
-        self.fh.seek(self.data_start, 0)
-        self.fh.write(pack("=IIIII",
-                           n_mgau, n_feat, density, veclen,
-                           n_mgau * n_feat * density * veclen))
-        allgau = reshape(stuff, (n_mgau*n_feat*density*veclen,))
-        self.fh.write(pack("=" + str(len(allgau)) + "f", *allgau))
+        # Single-stream files are easy
+        n_mgau = len(stuff)
+        n_feat = len(stuff[0])
+        n_density = len(stuff[0][0])
+        if n_feat == 1:
+            veclen = len(stuff[0][0][0])
+            # Write the header
+            self.fh.seek(self.data_start, 0)
+            self.fh.write(pack("=IIIII",
+                               n_mgau, n_feat, n_density, veclen,
+                               n_mgau * n_feat * n_density * veclen))
+            allgau = reshape(stuff, (n_mgau*n_feat*n_density*veclen,))
+            self.fh.write(pack("=" + str(len(allgau)) + "f", *allgau))
+        else:
+            veclen = [len(x[0]) for x in stuff[0]]
+            # Write the header
+            self.fh.seek(self.data_start, 0)
+            self.fh.write(pack("=III", n_mgau, n_feat, n_density))
+            self.fh.write(pack(("=%dI" % len(veclen)), *veclen))
+            self.fh.write(pack("=I", n_mgau * n_density * sum(veclen)))
+            for m in stuff:
+                for f in m:
+                    f.ravel().astype('f').tofile(self.fh)
 
 class S3FullGauFile_write(S3GauFile_write):
     "Write Sphinx-III format Gaussian full covariance matrix files"
