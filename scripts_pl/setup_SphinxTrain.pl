@@ -146,6 +146,8 @@ foreach my $executable (@dirlist) {
 	      $replace_mode);
 }
 
+print "Copying scripts from $SPHINXTRAINDIR/scripts_pl\n";
+
 # Copy the scripts from the scripts_pl directory
 replace_tree("$SPHINXTRAINDIR/scripts_pl",
 	     "scripts_pl", $replace_mode, qr/\.p[lm]$/);
@@ -232,7 +234,7 @@ sub replace_file {
   my $replace_mode = shift;
 
   if (($replace_mode == $FORCE_MODE) or (! -s $destination)) {
-#    print "Replacing file $destination with $source\n";
+    print "Replacing file $destination with $source\n";
     copy("$source", "$destination");
   } elsif ($replace_mode == $UPDATE_MODE) {
     my $source_time = stat($source);
@@ -246,13 +248,14 @@ sub replace_file {
 sub replace_tree {
     my ($src, $dest, $mode, $pattern) = @_;
 
+    print "$src => $dest\n";
     find({ wanted => sub {
 	       my $sf = $File::Find::name;
 	       my $df = $sf;
 	       substr($df, 0, length($src)) = "";
 	       $df = catfile($dest, $df);
 	       return if ($sf =~ /~$/); # Skip Emacs tempfiles
-	       return if ($sf =~ /\/\./); # Skip dotfiles and dotdirs
+	       return if ($sf =~ /\/\.svn/); # Skip .svn directories
 	       if (-d $sf) {
 		   mkdir $df, 0777;
 	       }
