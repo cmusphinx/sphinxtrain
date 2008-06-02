@@ -131,7 +131,9 @@ class S3File_write:
         lsb = (self.fh.tell() + len("endhdr\n")) & 3
         if lsb != 0:
             align = 4-lsb
-        self.fh.write("%sendhdr\n" % (" " * align))
+            self.fh.write("%sendhdr\n" % (" " * align))
+        else:
+            self.fh.write("endhdr\n")
         self.fh.write(pack("=i", 0x11223344))
         self.data_start = self.fh.tell()
 
