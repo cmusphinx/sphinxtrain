@@ -47,7 +47,9 @@ class S3File(object):
                 raise Exception("EOF while reading headers")
             if spam.endswith("endhdr\n"):
                 break
-            k, v = spam.split()
+            sp = spam.find(' ')
+            k = spam[0:sp].strip()
+            v = spam[sp:].strip()
             self.fileattr[k] = v
         # This is 0x11223344 in the file's byte order
         spam = unpack("<i", self.fh.read(4))[0]
