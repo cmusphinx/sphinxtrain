@@ -237,8 +237,7 @@ sub FlatInitialize
 
     #$statesperhmm obtained from variables.def
     my $topologyfile             = "$modarchdir/$ST::CFG_EXPTNAME.topology";
-    RunTool('maketopology.pl', $logfile, 0,
-	    $ST::CFG_STATESPERHMM, $ST::CFG_SKIPSTATE, $topologyfile);
+    RunScript("$ST::CFG_SCRIPT_DIR/maketopology.pl", $topologyfile);
 
     if ($return_value = RunTool('mk_mdef_gen', $logfile, 0,
 				-phnlstfn => $phonefile,

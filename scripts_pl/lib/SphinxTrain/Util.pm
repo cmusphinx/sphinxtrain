@@ -403,7 +403,7 @@ sub RunScript {
     }
     unshift(@args, -cfg => $ST::CFG_FILE);
 
-    return system($script, @args);
+    return system('perl', $script, @args);
 }
 
 sub LaunchScript {
@@ -441,7 +441,7 @@ sub LaunchScript {
     return $ST::Q->submit_job({deps => $deps,
 			       name => $name,
 			       @qmanager,
-			       command => [$script, @args]});
+			       command => ['perl', $script, @args]});
 }
 
 sub WaitForScript {

@@ -32,19 +32,26 @@
 #
 # ====================================================================
 
-if (@ARGV < 2) {
-  print "Usage: $0 <no of states per hmm> (allow skips yes/no) <output file>\n";
-  print "\tDefault: allow skips yes\n";
-  exit -1;
+use strict;
+use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
+use File::Path;
+
+use lib catdir(dirname($0), 'lib');
+use SphinxTrain::Config;
+use SphinxTrain::Util;
+
+my ($outfile, $nstates, $allowskips) = @ARGV;
+
+unless (defined $outfile) {
+  LogError("topology file name is required");
+  exit (1);
 }
 
-$nstates = shift;
-if (@ARGV > 1) {
-  $allowskips = shift;
-} else {
-  $allowskips = "yes";
-}
-$outfile = shift;
+$nstates = (defined($ST::CFG_STATESPERHMM) ? $ST::CFG_STATESPERHMM : 3) unless defined $nstates;
+$allowskips = (defined($ST::CFG_SKIPSTATE) ? $ST::CFG_SKIPSTATE : "yes") unless defined $allowskips;
+
 open STDOUT, ">$outfile" or die "Failed to open $outfile: $!";
 print "#\n";
 print "# ${nstates}-state Bakis topology HMM with non-emitting last state\n";
@@ -57,12 +64,13 @@ print "#Version number\n";
 print "0.1\n";
 print "# Number of states per model followed by transition matrix\n";
 
-$no = $nstates + 1;;
+my $no = $nstates + 1;;
 print "$no\n";
 
-$n = 1;
+my $n = 1;
 while ($n <= $nstates) {
-    $j = 1;
+    my $j = 1;
+    my $nnn;
     if ( $allowskips eq "no" ) {
      $nnn = $n + 1;
     } else {
