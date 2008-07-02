@@ -62,7 +62,6 @@ extern "C" {
 #include <s3/matrix.h>
 #include <s3/vector.h>
 #include <s3/prefix_upto.h>
-#include <s3/list.h>
 #include <s3/hash.h>
 #include <s3/corpus.h>
 #include <s3/n_words.h>

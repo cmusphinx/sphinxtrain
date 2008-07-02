@@ -55,7 +55,6 @@ extern "C" {
 #endif
 
 #include <s3/acmod_set.h>
-#include <s3/list.h>
 #include <s3/hash.h>
 #include <s3/prim_type.h>
 #include <s3/lts.h>

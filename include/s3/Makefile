@@ -51,7 +51,7 @@ H=  \
   cvt2triphone.h div.h dtree.h enum_subset.h err.h feat.h \
   fgets_wo_nl.h floatbuf_io.h fp_cache.h fread_retry.h gauden.h gauden_io.h \
   get_cpu_time.h get_host_name.h get_time.h hash.h heap.h int32_io.h \
-  intbuf_io.h itree.h kmeans.h lambda_io.h lda.h lexicon.h* list.h \
+  intbuf_io.h itree.h kmeans.h lambda_io.h lda.h lexicon.h* \
   live_norm.h matrix.h merge_den.h metric.h mixw_param_io.h mk_phone_list.h \
   mk_phone_seq.h mk_sseq.h mk_trans_seq.h mk_ts2ci.h mk_wordlist.h mllr.h \
   mllr_class_io.h mllr_io.h model_def.h model_def_io.h model_inventory.h \
