@@ -222,6 +222,11 @@ sub FlatInitialize ()
     my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_1";
     mkdir ($output_buffer_dir,0777);
 
+    my @feat_args;
+    if (defined($ST::CFG_SVSPEC)) {
+	push(@feat_args, -svspec =>$ST::CFG_SVSPEC);
+    }
+
     if ($return_value = RunTool('init_gau', $logfile, 0,
 				-ctlfn => $ST::CFG_LISTOFFILES,
 				-part => 1, -npart => 1,
@@ -233,6 +238,7 @@ sub FlatInitialize ()
 				-varnorm => $ST::CFG_VARNORM,
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
+				@feat_args
 			       )) {
       return $return_value;
     }
@@ -269,6 +275,7 @@ sub FlatInitialize ()
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
 				-fullvar => $ST::CFG_FULLVAR,
+				@feat_args
 			       )) {
       return $return_value;
     }

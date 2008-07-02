@@ -601,6 +601,11 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_VALIDATION,
 	  FEAT_DEFAULT_FEATURE_TYPE,
 	  "This argument selects the derived feature computation to use."},
+	{ "-svspec",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  NULL,
+	  "Split single stream features into subvectors according to this specification."},
 
 	{ "-ldafn",
 	  CMD_LN_STRING,

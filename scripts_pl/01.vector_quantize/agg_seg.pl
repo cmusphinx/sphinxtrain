@@ -82,6 +82,11 @@ mkdir ($segdmpdir,0777);
 $dumpfile = "$segdmpdir/${ST::CFG_EXPTNAME}.dmp";
 $logfile = "$logdir/${ST::CFG_EXPTNAME}.vq.agg_seg.log";
 
+my @svspec;
+if (defined($ST::CFG_SVSPEC)){
+    @svspec = (-svspec =>$ST::CFG_SVSPEC);
+}
+
 # run it here 
 exit RunTool('agg_seg',, $logfile, 0,
 	     -segdmpdirs => $segdmpdir,
@@ -95,4 +100,5 @@ exit RunTool('agg_seg',, $logfile, 0,
 	     -cmn => $ST::CFG_CMN,
 	     -varnorm => $ST::CFG_VARNORM,
 	     -feat => $ST::CFG_FEATURE,
+	     @svspec,
 	     -stride => $stride);

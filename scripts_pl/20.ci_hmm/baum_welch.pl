@@ -108,9 +108,12 @@ my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 
 # if there is an MLLT transformation, use it
-my @lda_args;
+my @feat_args;
+if (defined($ST::CFG_SVSPEC)){
+    push(@feat_args, -svspec =>$ST::CFG_SVSPEC);
+}
 if (-r $MLLT_FILE) {
-    push(@lda_args,
+    push(@feat_args,
 	 -ldafn => $MLLT_FILE,
 	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
@@ -120,10 +123,10 @@ if (defined($ST::CFG_PHSEG_DIR)) {
     my $line = <INPUT>;
     if (split(" ", $line) ==1) {
 	# Use full file path
-	push(@lda_args, -outputfullpath => 'yes');
+	push(@feat_args, -outputfullpath => 'yes');
     }
     close INPUT;
-    push(@lda_args, -outphsegdir => $ST::CFG_PHSEG_DIR);
+    push(@feat_args, -outphsegdir => $ST::CFG_PHSEG_DIR);
 }
 
 # aligned transcripts and the list of aligned files is obtained as a result
@@ -194,7 +197,7 @@ my $return_value = RunTool
      -diagfull => $ST::CFG_DIAGFULL,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
-     @lda_args,
+     @feat_args,
      -timing => "no");
 
 

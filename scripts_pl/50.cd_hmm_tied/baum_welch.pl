@@ -102,6 +102,9 @@ my $minvar  = 1e-4;
 
 # Add the MLLT transform if it exists
 my @extra_args;
+if (defined($ST::CFG_SVSPEC)){
+    push(@extra_args, -svspec =>$ST::CFG_SVSPEC);
+}
 if (-r $MLLT_FILE) {
     push(@extra_args,
 	 -ldafn => $MLLT_FILE,

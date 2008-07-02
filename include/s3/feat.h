@@ -81,8 +81,6 @@ typedef struct feat_conf_s {
     uint32 (*n_stream)(void);
     uint32 (*blksize)(void);
     const uint32 * (*vecsize)(void);
-    vector_t ** (*alloc)(uint32 n_frame);
-    void (*free)(vector_t **f);
     vector_t ** (*compute)(vector_t *mfcc,
 			   uint32 *inout_n_frame);
     void (*print)(const char *label,
@@ -104,6 +102,9 @@ feat_set_in_veclen(uint32 len);
 
 int32
 feat_read_lda(const char *ldafile, uint32 dim);
+
+int32 **
+feat_set_subvecs(char const *str);
 
 uint32
 feat_mfcc_len(void);

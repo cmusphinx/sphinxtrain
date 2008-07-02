@@ -96,9 +96,12 @@ my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 
 # if there is an MLLT transformation, use it
-my @lda_args;
+my @feat_args;
+if (defined($ST::CFG_SVSPEC)){
+    push(@feat_args, -svspec =>$ST::CFG_SVSPEC);
+}
 if (-r $MLLT_FILE) {
-    push(@lda_args,
+    push(@feat_args,
 	 -ldafn => $MLLT_FILE,
 	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
@@ -164,7 +167,7 @@ my $return_value = RunTool
      -diagfull => $ST::CFG_DIAGFULL,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
-     @lda_args,
+     @feat_args,
      -timing => "no");
 
 

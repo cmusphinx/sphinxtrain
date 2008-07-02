@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -72,8 +73,25 @@
 static uint32 fid = FEAT_ID_NONE;
 static unsigned int mfcc_len = 13;
 
-static float32 ***lda;
-static uint32 n_lda, lda_rows, lda_cols, lda_dim;
+/**
+ * Variables related to LDA/MLLT.
+ */
+static struct {
+    float32 ***lda;
+    uint32 n_lda, lda_rows, lda_cols, lda_dim;
+} lda;
+
+/**
+ * Variables related to subvector projection.
+ */
+static struct {
+    uint32 *sv_len;
+    int32 **subvecs;
+    float32 *sv_buf;
+    int32 sv_dim;
+    int32 n_sv;
+} sv;
+
 
 static char *__name2id[] = {
     "4s_12c_24d_3p_12dd",
@@ -107,8 +125,6 @@ static feat_conf_t feat_conf[FEAT_ID_MAX+1] = {
       s2_feat_n_stream,
       s2_feat_blksize,
       s2_feat_vecsize,
-      s2_feat_alloc,
-      s2_feat_free,
       s2_feat_compute,
       s2_feat_print },		/* FEAT_ID_SPHINX_II_STD */
     { v1_feat_set_in_veclen,
@@ -117,8 +133,6 @@ static feat_conf_t feat_conf[FEAT_ID_MAX+1] = {
       v1_feat_n_stream,
       v1_feat_blksize,
       v1_feat_vecsize,
-      v1_feat_alloc,
-      v1_feat_free,
       v1_feat_compute,
       v1_feat_print },		/* FEAT_ID_V1 */
     { v2_feat_set_in_veclen,
@@ -127,8 +141,6 @@ static feat_conf_t feat_conf[FEAT_ID_MAX+1] = {
       v2_feat_n_stream,
       v2_feat_blksize,
       v2_feat_vecsize,
-      v2_feat_alloc,
-      v2_feat_free,
       v2_feat_compute,
       v2_feat_print },		/* FEAT_ID_V2: 1s_c_d_dd */
     { v3_feat_set_in_veclen,
@@ -137,8 +149,6 @@ static feat_conf_t feat_conf[FEAT_ID_MAX+1] = {
       v3_feat_n_stream,
       v3_feat_blksize,
       v3_feat_vecsize,
-      v3_feat_alloc,
-      v3_feat_free,
       v3_feat_compute,
       v3_feat_print },		/* FEAT_ID_V3: 1s_c_d */
     { v4_feat_set_in_veclen,
@@ -147,8 +157,6 @@ static feat_conf_t feat_conf[FEAT_ID_MAX+1] = {
       v4_feat_n_stream,
       v4_feat_blksize,
       v4_feat_vecsize,
-      v4_feat_alloc,
-      v4_feat_free,
       v4_feat_compute,
       v4_feat_print },		/* FEAT_ID_V4: 1s_c */
     { v5_feat_set_in_veclen,
@@ -157,8 +165,6 @@ static feat_conf_t feat_conf[FEAT_ID_MAX+1] = {
       v5_feat_n_stream,
       v5_feat_blksize,
       v5_feat_vecsize,
-      v5_feat_alloc,
-      v5_feat_free,
       v5_feat_compute,
       v5_feat_print },		/* FEAT_ID_V5: 1s_c_dd */
     { v6_feat_set_in_veclen,
@@ -167,8 +173,6 @@ static feat_conf_t feat_conf[FEAT_ID_MAX+1] = {
       v6_feat_n_stream,
       v6_feat_blksize,
       v6_feat_vecsize,
-      v6_feat_alloc,
-      v6_feat_free,
       v6_feat_compute,
       v6_feat_print },		/* FEAT_ID_V5: 1s_d */
     { v7_feat_set_in_veclen,
@@ -177,8 +181,6 @@ static feat_conf_t feat_conf[FEAT_ID_MAX+1] = {
       v7_feat_n_stream,
       v7_feat_blksize,
       v7_feat_vecsize,
-      v7_feat_alloc,
-      v7_feat_free,
       v7_feat_compute,
       v7_feat_print },		/* FEAT_ID_V5: 1s_dd */
     { v8_feat_set_in_veclen,
@@ -187,8 +189,6 @@ static feat_conf_t feat_conf[FEAT_ID_MAX+1] = {
       v8_feat_n_stream,
       v8_feat_blksize,
       v8_feat_vecsize,
-      v8_feat_alloc,
-      v8_feat_free,
       v8_feat_compute,
       v8_feat_print }		/* FEAT_ID_V8: 1s_c_d_ld_dd */
 };
@@ -258,15 +258,236 @@ feat_set_in_veclen(uint32 len)
 int32
 feat_read_lda(const char *ldafile, uint32 dim)
 {
-    if (lda != NULL)
-	ckd_free_3d((void ***)lda);
-    lda = lda_read(ldafile, &n_lda, &lda_rows, &lda_cols);
-    if (lda == NULL)
+    if (lda.lda != NULL)
+	ckd_free_3d((void ***)lda.lda);
+    lda.lda = lda_read(ldafile, &lda.n_lda, &lda.lda_rows, &lda.lda_cols);
+    if (lda.lda == NULL)
 	return S3_ERROR;
-    lda_dim = dim;
+    lda.lda_dim = dim;
 
-    assert(lda_cols == feat_conf[fid].blksize());
+    assert(lda.lda_cols == feat_conf[fid].blksize());
     return S3_SUCCESS;
+}
+
+/**
+ * Project feature components to subvectors (if any).
+ */
+static void
+feat_subvec_project(vector_t **inout_feat, uint32 nfr)
+{
+    uint32 i;
+
+    for (i = 0; i < nfr; ++i) {
+        float32 *out;
+        int32 j;
+
+        out = sv.sv_buf;
+        for (j = 0; j < sv.n_sv; ++j) {
+            int32 *d;
+            for (d = sv.subvecs[j]; d && *d != -1; ++d) {
+                *out++ = inout_feat[i][0][*d];
+            }
+        }
+        memcpy(inout_feat[i][0], sv.sv_buf, sv.sv_dim * sizeof(*sv.sv_buf));
+    }
+}
+
+static void
+subvecs_free(int32 **subvecs)
+{
+    int32 **sv;
+
+    for (sv = subvecs; sv && *sv; ++sv)
+        ckd_free(*sv);
+    ckd_free(subvecs);
+}
+
+static int32 **
+feat_set_subvecs_internal(int32 **subvecs)
+{
+    int32 **s;
+    int32 n_sv, n_dim, i;
+    uint32 n_stream = feat_conf[fid].n_stream();
+    uint32 feat_n_dim = feat_conf[fid].blksize();
+
+    if (subvecs == NULL) {
+        subvecs_free(sv.subvecs);
+        ckd_free(sv.sv_buf);
+        ckd_free(sv.sv_len);
+        sv.n_sv = 0;
+        sv.subvecs = NULL;
+        sv.sv_len = NULL;
+        sv.sv_buf = NULL;
+        sv.sv_dim = 0;
+        return NULL;
+    }
+
+    if (n_stream != 1) {
+        E_ERROR("Subvector specifications require single-stream features!");
+        return NULL;
+    }
+
+    n_sv = 0;
+    n_dim = 0;
+    for (s = subvecs; s && *s; ++s) {
+        int32 *d;
+
+        for (d = *s; d && *d != -1; ++d) {
+            ++n_dim;
+        }
+        ++n_sv;
+    }
+    if (n_dim > feat_n_dim) {
+        E_ERROR("Total dimensionality of subvector specification %d "
+                "> feature dimensionality %d\n", n_dim, feat_n_dim);
+        return NULL;
+    }
+
+    sv.n_sv = n_sv;
+    sv.subvecs = subvecs;
+    sv.sv_len = ckd_calloc(n_sv, sizeof(*sv.sv_len));
+    sv.sv_buf = ckd_calloc(n_dim, sizeof(*sv.sv_buf));
+    sv.sv_dim = n_dim;
+    for (i = 0; i < n_sv; ++i) {
+        int32 *d;
+        for (d = subvecs[i]; d && *d != -1; ++d) {
+            ++sv.sv_len[i];
+        }
+    }
+
+    return sv.subvecs;
+}
+
+int32 **
+feat_set_subvecs(char const *str)
+{
+    char const *strp;
+    int32 n, n2, l;
+    /* Grumble. */
+    struct int_list {
+	int32 x;
+	struct int_list *next;
+    };
+    struct int_list *dimlist;            /* List of dimensions in one subvector */
+    struct int_list *il;
+    struct int_list_list {
+	struct int_list *x;
+	struct int_list_list *next;
+    };
+    struct int_list_list *veclist;            /* List of dimlists (subvectors) */
+    struct int_list_list *ill;
+    int32 **subvec;
+    int32 n_sv;
+
+    if (str == NULL)
+      return feat_set_subvecs_internal(NULL);
+
+    veclist = NULL;
+
+    strp = str;
+    n_sv = 0;
+    for (;;) {
+        dimlist = NULL;
+
+        for (;;) {
+            if (sscanf(strp, "%d%n", &n, &l) != 1)
+                E_FATAL("'%s': Couldn't read int32 @pos %d\n", str,
+                        strp - str);
+            strp += l;
+
+            if (*strp == '-') {
+                strp++;
+
+                if (sscanf(strp, "%d%n", &n2, &l) != 1)
+                    E_FATAL("'%s': Couldn't read int32 @pos %d\n", str,
+                            strp - str);
+                strp += l;
+            }
+            else
+                n2 = n;
+
+            if ((n < 0) || (n > n2))
+                E_FATAL("'%s': Bad subrange spec ending @pos %d\n", str,
+                        strp - str);
+
+            for (; n <= n2; n++) {
+		for (il = dimlist; il; il = il->next)
+		    if (il->x == n)
+			break;
+		if (il != NULL)
+                    E_FATAL("'%s': Duplicate dimension ending @pos %d\n",
+                            str, strp - str);
+
+                il = ckd_calloc(1, sizeof(*il));
+		il->x = n;
+		il->next = dimlist;
+		dimlist = il;
+            }
+
+            if ((*strp == '\0') || (*strp == '/'))
+                break;
+
+            if (*strp != ',')
+                E_FATAL("'%s': Bad delimiter @pos %d\n", str, strp - str);
+
+            strp++;
+        }
+
+	ill = ckd_calloc(1, sizeof(*ill));
+	ill->x = dimlist;
+	ill->next = veclist;
+	veclist = ill;
+	++n_sv;
+
+        if (*strp == '\0')
+            break;
+
+        assert(*strp == '/');
+        strp++;
+    }
+
+    /* Convert the glists to arrays; remember the glists are in reverse order of the input! */
+    subvec = (int32 **) ckd_calloc(n_sv + 1, sizeof(int32 *));     /* +1 for sentinel */
+    subvec[n_sv] = NULL;           /* sentinel */
+    n = n_sv;
+    for (--n, ill = veclist; (n >= 0) && ill; ill = ill->next, --n) {
+	n2 = 0;
+	for (il = ill->x; il; il = il->next)
+	    ++n2;
+
+        if (n2 <= 0)
+            E_FATAL("'%s': 0-length subvector\n", str);
+
+        subvec[n] = (int32 *) ckd_calloc(n2 + 1, sizeof(int32));        /* +1 for sentinel */
+        subvec[n][n2] = -1;     /* sentinel */
+
+	il = ill->x;
+        for (--n2; (n2 >= 0) && il; il = il->next, --n2)
+            subvec[n][n2] = il->x;
+        assert((n2 < 0) && (il == NULL));
+    }
+    assert((n < 0) && (ill == NULL));
+
+    /* Free the glists */
+    {
+	struct int_list_list *illn;
+	struct int_list *iln;
+	
+	for (ill = veclist; ill; ill = illn) {
+	    illn = ill->next;
+	    for (il = ill->x; il; il = iln) {
+		iln = il->next;
+		ckd_free(il);
+	    }
+	    ckd_free(ill);
+	}
+    }
+
+    if (feat_set_subvecs_internal(subvec) == NULL) {
+	    subvecs_free(subvec);
+	    return NULL;
+    }
+    return subvec;
 }
 
 uint32
@@ -308,7 +529,10 @@ feat_id()
 uint32
 feat_n_stream()
 {
-    if (fid <= FEAT_ID_MAX) {
+    if (sv.subvecs != NULL) {
+	return sv.n_sv;
+    }
+    else if (fid <= FEAT_ID_MAX) {
 	return feat_conf[fid].n_stream();
     }
     else if (fid == FEAT_ID_NONE) {
@@ -324,8 +548,11 @@ feat_n_stream()
 uint32
 feat_blksize()
 {
-    if (lda != NULL) {
-	return lda_dim;
+    if (sv.subvecs != NULL) {
+	return sv.sv_dim;
+    }
+    else if (lda.lda != NULL) {
+	return lda.lda_dim;
     }
     else if (fid <= FEAT_ID_MAX) {
 	return feat_conf[fid].blksize();
@@ -343,8 +570,11 @@ feat_blksize()
 const uint32 *
 feat_vecsize()
 {
-    if (lda != NULL) {
-	return &lda_dim;
+    if (sv.subvecs != NULL) {
+	return sv.sv_len;
+    }
+    else if (lda.lda != NULL) {
+	return &lda.lda_dim;
     }
     else if (fid <= FEAT_ID_MAX) {
 	return feat_conf[fid].vecsize();
@@ -389,11 +619,55 @@ feat_ck_vecsize(const char *tag,
 	return S3_SUCCESS;
 }
 
+static vector_t **
+feat_alloc_internal(uint32 n_frames, uint32 n_feat, uint32 const *vecsize)
+{
+    vector_t **out;
+    float *data;
+    uint32 len;
+    uint32 i, j, k;
+    uint32 frame_size;
+
+    out = (vector_t **)ckd_calloc_2d(n_frames, n_feat, sizeof(vector_t));
+    
+    for (i = 0, frame_size = 0; i < n_feat; i++)
+	frame_size += vecsize[i];
+
+    len = n_frames * frame_size;
+    
+    data = ckd_calloc(len, sizeof(float32));
+    
+    for (i = 0, k = 0; i < n_frames; i++) {
+	
+	assert((k % frame_size) == 0);
+	
+	for (j = 0; j < n_feat; j++) {
+	    out[i][j] = &data[k];
+	    k += vecsize[j];
+	}
+    }
+
+    assert(k == len);
+
+    return out;
+}
+
 vector_t **
 feat_alloc(uint32 n_frames)
 {
     if (fid <= FEAT_ID_MAX) {
-	return feat_conf[fid].alloc(n_frames);
+	uint32 const *vecsize;
+
+	/* This is a mess and the sphinxbase feat.h interface is much
+	   better, but we're not ready to switch yet. */
+	/* Special case feat_vecsize() for LDA, because we need to
+	   allocate enough room for the full vector even if we are
+	   going to reduce its dimensionality. */
+	if (lda.lda != NULL)
+	    vecsize = feat_conf[fid].vecsize();
+	else
+	    vecsize = feat_vecsize();
+	return feat_alloc_internal(n_frames, feat_n_stream(), vecsize);
     }
     else if (fid == FEAT_ID_NONE) {
 	E_FATAL("feat module must be configured w/ a valid ID\n");
@@ -409,7 +683,8 @@ void
 feat_free(vector_t **f)
 {
     if (fid <= FEAT_ID_MAX) {
-	feat_conf[fid].free(f);
+	ckd_free(f[0][0]);		/* frees the data block */
+	ckd_free_2d((void **)f);	/* frees the access overhead */
     }
     else if (fid == FEAT_ID_NONE) {
 	E_FATAL("feat module must be configured w/ a valid ID\n");
@@ -427,8 +702,10 @@ feat_compute(vector_t *mfcc,
 
     if (fid <= FEAT_ID_MAX) {
 	feat = feat_conf[fid].compute(mfcc, inout_n_frame);
-	if (lda)
-	    lda_transform(feat, *inout_n_frame, lda, lda_cols, lda_dim);
+	if (lda.lda)
+	    lda_transform(feat, *inout_n_frame, lda.lda, lda.lda_cols, lda.lda_dim);
+	if (sv.subvecs)
+	    feat_subvec_project(feat, *inout_n_frame);
 	return feat;
     }
     else if (fid == FEAT_ID_NONE) {
@@ -472,63 +749,3 @@ feat_print(const char *label,
 	E_FATAL("feat module misconfigured with invalid feat_id %u\n", fid);
     }
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:38  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.12  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.11  1996/03/25  15:36:00  eht
- * Change feat_comp_id() to just feat_id().
- *
- * Revision 1.10  1996/01/26  18:04:51  eht
- * *** empty log message ***
- *
- * Revision 1.9  1995/12/14  20:05:37  eht
- * Make changes to allow multiple feature extractor definitions.
- *
- * Revision 1.8  1995/12/07  19:20:09  eht
- * Added a function to return the total size of a frames worth of
- * features
- *
- * Revision 1.7  1995/12/04  14:59:55  eht
- * Added a feat_n_stream() function so that callers of this
- * module can know how many feature streams it computes.
- *
- * Revision 1.6  1995/10/12  17:39:31  eht
- * Use memcpy rather than bcopy since memcpy is a part
- * of the ANSI-C specification.
- *
- * Revision 1.5  1995/10/10  17:38:24  eht
- * Include some prototypes for called functions
- * Make some unsigned values consistent
- *
- * Revision 1.4  1995/10/09  20:56:36  eht
- * Changes needed for prim_type.h
- *
- * Revision 1.3  1995/10/09  15:02:03  eht
- * Changed ckd_alloc interface to get rid of __FILE__, __LINE__ arguments
- *
- * Revision 1.2  1995/09/07  19:04:37  eht
- * Fixed latent bug in argument passing to the silence
- * compression stuff.
- *
- * Revision 1.1  95/06/02  14:52:54  14:52:54  eht (Eric Thayer)
- * Initial revision
- * 
- *
- */

@@ -212,6 +212,11 @@ kmeans_init -gthobj single -stride 1 -ntrial 1 -minratio 0.001 \n\
 	  CMD_LN_NO_VALIDATION,
 	  FEAT_DEFAULT_FEATURE_TYPE,
 	  "This argument selects the derived feature computation to use."},
+	{ "-svspec",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  NULL,
+	  "Split single stream features into subvectors according to this specification."},
 
 	{ "-segdmpdirs",
 	  CMD_LN_STRING_LIST,

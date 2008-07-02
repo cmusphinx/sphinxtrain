@@ -70,10 +70,6 @@ SCRIPTS = 00.verify/verify_all.pl				\
 	50.cd_hmm_tied/norm.pl					\
 	50.cd_hmm_tied/slave_convg.pl				\
 	50.cd_hmm_tied/split_gaussians.pl			\
-	60.sa_train/baum_welch.pl				\
-	60.sa_train/norm_and_launchbw.pl			\
-	60.sa_train/norm.pl					\
-	60.sa_train/slave_convg.pl				\
 	90.deleted_interpolation/deleted_interpolation.pl	\
 	99.make_s2_models/make_s2_models.pl			\
 	decode/slave.pl						\

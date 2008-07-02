@@ -84,8 +84,9 @@ initialize(lexicon_t **out_lex,
     parse_cmd_ln(argc, argv);
 
     if (cmd_ln_access("-feat") != NULL) {
-	feat_set((const char *)cmd_ln_access("-feat"));
-	feat_set_in_veclen(*(int32 *)cmd_ln_access("-ceplen"));
+	feat_set(cmd_ln_str("-feat"));
+	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
+	feat_set_subvecs(cmd_ln_str("-svspec"));
     }
     else {
 	E_ERROR("Specify the feature extraction algorithm using -feat\n");

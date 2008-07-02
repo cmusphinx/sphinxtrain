@@ -85,6 +85,11 @@ $logfile = "$logdir/${ST::CFG_EXPTNAME}.kmeans.log";
 
 $| = 1;
 
+my @svspec;
+if (defined($ST::CFG_SVSPEC)){
+    @svspec = (-svspec =>$ST::CFG_SVSPEC);
+}
+
 exit RunTool('kmeans_init', $logfile, 0,
 	     -gthobj => 'single',
 	     -stride => 1,
@@ -99,6 +104,7 @@ exit RunTool('kmeans_init', $logfile, 0,
 	     -segdmpfn => $dumpfile,
 	     -ceplen => $ST::CFG_VECTOR_LENGTH,
 	     -feat => $ST::CFG_FEATURE,
+	     @svspec,
 	     -agc => $ST::CFG_AGC,
 	     -cmn => $ST::CFG_CMN,
 	     -varnorm => $ST::CFG_VARNORM);

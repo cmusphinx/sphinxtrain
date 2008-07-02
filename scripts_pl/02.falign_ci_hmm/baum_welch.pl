@@ -119,6 +119,11 @@ $ctl_counter = 1 unless ($ctl_counter);
 Log("Baum welch starting for $n_gau Gaussian(s), iteration: $iter ($part of $npart)",
     'result');
 
+my @feat_args;
+if (defined($ST::CFG_SVSPEC)) {
+    push(@feat_args, -svspec =>$ST::CFG_SVSPEC);
+}
+
 my $return_value = RunTool
     ('bw', $logfile, $ctl_counter,
      -moddeffn => $moddeffn,
@@ -153,6 +158,7 @@ my $return_value = RunTool
      -diagfull => $ST::CFG_DIAGFULL,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
+     @feat_args,
      -timing => "no");
 
 

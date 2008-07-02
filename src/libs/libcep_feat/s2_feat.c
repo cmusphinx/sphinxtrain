@@ -152,51 +152,6 @@ s2_feat_vecsize()
 }
 
 vector_t **
-s2_feat_alloc(uint32 n_frames)
-{
-    vector_t **out;
-    float *data;
-    uint32 len;
-    uint32 i, j, k;
-    uint32 frame_size;
-
-    out = (vector_t **)ckd_calloc_2d(n_frames, S2_N_FEATURE, sizeof(vector_t));
-
-    if (vecsize[0] == 0) {
-	E_FATAL("Call s2_feat_set_in_veclen() before s2_feat_alloc()\n");
-    }
-    
-    for (i = 0, frame_size = 0; i < n_feat; i++)
-	frame_size += vecsize[i];
-
-    len = n_frames * frame_size;
-    
-    data = ckd_calloc(len, sizeof(float32));
-    
-    for (i = 0, k = 0; i < n_frames; i++) {
-
-	assert((k % frame_size) == 0);
-
-	for (j = 0; j < S2_N_FEATURE; j++) {
-	    out[i][j] = &data[k];
-	    k += vecsize[j];
-	}
-    }
-
-    assert(k == len);
-
-    return out;
-}
-
-void
-s2_feat_free(vector_t **f)
-{
-    ckd_free(f[0][0]);		/* frees the data block */
-
-    ckd_free_2d((void **)f);	/* frees the access overhead */
-}
-
-vector_t **
 s2_feat_compute(vector_t *mfcc,
 		uint32 *inout_n_frame)
 {
@@ -218,7 +173,7 @@ s2_feat_compute(vector_t *mfcc,
 	fflush(stdout);
     }
     
-    out = s2_feat_alloc(n_frame);
+    out = feat_alloc(n_frame);
     
     s2_cep_feat(out, mfcc, n_frame);		/* see s2_cep.c */
     s2_short_dcep_feat(out, mfcc, n_frame);	/* see s2_dcep.c */

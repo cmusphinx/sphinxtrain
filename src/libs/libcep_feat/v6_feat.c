@@ -112,47 +112,6 @@ v6_feat_set_in_veclen(uint32 veclen)
     agc_set_veclen(veclen);
 }
 
-vector_t **
-v6_feat_alloc(uint32 n_frames)
-{
-    vector_t **out;
-    float *data;
-    uint32 len;
-    uint32 i, j, k;
-    uint32 frame_size;
-
-    out = (vector_t **)ckd_calloc_2d(n_frames, n_feat, sizeof(vector_t));
-    
-    for (i = 0, frame_size = 0; i < n_feat; i++)
-	frame_size += vecsize[i];
-
-    len = n_frames * frame_size;
-    
-    data = ckd_calloc(len, sizeof(float32));
-    
-    for (i = 0, k = 0; i < n_frames; i++) {
-	
-	assert((k % frame_size) == 0);
-	
-	for (j = 0; j < n_feat; j++) {
-	    out[i][j] = &data[k];
-	    k += vecsize[j];
-	}
-    }
-
-    assert(k == len);
-
-    return out;
-}
-
-void
-v6_feat_free(vector_t **f)
-{
-    ckd_free(f[0][0]);		/* frees the data block */
-
-    ckd_free_2d((void **)f);	/* frees the access overhead */
-}
-
 int32
 v6_diff_feat(vector_t o,
 	  vector_t *x,
@@ -198,7 +157,7 @@ v6_feat_compute(vector_t *mfcc,
     cmn(&mfcc[0][0], n_frame);
     agc(&mfcc[0][0], n_frame);
 
-    out = v6_feat_alloc(n_frame);
+    out = feat_alloc(n_frame);
 
     for (i = 0; i < n_frame; i++) {
 	v6_diff_feat(out[i][0],

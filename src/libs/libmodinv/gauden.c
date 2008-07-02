@@ -1005,7 +1005,7 @@ log_topn_densities(float64 *den,
 	for (j = 0; j < n_top; j++) {
 	    i = prev_den_idx[j];
 	    d = log_diag_eval(obs, log_norm[i],
-				   mean[i], var[i], veclen);
+			      mean[i], var[i], veclen);
 	    den_idx[j] = i;
 	    den[j] = d;
 	    if (j == 0)

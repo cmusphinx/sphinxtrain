@@ -264,7 +264,7 @@ v2_feat_compute(vector_t *mfcc,
     agc(&mfcc[0][0], n_frame);
 
     
-    out = v2_feat_alloc(n_frame);
+    out = feat_alloc(n_frame);
 
     for (i = 0, j = 0; i < n_frame; i++, j += mfcc_len) {
 	out_frame = out[i][0];

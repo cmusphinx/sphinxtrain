@@ -287,6 +287,11 @@ ctl -cepdir cepdir -cepext .mfc -ceplen 13 -stride 10 ";
 	  CMD_LN_NO_VALIDATION,
 	  FEAT_DEFAULT_FEATURE_TYPE,
 	  "Feature set to compute"},
+	{ "-svspec",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  NULL,
+	  "Split single stream features into subvectors according to this specification."},
 
 	{ "-cachesz",
 	  CMD_LN_INT32,

@@ -206,11 +206,11 @@ initialize(lexicon_t **out_lex,
     }
 
     if (cmd_ln_access("-feat") != NULL) {
-	if (feat_set(cmd_ln_access("-feat")) != S3_SUCCESS) {
-	    E_FATAL("Unable to use feature set %s\n",
-		    cmd_ln_access("-feat"));
+	if (feat_set(cmd_ln_str("-feat")) != S3_SUCCESS) {
+	    E_FATAL("Unable to use feature set %s\n", cmd_ln_str("-feat"));
 	}
-	feat_set_in_veclen(*(int32 *)cmd_ln_access("-ceplen"));
+	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
+	feat_set_subvecs(cmd_ln_str("-svspec"));
     }
 
     if (cmd_ln_access("-ctlfn")) {

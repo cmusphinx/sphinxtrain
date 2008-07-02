@@ -286,9 +286,12 @@ sub FlatInitialize
     mkdir ($output_buffer_dir,0777);
 
     # if there is an MLLT transformation, use it
-    my @lda_args;
+    my @feat_args;
+    if (defined($ST::CFG_SVSPEC)) {
+	push(@feat_args, -svspec =>$ST::CFG_SVSPEC);
+    }
     if (-r $MLLT_FILE) {
-	push(@lda_args,
+	push(@feat_args,
 	     -ldafn => $MLLT_FILE,
 	     -ldadim => $ST::CFG_LDA_DIMENSION);
     }
@@ -303,7 +306,7 @@ sub FlatInitialize
 				-varnorm => $ST::CFG_VARNORM,
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
-				@lda_args
+				@feat_args
 			       )) {
       return $return_value;
     }
@@ -340,7 +343,7 @@ sub FlatInitialize
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
 				-fullvar => $ST::CFG_FULLVAR,
-				@lda_args
+				@feat_args
 			       )) {
       return $return_value;
     }
