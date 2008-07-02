@@ -76,6 +76,7 @@ SCRIPTS = 00.verify/verify_all.pl				\
 	60.sa_train/slave_convg.pl				\
 	90.deleted_interpolation/deleted_interpolation.pl	\
 	99.make_s2_models/make_s2_models.pl			\
+	decode/slave.pl						\
 	copy_setup.pl						\
 	make_feats.pl						\
 	maketopology.pl						\
