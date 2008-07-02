@@ -623,31 +623,33 @@ static vector_t **
 feat_alloc_internal(uint32 n_frames, uint32 n_feat, uint32 const *vecsize)
 {
     vector_t **out;
-    float *data;
+    float *data, *d;
     uint32 len;
-    uint32 i, j, k;
+    uint32 i, j;
     uint32 frame_size;
 
     out = (vector_t **)ckd_calloc_2d(n_frames, n_feat, sizeof(vector_t));
-    
-    for (i = 0, frame_size = 0; i < n_feat; i++)
-	frame_size += vecsize[i];
+
+    /* Take the maximum of the original block size (do NOT call
+       feat_blksize() because it will give the LDA output
+       dimensionality) and the subvector block size. */
+    frame_size = feat_conf[fid].blksize();
+    if (sv.subvecs != NULL) {
+	if (sv.sv_dim > frame_size)
+	    frame_size = sv.sv_dim;
+    }
 
     len = n_frames * frame_size;
     
     data = ckd_calloc(len, sizeof(float32));
     
-    for (i = 0, k = 0; i < n_frames; i++) {
-	
-	assert((k % frame_size) == 0);
-	
+    for (i = 0; i < n_frames; i++) {
+	d = data + i * frame_size;
 	for (j = 0; j < n_feat; j++) {
-	    out[i][j] = &data[k];
-	    k += vecsize[j];
+	    out[i][j] = d;
+	    d += vecsize[j];
 	}
     }
-
-    assert(k == len);
 
     return out;
 }
@@ -656,18 +658,7 @@ vector_t **
 feat_alloc(uint32 n_frames)
 {
     if (fid <= FEAT_ID_MAX) {
-	uint32 const *vecsize;
-
-	/* This is a mess and the sphinxbase feat.h interface is much
-	   better, but we're not ready to switch yet. */
-	/* Special case feat_vecsize() for LDA, because we need to
-	   allocate enough room for the full vector even if we are
-	   going to reduce its dimensionality. */
-	if (lda.lda != NULL)
-	    vecsize = feat_conf[fid].vecsize();
-	else
-	    vecsize = feat_vecsize();
-	return feat_alloc_internal(n_frames, feat_n_stream(), vecsize);
+	return feat_alloc_internal(n_frames, feat_n_stream(), feat_vecsize());
     }
     else if (fid == FEAT_ID_NONE) {
 	E_FATAL("feat module must be configured w/ a valid ID\n");
