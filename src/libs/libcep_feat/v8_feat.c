@@ -226,7 +226,7 @@ v8_feat_compute(vector_t *mfcc,
     
     mfcc_len = feat_mfcc_len();	/* # of coefficients c[0..MFCC_LEN-1] per frame */
 
-    cep_off    = 0;		/* cep feature is first and excludes c[0] */
+    cep_off    = 0;		/* cep feature is first and includes c[0] */
     dcep_off   = mfcc_len;    	/* dcep feature includes short diff */
     ldcep_off  = 2 * mfcc_len;  /* long dcep feature includes long diff */
     ddcep_off  = 3 * mfcc_len;	/* ddcep feature is mfcc_len long */
