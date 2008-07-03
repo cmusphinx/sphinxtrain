@@ -420,12 +420,10 @@ main_initialize(int argc,
     else {
 	E_FATAL("You need to set a feature extraction config using -feat\n");
     }
-
-    if (cmd_ln_access("-ceplen")) {
-	feat_set_in_veclen(*(int32 *)cmd_ln_access("-ceplen"));
-    }
-    else {
-	E_FATAL("You need to specify the -ceplen argment\n");
+    if (cmd_ln_access("-ldafn") != NULL) {
+	if (feat_read_lda(cmd_ln_access("-ldafn"), cmd_ln_int32("-ldadim"))) {
+	    E_FATAL("Failed to read LDA matrix\n");
+	}
     }
 
     if (cmd_ln_access("-omoddeffn")) {

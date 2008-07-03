@@ -212,6 +212,11 @@ initialize(lexicon_t **out_lex,
 	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
 	feat_set_subvecs(cmd_ln_str("-svspec"));
     }
+    if (cmd_ln_access("-ldafn") != NULL) {
+	if (feat_read_lda(cmd_ln_access("-ldafn"), cmd_ln_int32("-ldadim"))) {
+	    E_FATAL("Failed to read LDA matrix\n");
+	}
+    }
 
     if (cmd_ln_access("-ctlfn")) {
 	corpus_set_ctl_filename(cmd_ln_access("-ctlfn"));

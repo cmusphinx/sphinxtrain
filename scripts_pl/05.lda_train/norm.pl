@@ -58,7 +58,7 @@ $| = 1; # Turn on autoflushing
 die "USAGE: $0 <iter>" if @ARGV != 1;
 my ($iter) = @ARGV;
 
-my $modelname="${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}";
+my $modelname="${ST::CFG_EXPTNAME}.ci_lda";
 my $processpart="05.lda_train";
 
 opendir(ACCUMDIR, $ST::CFG_BWACCUM_DIR)

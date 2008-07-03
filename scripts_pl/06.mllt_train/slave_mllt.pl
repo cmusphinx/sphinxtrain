@@ -173,7 +173,7 @@ sub FlatInitialize
     # make the flat models using the above topology file and the mdef file
     #------------------------------------------------------------------------
 
-    my $outhmm = "$hmmdir/${ST::CFG_EXPTNAME}.lda_${ST::CFG_DIRLABEL}_flatinitial";
+    my $outhmm = "$hmmdir/${ST::CFG_EXPTNAME}.ci_mllt_flatinitial";
     mkdir ($outhmm,0777);
 
     my $topologyfile = "$modarchdir/$ST::CFG_EXPTNAME.topology";
@@ -185,8 +185,8 @@ sub FlatInitialize
 				-topo => $topologyfile,
 				-mixwfn => catfile($outhmm, 'mixture_weights'),
 				-tmatfn => catfile($outhmm, 'transition_matrices'),
-				-nstream => $ST::CFG_NUM_STREAMS,
-				-ndensity => $ST::CFG_INITIAL_NUM_DENSITIES,
+				-nstream => 1, # Always one stream!
+				-ndensity => 1 # Always one density!
 			       )) {
 	return $return_value;
     }

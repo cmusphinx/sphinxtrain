@@ -60,8 +60,8 @@ die "USAGE: $0 <iter> <part> <npart> <fullvar>" if (@ARGV != 4);
 my ($iter, $part, $npart, $fullvar) = @ARGV;
 
 # Accumulate over the CI models
-my $modelinitialname="${ST::CFG_EXPTNAME}.lda_${ST::CFG_DIRLABEL}_flatinitial";
-my $modelname="${ST::CFG_EXPTNAME}.lda_${ST::CFG_DIRLABEL}";
+my $modelinitialname="${ST::CFG_EXPTNAME}.ci_mllt_flatinitial";
+my $modelname="${ST::CFG_EXPTNAME}.ci_mllt";
 my $mdefname="${ST::CFG_EXPTNAME}.ci.mdef";
 my $processname = "06.mllt_train";
 
@@ -78,7 +78,7 @@ if ($iter == 1) {
 }
 
 my $moddeffn    = "$ST::CFG_BASE_DIR/model_architecture/$mdefname";
-my $statepdeffn = $ST::CFG_HMM_TYPE; # indicates the type of HMMs
+my $statepdeffn = ".cont."; # always fully continuous here
 my $mixwfn  = "$hmm_dir/mixture_weights";
 my $mwfloor = 1e-5;
 my $tpfloor = 1e-5;
@@ -103,12 +103,7 @@ if ( $ST::CFG_FORCEDALIGN eq "no" ) {
     $transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedtranscripts";
 }
 
-my $topn;
-if ($ST::CFG_HMM_TYPE eq '.cont') {
-    $topn = 1
-} else {
-    $topn = $ST::CFG_FINAL_NUM_DENSITIES;
-}
+my $topn = 1;
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$part.bw.log";
 mkdir ($logdir,0777);

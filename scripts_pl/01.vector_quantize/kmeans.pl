@@ -63,11 +63,20 @@ my ($hmmdir,$outhmm,$segdmpdir,$dumpfile,$logfile);
 
 $| = 1; # Turn on autoflushing
 
+my $mllt_file = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+my $model_type;
+if (-r $mllt_file) {
+    $model_type = 'mllt_ci';
+}
+else {
+    $model_type = 'ci';
+}
+
 # Definitions
 $hmmdir = "$ST::CFG_BASE_DIR/model_parameters";
 mkdir ($hmmdir,0777);
 
-$outhmm  = "$hmmdir/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
+$outhmm  = "$hmmdir/${ST::CFG_EXPTNAME}.${model_type}_${ST::CFG_DIRLABEL}_flatinitial";
 mkdir ($outhmm,0777);
 
 $segdmpdir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_1";
@@ -79,15 +88,16 @@ my $logdir = "$ST::CFG_LOG_DIR/01.vector_quantize";
 mkdir ($logdir,0777);
 $logfile = "$logdir/${ST::CFG_EXPTNAME}.kmeans.log";
 
-#set VQ = ~rsingh/09..sphinx3code/trainer/bin.alpha/kmeans_init
-#$VQ = "$ST::CFG_BIN_DIR/kmeans_init";
-# -grandvar   yes   
-
 $| = 1;
 
-my @svspec;
+my @feat_args;
 if (defined($ST::CFG_SVSPEC)){
-    @svspec = (-svspec =>$ST::CFG_SVSPEC);
+    @feat_args = (-svspec =>$ST::CFG_SVSPEC);
+}
+if (-r $mllt_file) {
+    push(@feat_args,
+	 -ldafn => $mllt_file,
+	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
 
 exit RunTool('kmeans_init', $logfile, 0,
@@ -104,7 +114,7 @@ exit RunTool('kmeans_init', $logfile, 0,
 	     -segdmpfn => $dumpfile,
 	     -ceplen => $ST::CFG_VECTOR_LENGTH,
 	     -feat => $ST::CFG_FEATURE,
-	     @svspec,
+	     @feat_args,
 	     -agc => $ST::CFG_AGC,
 	     -cmn => $ST::CFG_CMN,
 	     -varnorm => $ST::CFG_VARNORM);

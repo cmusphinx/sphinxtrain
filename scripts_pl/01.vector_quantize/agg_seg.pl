@@ -73,6 +73,15 @@ close CTL;
 
 $stride = 1 unless int($stride = $len/2500);
 
+my $mllt_file = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+my $model_type;
+if (-r $mllt_file) {
+    $model_type = 'mllt_ci';
+}
+else {
+    $model_type = 'ci';
+}
+
 my $logdir = "$ST::CFG_LOG_DIR/01.vector_quantize";
 mkdir ($logdir,0777);
 
@@ -82,13 +91,18 @@ mkdir ($segdmpdir,0777);
 $dumpfile = "$segdmpdir/${ST::CFG_EXPTNAME}.dmp";
 $logfile = "$logdir/${ST::CFG_EXPTNAME}.vq.agg_seg.log";
 
-my @svspec;
+my @feat_args;
 if (defined($ST::CFG_SVSPEC)){
-    @svspec = (-svspec =>$ST::CFG_SVSPEC);
+    @feat_args = (-svspec =>$ST::CFG_SVSPEC);
+}
+if (-r $mllt_file) {
+    push(@feat_args,
+	 -ldafn => $mllt_file,
+	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
 
 # run it here 
-exit RunTool('agg_seg',, $logfile, 0,
+exit RunTool('agg_seg', $logfile, 0,
 	     -segdmpdirs => $segdmpdir,
 	     -segdmpfn => $dumpfile,
 	     -segtype => 'all',
@@ -100,5 +114,5 @@ exit RunTool('agg_seg',, $logfile, 0,
 	     -cmn => $ST::CFG_CMN,
 	     -varnorm => $ST::CFG_VARNORM,
 	     -feat => $ST::CFG_FEATURE,
-	     @svspec,
+	     @feat_args,
 	     -stride => $stride);

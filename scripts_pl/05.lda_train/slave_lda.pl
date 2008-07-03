@@ -154,7 +154,7 @@ else {
 sub CopyInitialize {
     Log("Phase 2: Copy initialize from falign model\n");
     my $hmmdir = catdir($ST::CFG_BASE_DIR, "model_parameters");
-    my $outhmm = catdir($hmmdir, "${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial");
+    my $outhmm = catdir($hmmdir, "${ST::CFG_EXPTNAME}.ci_lda_flatinitial");
     my $modarchdir = catdir($ST::CFG_BASE_DIR, "model_architecture");
     mkdir ($outhmm,0777);
     foreach (qw(means variances mixture_weights transition_matrices)) {
@@ -238,7 +238,7 @@ sub FlatInitialize
     #-------------------------------------------------------------------------
     # make the flat models using the above topology file and the mdef file
     #------------------------------------------------------------------------
-    my $outhmm               = "$hmmdir/${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
+    my $outhmm               = "$hmmdir/${ST::CFG_EXPTNAME}.ci_lda_flatinitial";
     mkdir ($outhmm,0777);
 
     my $FLAT = "$ST::CFG_BIN_DIR/mk_flat";
@@ -249,14 +249,10 @@ sub FlatInitialize
 				-topo => $topologyfile,
 				-mixwfn => catfile($outhmm, 'mixture_weights'),
 				-tmatfn => catfile($outhmm, 'transition_matrices'),
-				-nstream => $ST::CFG_NUM_STREAMS,
-				-ndensity => $ST::CFG_INITIAL_NUM_DENSITIES,
+				-nstream => 1, # Always one stream!
+				-ndensity => 1 # Always one density!
 			       )) {
       return $return_value;
-    }
-
-    if ($ST::CFG_HMM_TYPE eq ".semi.") {
-      return (0);
     }
 
     #-------------------------------------------------------------------------

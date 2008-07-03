@@ -59,12 +59,6 @@ lda_read(const char *ldafile, uint32 *out_n_lda, uint32 *out_m, uint32 *out_n)
     const char *do_chk, *ver;
     float32 ***lda;
 
-    if (feat_n_stream() != 1) {
-        E_ERROR("LDA incompatible with multi-stream features (n_stream = %d)\n",
-                feat_n_stream());
-        return NULL;
-    }
-
     if ((fh = s3open(ldafile, "rb", &byteswap)) == NULL) {
         E_ERROR_SYSTEM("s3open(%s, rb) failed", ldafile);
         return NULL;

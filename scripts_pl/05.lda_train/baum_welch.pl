@@ -60,8 +60,8 @@ die "USAGE: $0 <iter> <part> <npart> <fullvar>" if (@ARGV != 4);
 my ($iter, $part, $npart, $fullvar) = @ARGV;
 
 # Accumulate over the CI models
-my $modelinitialname="${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
-my $modelname="${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}";
+my $modelinitialname="${ST::CFG_EXPTNAME}.ci_lda_flatinitial";
+my $modelname="${ST::CFG_EXPTNAME}.ci_lda";
 my $mdefname="${ST::CFG_EXPTNAME}.ci.mdef";
 my $processname = "05.lda_train";
 
@@ -78,7 +78,7 @@ if ($iter == 1) {
 }
 
 my $moddeffn    = "$ST::CFG_BASE_DIR/model_architecture/$mdefname";
-my $statepdeffn = $ST::CFG_HMM_TYPE; # indicates the type of HMMs
+my $statepdeffn = ".cont."; # Always fully continuous for LDA/MLLT
 my $mixwfn  = "$hmm_dir/mixture_weights";
 my $mwfloor = 1e-5;
 my $tpfloor = 1e-5;
