@@ -117,6 +117,7 @@ extract_features.pl - Create acoustic feature files for WSJ
 
 create_features.pl
      S<[ I<--config> B<etc/rm1_files.cfg> ]>
+     S<[ I<--params> B<etc/feat16k.params> ]>
      S<[ I<--parts> B<si84,devtest> ]>
      S<[ I<-o> B</path/to/training/feat> ]>
 

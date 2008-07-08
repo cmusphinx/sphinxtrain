@@ -10,15 +10,30 @@ use File::Find;
 use lib catdir(dirname($0), 'lib');
 use SimpleConfig;
 
-my %opts = (config => 'etc/rm1_files.cfg', outdir => 'feat');
+my %opts = (config => 'etc/rm1_files.cfg',
+	    outdir => 'feat',
+	    params => 'etc/feat.params',
+	    outext => 'mfc');
 GetOptions(\%opts,
 	   'config=s',
+	   'params|p=s',
 	   'outdir|o=s',
+	   'outext|e=s',
 	   'help|h|?')
     or pod2usage(2);
 pod2usage(0) if $opts{help};
 
 my %dirs = parse_config($opts{config});
+
+my @feat_params;
+if (open PARAMS, "<$opts{params}") {
+    while (<PARAMS>) {
+	chomp;
+	# Skip the templated parameters which are all dynamic feature related
+	next if /__\w+__/;
+	push @feat_params, split;
+    }
+}
 
 foreach my $dir (qw(dep ind dep_trn ind_trn)) {
     my $indir = $dirs{$dir};
@@ -49,15 +64,17 @@ foreach my $dir (qw(dep ind dep_trn ind_trn)) {
     close($fh);
     my $rv = system('sphinx_fe',
 		    -di => $indir, -do => $outdir,
-		    -ei => 'wav', -eo => 'mfc',
+		    -ei => 'wav', -eo => $opts{outext},
+		    @feat_params,
 		    -c => $filename, -nist => 'yes');
     unlink($filename);
     die "sphinx_fe failed: $rv" unless $rv == 0;
     foreach (@ucfiles) {
 	my $infile = catfile($indir, $_) . '.WAV';
-	my $outfile = catfile($outdir, lc($_)) . '.mfc';
+	my $outfile = catfile($outdir, lc($_)) . '.' . $opts{outext};
 	$rv = system('sphinx_fe',
 		     -i => $infile, -o => $outfile,
+		     @feat_params,
 		     -nist => 'yes');
 	die "sphinx_fe failed: $rv" unless $rv == 0;
     }
@@ -74,6 +91,7 @@ extract_features.pl - Create acoustic feature files for RM1
 
 create_features.pl
      S<[<I<--config> B<etc/rm1_files.cfg>]>
+     S<[ I<--params> B<etc/feat.params> ]>
      S<[ I<-o> B</path/to/training/feat> ]>
 
 =head1 DESCRIPTION
