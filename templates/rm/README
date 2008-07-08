@@ -1,6 +1,15 @@
 Resource Management "from scratch" training/testing setup
 ---------------------------------------------------------
 
+To use this template, first create a directory for training, then use
+the setup_SphinxTrain.pl script to copy the template to it (please
+replace /path/to/SphinxTrain with the actual path to your SphinxTrain
+installation):
+
+mkdir /somewhere/RM1
+cd /somewhere/RM1
+/path/to/SphinxTrain/scripts_pl/setup_SphinxTrain.pl -template rm
+
 This setup relies on having the RM1 corpus, LDC catalog number
 LDC93S3B, in a locally accessible directory.  Since this originally
 shipped on a number of CDs, to which you may or may not have access,
@@ -18,8 +27,21 @@ don't want to install them systemwide, then you can do it like this
 (replacing /path/to/cmuclmtk with the full path to wherever the source
 tree for it resides):
 
-export PATH="$PATH:/path/to/cmuclmtk/src:/path/to/cmuclmtk/perl"
+export PATH="$PATH:/path/to/cmuclmtk/bin:/path/to/cmuclmtk/perl"
 
 or, for those of you who still insist on using csh:
 
-setenv PATH "$PATH:/path/to/cmuclmtk/src:/path/to/cmuclmtk/perl"
+setenv PATH "$PATH:/path/to/cmuclmtk/bin:/path/to/cmuclmtk/perl"
+
+Now, you will be able to generate all the files needed for training.
+You need to run (please replace /path/to/SphinxTrain with the actual
+path to your SphinxTrain installation):
+
+perl scripts_pl/create_transcripts.pl
+perl scripts_pl/extract_features.pl
+perl scripts_pl/create_dictionary.pl -c /path/to/SphinxTrain/test/res/cmudict.0.6d
+perl scripts_pl/make_phoneset.pl etc/rm.dic etc/rm.filler > etc/rm.phone
+
+Finally, you should be able to do basic training:
+
+perl scripts_pl/RunAll.pl
