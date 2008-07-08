@@ -143,49 +143,39 @@ sub align_hyp {
   my $ref = shift;
   my $hyp = shift;
   my $align = $ST::DEC_CFG_ALIGN;
-  my $rline;
-  my $hline;
-  my $result;
 
   if ($align eq 'builtin') {
-    my $count = 0;
-    my $error = 0;
-    open (REF, "<$ref") or die "Can't open $ref\n";
-    open (HYP, "<$hyp") or die "Can't open $hyp\n";
     my $outfile = "$ST::DEC_CFG_RESULT_DIR/${ST::DEC_CFG_EXPTNAME}.align";
+    my $thisdir = dirname($0);
+    my ($wer, $ser, $word_total, $sent_total, $sent_err);
     open (OUT, "> $outfile") or die "Can't open $outfile for writing\n";
-    while (my $refline = <REF>) {
-      $count++;
-      my $hypline = <HYP>;
-      chomp($refline);
-      chomp($hypline);
-      if ($refline ne $hypline) {
-	$rline = uc($refline);
-	$hline = uc($hypline);
-	$result = "ERROR";
-	$error++;
-      } else {
-	$rline = lc($refline);
-	$hline = lc($hypline);
-	$result = "CORRECT";
+    my $cmdln = "\"$thisdir/word_align.pl\" -i \"$ref\" \"$hyp\"";
+    $sent_total = 0;
+    if (open (PIPE, "$cmdln 2>&1 |")) {
+      while (<PIPE>) {
+	print OUT "$_";
+	if (/^TOTAL Words: (\d+)/) {
+	    $word_total = $1;
+	}
+	elsif (/^TOTAL Percent.*Error = ([\d\.]+)%/) {
+	    $wer = $1;
+	}
+	elsif (/^Words: (\d+).*Errors: (\d+)/) {
+	    $sent_total++;
+	    $sent_err++ if $2;
+	}
       }
-      print OUT "Sentence $count : $result\n";
-      print OUT "\tREF: $rline\n";
-      print OUT "\tHYP: $hline\n\n";
     }
-    close(REF);
-    close(HYP);
-    my $pct;
-    if ($count > 0) {
-      $pct = ($error/$count * 100);
-    } else {
-      $pct = 0;
-    }
-    Log("SENTENCE ERROR: " . (sprintf "%.3f%", $pct) . 
-	    (sprintf " (%d/%d)\n", $error, $count));
-    print OUT "\n\nSENTENCE ERROR: " . (sprintf "%.3f%", $pct) . 
-	    (sprintf " (%d/%d)\n", $error, $count);
     close(OUT);
+    close(PIPE);
+    if ($?) {
+	die "sclite failed with error code $?";
+    }
+    $ser = ($sent_err / $sent_total) * 100;
+    Log(sprintf("SENTENCE ERROR: %.1f%% (%d/%d)   WORD ERROR RATE: %.1f%% (%d/%d)",
+		$ser, $sent_err, $sent_total,
+		$wer, $word_total * $wer / 100, $word_total), 'result');
+    HTML_Print("<p class='result'>", FormatURL("$outfile", "Log File"), "</p>");
   } elsif ($align =~ m/sclite/i) {
     my $outfile = "$ST::DEC_CFG_RESULT_DIR/${ST::DEC_CFG_EXPTNAME}.align";
     my ($wer, $ser, $word_total, $sent_total);
