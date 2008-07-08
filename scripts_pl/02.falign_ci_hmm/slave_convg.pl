@@ -75,6 +75,15 @@ if ($iter == 1 and $n_gau == 1) {
         Log("Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
 	exit(0);
     }
+    unless (-x catfile($ST::CFG_BIN_DIR, "sphinx3_align")
+	    or -x catfile($ST::CFG_BIN_DIR, "sphinx3_align.exe")) {
+	Log("Skipped: No sphinx3_align(.exe) found in $ST::CFG_BIN_DIR\n");
+	Log("If you wish to do force-alignment, please copy or link the\n");
+	Log("sphinx3_align binary from Sphinx 3 to $ST::CFG_BIN_DIR\n");
+	Log("and either define \$CFG_MODEL_DIR in sphinx_train.cfg or\n");
+	Log("run context-independent training first.\n");
+	exit 0;
+    }
     Log("Phase 1: Cleaning up directories:");
     # Don't do this on a queue, because of NFS bugs
     unless ($ST::CFG_QUEUE_TYPE eq 'Queue::PBS') {
