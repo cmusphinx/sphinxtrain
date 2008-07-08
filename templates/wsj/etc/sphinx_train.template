@@ -115,7 +115,7 @@ $CFG_NPART = 2;
 $CFG_CROSS_PHONE_TREES = 'no';
 
 # Use force-aligned transcripts (if available) as input to training
-$CFG_FORCEDALIGN = 'yes';
+$CFG_FORCEDALIGN = 'no';
 
 # Use a specific set of models for force alignment.  If not defined,
 # context-independent models for the current experiment will be used.
@@ -142,9 +142,9 @@ else {
 $CFG_FORCE_ALIGN_BEAM = 1e-80;
 
 # Calculate an LDA/MLLT transform?
-$CFG_LDA_MLLT = 'yes';
+$CFG_LDA_MLLT = 'no';
 # Output dimensionality of LDA/MLLT transform
-$CFG_LDA_DIMENSION = 25;
+$CFG_LDA_DIMENSION = 30;
 
 #set convergence_ratio = 0.004
 $CFG_CONVERGENCE_RATIO = 0.04;
