@@ -51,6 +51,7 @@ if ($#ARGV == -1) {
 
 my ($SPHINXTRAINDIR,
     $DBNAME,
+    $TEMPLATE,
     $help,
     $force,
     $update);
@@ -66,11 +67,13 @@ $SPHINXTRAINDIR = $0;
 $SPHINXTRAINDIR =~ s/^(.*)[\/\\]scripts_pl[\\\/].*$/$1/i;
 
 my $result = GetOptions('help|h' => \$help,
-		     'force' => \$force,
-		     'update' => \$update,
-		     'sphinxtraindir|st=s' => \$SPHINXTRAINDIR,
-		     'task=s' => \$DBNAME);
+			'force' => \$force,
+			'update' => \$update,
+			'sphinxtraindir|st=s' => \$SPHINXTRAINDIR,
+			'template=s' => \$TEMPLATE,
+			'task=s' => \$DBNAME);
 
+$DBNAME ||= $TEMPLATE;
 if (($result == 0) or (defined($help)) or (!defined($DBNAME))) {
   pod2usage( -verbose => 1 );
   exit(-1);
@@ -93,6 +96,12 @@ if ($#dirlist > 0) {
   } else {
     print "Will leave existing files as they are, and copy non-existing files.\n";
   }
+}
+
+# Copy in a template if it exists
+if ($TEMPLATE) {
+    print "Copying template $TEMPLATE\n";
+    replace_tree("$SPHINXTRAINDIR/templates/$TEMPLATE", ".", $replace_mode);
 }
 
 # Start building the directory structure
