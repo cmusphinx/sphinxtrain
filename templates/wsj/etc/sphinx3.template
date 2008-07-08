@@ -41,9 +41,9 @@ $DEC_CFG_LOG_DIR = "$DEC_CFG_BASE_DIR/logdir";
 
 #*******variables used in decoding of wave files *******
 $DEC_CFG_DICTIONARY     = "$DEC_CFG_BASE_DIR/etc/bcb05cnp.dic";
-$DEC_CFG_FILLERDICT     = "$DEC_CFG_BASE_DIR/etc/$DEC_CFG_DB_NAME.filler";
-$DEC_CFG_LISTOFFILES    = "$DEC_CFG_BASE_DIR/etc/${DEC_CFG_DB_NAME}_test.fileids";
-$DEC_CFG_TRANSCRIPTFILE = "$DEC_CFG_BASE_DIR/etc/${DEC_CFG_DB_NAME}_test.transcription";
+$DEC_CFG_FILLERDICT     = "$DEC_CFG_BASE_DIR/etc/wsj_5k_test.filler";
+$DEC_CFG_LISTOFFILES    = "$DEC_CFG_BASE_DIR/etc/wsj_5k_test.fileids";
+$DEC_CFG_TRANSCRIPTFILE = "$DEC_CFG_BASE_DIR/etc/wsj_5k_test.transcription";
 $DEC_CFG_RESULT_DIR     = "$DEC_CFG_BASE_DIR/result";
 
 # This variables, used by the decoder, have to be user defined, and
@@ -81,13 +81,13 @@ if (($DEC_CFG_HMM_TYPE ne ".semi.") and ($DEC_CFG_HMM_TYPE ne ".cont.")) {
 		 '1s_12c_12d_3p_12dd'                           => 's3_1x39',
 		 's2_4x' 	                                => 's2_4x',
 		 's3_1x39'            	                        => 's3_1x39',
+		 '1s_c_d_ld_dd'                                 => '1s_c_d_ld_dd',
 		 '1s_c_d_dd'                                    => '1s_c_d_dd',
 		 '1s_c_d'                                       => 'cep_dcep',
 		 '1s_c'                                         => 'cep',
 		 '1s_c_dd'                                      => 'INVALID',
 		 '1s_d'                                         => 'INVALID',
 		 '1s_dd'                                        => 'INVALID',
-		 '1s_c_d_ld_dd'                                 => 'INVALID',
 		);
 
 $DEC_CFG_FEATURE = "INVALID"

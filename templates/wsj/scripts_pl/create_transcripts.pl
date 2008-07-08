@@ -70,6 +70,9 @@ sub convert_dot {
 	    next if $_ eq "'";
 	    next if $_ eq ",";
 
+	    # Correct one silly little typo
+	    $_ = "EXISTING" if $_ eq "EXISITING";
+
 	    tr/://d unless $_ eq ':COLON';
 	    tr/!//d unless $_ eq '!EXCLAMATION-POINT';
 	    push @words, $_ unless $_ eq '.' or $_ eq '~';
@@ -140,7 +143,7 @@ sub convert_dots {
     close OUTLSN;
 }
 
-convert_dots(catfile($opts{outdir}, "wsj_train"),
+convert_dots(catfile($opts{outdir}, "wsj_si84_train"),
 	     $dirs{wsj0_transcrp}, 'si_tr_s',
 	     $dirs{wsj0_doc}, catfile('indices', 'train', 'tr_s_wv1.ndx'));
 
@@ -165,7 +168,7 @@ convert_dots(catfile($opts{outdir}, "wsj_j200_train"),
 convert_dots(catfile($opts{outdir}, "wsj_jspon_train"),
 	     $dirs{wsj1_trans}, 'si_tr_jd');
 
-convert_dots(catfile($opts{outdir}, "wsj_test"),
+convert_dots(catfile($opts{outdir}, "wsj_5k_test"),
 	     $dirs{wsj0}, 'si_et_05',
 	     $dirs{wsj0_doc}, catfile('indices', 'test', 'nvp', 'si_et_05.ndx'));
 
@@ -173,7 +176,7 @@ convert_dots(catfile($opts{outdir}, "wsj_20k_test"),
 	     $dirs{wsj0}, 'si_et_20',
 	     $dirs{wsj0_doc}, catfile('indices', 'test', 'nvp', 'si_et_20.ndx'));
 
-convert_dots(catfile($opts{outdir}, "wsj_devel"),
+convert_dots(catfile($opts{outdir}, "wsj_5k_devel"),
 	     $dirs{wsj0_transcrp}, 'si_dt_05', qr/...c..../);
 
 convert_dots(catfile($opts{outdir}, "wsj_20k_devel"),

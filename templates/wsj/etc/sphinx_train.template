@@ -56,7 +56,7 @@ $CFG_MODEL_DIR = "$CFG_BASE_DIR/model_parameters";
 $CFG_LIST_DIR = "$CFG_BASE_DIR/etc";
 
 #*******variables used in main training of models*******
-$CFG_DICTIONARY     = "$CFG_LIST_DIR/$CFG_DB_NAME.dic";
+$CFG_DICTIONARY     = "$CFG_LIST_DIR/cmudict.0.6d";
 $CFG_RAWPHONEFILE   = "$CFG_LIST_DIR/$CFG_DB_NAME.phone";
 $CFG_FILLERDICT     = "$CFG_LIST_DIR/$CFG_DB_NAME.filler";
 $CFG_LISTOFFILES    = "$CFG_LIST_DIR/${CFG_DB_NAME}_train.fileids";
@@ -108,7 +108,7 @@ $CFG_CI_MGAU = 'no';
 # Number of tied states (senones) to create in decision-tree clustering
 $CFG_N_TIED_STATES = 2800;
 # How many parts to run Forward-Backward estimatinon in
-$CFG_NPART = 20;
+$CFG_NPART = 2;
 
 # (yes/no) Train a single decision tree for all phones (actually one
 # per state) (useful for grapheme-based models, use 'no' otherwise)
@@ -151,7 +151,7 @@ $CFG_CONVERGENCE_RATIO = 0.04;
 
 # Queue::POSIX for multiple CPUs on a local machine
 # Queue::PBS to use a PBS/TORQUE queue
-$CFG_QUEUE_TYPE = "Queue::PBS";
+$CFG_QUEUE_TYPE = "Queue::POSIX";
 
 # Name of queue to use for PBS/TORQUE
 $CFG_QUEUE_NAME = "x86_64";
