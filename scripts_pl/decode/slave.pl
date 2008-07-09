@@ -149,7 +149,7 @@ sub align_hyp {
     my $thisdir = dirname($0);
     my ($wer, $ser, $word_total, $sent_total, $sent_err);
     open (OUT, "> $outfile") or die "Can't open $outfile for writing\n";
-    my $cmdln = "\"$thisdir/word_align.pl\" -i \"$ref\" \"$hyp\"";
+    my $cmdln = "perl \"$thisdir/word_align.pl\" -i \"$ref\" \"$hyp\"";
     $sent_total = 0;
     if (open (PIPE, "$cmdln 2>&1 |")) {
       while (<PIPE>) {
@@ -169,7 +169,7 @@ sub align_hyp {
     close(OUT);
     close(PIPE);
     if ($?) {
-	die "sclite failed with error code $?";
+	die "word_align.pl failed with error code $?";
     }
     $ser = ($sent_err / $sent_total) * 100;
     Log(sprintf("SENTENCE ERROR: %.1f%% (%d/%d)   WORD ERROR RATE: %.1f%% (%d/%d)",
