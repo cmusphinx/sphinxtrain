@@ -131,18 +131,7 @@ if (defined($ST::CFG_PHSEG_DIR)) {
 
 # aligned transcripts and the list of aligned files is obtained as a result
 # of (03.) forced alignment or (04.) VTLN
-# FIXME: This should go in SphinxTrain::Util
-my ($listoffiles, $transcriptfile);
-if ($ST::CFG_FORCEDALIGN eq "yes") {
-    $listoffiles   = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
-    $transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedtranscripts";
-} elsif ($ST::CFG_VTLN eq "yes") {
-    $listoffiles   = "$ST::CFG_BASE_DIR/vtlnout/${ST::CFG_EXPTNAME}.alignedfiles";
-    $transcriptfile  = "$ST::CFG_BASE_DIR/vtlnout/${ST::CFG_EXPTNAME}.alignedtranscripts";
-} else {
-    $listoffiles = $ST::CFG_LISTOFFILES;
-    $transcriptfile = $ST::CFG_TRANSCRIPTFILE;
-}
+my ($listoffiles, $transcriptfile) = GetLists();
 
 my $topn     = 4;
 if ($ST::CFG_HMM_TYPE eq '.cont.' and $n_gau < 4) {
