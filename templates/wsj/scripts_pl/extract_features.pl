@@ -21,6 +21,7 @@ GetOptions(\%opts,
 	   'params|p=s',
 	   'outdir|o=s',
 	   'outext|e=s',
+	   'inctl|c=s',
 	   'wv2',
 	   'keep-audio',
 	   'help|h|?')
@@ -47,6 +48,17 @@ foreach my $p (@parts) {
     push @dirs, @{$dirmap{$p}};
 }
 
+my %inctl;
+if (defined($opts{inctl}) and open INCTL, "<$opts{inctl}") {
+    while (<INCTL>) {
+	chomp;
+	my @fields = split;
+	my $fileid = shift @fields;
+	$fileid =~ tr,\\,/,;
+	$inctl{$fileid}++;
+    }
+}
+
 my @feat_params;
 if (open PARAMS, "<$opts{params}") {
     while (<PARAMS>) {
@@ -70,8 +82,11 @@ foreach my $dir (@dirs) {
 	     substr($relpath, 0, length($indir)) = "";
 	     $relpath =~ s/^\/+//;
 
-	     if (-f $File::Find::name and $File::Find::name =~ /\.$fileext/i) {
-		 push @files, $relpath;
+	     if (-f $File::Find::name and $File::Find::name =~ /\.$fileext$/i) {
+		 my $o = lc($relpath);
+		 $o =~ s/\.$fileext$//;
+		 push @files, $relpath
+		     unless %inctl and not exists $inctl{"$od/$o"};
 	     }
 	     elsif (-d $File::Find::name and !/^\.\.?$/) {
 		 mkdir(catdir($outdir, lc($relpath)), 0777);
