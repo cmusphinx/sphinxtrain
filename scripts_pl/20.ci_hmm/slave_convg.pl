@@ -106,7 +106,7 @@ if ($iter == 1 and $n_gau == 1) {
     # transformation, we need to re-initialize from scratch since the
     # features have changed.
     if ((not -r $MLLT_FILE)
-	and $ST::CFG_FORCEDALIGN eq 'yes'
+	and ($ST::CFG_FORCEDALIGN eq 'yes' or $ST::CFG_VTLN eq 'yes')
 	and $ST::CFG_FALIGN_CI_MGAU eq 'no'
 	and -e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means')) {
 	$return_value = CopyInitialize();

@@ -48,8 +48,8 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-die "Usage: $0 <part> <nparts>\n" unless @ARGV == 2;
-my ($part, $npart) = @ARGV;
+die "Usage: $0 <warp> <part> <nparts>\n" unless @ARGV == 3;
+my ($warp, $part, $npart) = @ARGV;
 
 my $hmm_dir = defined($ST::CFG_FORCE_ALIGN_MODELDIR)
     ? $ST::CFG_FORCE_ALIGN_MODELDIR
@@ -57,8 +57,9 @@ my $hmm_dir = defined($ST::CFG_FORCE_ALIGN_MODELDIR)
 my $mdef = defined($ST::CFG_FORCE_ALIGN_MDEF)
     ? $ST::CFG_FORCE_ALIGN_MDEF
     : "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.ci.mdef";
-my $logdir = "$ST::CFG_LOG_DIR/03.force_align";
-my $outdir = "$ST::CFG_BASE_DIR/falignout";
+my $logdir = "$ST::CFG_LOG_DIR/04.vtln_align";
+my $indir = "$ST::CFG_BASE_DIR/vtlnout";
+my $outdir = "$ST::CFG_BASE_DIR/vtlnout/$warp";
 my $outfile = "$outdir/$ST::CFG_EXPTNAME.alignedtranscripts.$part";
 
 my $statepdeffn = $ST::CFG_HMM_TYPE; # indicates the type of HMMs
@@ -69,15 +70,15 @@ my $meanfn  = "$hmm_dir/means";
 my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 my $listoffiles = $ST::CFG_LISTOFFILES;
-my $transcriptfile = "$outdir/$ST::CFG_EXPTNAME.aligninput";
+my $transcriptfile = "$indir/$ST::CFG_EXPTNAME.aligninput";
 my $dict = defined($ST::CFG_FORCE_ALIGN_DICTIONARY)
     ? $ST::CFG_FORCE_ALIGN_DICT
-    : "$outdir/$ST::CFG_EXPTNAME.falign.dict";
+    : "$indir/$ST::CFG_EXPTNAME.falign.dict";
 my $fdict = defined($ST::CFG_FORCE_ALIGN_FILLERDICT)
     ? $ST::CFG_FORCE_ALIGN_FILLERDICT
-    : "$outdir/$ST::CFG_EXPTNAME.falign.fdict";
+    : "$indir/$ST::CFG_EXPTNAME.falign.fdict";
 my $beam = defined($ST::CFG_FORCE_ALIGN_BEAM) ? $ST::CFG_FORCE_ALIGN_BEAM : 1e-100;
-my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$part.falign.log";
+my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$part.vtln.log";
 
 # Get the number of utterances
 open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
@@ -102,18 +103,6 @@ $ctl_counter = 1 unless ($ctl_counter);
 
 Log("Force alignment starting: ($part of $npart) ", 'result');
 
-my @phsegdir;
-if (defined($ST::CFG_PHSEG_DIR)) {
-    push @phsegdir, (-phsegdir => "$ST::CFG_PHSEG_DIR$ctlext");
-}
-if (defined($ST::CFG_WDSEG_DIR)) {
-    push @phsegdir, (-wdsegdir => "$ST::CFG_WDSEG_DIR$ctlext");
-}
-if (defined($ST::CFG_STSEG_DIR)) {
-    push @phsegdir, (-s2stsegdir => "$ST::CFG_STSEG_DIR$ctlext",
-		     -s2cdsen => 'yes');
-}
-
 my $return_value = RunTool
     ('sphinx3_align', $logfile, $ctl_counter,
      -mdef => $mdef,
@@ -130,10 +119,10 @@ my $return_value = RunTool
      -ctloffset => $ctl_counter * ($part-1),
      -ctlcount => $ctl_counter,
      -cepdir => $ST::CFG_FEATFILES_DIR,
-     -cepext => ".$ST::CFG_FEATFILE_EXTENSION",
+     -cepext => ".$warp.$ST::CFG_FEATFILE_EXTENSION",
      -insent => $transcriptfile,
      -outsent => $outfile,
-     @phsegdir,
+     -wdsegdir => "$outdir$ctlext",
      -beam => $beam,
      -agc => $ST::CFG_AGC,
      -cmn => $ST::CFG_CMN,

@@ -58,7 +58,7 @@ my $outdir = "$ST::CFG_BASE_DIR/falignout";
 
 Log("MODULE: 03 Force-aligning transcripts\n");
 
-if ( $ST::CFG_FORCEDALIGN eq "no" ) {
+if ($ST::CFG_FORCEDALIGN ne "yes") {
     Log("Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
     exit(0);
 }
@@ -70,7 +70,7 @@ unless (-x catfile($ST::CFG_BIN_DIR, "sphinx3_align")
     Log("sphinx3_align binary from Sphinx 3 to $ST::CFG_BIN_DIR\n");
     Log("and either define \$CFG_MODEL_DIR in sphinx_train.cfg or\n");
     Log("run context-independent training first.\n");
-    exit 0;
+    exit 1;
 }
 
 unless (defined($ST::CFG_FORCE_ALIGN_MODELDIR)
@@ -101,18 +101,25 @@ if (defined($ST::CFG_PHSEG_DIR)) {
     rmtree($ST::CFG_PHSEG_DIR, 0, 1);
     mkdir($ST::CFG_PHSEG_DIR,0777);
 }
+if (defined($ST::CFG_WDSEG_DIR)) {
+    LogProgress("wdseg...");
+    rmtree($ST::CFG_WDSEG_DIR, 0, 1);
+    mkdir($ST::CFG_WDSEG_DIR,0777);
+}
 LogProgress("\n");
 
 # Build state segmentation directories
-if (defined($ST::CFG_PHSEG_DIR) or defined($ST::CFG_STSEG_DIR)) {
-    Log("Phase 2: Building state/phone segmentation directories...");
+if (defined($ST::CFG_PHSEG_DIR)
+    or defined($ST::CFG_WDSEG_DIR)
+    or defined($ST::CFG_STSEG_DIR)) {
+    Log("Phase 2: Building state/phone/word segmentation directories...");
     open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
     my %dirs;
     while (<INPUT>) {
 	chomp;
 	my @fields = split;
-	my $uttid = pop @fields;
-	my $basedir = dirname($uttid);
+	my $fileid = shift @fields;
+	my $basedir = dirname($fileid);
 	next if $basedir eq ".";
 	unless ($dirs{$basedir}) {
 	    $dirs{$basedir}++;
@@ -120,6 +127,8 @@ if (defined($ST::CFG_PHSEG_DIR) or defined($ST::CFG_STSEG_DIR)) {
 		if defined($ST::CFG_STSEG_DIR);
 	    mkpath(catdir($ST::CFG_PHSEG_DIR, $basedir), 0, 0777)
 		if defined($ST::CFG_PHSEG_DIR);
+	    mkpath(catdir($ST::CFG_WDSEG_DIR, $basedir), 0, 0777)
+		if defined($ST::CFG_WDSEG_DIR);
 	}
     }
 }

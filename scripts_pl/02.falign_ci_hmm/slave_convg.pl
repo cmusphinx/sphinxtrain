@@ -70,19 +70,11 @@ my $return_value = 0;
 
 # We have to clean up and run flat initialize if it is the first iteration
 if ($iter == 1 and $n_gau == 1) {
-    Log("MODULE: 02 Training Context Independent models for forced alignment\n");
-    if ( $ST::CFG_FORCEDALIGN eq "no" ) {
+    Log("MODULE: 02 Training Context Independent models for forced alignment and VTLN\n");
+    if ($ST::CFG_VTLN eq 'no' and $ST::CFG_FORCEDALIGN eq "no") {
         Log("Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
+        Log("Skipped:  \$ST::CFG_VTLN set to \'$ST::CFG_VTLN\' in sphinx_train.cfg\n");
 	exit(0);
-    }
-    unless (-x catfile($ST::CFG_BIN_DIR, "sphinx3_align")
-	    or -x catfile($ST::CFG_BIN_DIR, "sphinx3_align.exe")) {
-	Log("Skipped: No sphinx3_align(.exe) found in $ST::CFG_BIN_DIR\n");
-	Log("If you wish to do force-alignment, please copy or link the\n");
-	Log("sphinx3_align binary from Sphinx 3 to $ST::CFG_BIN_DIR\n");
-	Log("and either define \$CFG_MODEL_DIR in sphinx_train.cfg or\n");
-	Log("run context-independent training first.\n");
-	exit 0;
     }
     Log("Phase 1: Cleaning up directories:");
     # Don't do this on a queue, because of NFS bugs
@@ -105,11 +97,6 @@ if ($iter == 1 and $n_gau == 1) {
     $return_value = FlatInitialize();
     exit ($return_value) if ($return_value);
     Log("Phase 3: Forward-Backward");
-}
-
-if ( $ST::CFG_FORCEDALIGN eq "no" ) {
-    Log("Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
-    exit(0);
 }
 
 # Call baum_welch with iter part and n_parts,

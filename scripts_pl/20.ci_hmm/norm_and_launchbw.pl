@@ -198,7 +198,7 @@ if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO) {
 # them for initialization, therefore don't enforce the minimum number
 # of iterations (unless MLLT is in effect)
 elsif ($iter < $ST::CFG_MIN_ITERATIONS
-       and ($ST::CFG_FORCEDALIGN eq 'no'
+       and (($ST::CFG_FORCEDALIGN ne 'yes' and $ST::CFG_VTLN ne 'yes')
 	    or $ST::CFG_LDA_MLLT eq 'yes'
 	    or $ST::CFG_FALIGN_CI_MGAU eq 'yes'
 	    or !-e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means'))) {
