@@ -68,6 +68,9 @@ if (open PARAMS, "<$opts{params}") {
 	push @feat_params, split;
     }
 }
+if (@ARGV) {
+    push @feat_params, @ARGV;
+}
 
 my $fileext = $opts{wv2} ? 'wv2' : 'wv1';
 foreach my $dir (@dirs) {
