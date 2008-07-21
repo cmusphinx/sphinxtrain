@@ -747,7 +747,7 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
                 char readChar;
                 char *dataString = "data";
                 int16 charPointer = 0;
-                printf("LENGTH: %d\n", strlen(dataString));
+                printf("LENGTH: %zu\n", strlen(dataString));
                 while (found != ON) {
                     if (read(fp,&readChar,sizeof(char)) != sizeof(char)){
                         E_ERROR("Failed reading wav file.\n");

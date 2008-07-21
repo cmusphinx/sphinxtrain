@@ -151,7 +151,7 @@ float64
 vector_dot(const vector_t a, const vector_t b, uint32 dim)
 {
 	uint32 i;
-	float64 p;
+	float64 p = 0.0;
 
 	for (i = 0; i < dim; ++i)
 		p += a[i] * b[i];

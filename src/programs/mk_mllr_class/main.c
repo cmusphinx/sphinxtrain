@@ -59,7 +59,7 @@ main(int argc, char *argv[])
     int32 i;
     int32 n_map=0;
     int32 n_class=0;
-    uint32 *mllr_map;
+    int32 *mllr_map;
     char line[128];
 
     parse_cmd_ln(argc, argv);
@@ -80,7 +80,7 @@ main(int argc, char *argv[])
 	E_FATAL("Specify output file using -cb2mllrfn\n");
     }
 
-    mllr_map = (uint32 *)ckd_calloc(n_map, sizeof(uint32));
+    mllr_map = (int32 *)ckd_calloc(n_map, sizeof(int32));
 
     for (i = 0; i < n_map; i++) {
 	if (fgets(line, 128, stdin) == NULL) {

@@ -210,8 +210,8 @@ static void **parsed_arg_list = NULL;
 #define VALUE_HEADER	"[Value]"
 #define DOC_HEADER	"[Description]"
 
-uint32
-strlst_len(char **lst)
+static uint32
+strlst_len(const char **lst)
 {
     uint32 len;
     uint32 i;
@@ -249,7 +249,7 @@ cmd_ln_print_configuration()
 	    if (defn_list[i].type != CMD_LN_STRING_LIST)
 		len = strlen(defn_list[i].default_value);
 	    else
-		len = strlst_len(defn_list[i].default_value);
+		len = strlst_len((const char **)defn_list[i].default_value);
 
 	    if (len > mx_df_len) mx_df_len = len;
 	}
@@ -258,7 +258,7 @@ cmd_ln_print_configuration()
     if (mx_sw_len < strlen(SWITCH_HEADER)) mx_sw_len = strlen(SWITCH_HEADER);
     if (mx_df_len < strlen(DEFAULT_HEADER)) mx_df_len = strlen(DEFAULT_HEADER);
     
-    sprintf(fmt_str, "%%-%ds %%-%ds %%-%ds\n",
+    sprintf(fmt_str, "%%-%ds %%-%ds %%-%zus\n",
 	    mx_sw_len, mx_df_len, strlen(VALUE_HEADER));
     fprintf(stderr, fmt_str, SWITCH_HEADER, DEFAULT_HEADER, VALUE_HEADER);
 

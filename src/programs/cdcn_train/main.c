@@ -53,8 +53,9 @@ int main(int argc, char **argv)
 	float atemp, noise_threshold, noise_width;
 	int numnoise, numspch, numvecs, Ndim, Nmodes;
 	int maxframes, vector_alloc;
-	int i, j, k, length, *nbin, *bin;
+	int i, j, k, *nbin, *bin;
 	int superiter, stride;
+	uint32 length, x;
 
 	parse_cmd_ln(argc, argv);
 	Ndim = cmd_ln_int32("-ceplen");
@@ -94,7 +95,7 @@ int main(int argc, char **argv)
 	E_INFO("Reading frames... ");
 	while (corpus_next_utt() && (numvecs < maxframes)) {
 		corpus_get_generic_featurevec(&buff, &length, Ndim);
-		for (i = 0; i < length; i += stride) {
+		for (x = 0; x < length; x += stride) {
 			if (numvecs >= vector_alloc) {
 				vector_alloc = numvecs + 1000000;
 				E_INFOCONT(" (Reallocating to %d frames) ", vector_alloc);
@@ -104,7 +105,7 @@ int main(int argc, char **argv)
 				for (j = 1; j < vector_alloc; ++j)
 					vector[j] = vector[0] + j * Ndim;
 			}
-			memcpy(vector[numvecs], buff[i], Ndim*sizeof(float));
+			memcpy(vector[numvecs], buff[x], Ndim*sizeof(float));
 			++numvecs;
 		}
 		free(buff[0]);

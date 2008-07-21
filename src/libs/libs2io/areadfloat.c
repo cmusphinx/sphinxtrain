@@ -231,7 +231,7 @@ areadfloat_part (char *file,
     if (fseek(fp, s_coeff * sizeof(float) + sizeof(int), SEEK_SET) < 0) {
         fprintf(stderr, "areadfloat_part: seek fail;");
         perror("");
-        fprintf(stderr, "offset == %u in %s\n",
+        fprintf(stderr, "offset == %zu in %s\n",
                 s_coeff * sizeof(float) + sizeof(int), file);
 
         *data_ref = NULL;

@@ -465,7 +465,7 @@ read_kd_trees(const char *infile, kd_tree_node_t ***out_trees, uint32 *out_n_tre
 	FILE *fp;
 	char line[256];
 	int n, version;
-	uint32 i;
+	uint32 i, m;
 
 	if ((fp = fopen(infile, "r"))  == NULL) {
 		E_ERROR_SYSTEM("Failed to open %s", infile);
@@ -488,10 +488,10 @@ read_kd_trees(const char *infile, kd_tree_node_t ***out_trees, uint32 *out_n_tre
 	for (i = 0; i < *out_n_trees; ++i) {
 		kd_tree_node_t *tree;
 
-		if (read_tree_int(fp, "TREE", &n, FALSE) < 0)
+		if (read_tree_int(fp, "TREE", &m, FALSE) < 0)
 			goto error_out;
-		if (n != i) {
-			E_ERROR("Tree number %d out of sequence\n", n);
+		if (m != i) {
+			E_ERROR("Tree number %u out of sequence\n", m);
 			goto error_out;
 		}
 
