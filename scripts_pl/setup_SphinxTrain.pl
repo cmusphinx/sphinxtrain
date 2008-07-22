@@ -147,7 +147,12 @@ die "Couldn't find executables. Did you compile SphinxTrain?\n" if ($execdir eq 
 print "Copying executables from $execdir\n";
 
 opendir(DIR, "$execdir") or die "Can't open $execdir\n";
-@dirlist = grep !/^\./, readdir DIR;
+if ($^O eq 'MSWin32' or $^O eq 'msys' or $^O eq 'cygwin') {
+    @dirlist = grep /^[^.].*\.(dll|exe)$/i, readdir DIR;
+}
+else {
+    @dirlist = grep /^[^.].*/, readdir DIR;
+}
 closedir(DIR);
 foreach my $executable (@dirlist) {
  replace_file("$execdir/$executable",
