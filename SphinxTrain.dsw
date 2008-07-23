@@ -27,9 +27,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -61,9 +58,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -99,9 +93,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -133,9 +124,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -171,9 +159,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -205,9 +190,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -243,9 +225,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -277,9 +256,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -315,9 +291,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -349,9 +322,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -387,9 +357,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -421,9 +388,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -522,18 +486,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "librpcc"=.\win32\msdev\libs\librpcc\librpcc.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "libs2io"=.\win32\msdev\libs\libs2io\libs2io.dsp - Package Owner=<4>
 
 Package=<5>
@@ -570,9 +522,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -604,9 +553,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -642,9 +588,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -676,9 +619,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -714,9 +654,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -748,9 +685,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -786,9 +720,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -820,9 +751,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -858,9 +786,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -892,9 +817,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -930,9 +852,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -964,9 +883,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -1002,9 +918,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -1036,9 +949,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -1074,9 +984,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -1108,9 +1015,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -1146,9 +1050,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -1180,9 +1081,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -1218,9 +1116,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -1252,9 +1147,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io
@@ -1290,9 +1182,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -1326,9 +1215,6 @@ Package=<4>
     Project_Dep_Name libmodinv
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name librpcc
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libs2io
     End Project Dependency
     Begin Project Dependency
@@ -1360,9 +1246,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libmodinv
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name librpcc
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libs2io

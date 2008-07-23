@@ -67,21 +67,6 @@
 #include <s3/ckd_alloc.h>
 
 
-#if (ALPHA_OSF1)
-extern uint32 rpcc();		/* On an alpha, use the RPCC instruction */
-static int32 mhz;		/* Guess regarding clock rate on machine (in MHz) */
-#endif
-
-typedef struct {
-    char *name;
-    uint32 start_time;
-    float accum_time;
-} cyctimer_t;
-static cyctimer_t *timer = NULL;
-static int32 n_timer = 0;
-#define MAX_TIMER		30
-#define ACCUM_SCALE		0.001
-
 typedef struct {
     char *name;
     uint32 count;
@@ -133,23 +118,6 @@ void counter_reset_all ( void )
 	counter_reset (i);
 }
 
-#if 0
-static int32 get_namelen ( void )
-{
-    int32 i, len;
-
-    len = 0;
-    for (i = 0; i < n_ctr; i++)
-	if (len < strlen(ctr[i].name))
-	    len = strlen(ctr[i].name);
-    for (i = 0; i < n_timer; i++)
-	if (len < strlen(timer[i].name))
-	    len = strlen(timer[i].name);
-
-    return (len);
-}
-#endif
-
 void counter_print_all (FILE *fp)
 {
     int32 i;
@@ -161,166 +129,6 @@ void counter_print_all (FILE *fp)
 	fprintf (fp, "\n");
     }
 }
-
-
-#if (ALPHA_OSF1)
-static int32 clock_speed (int32 dummy)
-{
-    int32 i, j, k, besti, bestj, diff;
-    uint32 rpcc_start, rpcc_end;
-    struct rusage start, stop;
-    float64 t;
-    
-    getrusage (RUSAGE_SELF, &start);
-    rpcc_start = rpcc();
-    for (i = 0; i < 100000000; i++)
-	if (i > dummy)
-	    return (i);
-    rpcc_end = rpcc();
-    getrusage (RUSAGE_SELF, &stop);
-    
-    t = (stop.ru_utime.tv_sec - start.ru_utime.tv_sec) + 
-	((stop.ru_utime.tv_usec - start.ru_utime.tv_usec) * 0.000001);
-    mhz = ((rpcc_end - rpcc_start) / t) * 0.000001 + 0.5;
-    diff = (int32)0x7fffffff;
-    for (i = 100; i <= 1000; i += 100) {
-	for (j = 1; j <= 10; j++) {
-	    k = i/j - mhz;
-	    if (k < 0)
-		k = -k;
-	    if (k < diff) {
-		diff = k;
-		besti = i;
-		bestj = j;
-	    }
-	}
-    }
-    mhz = besti/bestj;
-    E_INFO("%d ticks in %.3f sec; machine clock rate = %d MHz\n",
-	   rpcc_end - rpcc_start, t, mhz);
-    
-    return 0;
-}
-#endif
-
-
-int32 cyctimer_new (char *name)
-{
-#if (ALPHA_OSF1)
-    {
-	int32 dummy;
-	
-	dummy = name[0] | ((int32) 0x70000000);
-	if (n_timer == 0)
-	    clock_speed (dummy);
-    }
-    
-    if (! timer)
-	timer = (cyctimer_t *) ckd_calloc (MAX_TIMER, sizeof(cyctimer_t));
-    if (n_timer >= MAX_TIMER) {
-	E_WARN("#timers (%d) exceeded\n", MAX_TIMER);
-	return -1;
-    }
-    timer[n_timer].name = (char *) ckd_salloc (name);
-    timer[n_timer].accum_time = 0.0;
-
-    return (n_timer++);
-#else
-    return -1;
-#endif
-}
-
-
-void cyctimer_resume (int32 id)
-{
-#if (ALPHA_OSF1)
-    if ((id < 0) || (id >= MAX_TIMER))
-	return;
-    
-    timer[id].start_time = rpcc();
-#endif
-}
-
-
-void cyctimer_pause (int32 id)
-{
-#if (ALPHA_OSF1)
-    if ((id < 0) || (id >= MAX_TIMER))
-	return;
-    
-    timer[id].accum_time += (rpcc() - timer[id].start_time) * ACCUM_SCALE;
-#endif
-}
-
-
-void cyctimer_reset (int32 id)
-{
-    if ((id < 0) || (id >= MAX_TIMER))
-	return;
-    
-    timer[id].accum_time = 0.0;
-}
-
-
-void cyctimer_reset_all ( void )
-{
-    int32 i;
-    
-    for (i = 0; i < n_timer; i++)
-	cyctimer_reset (i);
-}
-
-
-void cyctimer_print_all (FILE *fp)
-{
-#if (ALPHA_OSF1)
-    int32 i;
-    char fmtstr[1024];
-    
-    if (n_timer > 0) {
-	fprintf (fp, "PROFILING TIMERS:\n");
-
-	sprintf (fmtstr, "  TMR: %%-%ds %%10d\n", get_namelen());
-	for (i = 0; i < n_timer; i++)
-	    fprintf (fp, fmtstr, timer[i].name, (int32)(timer[i].accum_time));
-    }
-#endif
-}
-
-
-float64 cyctimer_get_sec (int32 id)
-{
-#if (ALPHA_OSF1)
-    float64 t;
-    
-    t = (timer[id].accum_time / ACCUM_SCALE) / (1000000.0 * mhz);	/* Sec */
-    return (t);
-#else
-    return (0.0);
-#endif
-}
-
-
-void cyctimer_print_all_norm (FILE *fp, float64 norm_sec, int32 norm_id)
-{
-#if (ALPHA_OSF1)
-    int32 i;
-    float64 t;
-    
-    if (n_timer > 0) {
-	fprintf (fp, "TMR:");
-	for (i = 0; i < n_timer; i++) {
-	    t = (timer[i].accum_time / ACCUM_SCALE) / (1000000.0 * mhz);	/* Sec */
-
-	    fprintf (fp, "[%s %6.1fs %5.1fx %3.0f%%]",
-		     timer[i].name, t, t / norm_sec,
-		     (timer[i].accum_time * 100.0) / timer[norm_id].accum_time);
-	}
-	fprintf (fp, "\n");
-    }
-#endif
-}
-
 
 #if (WIN32)
 
@@ -337,7 +145,7 @@ static float64 make_sec (FILETIME *tm)
     return (dt);
 }
 
-#else
+#else /* !WIN32 */
 
 static float64 make_sec (struct timeval *s)
 {

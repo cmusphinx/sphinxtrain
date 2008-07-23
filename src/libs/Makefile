@@ -42,8 +42,9 @@
 # ====================================================================
 TOP=../..
 DIRNAME=src/libs
-BUILD_DIRS = libcep_feat libcommon libmllr librpcc \
-             libclust libio libmodinv libs2io $(LAPACK_LITE)
+BUILD_DIRS = libcep_feat libcommon libmllr \
+             libclust libio libmodinv libs2io \
+	     $(LAPACK_LITE)
 ALL_DIRS= $(BUILD_DIRS)
 FILES = Makefile README
 

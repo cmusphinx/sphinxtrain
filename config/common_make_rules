@@ -73,7 +73,13 @@ EXTRA_CC_FLAGS +=
 #-DNEXT_UTT_STATES_VERBOSE
 CFLAGS += $(EXTRA_CC_FLAGS) $(OPT) $(DBG)
 LDFLAGS += -L$(LIBDIR) $(EXTRA_LD_FLAGS)
-STLIBS = -lcommon -lmllr -lio -ls2io -lcep_feat -lmodinv -lclust -lrpcc
+STLIBS = $(LIBDIR)/libcommon.a \
+	 $(LIBDIR)/libmllr.a \
+	 $(LIBDIR)/libio.a \
+	 $(LIBDIR)/libs2io.a \
+	 $(LIBDIR)/libcep_feat.a \
+	 $(LIBDIR)/libmodinv.a \
+	 $(LIBDIR)/libclust.a
 LIBS := $(STLIBS) $(LIBS)
 
 $(OBJDIR)/%.o : %.c
@@ -101,7 +107,7 @@ endif
 	touch .build_lib
 
 # Program build rules
-$(BINDIR)/$(TARGET): $(OBJS) $(DEP_LIBS)
+$(BINDIR)/$(TARGET): $(OBJS) $(STLIBS) $(DEP_LIBS)
 	$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) $(LIBS)
 
 # Festival Script build rules
@@ -129,6 +135,8 @@ $(SCRIPTDIR)/$(DIRNAME)/%.pl: %.pl
 
 clean:
 	@ echo make clean in $(DIRNAME) ...
+	@(test "$(LIBNAME)" && $(RM) $(LIBDIR)/lib$(LIBNAME).a) || true
+	@(test "$(TARGET)" && $(RM) $(BINDIR)/$(TARGET)) || true
 	@$(RM) *.o *.a *~ $(LOCAL_CLEAN)
 	@$(RM) -r $(OBJDIR)
 ifneq (,$(ALL_DIRS))

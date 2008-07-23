@@ -68,22 +68,6 @@ void counter_reset_all ( void );
 
 
 /*
- * Cycle counter functions for fine grained performance evaluation.
- * (Only available on these machines: DEC-Alpha)
- */
-int32 cyctimer_new (char *name);	/* Allocate timer with given name and return its id;
-					   Timer is paused at this time */
-
-void cyctimer_resume (int32 id);
-void cyctimer_pause (int32 id);
-
-void cyctimer_print_all (FILE *fp);
-void cyctimer_reset_all ( void );
-void cyctimer_print_all_norm (FILE *fp, float64 norm_sec, int32 norm_id);
-float64 cyctimer_get_sec (int32 id);
-
-
-/*
  * Timing structures and functions for coarse-grained performance measurements.
  * Using standard system calls.
  */
