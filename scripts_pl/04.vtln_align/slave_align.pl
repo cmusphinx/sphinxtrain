@@ -154,8 +154,8 @@ close INPUT;
 close OUTPUT;
 
 # Now do force-alignment for each warping factor
-$ST::CFG_VTLN_START = 0.85 unless defined($ST::CFG_VTLN_START);
-$ST::CFG_VTLN_END = 1.25 unless defined($ST::CFG_VTLN_END);
+$ST::CFG_VTLN_START = 0.80 unless defined($ST::CFG_VTLN_START);
+$ST::CFG_VTLN_END = 1.45 unless defined($ST::CFG_VTLN_END);
 $ST::CFG_VTLN_STEP = 0.05 unless defined($ST::CFG_VTLN_STEP);
 # Update a global list of files with warping factors and likelihoods
 my $vtlnctl = catfile($outdir, "${ST::CFG_EXPTNAME}.vtlnctl");
@@ -192,7 +192,8 @@ for (my $warp = $ST::CFG_VTLN_START;
     if ($have_feats) {
 	Log("Phase 5: Skipped, feature files already exist\n");
     }
-    else {
+    # Try to use extract_features.pl if it exists
+    elsif (-x "$ST::CFG_SCRIPT_DIR/extract_features.pl") {
 	my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.extract.$warp.log";
 	my $rv = RunTool('../scripts_pl/extract_features.pl',
 			 $logfile, 0,
@@ -204,6 +205,25 @@ for (my $warp = $ST::CFG_VTLN_START;
 	    Log("Failed in warp $warp");
 	    exit 1;
 	}
+    }
+    # Otherwise use the default make_feats.pl
+    elsif (-x "$ST::CFG_SCRIPT_DIR/make_feats.pl") {
+	my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.extract.$warp.log";
+	my $rv = RunTool('../scripts_pl/make_feats.pl',
+			 $logfile, 0,
+			 -ctl => $ST::CFG_LISTOFFILES,
+			 -ext => "$warp.$ST::CFG_FEATFILE_EXTENSION",
+			 -cfg => $ST::CFG_FILE,
+			 '--', 
+			 -warp_params => $warp);
+	if ($rv != 0) {
+	    Log("Failed in warp $warp");
+	    exit 1;
+	}
+    }
+    else {
+	Log("Failed to find a script for feature extraction");
+	exit 1;
     }
 
     # Run n_parts of force alignment
