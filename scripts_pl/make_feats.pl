@@ -49,10 +49,15 @@ if ($#ARGV == -1) {
 Getopt::Long::Configure('no_auto_abbrev', 'pass_through');
 
 GetOptions('help|h' => \$help,
-	   'ctl=s' => \$ctl,
+	   'ctl|c=s' => \$ctl,
+	   'wavext|w=s' => \$wavext,
+	   'ext|e=s' => \$cepext,
 	   'cfg=s' => \$cfg_file,
 	   'param=s' => \$param_file);
 
+if ($ARGV[0] == '--') {
+    shift @ARGV;
+}
 
 if ($help) {
   pod2usage( -exitval => "NOEXIT",
@@ -79,18 +84,22 @@ if (defined $ctl) {
 
   require $cfg_file;
 
-  $ST::WAVFILE_TYPE ||= 'nist';
-  $ST::WAVFILES_DIR ||= 'wav';
-  $ST::WAVFILE_EXTENSION ||= 'sph';
-  $ST::FEATFILES_DIR ||= 'feat';
-  $ST::FEATFILE_EXTENSION ||= 'mfc';
+  $ST::CFG_WAVFILE_TYPE ||= 'nist';
+  $ST::CFG_WAVFILES_DIR ||= 'wav';
+  $ST::CFG_WAVFILE_EXTENSION ||= 'sph';
+  $ST::CFG_FEATFILES_DIR ||= 'feat';
+  $ST::CFG_FEATFILE_EXTENSION ||= 'mfc';
+
+  # Override things from the command line
+  $ST::CFG_WAVFILE_EXTENSION = $wavext if defined($wavext);
+  $ST::CFG_FEATFILE_EXTENSION = $cepext if defined($cepext);
 
   # Read control file and create any necessary directories
   open CTL, "<$ctl" or die "Failed to open control file $ctl: $!";
   while (<CTL>) {
       chomp;
       my $dir = dirname($_);
-      mkdir(catdir($ST::FEATFILES_DIR, $dir), 0777);
+      mkdir(catdir($ST::CFG_FEATFILES_DIR, $dir), 0777);
   }
   close CTL;
 
@@ -110,9 +119,10 @@ EOP
   $params = $default_params;
   $params =~ s/\n/ /gs;
   system("bin/wave2feat -verbose yes $params -c \"$ctl\" -$ST::CFG_WAVFILE_TYPE yes " .
-	 "-di \"$ST::WAVFILES_DIR\" -ei \"$ST::CFG_WAVFILE_EXTENSION\" ".
+	 "-di \"$ST::CFG_WAVFILES_DIR\" -ei \"$ST::CFG_WAVFILE_EXTENSION\" ".
 	 "-do \"$ST::CFG_FEATFILES_DIR\" " .
-	 "-eo \"$ST::CFG_FEATFILE_EXTENSION\"");
+	 "-eo \"$ST::CFG_FEATFILE_EXTENSION\"".
+	 " @ARGV");
 
   open PARAM, ">$param_file" or die "Failed to open param file $param_file for writing: $!";
   print PARAM $default_params;
