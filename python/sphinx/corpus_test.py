@@ -13,11 +13,13 @@ class TestFileResource(unittest.TestCase):
         self.testfile = os.path.join(thisdir, 'test', 'test.ctl')
 
     def test_string(self):
-        res = corpus.FileResource(open(self.testfile), self.testdir, '.wav')
+        ctl = corpus.ListResource(self.testfile, corpus.CtlEntry)
+        res = iter(corpus.FileResource(ctl, self.testdir, '.wav'))
         self.assertEqual(res.next(), os.path.join(self.testdir, 'sa1.wav'))
 
     def test_wave(self):
-        res = corpus.FileResource(open(self.testfile), self.testdir, '.wav', wave.Wave_read)
+        ctl = corpus.ListResource(self.testfile, corpus.CtlEntry)
+        res = iter(corpus.FileResource(ctl, self.testdir, '.wav', wave.Wave_read))
         wav = res.next()
         self.assertEqual(wav.getnframes(), 45261)
 
@@ -27,12 +29,12 @@ class TestListResource(unittest.TestCase):
         self.testfile = os.path.join(thisdir, 'test', 'test.ctl')
         
     def test_string(self):
-        res = corpus.ListResource(self.testfile)
+        res = iter(corpus.ListResource(self.testfile))
         self.assertEqual(res.next(), 'sa1 1 20 sa1_1_20')
         self.assertEqual(res.next(), 'sa1 25 35 sa1_25_35')
 
     def test_entry(self):
-        res = corpus.ListResource(self.testfile, corpus.CtlEntry)
+        res = iter(corpus.ListResource(self.testfile, corpus.CtlEntry))
         entry = res.next()
         self.assertEqual(entry.fileid, 'sa1')
         self.assertEqual(entry.sf, 1)
