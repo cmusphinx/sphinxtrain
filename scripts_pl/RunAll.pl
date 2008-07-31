@@ -53,6 +53,7 @@ my @steps =
      "$ST::CFG_SCRIPT_DIR/01.vector_quantize/slave.VQ.pl",
      "$ST::CFG_SCRIPT_DIR/02.falign_ci_hmm/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/03.force_align/slave_align.pl",
+     "$ST::CFG_SCRIPT_DIR/04.vtln_align/slave_align.pl",
      "$ST::CFG_SCRIPT_DIR/05.lda_train/slave_lda.pl",
      "$ST::CFG_SCRIPT_DIR/06.mllt_train/slave_mllt.pl",
      "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
