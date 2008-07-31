@@ -8,9 +8,12 @@ $DEC_CFG_VERBOSE = 1;		# Determines how much goes to the screen.
 
 # These are filled in at configuration time
 $DEC_CFG_DB_NAME = 'wsj_si84';
-$DEC_CFG_BASE_DIR = '/net/redwood/usr1/dhuggins/SphinxTrain/templates/wsj';
-$DEC_CFG_SPHINXDECODER_DIR = '/net/redwood/usr1/dhuggins/pocketsphinx';
-$DEC_CFG_SPHINXTRAIN_CFG = "$DEC_CFG_BASE_DIR/etc/sphinx_train_semi.cfg";
+$DEC_CFG_BASE_DIR = "___BASE_DIR___";
+$DEC_CFG_SPHINXDECODER_DIR = "___SPHINXDECODER_DIR___";
+$DEC_CFG_SPHINXTRAIN_CFG = "___SPHINXTRAIN_CFG___";
+
+# Name of the decoding script to use (psdecode.pl or s3decode.pl, probably)
+$DEC_CFG_SCRIPT = 'psdecode.pl';
 
 require $DEC_CFG_SPHINXTRAIN_CFG;
 
@@ -22,9 +25,7 @@ $DEC_CFG_EXPTNAME = "$DEC_CFG_DB_NAME";
 $DEC_CFG_JOBNAME  = "$DEC_CFG_DB_NAME"."_job";
 
 # Models to use.
-$DEC_CFG_SENONES = $CFG_N_TIED_STATES;
-$DEC_CFG_GAUSSIANS = $CFG_FINAL_NUM_DENSITIES;
-$DEC_CFG_MODEL_NAME = "$DEC_CFG_EXPTNAME.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}";
+$DEC_CFG_MODEL_NAME = "$CFG_EXPTNAME.cd_${CFG_DIRLABEL}_${CFG_N_TIED_STATES}";
 
 $DEC_CFG_FEATFILES_DIR = "$DEC_CFG_BASE_DIR/feat";
 $DEC_CFG_FEATFILE_EXTENSION = '.mfc';
@@ -32,6 +33,7 @@ $DEC_CFG_VECTOR_LENGTH = $CFG_VECTOR_LENGTH;
 $DEC_CFG_AGC = $CFG_AGC;
 $DEC_CFG_CMN = $CFG_CMN;
 $DEC_CFG_VARNORM = $CFG_VARNORM;
+$DEC_CFG_SVSPEC = $CFG_SVSPEC;
 
 $DEC_CFG_QMGR_DIR = "$DEC_CFG_BASE_DIR/qmanager";
 $DEC_CFG_LOG_DIR = "$DEC_CFG_BASE_DIR/logdir";
@@ -55,14 +57,14 @@ $DEC_CFG_BEAMWIDTH = "1e-60";
 $DEC_CFG_WORDBEAM = "1e-40";
 @DEC_CFG_EXTRA_ARGS = qw(-bestpathlw 11.5);
 
-$DEC_CFG_ALIGN = "sclite";
+$DEC_CFG_ALIGN = "___ALIGN___";
 
 #*******variables used in characterizing models*******
 
 $DEC_CFG_HMM_TYPE = $CFG_HMM_TYPE;
 
-if ($DEC_CFG_HMM_TYPE ne ".semi.") {
-  die "PocketSphinx requires the HMM type to be '.semi.', " .
+if (($DEC_CFG_HMM_TYPE ne ".semi.") and ($DEC_CFG_HMM_TYPE ne ".cont.")) {
+  die "Please choose one CFG_HMM_TYPE out of '.cont.' or '.semi.', " .
     "currently $DEC_CFG_HMM_TYPE\n";
 }
 
@@ -81,12 +83,12 @@ if ($DEC_CFG_HMM_TYPE ne ".semi.") {
 		 's2_4x' 	                                => 's2_4x',
 		 's3_1x39'            	                        => 's3_1x39',
 		 '1s_c_d_dd'                                    => '1s_c_d_dd',
+		 '1s_c_d_ld_dd'                                 => '1s_c_d_ld_dd',
 		 '1s_c_d'                                       => 'cep_dcep',
 		 '1s_c'                                         => 'cep',
 		 '1s_c_dd'                                      => 'INVALID',
 		 '1s_d'                                         => 'INVALID',
 		 '1s_dd'                                        => 'INVALID',
-		 '1s_c_d_ld_dd'                                 => 'INVALID',
 		);
 
 $DEC_CFG_FEATURE = "INVALID"
@@ -95,10 +97,10 @@ $DEC_CFG_FEATURE = "INVALID"
 
 if ($DEC_CFG_FEATURE eq "INVALID") {
   die "Feature type used for training, $CFG_FEATURE, cannot be used for decoding.\n" .
-    "Please use one of 1s_c_d_dd, 1s_c_d, 1s_c, s2_4x, s3_1x39\n";
+    "Please use one of 1s_c_d_dd, 1s_c_d, 1s_c, s2_4x, s3_1x39, 1s_c_d_ld_dd\n";
 }
 
-$DEC_CFG_NPART = 10;		#  Define how many pieces to split decode in
+$DEC_CFG_NPART = 1;		#  Define how many pieces to split decode in
 
 $DEC_CFG_OKAY_COLOR = '00D000';
 $DEC_CFG_WARNING_COLOR = '555500';
