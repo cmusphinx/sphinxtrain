@@ -131,6 +131,10 @@ read_mdef(const char *moddeffn,
     else if (model_def_read(out_mdef, moddeffn) != S3_SUCCESS) {
 	E_FATAL("Can not read model definition file %s\n", moddeffn);
     }
+
+    if (cb2mllr == NULL)
+	cb2mllr = (char *)ckd_calloc((*out_mdef)->n_total_state,sizeof(char));
+	
     *out_gau_begin = (*out_mdef)->n_tied_ci_state;
     for (i = 0; i < *out_gau_begin; i++) {
 	cb2mllr[i] = -1;                    /* skip CI senones */
