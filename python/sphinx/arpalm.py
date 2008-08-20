@@ -17,11 +17,12 @@ import gzip
 import re
 
 LOG10TOLOG = numpy.log(10)
+LOGTOLOG10 = 1./LOG10TOLOG
 
 class ArpaLM(object):
     "Class for reading ARPA-format language models"
 
-    def __init__(self, path=None):
+    def __init__(self, path=None, lw=1.0, wip=1.0):
         """
         Initialize an ArpaLM object.
 
@@ -32,6 +33,9 @@ class ArpaLM(object):
         """
         if path != None:
             self.read(path)
+        self.lw = lw
+        self.wip = wip
+        self.log_wip = numpy.log(wip)
 
     def read(self, path):
         """
@@ -147,6 +151,8 @@ class ArpaLM(object):
             if '<UNK>' in self.ngmap[n-1]:
                 ngid = self.ngmap[n-1]['<UNK>']
                 score, bowt = self.ngrams[n-1][ngid]
+                score *= LOGTOLOG10
+                bowt *= LOGTOLOG10
                 if n == self.n:
                     fh.write("%.4f <UNK>\n" % (score))
                 else:
@@ -156,6 +162,8 @@ class ArpaLM(object):
                     continue
                 ngid = self.ngmap[n-1][g]
                 score, bowt = self.ngrams[n-1][ngid]
+                score *= LOGTOLOG10
+                bowt *= LOGTOLOG10
                 if n > 1:
                     g = " ".join(g) 
                 if n == self.n:
@@ -179,6 +187,10 @@ class ArpaLM(object):
             return []
 
     def score(self, *syms):
+        p = self.prob(*syms)
+        return p * self.lw + self.log_wip
+
+    def prob(self, *syms):
         """
         Return the language model log-probability for an N-Gram
 
