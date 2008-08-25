@@ -36,6 +36,7 @@ use Getopt::Long;
 use Pod::Usage;
 use File::Basename;
 use File::Spec::Functions;
+use File::Path;
 
 use lib catdir(dirname($0), 'lib');
 use SphinxTrain::Config;
@@ -99,7 +100,7 @@ if (defined $ctl) {
   while (<CTL>) {
       chomp;
       my $dir = dirname($_);
-      mkdir(catdir($ST::CFG_FEATFILES_DIR, $dir), 0777);
+      mkpath(catdir($ST::CFG_FEATFILES_DIR, $dir));
   }
   close CTL;
 
