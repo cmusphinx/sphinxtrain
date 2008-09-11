@@ -792,7 +792,7 @@ class Dag(object):
             for wx in w.exits:
                 wx.post = wx.alpha + wx.beta - norm
 
-    def minimum_error(self, hyp):
+    def minimum_error(self, ref):
         """
         Find the minimum word error rate path through lattice,
         returning the number of errors and an alignment.
@@ -800,13 +800,13 @@ class Dag(object):
         @rtype: (int, list(string, string))
         """
         # Initialize the alignment matrix
-        align_matrix = numpy.ones((len(hyp),len(self.nodes)), 'i') * 999999999
+        align_matrix = numpy.ones((len(ref),len(self.nodes)), 'i') * 999999999
         # And the backpointer matrix
-        bp_matrix = numpy.zeros((len(hyp),len(self.nodes)), 'O')
+        bp_matrix = numpy.zeros((len(ref),len(self.nodes)), 'O')
         # Remove filler nodes from the reference
-        hyp = filter(lambda x: not is_filler(x), hyp)
-        # Bypass filler nodes in the lattice
-        self.bypass_fillers()
+        ref = filter(lambda x: not is_filler(x), ref)
+        # Remove unreachable nodes
+        self.remove_unreachable()
         # Figure out the minimum distance to each node from the start
         # of the lattice, and construct a node to ID mapping
         nodeid = {}
@@ -833,7 +833,7 @@ class Dag(object):
                     bestscore = align_matrix[ii,k]
             return bestp, bestscore
         # Now fill in the alignment matrix
-        for i, w in enumerate(hyp):
+        for i, w in enumerate(ref):
             for j, u in enumerate(self.nodes):
                 # Insertion = cost(w, prev(u)) + 1
                 if u == self.start: # start node
@@ -872,24 +872,27 @@ class Dag(object):
         # Find last node's index
         last = nodeid[self.end]
         # Backtrace to get an alignment
-        i = len(hyp)-1
+        i = len(ref)-1
         j = last
         bt = []
         while True:
             ip,jp = bp_matrix[i,j]
             if ip == i: # Insertion
-                bt.append(('INS', baseword(self.nodes[j].sym)))
+                bt.append(('**INS**', '*%s*' % baseword(self.nodes[j].sym)))
             elif jp == j: # Deletion
-                bt.append((hyp[i], 'DEL'))
+                bt.append(('*%s' % ref[i], '**DEL**'))
             else:
-                bt.append((hyp[i], baseword(self.nodes[j].sym)))
+                if ref[i] == baseword(self.nodes[j].sym):
+                    bt.append((ref[i], baseword(self.nodes[j].sym)))
+                else:
+                    bt.append((ref[i], '*%s*' % baseword(self.nodes[j].sym)))
             # If we consume both ref and hyp, we are done
             if ip == -1 and jp == -1:
                 break
             # If we hit the beginning of the ref, fill with insertions
             if ip == -1:
                 while True:
-                    bt.append(('INS', baseword(self.nodes[jp].sym)))
+                    bt.append(('**INS**', baseword(self.nodes[jp].sym)))
                     bestp, bestscore = find_pred(i,jp)
                     if bestp == -1:
                         break
@@ -898,10 +901,10 @@ class Dag(object):
             # If we hit the beginning of the hyp, fill with deletions
             if jp == -1:
                 while ip >= 0:
-                    bt.append((hyp[ip], 'DEL'))
+                    bt.append((ref[ip], '**DEL**'))
                     ip = ip - 1
                 break
             # Follow the pointer
             i,j = ip,jp
         bt.reverse()
-        return align_matrix[-1,last], bt
+        return align_matrix[len(ref)-1,last], bt
