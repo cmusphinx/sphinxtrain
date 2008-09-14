@@ -117,7 +117,7 @@ if __name__ == '__main__':
     except getopt.GetoptError:
         usage()
         sys.exit(2)
-    if len(args) < 3:
+    if len(args) < 2:
         usage()
         sys.exit(2)
     ldafn = None
