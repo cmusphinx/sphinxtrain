@@ -645,13 +645,17 @@ class Dag(object):
 
     def remove_unreachable(self):
         """Remove unreachable nodes and dangling edges."""
+        # It is supposed to be the case that all nodes are reachable
+        # from the start, but this is not true!
+        for w in self.traverse_breadth():
+            w.score = 42
         # Mark reachable nodes from the end
         for w in self.reverse_breadth():
-            w.score = 42
+            w.score += 27
         # Find and remove unreachable ones
         begone = {}
         for i, w in enumerate(self.nodes):
-            if w.score != 42:
+            if w.score != 69:
                 begone[w] = 1
                 self.nodes[i] = None
         self.nodes = [w for w in self.nodes if w != None]
