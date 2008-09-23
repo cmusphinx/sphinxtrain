@@ -122,7 +122,7 @@ class HTKFeat_read(object):
         return data
 
 class HTKFeat_write(object):
-    "Write Sphinx-II format feature files"
+    "Write HTK format feature files"
     def __init__(self, filename=None,
                  veclen=13, sampPeriod=100000,
                  paramKind = (MFCC | _O)):
