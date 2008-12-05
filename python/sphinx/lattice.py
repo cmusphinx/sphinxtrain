@@ -22,7 +22,7 @@ try:
 except:
     pass
 
-LOGZERO = -100000
+LOGZERO = -10000000
 
 def logadd(x,y):
     """
@@ -85,21 +85,27 @@ class Dag(object):
         @ivar score: Viterbi (or other) score for this node, used in
                      bestpath calculation.
         @type score: float
+        @ivar post: Posterior probability of this node.
+        @type post: float
         @ivar prev: Backtrace pointer for this node, used in bestpath
                     calculation.
         @type prev: object
         @ivar fan: Temporary fan-in or fan-out counter used in edge traversal
         @type fan: int
         """
-        __slots__ = 'sym', 'entry', 'exits', 'entries', 'score', 'prev', 'fan'
+        __slots__ = 'sym', 'entry', 'exits', 'entries', 'score', 'post', 'prev', 'fan'
         def __init__(self, sym, entry):
             self.sym = sym
             self.entry = entry
             self.exits = []
             self.entries = []
             self.score = LOGZERO
+            self.post = LOGZERO
             self.prev = None
             self.fan = 0
+
+        def __str__(self):
+            return "<Node: %s/%d>" % (self.sym, self.entry)
 
     class Link(object):
         """
@@ -143,6 +149,11 @@ class Dag(object):
             self.lback = lback
             self.prev = None
 
+        def __str__(self):
+            return "<Link: %s/%d => %s/%d P = %f>" % (self.src.sym, self.src.entry,
+                                                     self.dest.sym, self.dest.entry,
+                                                     self.post)
+
     def __init__(self, sphinx_file=None, htk_file=None, frate=100):
         """
         Construct a DAG, optionally loading contents from a file.
@@ -168,7 +179,10 @@ class Dag(object):
     fieldre = re.compile(r'(\S+)=(?:"((?:[^\\"]+|\\.)*)"|(\S+))')
     def htk2dag(self, htkfile):
         """Read an HTK-format lattice file to populate a DAG."""
-        fh = gzip.open(htkfile)
+        if htkfile.endswith('.gz'): # DUMB
+            fh = gzip.open(htkfile)
+        else:
+            fh = open(htkfile)
         self.header = {}
         self.n_frames = 0
         state='header'
@@ -176,12 +190,19 @@ class Dag(object):
         for spam in fh:
             if spam.startswith('#'):
                 continue
-            fields = dict(map(lambda (x,y,z): (x, y or z), self.fieldre.findall(spam.rstrip())))
+            fields = dict(map(lambda (x,y,z): (x, y or z),
+                              self.fieldre.findall(spam.rstrip())))
             # Number of nodes and links
             if 'N' in fields:
                 nnodes = int(fields['N'])
                 self.nodes = [None] * nnodes
                 nlinks = int(fields['L'])
+                self.links = [None] * nlinks
+                state = 'items'
+            elif 'NODES' in fields:
+                nnodes = int(fields['NODES'])
+                self.nodes = [None] * nnodes
+                nlinks = int(fields['LINKS'])
                 self.links = [None] * nlinks
                 state = 'items'
             if state == 'header':
@@ -192,6 +213,8 @@ class Dag(object):
                     frame = int(float(fields['t']) * self.frate)
                     node = self.Node(fields['W'], frame)
                     self.nodes[int(fields['I'])] = node
+                    if 'p' in fields:
+                        node.post = math.log(float(fields['p']))
                     if frame > self.n_frames:
                         self.n_frames = frame
                 # This is a link
@@ -199,17 +222,88 @@ class Dag(object):
                     # Link up existing nodes
                     fromnode = int(fields['S'])
                     tonode = int(fields['E'])
-                    ascr = float(fields['a'])
-                    lscr = float(fields['n'])
-                    self.nodes[int(fromnode)].exits.append(
-                        self.Link(fromnode, tonode, ascr, lscr))
+                    ascr = float(fields.get('a', 0))
+                    lscr = float(fields.get('n', fields.get('l', 1.0)))
+                    link = self.Link(fromnode, tonode, ascr, lscr)
+                    link.post = math.log(float(fields.get('p', 1.0)))
+                    self.nodes[int(fromnode)].exits.append(link)
+                        
         # FIXME: Not sure if the first and last nodes are always the start and end?
-        self.start = self.nodes[0]
-        self.end = self.nodes[-1]
+        if 'start' in self.header:
+            self.start = self.nodes[int(self.header['start'])]
+        else:
+            self.start = self.nodes[0]
+        if 'end' in self.header:
+            self.end = self.nodes[int(self.header['end'])]
+        else:
+            self.end = self.nodes[-1]
         # Snap links to nodes to point to the objects themselves
         self.snap_links()
         # Sort nodes to be in time order
         self.sort_nodes_forward()
+
+    def dag2htk(self, htkfile, lm=None):
+        if htkfile.endswith('.gz'): # DUMB
+            fh = gzip.open(htkfile, 'w')
+        else:
+            fh = open(htkfile, 'w')
+        # Ensure some header fields are there
+        if 'VERSION' not in self.header:
+            self.header['VERSION'] = '1.0'
+        for k,v in self.header.iteritems():
+            # Skip Sphinx stuff
+            if k[0] == '-':
+                continue
+            fh.write("%s=%s\n" % (k,v))
+        fh.write("N=%d\tL=%d\n" % (self.n_nodes(), self.n_edges()))
+        idmap = {}
+        i = 0
+        for n in self.nodes:
+            fh.write("I=%d\tt=%.2f\tW=%s\n" % (i, float(n.entry) / 100, n.sym))
+            idmap[n] = i
+            i += 1
+        j = 0
+        for l in self.edges():
+            if l.lscr != LOGZERO:
+                fh.write("J=%d\tS=%d\tE=%d\ta=%f\tl=%f\n" %
+                              (j, idmap[l.src], idmap[l.dest], l.ascr, l.lscr))
+            else:
+                fh.write("J=%d\tS=%d\tE=%d\ta=%f\n" %
+                              (j, idmap[l.src], idmap[l.dest], l.ascr))
+            j += 1
+
+    def dag2fst(self, fstfile, symfile=None, altpron=False):
+        fh = open(fstfile, "w")
+        if symfile:
+            sfh = open(symfile, "w")
+        idmap = {}
+        symmap = { "<eps>" : 0 }
+        j = 0
+        for i, n in enumerate(self.nodes):
+            idmap[n] = i
+            if altpron: sym = n.sym
+            else: sym = baseword(n.sym)
+            if n.sym not in symmap:
+                j += 1
+                symmap[n.sym] = j
+        for x in self.start.exits:
+            if altpron: sym = x.src.sym
+            else: sym = baseword(x.src.sym)
+            fh.write("%d %d %s %s %f\n" % (idmap[x.src], idmap[x.dest],
+                                        sym, sym, -x.ascr))
+        for x in self.edges():
+            if x.src == self.start:
+                continue
+            if altpron: sym = x.src.sym
+            else: sym = baseword(x.src.sym)
+            fh.write("%d %d %s %s %f\n" % (idmap[x.src], idmap[x.dest],
+                                        sym, sym, -x.ascr))
+        fh.write("%d 0" % idmap[self.end])
+        fh.close()
+        if symfile:
+            for k, v in symmap.iteritems():
+                sfh.write("%s %d\n" % (k, v))
+            sfh.close()
 
     def snap_links(self):
         for n in self.nodes:
@@ -283,10 +377,13 @@ class Dag(object):
         self.sort_nodes_forward()
 
     def dag2sphinx(self, outfile, logbase=1.0003):
-        if outfile.endswith('.gz'): # DUMB
-            fh = gzip.open(outfile, "w")
+        if isinstance(outfile, file):
+            fh = outfile
         else:
-            fh = open(outfile, "w")
+            if outfile.endswith('.gz'): # DUMB
+                fh = gzip.open(outfile, "w")
+            else:
+                fh = open(outfile, "w")
         fh.write("# getcwd: %s\n" % self.getcwd)
         fh.write("# -logbase %e\n" % logbase)
         for arg, val in self.header.iteritems():
@@ -334,7 +431,7 @@ class Dag(object):
         fh.write(";\n\tnode [shape=doublecircle]; %s;\n\n" % nodeid[self.end])
         for x in self.edges():
             fh.write("\t%s -> %s [label=\"%.2f\"];\n"
-                     % (nodeid[x.src], nodeid[x.dest], x.ascr))
+                     % (nodeid[x.src], nodeid[x.dest], x.post))
         fh.write("}\n")
         fh.close()
 
@@ -492,6 +589,7 @@ class Dag(object):
                     bestscore = u.score
             u = Q[bestidx]
             del Q[bestidx]
+            #print "Looking at %s/%d" % (u.sym, u.entry)
             if u == end:
                 return u
             for x in u.exits:
@@ -504,8 +602,10 @@ class Dag(object):
                     syms.append(baseword(u.prev.sym))
                 x.lscr, x.lback = lm.score(*syms)
                 x.pscr = u.score + x.ascr + x.lscr
+                #print "Looking at link to %s/%d (%d <=> %d)" % (v.sym, v.entry, x.pscr, v.score)
                 if x.pscr > v.score:
                     v.score = x.pscr
+                    #print "Prev of %s/%d now %s/%d" % (v.sym, v.entry, u.sym, u.entry)
                     v.prev = u
 
     def backtrace(self, end=None):
@@ -609,7 +709,7 @@ class Dag(object):
         src.exits.append(link)
         dest.entries.append(link)
 
-    def bypass_fillers(self, lm=None, silprob=0.1, fillprob=0.1):
+    def bypass_fillers(self, lm=None, silprob=0.1, fillprob=0.1, remove=False):
         """Add links to bypass filler nodes."""
         if lm:
             silpen = math.log(silprob) * lm.lw + math.log(lm.wip)
@@ -642,11 +742,22 @@ class Dag(object):
                         agenda.append((nx, fscr + fscr2))
                     else:
                         self.update_link(n, nx.dest, fscr + nx.ascr)
+        # Remove filler nodes if requested
+        if remove:
+            for n in self.nodes:
+                if is_filler(n.sym):
+                    for x in n.entries:
+                        x.src.exits.remove(x)
+                    for x in n.exits:
+                        x.dest.entries.remove(x)
+            self.remove_unreachable()
 
     def remove_unreachable(self):
         """Remove unreachable nodes and dangling edges."""
         # It is supposed to be the case that all nodes are reachable
         # from the start, but this is not true!
+        for w in self.nodes:
+            w.score = 0
         for w in self.traverse_breadth():
             w.score = 42
         # Mark reachable nodes from the end
@@ -657,6 +768,7 @@ class Dag(object):
         for i, w in enumerate(self.nodes):
             if w.score != 69:
                 begone[w] = 1
+                #print "Removing node %s" % w
                 self.nodes[i] = None
         self.nodes = [w for w in self.nodes if w != None]
         # Remove links to unreachable nodes
@@ -793,10 +905,24 @@ class Dag(object):
             norm = logadd(norm, vx.alpha)
         # Iterate over all arcs and normalize
         for w in self.nodes:
+            w.post = LOGZERO
             for wx in w.exits:
                 wx.post = wx.alpha + wx.beta - norm
+                w.post = logadd(w.post, wx.post)
 
-    def minimum_error(self, ref):
+    def posterior_prune(self, threshold=-10.):
+        """
+        Prune arcs (and resulting unreachable nodes) based on
+        posterior probability.
+        """
+        for x in self.traverse_edges_breadth():
+            if x.post < threshold:
+                #print "Removing link %s" % x
+                x.src.exits.remove(x)
+                x.dest.entries.remove(x)
+        self.remove_unreachable()
+
+    def minimum_error(self, hyp):
         """
         Find the minimum word error rate path through lattice,
         returning the number of errors and an alignment.
