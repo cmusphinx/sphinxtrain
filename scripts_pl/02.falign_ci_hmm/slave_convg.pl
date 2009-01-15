@@ -71,7 +71,7 @@ my $return_value = 0;
 # We have to clean up and run flat initialize if it is the first iteration
 if ($iter == 1 and $n_gau == 1) {
     Log("MODULE: 02 Training Context Independent models for forced alignment and VTLN\n");
-    if ($ST::CFG_VTLN eq 'no' and $ST::CFG_FORCEDALIGN eq "no") {
+    if ($ST::CFG_VTLN ne 'yes' and $ST::CFG_FORCEDALIGN ne 'yes') {
         Log("Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
         Log("Skipped:  \$ST::CFG_VTLN set to \'$ST::CFG_VTLN\' in sphinx_train.cfg\n");
 	exit(0);

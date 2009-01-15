@@ -89,7 +89,7 @@ if ($iter == 1) {
     # If we previously force aligned with single-Gaussian models, use
     # them for initialization to save some time.
     if (($ST::CFG_FORCEDALIGN eq 'yes' or $ST::CFG_VTLN eq 'yes')
-	and $ST::CFG_FALIGN_CI_MGAU eq 'no'
+	and $ST::CFG_FALIGN_CI_MGAU ne 'yes'
 	and -e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means')) {
 	my $return_value = CopyInitialize();
 	exit ($return_value) if ($return_value);
