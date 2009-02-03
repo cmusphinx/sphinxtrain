@@ -59,6 +59,6 @@ class S3HypSeg(file):
     def next(self):
         spam = self.readline()
         if spam:
-            return self.Entry(spam)
+            return S3HypSegEntry(spam)
         else:
             raise StopIteration
