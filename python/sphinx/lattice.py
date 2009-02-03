@@ -788,10 +788,11 @@ class Dag(object):
                     newentries.append(x)
             w.entries = newentries
 
-    def traverse_edges_breadth(self, start=None, end=None):
+    def traverse_edges_topo(self, start=None, end=None):
         """
-        Traverse edges breadth-first, ensuring that all predecessors
-        to a given edge have been traversed before that edge.
+        Traverse edges in topological order (ensuring that all
+        predecessors to a given edge have been traversed before that
+        edge).
         """
         for w in self.nodes:
             w.fan = 0
@@ -811,11 +812,11 @@ class Dag(object):
                     break
                 Q.extend(e.dest.exits)
             
-    def reverse_edges_breadth(self, start=None, end=None):
+    def reverse_edges_topo(self, start=None, end=None):
         """
-        Traverse edges breadth-first in reverse, ensuring that all
+        Traverse edges in reverse topological order (ensuring that all
         successors to a given edge have been traversed before that
-        edge.
+        edge).
         """
         for w in self.nodes:
             w.fan = 0
@@ -842,7 +843,7 @@ class Dag(object):
         @param lm: Language model to use in computation
         @type lm: sphinxbase.ngram_model (or equivalent)
         """
-        for wx in self.traverse_edges_breadth():
+        for wx in self.traverse_edges_topo():
             # This is alpha_t(w)
             wx.alpha = LOGZERO
             # If wx.src has no predecessors the previous alpha is 1.0
@@ -866,7 +867,7 @@ class Dag(object):
         @param lm: Language model to use in computation
         @type lm: sphinxbase.ngram_model.NGramModel (or equivalent)
         """
-        for vx in self.reverse_edges_breadth():
+        for vx in self.reverse_edges_topo():
             # Beta for arcs into </s> = 1.0
             if vx.dest == self.end:
                 beta = 0
@@ -915,7 +916,7 @@ class Dag(object):
         Prune arcs (and resulting unreachable nodes) based on
         posterior probability.
         """
-        for x in self.traverse_edges_breadth():
+        for x in self.traverse_edges_topo():
             if x.post < threshold:
                 #print "Removing link %s" % x
                 x.src.exits.remove(x)
