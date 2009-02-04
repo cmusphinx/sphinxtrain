@@ -1640,7 +1640,7 @@ corpus_get_mfcc(vector_t **mfc,
 	*/
 
 	if (ret == S3_ERROR) {
-	    E_ERROR("MFCC read failed.  Retrying after sleep...\n");
+	    E_ERROR("MFCC read of %s failed.  Retrying after sleep...\n", corpus_utt());
 	    sleep(3);
 	    no_retries++;
 	    if(no_retries>100){ 
@@ -1655,7 +1655,7 @@ corpus_get_mfcc(vector_t **mfc,
     }
 
     if ((n_c % S2_CEP_VECLEN) != 0) {
-	E_FATAL("Expected mfcc vector len of %d\n", S2_CEP_VECLEN);
+	E_FATAL("Expected mfcc vector len of %d in %s\n", S2_CEP_VECLEN, corpus_utt());
     }
     
     n_f = n_c / S2_CEP_VECLEN;
