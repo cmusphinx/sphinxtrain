@@ -213,7 +213,7 @@ my %phonelist_hash;
     for $ctl_line (@ctl_lines) {
         chomp($ctl_line);
 	# Accept: filename int int possible_comment
-	if ($ctl_line =~ m/(.+)\s(\d+)\s(\d+).*/) {
+	if ($ctl_line =~ m/^\s*(\S+)\s+(\d+)\s+(\d+).*/) {
 	    $file = $1;
 	    $start = $2;
 	    $end = $3;
