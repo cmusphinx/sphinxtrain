@@ -189,6 +189,7 @@ mllr_mat(float32 	*****out_A,
       veclen_rd = NULL; 
 
 
+      /* Invert variances. */
       for (i = 0; i < n_mgau; i++) { 
           for (j = 0; j < n_stream; j++) { 
               for (k = 0; k < n_density; k++) { 
@@ -213,7 +214,9 @@ mllr_mat(float32 	*****out_A,
       E_INFO(" ---- A. Accum regl, regr\n"); 
       E_INFO(" No classes %d, no. stream %d\n",n_mllr_class,n_stream);
 
+      /* Legetter's set of G matrices, one per dimension per class. */
       regl = (float32 *****)ckd_calloc_2d(n_mllr_class, n_stream, sizeof(float32 ***)); 
+      /* Legetter's Z matrices, one per class. */
       regr = (float32 ****) ckd_calloc_2d(n_mllr_class, n_stream, sizeof(float32 **)); 
       
       for (i = 0; i < n_mllr_class; i++) { 
@@ -243,12 +246,20 @@ mllr_mat(float32 	*****out_A,
 		for (p = 0; p < len; p++) { 
 		  wt_dcount_var_mean = wt_dcount_var * tmean[p]; 
 		  for (q = p; q < len; q++) { 
+		    /* This is g(l)_{pq} = sum_r(v_{ii}(r) d_{pq}(r))*/
+		    /* or in other words sum(likelihood * invvar * outer(mean, mean)) */
 		    regl[mc][j][l][p][q] += (float32) (wt_dcount_var_mean * tmean[q]); 
 		  } 
+		  /* G corresponding to extended element of q. */
 		  regl[mc][j][l][p][len] += (float32)(wt_dcount_var_mean); 
+		  /* This is z_{lp} = sum(likelihood * invvar * obs * mean_p) */
 		  regr[mc][j][l][p] += (float32)(wt_mean_var * tmean[p]); 
 		} 
+		/* G corresponding to extended element of p and q. */
+		/* Question: what about regl[mc][j][l][len][0..len]? */
+		/* Answer: G(l) is symmetric, so we already calculated them. */
 		regl[mc][j][l][len][len] += (float32)wt_dcount_var; 
+		/* Z corresponding to extended element of p. */
 		regr[mc][j][l][len] += (float32)(wt_mean_var); 
 	      } 
 	    } 
@@ -260,6 +271,7 @@ mllr_mat(float32 	*****out_A,
       gauden_free_param(wt_mean); 
       ckd_free_3d((void ***)wt_dcount); 
 
+      /* Fill in the lower triangular part of regl. */
       for (m = 0; m < n_mllr_class; m++) { 
         for (j = 0; j < n_stream; j++) { 
 	  for (l = 0; l < veclen[j]; l++) { 

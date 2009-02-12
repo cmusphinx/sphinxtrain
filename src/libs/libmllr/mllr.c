@@ -209,7 +209,12 @@ compute_mllr (
 			   veclen);
 
 #endif
-
+    /* Here, regl is the same as Legetter's G, while regr is Z.  The
+     * original papers use the formula w_i^T = G(i)^{-1} z_i^T to
+     * calculate the rows of W (the transformation matrix).  However
+     * what they really mean by this is that we solve for w_i^T in the
+     * equation G(i) w_i^T = z_i^T.  That is what this code does,
+     * optionally omitting the bias or rotation parts of W. */
     for (m = 0; m < nclass; m++) {
 	for (i = 0; i < nfeat; i++) {
 	    len = veclen[i];
