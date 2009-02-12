@@ -50,12 +50,12 @@ use SphinxTrain::Util;
 # What pieces would you like to compute.
 my @steps =
     ("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
-     "$ST::CFG_SCRIPT_DIR/01.vector_quantize/slave.VQ.pl",
-     "$ST::CFG_SCRIPT_DIR/02.falign_ci_hmm/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/03.force_align/slave_align.pl",
-     "$ST::CFG_SCRIPT_DIR/04.vtln_align/slave_align.pl",
-     "$ST::CFG_SCRIPT_DIR/05.lda_train/slave_lda.pl",
-     "$ST::CFG_SCRIPT_DIR/06.mllt_train/slave_mllt.pl",
+     "$ST::CFG_SCRIPT_DIR/01.lda_train/slave_lda.pl",
+     "$ST::CFG_SCRIPT_DIR/02.mllt_train/slave_mllt.pl",
+     "$ST::CFG_SCRIPT_DIR/05.vector_quantize/slave.VQ.pl",
+     "$ST::CFG_SCRIPT_DIR/10.falign_ci_hmm/slave_convg.pl",
+     "$ST::CFG_SCRIPT_DIR/11.force_align/slave_align.pl",
+     "$ST::CFG_SCRIPT_DIR/12.vtln_align/slave_align.pl",
      "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
