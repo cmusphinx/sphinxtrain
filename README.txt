@@ -26,6 +26,7 @@ on.
 Installation Guide:
 ^^^^^^^^^^^^^^^^^^^
 This sections contain installation guide for various platforms. 
+
 All Platforms:
 ^^^^^^^^^^^^^^
 You will need Perl to use the scripts provided. Linux usually comes
@@ -38,6 +39,15 @@ where you can download it for free. For Windows, a popular version,
 ActivePerl, is available from ActiveState at:
 
 http://www.activestate.com/Products/ActivePerl/
+
+For some advanced techniques (which are not enabled by default) you
+will need Python with NumPy and SciPy.  Python can be obtained from:
+
+http://www.python.org/download/
+
+Packages for NumPy and SciPy can be obtained from:
+
+http://scipy.org/Download
 
 Linux/Unix Installation:
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -84,6 +94,7 @@ Alan W Black (awb@cs.cmu.edu)
 Arthur Chan (archan@cs.cmu.edu)
 Evandro Gouvea (egouvea+@cs.cmu.edu)
 Ricky Houghton (ricky.houghton@cs.cmu.edu)
+David Huggins-Daines (dhuggins@cs.cmu.edu)
 Kevin Lenzo (lenzo@cs.cmu.edu)
 Ravi Mosur
 Rita Singh (rsingh+@cs.cmu.edu)

@@ -55,7 +55,6 @@ BUILD_DIRS = agg_seg \
 	init_mixw \
 	kdtree \
 	kmeans_init \
-	lda_train \
 	make_quests \
 	map_adapt \
 	mixw_interp \

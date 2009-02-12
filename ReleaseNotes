@@ -1,9 +1,19 @@
-SphinxTrain 1.0 Release-Candidate I
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SphinxTrain 1.0
+^^^^^^^^^^^^^^^
 
-(Draft)
+This release corresponds to revision 8978.
 
-From initial check-in to SphinxTrain 1.0 RCI (Corresponds to Rev. 5826)
+Since there has never been an official release of SphinxTrain, we felt
+it was necessary to create one to point people to and for them to
+report bugs against, instead of the confusion of having to deal with
+whatever was currently in SVN.
+
+Compared to past unofficial releases, this version is significantly
+improved.  There is support for speaker adaptation, feature space
+transforms (LDA and MLLT), and it also includes "templates" which can
+be used to train models from standard corpora from the LDC.
+
+Previous release notes follow:
 
 The current revision is based on SVN. In the CVS time, development of
 SphinxTrain was very disorganized.  The list of changes was later
