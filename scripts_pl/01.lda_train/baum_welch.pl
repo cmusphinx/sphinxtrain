@@ -63,7 +63,7 @@ my ($iter, $part, $npart, $fullvar) = @ARGV;
 my $modelinitialname="${ST::CFG_EXPTNAME}.ci_lda_flatinitial";
 my $modelname="${ST::CFG_EXPTNAME}.ci_lda";
 my $mdefname="${ST::CFG_EXPTNAME}.ci.mdef";
-my $processname = "05.lda_train";
+my $processname = "01.lda_train";
 
 my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_${part}";
 mkdir ($output_buffer_dir,0777);
@@ -87,9 +87,9 @@ my $meanfn  = "$hmm_dir/means";
 my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 
-# aligned transcripts and the list of aligned files is obtained as a result
-# of (03.) forced alignment or (04.) VTLN
-my ($listoffiles, $transcriptfile) = GetLists();
+# Force alignment and VTLN have not been done yet.
+my $listoffiles = $ST::CFG_LISTOFFILES;
+my $transcriptfile = $ST::CFG_TRANSCRIPTFILE;
 
 my $topn;
 if ($ST::CFG_HMM_TYPE eq '.cont') {

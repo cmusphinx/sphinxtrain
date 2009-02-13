@@ -62,9 +62,13 @@ if ($n_current + $n_inc > $ST::CFG_FINAL_NUM_DENSITIES) {
   exit -3;
 }
 
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+$MODEL_TYPE = 'falign_ci';
+
 $| = 1; # Turn on autoflushing
-my $scriptdir = "$ST::CFG_SCRIPT_DIR/02.falign_ci_hmm";
-my $logdir = "$ST::CFG_LOG_DIR/02.falign_ci_hmm";
+my $scriptdir = "$ST::CFG_SCRIPT_DIR/10.falign_ci_hmm";
+my $logdir = "$ST::CFG_LOG_DIR/10.falign_ci_hmm";
 mkdir ($logdir,0777);
 
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
@@ -122,7 +126,7 @@ if ($n_inc <= 0) {
   exit 0;
 }
 
-my $logdir = "$ST::CFG_LOG_DIR/02.falign_ci_hmm";
+my $logdir = "$ST::CFG_LOG_DIR/10.falign_ci_hmm";
 mkdir ($logdir,0777);
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.split_gaussians.$n_current.$n_inc.log";
 

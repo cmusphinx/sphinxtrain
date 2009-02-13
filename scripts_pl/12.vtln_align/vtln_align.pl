@@ -57,7 +57,7 @@ my $hmm_dir = defined($ST::CFG_FORCE_ALIGN_MODELDIR)
 my $mdef = defined($ST::CFG_FORCE_ALIGN_MDEF)
     ? $ST::CFG_FORCE_ALIGN_MDEF
     : "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.ci.mdef";
-my $logdir = "$ST::CFG_LOG_DIR/04.vtln_align";
+my $logdir = "$ST::CFG_LOG_DIR/12.vtln_align";
 my $indir = "$ST::CFG_BASE_DIR/vtlnout";
 my $outdir = "$ST::CFG_BASE_DIR/vtlnout/$warp";
 my $outfile = "$outdir/$ST::CFG_EXPTNAME.alignedtranscripts.$part";
@@ -79,6 +79,19 @@ my $fdict = defined($ST::CFG_FORCE_ALIGN_FILLERDICT)
     : "$indir/$ST::CFG_EXPTNAME.falign.fdict";
 my $beam = defined($ST::CFG_FORCE_ALIGN_BEAM) ? $ST::CFG_FORCE_ALIGN_BEAM : 1e-100;
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$part.vtln.log";
+
+# if there is an MLLT transformation, use it
+my $mllt_file = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+my @feat_args;
+if (defined($ST::CFG_SVSPEC)){
+    # This is not actually guaranteed to work with Sphinx3 :(
+    push(@feat_args, -svspec => $ST::CFG_SVSPEC);
+}
+if (-r $mllt_file) {
+    push(@feat_args,
+	 -lda => $mllt_file,
+	 -ldadim => $ST::CFG_LDA_DIMENSION);
+}
 
 # Get the number of utterances
 open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
@@ -129,6 +142,7 @@ my $return_value = RunTool
      -varnorm => $ST::CFG_VARNORM,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
+     @feat_args
      );
 
 if ($return_value) {

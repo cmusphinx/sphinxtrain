@@ -49,7 +49,7 @@ use SphinxTrain::Config;
 use SphinxTrain::Util;
 
 if ($ST::CFG_LDA_MLLT ne 'yes') {
-    Log("MODULE: 05 Train LDA transformation\n");
+    Log("MODULE: 01 Train LDA transformation\n");
     Log("Skipped (set \$CFG_LDA_MLLT = 'yes' to enable)\n");
     exit 0;
 }
@@ -67,7 +67,7 @@ if (@ARGV) {
 }
 
 $| = 1; # Turn on autoflushing
-my $logdir = "$ST::CFG_LOG_DIR/05.lda_train";
+my $logdir = "$ST::CFG_LOG_DIR/01.lda_train";
 
 if ($iter == 1) {
     Log("MODULE: 05 Train LDA transformation\n");
@@ -86,19 +86,10 @@ if ($iter == 1) {
     mkdir ($ST::CFG_QMGR_DIR,0777);
     LogStatus('completed');
 
-    # If we previously force aligned with single-Gaussian models, use
-    # them for initialization to save some time.
-    if (($ST::CFG_FORCEDALIGN eq 'yes' or $ST::CFG_VTLN eq 'yes')
-	and $ST::CFG_FALIGN_CI_MGAU ne 'yes'
-	and -e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means')) {
-	my $return_value = CopyInitialize();
-	exit ($return_value) if ($return_value);
-    }
-    else {
-	# For the first iteration Flat initialize models.
-	my $return_value = FlatInitialize();
-	exit ($return_value) if ($return_value);
-    }
+    # For the first iteration Flat initialize models.
+    my $return_value = FlatInitialize();
+    exit ($return_value) if ($return_value);
+
     Log("Phase 3: Forward-Backward");
 }
 
@@ -179,7 +170,7 @@ sub FlatInitialize
     # segmentation files for the whole training database.
     #**************************************************************************
 
-    my $logdir              = "$ST::CFG_LOG_DIR/05.lda_train";
+    my $logdir              = "$ST::CFG_LOG_DIR/01.lda_train";
     my $modarchdir          = "$ST::CFG_BASE_DIR/model_architecture";
     my $hmmdir              = "$ST::CFG_BASE_DIR/model_parameters";
     mkdir ($logdir,0777);

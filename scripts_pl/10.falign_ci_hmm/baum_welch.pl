@@ -60,6 +60,10 @@ die "USAGE: $0 <iter> <part> <npart> [<ngau>]" if @ARGV < 3;
 my ($iter, $part, $npart, $n_gau) = @ARGV;
 $n_gau = 1 unless defined($n_gau);
 
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+$MODEL_TYPE = 'ci';
+
 my $modelinitialname;
 if ($n_gau == 1) {
     $modelinitialname = "${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
@@ -69,7 +73,7 @@ else {
 }
 my $modelname="${ST::CFG_EXPTNAME}.falign_ci_${ST::CFG_DIRLABEL}";
 my $mdefname="${ST::CFG_EXPTNAME}.falign_ci.mdef";
-my $processname ="02.falign_ci_hmm";
+my $processname ="10.falign_ci_hmm";
 
 my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_${part}";
 mkdir ($output_buffer_dir,0777);
@@ -119,9 +123,15 @@ $ctl_counter = 1 unless ($ctl_counter);
 Log("Baum welch starting for $n_gau Gaussian(s), iteration: $iter ($part of $npart)",
     'result');
 
+# If there is an MLLR transformation, use it
 my @feat_args;
 if (defined($ST::CFG_SVSPEC)) {
     push(@feat_args, -svspec =>$ST::CFG_SVSPEC);
+}
+if (-r $MLLT_FILE) {
+    push(@feat_args,
+	 -ldafn => $MLLT_FILE,
+	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
 
 my $return_value = RunTool

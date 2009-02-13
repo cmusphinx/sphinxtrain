@@ -59,7 +59,7 @@ die "USAGE: $0 <iter>" if @ARGV != 1;
 my ($iter) = @ARGV;
 
 my $modelname="${ST::CFG_EXPTNAME}.ci_mllt";
-my $processpart="06.mllt_train";
+my $processpart="02.mllt_train";
 
 opendir(ACCUMDIR, $ST::CFG_BWACCUM_DIR)
     or die "Could not open $ST::CFG_BWACCUM_DIR: $!";

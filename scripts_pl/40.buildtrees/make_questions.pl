@@ -47,15 +47,10 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-# If this is being run with an MLLT transformation keep the models and logs separate.
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-if (-r $MLLT_FILE) {
-    $MODEL_TYPE = 'mllt_ci';
-}
-else {
-    $MODEL_TYPE = 'ci';
-}
+$MODEL_TYPE = 'ci';
+
 my $mdeffn   = "${ST::CFG_BASE_DIR}/model_architecture/${ST::CFG_EXPTNAME}.ci.mdef";
 my $hmm_dir  = "${ST::CFG_BASE_DIR}/model_parameters/${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}";
 my $meanfn   = "$hmm_dir/means";
@@ -63,13 +58,7 @@ my $varfn    = "$hmm_dir/variances";
 my $mixwfn   = "$hmm_dir/mixture_weights";
 my $questfn = ${ST::CFG_QUESTION_SET};
 
-my $logdir;
-if (-r $MLLT_FILE) {
-    $logdir = "${ST::CFG_LOG_DIR}/40.mllt_buildtrees";
-}
-else {
-    $logdir = "${ST::CFG_LOG_DIR}/40.buildtrees";
-}
+my $logdir = "${ST::CFG_LOG_DIR}/40.buildtrees";
 mkdir ($logdir,0777);
 my $logfile = "$logdir/${ST::CFG_EXPTNAME}.make_questions.log";
 

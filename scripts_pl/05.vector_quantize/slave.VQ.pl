@@ -60,14 +60,14 @@ use SphinxTrain::Util;
 #*****************************************************************************
 
 #Clean up from previous runs
-my $logdir = "$ST::CFG_LOG_DIR/01.vector_quantize";
+my $logdir = "$ST::CFG_LOG_DIR/05.vector_quantize";
 
 rmtree($logdir) unless ! -d $logdir;
 mkdir ($logdir,0777);
 
 $| = 1; # Turn on autoflushing
 # No error checking
-Log ("MODULE: 01 Vector Quantization\n");
+Log ("MODULE: 05 Vector Quantization\n");
 my $return_value = 0;
 if ($ST::CFG_HMM_TYPE eq ".semi.") {
   $return_value = (RunScript('agg_seg.pl')

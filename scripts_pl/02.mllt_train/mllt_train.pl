@@ -48,7 +48,7 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-my $processname = "06.mllt_train";
+my $processname = "02.mllt_train";
 my $logdir   = catdir($ST::CFG_LOG_DIR, $processname);
 my $logfile  = catfile($logdir, "${ST::CFG_EXPTNAME}.mllt_train.log");
 my $ldafile  = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.lda");

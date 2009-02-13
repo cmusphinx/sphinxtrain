@@ -59,8 +59,11 @@ die "USAGE: $0 <iter> [<ngau>]" if @ARGV < 1;
 my ($iter, $n_gau) = @ARGV;
 $n_gau = 1 unless defined($n_gau);
 
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+$MODEL_TYPE = 'falign_ci';
 my $modelname="${ST::CFG_EXPTNAME}.falign_ci_${ST::CFG_DIRLABEL}";
-my $processpart="02.falign_ci_hmm";
+my $processpart="10.falign_ci_hmm";
 
 opendir(ACCUMDIR, $ST::CFG_BWACCUM_DIR)
     or die "Could not open $ST::CFG_BWACCUM_DIR: $!";
@@ -82,7 +85,12 @@ if ($iter == 1) {
 	or die "Failed to copy $mdeffile to $hmmdir/mdef: $!";
     copy($ST::CFG_FILLERDICT, catfile($hmmdir, 'noisedict'))
 	or die "Failed to copy $ST::CFG_FILLERDICT to $hmmdir/noisedict: $!";
+    # Create the feat.params file in the new HMM directory
     SubstParams($ST::CFG_FEATPARAMS, catfile($hmmdir, 'feat.params'));
+    # Copy a feature space transform if any
+    if (-r $MLLT_FILE) {
+	copy($MLLT_FILE, catfile($hmmdir, 'feature_transform'));
+    }
 }
 
 my  $logdir              = "${ST::CFG_LOG_DIR}/$processpart";

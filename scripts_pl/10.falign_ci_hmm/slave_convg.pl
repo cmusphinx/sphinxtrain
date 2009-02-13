@@ -65,12 +65,15 @@ my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777);
 
 $| = 1; # Turn on autoflushing
-my $logdir = "$ST::CFG_LOG_DIR/02.falign_ci_hmm";
+my $logdir = "$ST::CFG_LOG_DIR/10.falign_ci_hmm";
 my $return_value = 0;
+
+use vars qw($MLLT_FILE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
 
 # We have to clean up and run flat initialize if it is the first iteration
 if ($iter == 1 and $n_gau == 1) {
-    Log("MODULE: 02 Training Context Independent models for forced alignment and VTLN\n");
+    Log("MODULE: 10 Training Context Independent models for forced alignment and VTLN\n");
     if ($ST::CFG_VTLN ne 'yes' and $ST::CFG_FORCEDALIGN ne 'yes') {
         Log("Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
         Log("Skipped:  \$ST::CFG_VTLN set to \'$ST::CFG_VTLN\' in sphinx_train.cfg\n");
@@ -131,7 +134,7 @@ sub FlatInitialize ()
     # segmentation files for the whole training database.
     #**************************************************************************
 
-    my $logdir              = "$ST::CFG_LOG_DIR/02.falign_ci_hmm";
+    my $logdir              = "$ST::CFG_LOG_DIR/10.falign_ci_hmm";
     my $modarchdir          = "$ST::CFG_BASE_DIR/model_architecture";
     my $hmmdir              = "$ST::CFG_BASE_DIR/model_parameters";
     mkdir ($logdir,0777);
@@ -154,14 +157,19 @@ sub FlatInitialize ()
     open PHONELIST, "<".$ST::CFG_RAWPHONEFILE;
     open PHONEFILE, ">".$phonefile;
     my $NUM_PHONES = 0;
+    my @phonelist;
     while (defined(my $line = <PHONELIST>)) {
       chomp($line);
       next if $line =~ m/^\s*$/;
       $line =~ s/$/ - - - /;
-      print PHONEFILE $line . "\n";
+      push @phonelist, $line;
       $NUM_PHONES++;
     }
 
+    # Make sure the CI phones are sorted, as PocketSphinx requires them to be
+    foreach (sort @phonelist) {
+	print PHONEFILE $_, "\n";
+    }
 #    system "sed 's+\$+ - - - +g' $ST::CFG_RAWPHONEFILE > $phonefile";
 
 
@@ -218,11 +226,16 @@ sub FlatInitialize ()
     my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_1";
     mkdir ($output_buffer_dir,0777);
 
+    # if there is an MLLT transformation, use it
     my @feat_args;
     if (defined($ST::CFG_SVSPEC)) {
 	push(@feat_args, -svspec =>$ST::CFG_SVSPEC);
     }
-
+    if (-r $MLLT_FILE) {
+	push(@feat_args,
+	     -ldafn => $MLLT_FILE,
+	     -ldadim => $ST::CFG_LDA_DIMENSION);
+    }
     if ($return_value = RunTool('init_gau', $logfile, 0,
 				-ctlfn => $ST::CFG_LISTOFFILES,
 				-part => 1, -npart => 1,

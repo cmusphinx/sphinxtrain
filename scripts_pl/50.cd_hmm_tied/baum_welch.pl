@@ -59,22 +59,13 @@ $| = 1; # Turn on autoflushing
 die "USAGE: $0 <ngau> <iter> <part> <npart>" if (@ARGV != 4);
 my ($n_gau, $iter, $part, $npart) = @ARGV;
 
-# If this is being run with an MLLT transformation keep the models and logs separate.
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-if (-r $MLLT_FILE) {
-    $MODEL_TYPE = 'mllt_cd';
-}
-else {
-    $MODEL_TYPE = 'cd';
-}
+$MODEL_TYPE = 'cd';
 
 my $modelinitialname="${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_initial";
 my $modelname="${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}";
 my $mdefname="${ST::CFG_EXPTNAME}.$ST::CFG_N_TIED_STATES.mdef";
-if (-r $MLLT_FILE) {
-    $mdefname = "${ST::CFG_EXPTNAME}.mllt.$ST::CFG_N_TIED_STATES.mdef";
-}
 my $processname = "50.${MODEL_TYPE}_hmm_tied";
 
 my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_${part}";

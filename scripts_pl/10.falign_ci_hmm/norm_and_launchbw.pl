@@ -56,7 +56,11 @@ die "USAGE: $0 <iter> <n_parts> [<ngau>]" if (@ARGV < 2);
 
 my ($iter, $n_parts, $n_gau) = @ARGV;
 
-my $processname="02.falign_ci_hmm";
+my $processname="10.falign_ci_hmm";
+
+use vars qw($MLLT_FILE $MODEL_TYPE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+$MODEL_TYPE = 'falign_ci';
 
 my $logdir ="$ST::CFG_LOG_DIR/$processname";
 mkdir ($logdir,0777);

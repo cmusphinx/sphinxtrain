@@ -62,15 +62,10 @@ if ($n_current + $n_inc > $ST::CFG_FINAL_NUM_DENSITIES) {
   exit -3;
 }
 
-# If this is being run with an MLLT transformation keep the models and logs separate.
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-if (-r $MLLT_FILE) {
-    $MODEL_TYPE = 'mllt_cd';
-}
-else {
-    $MODEL_TYPE = 'cd';
-}
+$MODEL_TYPE = 'cd';
+
 $| = 1; # Turn on autoflushing
 my $logdir = "$ST::CFG_LOG_DIR/50.${MODEL_TYPE}_hmm_tied";
 mkdir ($logdir,0777);

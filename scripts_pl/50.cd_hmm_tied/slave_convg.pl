@@ -73,17 +73,10 @@ if (($n_parts < 2) and ($ST::CFG_HMM_TYPE eq ".semi.")) {
     $n_parts = 2;
 }
 
-# If this is being run with an MLLT transformation keep the models and logs separate.
 use vars qw($MLLT_FILE $MODEL_TYPE $CI_MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-if (-r $MLLT_FILE) {
-    $MODEL_TYPE = 'mllt_cd';
-    $CI_MODEL_TYPE = 'mllt_ci';
-}
-else {
-    $MODEL_TYPE = 'cd';
-    $CI_MODEL_TYPE = 'ci';
-}
+$MODEL_TYPE = 'cd';
+$CI_MODEL_TYPE = 'ci';
 
 $| = 1; # Turn on autoflushing
 my $logdir = "$ST::CFG_LOG_DIR/50.${MODEL_TYPE}_hmm_tied";
@@ -153,9 +146,6 @@ sub copyci2cd2initialize ()
     mkdir ($cd_hmmdir,0777);
 
     my $dest_moddeffn = "$ST::CFG_BASE_DIR/model_architecture/${ST::CFG_EXPTNAME}.$ST::CFG_N_TIED_STATES.mdef";
-    if (-r $MLLT_FILE) {
-	$dest_moddeffn = "$ST::CFG_BASE_DIR/model_architecture/${ST::CFG_EXPTNAME}.mllt.$ST::CFG_N_TIED_STATES.mdef";
-    }
     my $dest_mixwfn = "$cd_hmmdir/mixture_weights";
     my $dest_meanfn = "$cd_hmmdir/means";
     my $dest_varfn = "$cd_hmmdir/variances";

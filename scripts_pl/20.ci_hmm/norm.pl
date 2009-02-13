@@ -59,15 +59,9 @@ die "USAGE: $0 <iter> [<ngau>]" if @ARGV < 1;
 my ($iter, $n_gau) = @ARGV;
 $n_gau = 1 unless defined($n_gau);
 
-# If this is being run with an MLLT transformation keep the models and logs separate.
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-if (-r $MLLT_FILE) {
-    $MODEL_TYPE = 'mllt_ci';
-}
-else {
-    $MODEL_TYPE = 'ci';
-}
+$MODEL_TYPE = 'ci';
 my $modelname="${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}";
 my $processpart="20.${MODEL_TYPE}_hmm";
 

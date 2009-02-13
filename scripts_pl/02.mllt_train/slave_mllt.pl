@@ -49,7 +49,7 @@ use SphinxTrain::Config;
 use SphinxTrain::Util;
 
 if ($ST::CFG_LDA_MLLT ne 'yes') {
-    Log("MODULE: 06 Train MLLT transformation\n");
+    Log("MODULE: 02 Train MLLT transformation\n");
     Log("Skipped (set \$CFG_LDA_MLLT = 'yes' to enable)\n");
     exit 0;
 }
@@ -68,7 +68,7 @@ if (@ARGV) {
 
 # This script gets run after LDA.  We will flat initialize and train a CI model.
 $| = 1; # Turn on autoflushing
-my $logdir = "$ST::CFG_LOG_DIR/06.mllt_train";
+my $logdir = "$ST::CFG_LOG_DIR/02.mllt_train";
 
 if ($iter == 1) {
     Log("MODULE: 06 Train MLLT transformation\n");
@@ -154,7 +154,7 @@ sub FlatInitialize
     # segmentation files for the whole training database.
     #**************************************************************************
 
-    my $logdir              = "$ST::CFG_LOG_DIR/06.mllt_train";
+    my $logdir              = "$ST::CFG_LOG_DIR/02.mllt_train";
     my $modarchdir          = "$ST::CFG_BASE_DIR/model_architecture";
     my $hmmdir              = "$ST::CFG_BASE_DIR/model_parameters";
     mkdir ($logdir,0777);

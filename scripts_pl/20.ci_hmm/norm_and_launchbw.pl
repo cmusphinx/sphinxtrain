@@ -58,15 +58,9 @@ my ($iter, $n_parts, $n_gau) = @ARGV;
 
 $n_gau = 1 unless defined $n_gau;
 
-# If this is being run with an MLLT transformation keep the models and logs separate.
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-if (-r $MLLT_FILE) {
-    $MODEL_TYPE = 'mllt_ci';
-}
-else {
-    $MODEL_TYPE = 'ci';
-}
+$MODEL_TYPE = 'ci';
 
 my $processname="20.${MODEL_TYPE}_hmm";
 my $logdir ="$ST::CFG_LOG_DIR/$processname";
@@ -196,10 +190,9 @@ if ($convg_ratio > $ST::CFG_CONVERGENCE_RATIO) {
 }
 # If we previously force aligned with single-Gaussian models, we used
 # them for initialization, therefore don't enforce the minimum number
-# of iterations (unless MLLT is in effect)
+# of iterations
 elsif ($iter < $ST::CFG_MIN_ITERATIONS
        and (($ST::CFG_FORCEDALIGN ne 'yes' and $ST::CFG_VTLN ne 'yes')
-	    or $ST::CFG_LDA_MLLT eq 'yes'
 	    or $ST::CFG_FALIGN_CI_MGAU eq 'yes'
 	    or !-e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means'))) {
     Launch_BW($n_gau, $iter);

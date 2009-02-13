@@ -56,15 +56,10 @@ die "USAGE: $0 <ngau> <iter> <n_parts>" if (@ARGV != 3);
 
 my ($n_gau, $iter, $n_parts) = @ARGV;
 
-# If this is being run with an MLLT transformation keep the models and logs separate.
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-if (-r $MLLT_FILE) {
-    $MODEL_TYPE = 'mllt_cd';
-}
-else {
-    $MODEL_TYPE = 'cd';
-}
+$MODEL_TYPE = 'cd';
+
 my $processname="50.${MODEL_TYPE}_hmm_tied";
 
 my $logdir ="$ST::CFG_LOG_DIR/$processname";

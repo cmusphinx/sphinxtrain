@@ -52,13 +52,7 @@ use vars qw($MLLT_FILE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
 
 my $return_value = 0;
-my $logdir;
-if (-r $MLLT_FILE) {
-    $logdir = "${ST::CFG_LOG_DIR}/45.mllt_prunetree";
-}
-else {
-    $logdir = "${ST::CFG_LOG_DIR}/45.prunetree";
-}
+my $logdir = "${ST::CFG_LOG_DIR}/45.prunetree";
 
 Log("MODULE: 45 Prune Trees\n");
 rmtree ("$logdir");

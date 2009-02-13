@@ -59,15 +59,9 @@ $| = 1; # Turn on autoflushing
 die "USAGE: $0 <iter> <part> <npart>" if @ARGV != 3;
 my ($iter, $part, $npart) = @ARGV;
 
-# If this is being run with an MLLT transformation keep the models and logs separate.
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-if (-r $MLLT_FILE) {
-    $MODEL_TYPE = 'mllt_cd';
-}
-else {
-    $MODEL_TYPE = 'cd';
-}
+$MODEL_TYPE = 'cd';
 
 my $modelinitialname="${ST::CFG_EXPTNAME}.${MODEL_TYPE}_${ST::CFG_DIRLABEL}_untied";
 my $modelname="$modelinitialname";  # same for both in the case

@@ -82,7 +82,7 @@ else {
     $model_type = 'ci';
 }
 
-my $logdir = "$ST::CFG_LOG_DIR/01.vector_quantize";
+my $logdir = "$ST::CFG_LOG_DIR/05.vector_quantize";
 mkdir ($logdir,0777);
 
 $segdmpdir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_1";

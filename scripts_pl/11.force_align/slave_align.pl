@@ -53,13 +53,17 @@ $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_part
 
 $| = 1; # Turn on autoflushing
 
-my $logdir = "$ST::CFG_LOG_DIR/03.force_align";
+my $logdir = "$ST::CFG_LOG_DIR/11.force_align";
 my $outdir = "$ST::CFG_BASE_DIR/falignout";
 
-Log("MODULE: 03 Force-aligning transcripts\n");
+Log("MODULE: 11 Force-aligning transcripts\n");
 
 if ($ST::CFG_FORCEDALIGN ne "yes") {
     Log("Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
+    exit(0);
+}
+if ($ST::CFG_VTLN eq "yes") {
+    Log("Skipped:  \$ST::CFG_VTLN set to \'$ST::CFG_VTLN\' in sphinx_train.cfg\n");
     exit(0);
 }
 

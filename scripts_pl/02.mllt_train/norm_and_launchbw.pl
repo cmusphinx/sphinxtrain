@@ -56,7 +56,7 @@ die "USAGE: $0 <iter> <n_parts>" if (@ARGV != 2);
 
 my ($iter, $n_parts) = @ARGV;
 
-my $processname="06.mllt_train";
+my $processname="02.mllt_train";
 
 my $logdir ="$ST::CFG_LOG_DIR/$processname";
 mkdir ($logdir,0777);

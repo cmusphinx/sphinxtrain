@@ -51,24 +51,14 @@ use SphinxTrain::Util;
 # This script runs the build_tree script for each state of each basephone
 #*************************************************************************
 
-# If this is being run with an MLLT transformation keep the models and logs separate.
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-if (-r $MLLT_FILE) {
-    $MODEL_TYPE = 'mllt_cd';
-}
-else {
-    $MODEL_TYPE = 'cd';
-}
+$MODEL_TYPE = 'cd';
+
 my ($phone,$state);
 my $return_value = 0;
-my $logdir;
-if (-r $MLLT_FILE) {
-    $logdir = "${ST::CFG_LOG_DIR}/40.mllt_buildtrees";
-}
-else {
-    $logdir = "${ST::CFG_LOG_DIR}/40.buildtrees";
-}
+my $logdir = "${ST::CFG_LOG_DIR}/40.buildtrees";
+
 Log("MODULE: 40 Build Trees\n");
 Log("Phase 1: Cleaning up old log files...\n");
 rmtree ("$logdir");

@@ -63,7 +63,7 @@ my ($iter, $part, $npart, $fullvar) = @ARGV;
 my $modelinitialname="${ST::CFG_EXPTNAME}.ci_mllt_flatinitial";
 my $modelname="${ST::CFG_EXPTNAME}.ci_mllt";
 my $mdefname="${ST::CFG_EXPTNAME}.ci.mdef";
-my $processname = "06.mllt_train";
+my $processname = "02.mllt_train";
 
 my $output_buffer_dir = "$ST::CFG_BWACCUM_DIR/${ST::CFG_EXPTNAME}_buff_${part}";
 mkdir ($output_buffer_dir,0777);
@@ -92,9 +92,9 @@ my @extra_args;
 my $ldafile  = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.lda");
 push(@extra_args, -ldafn => $ldafile, -ldadim => $ST::CFG_LDA_DIMENSION);
 
-# aligned transcripts and the list of aligned files is obtained as a result
-# of (03.) forced alignment or (04.) VTLN
-my ($listoffiles, $transcriptfile) = GetLists();
+# Force alignment and VTLN have not been done yet.
+my $listoffiles = $ST::CFG_LISTOFFILES;
+my $transcriptfile = $ST::CFG_TRANSCRIPTFILE;
 
 my $topn = 1;
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";

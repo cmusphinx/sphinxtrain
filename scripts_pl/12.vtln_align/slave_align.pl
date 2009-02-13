@@ -53,10 +53,10 @@ $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_part
 
 $| = 1; # Turn on autoflushing
 
-my $logdir = "$ST::CFG_LOG_DIR/04.vtln_align";
+my $logdir = "$ST::CFG_LOG_DIR/12.vtln_align";
 my $outdir = "$ST::CFG_BASE_DIR/vtlnout";
 
-Log("MODULE: 04 Force-aligning data for VTLN\n");
+Log("MODULE: 12 Force-aligning data for VTLN\n");
 
 if ($ST::CFG_VTLN ne "yes") {
     Log("Skipped:  \$ST::CFG_VTLN set to \'$ST::CFG_VTLN\' in sphinx_train.cfg\n");
