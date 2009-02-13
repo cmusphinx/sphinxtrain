@@ -64,13 +64,7 @@ my ($hmmdir,$outhmm,$segdmpdir,$dumpfile,$logfile);
 $| = 1; # Turn on autoflushing
 
 my $mllt_file = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-my $model_type;
-if (-r $mllt_file) {
-    $model_type = 'mllt_ci';
-}
-else {
-    $model_type = 'ci';
-}
+my $model_type = 'ci';
 
 # Definitions
 $hmmdir = "$ST::CFG_BASE_DIR/model_parameters";

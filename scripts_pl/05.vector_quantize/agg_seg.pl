@@ -74,13 +74,7 @@ close CTL;
 $stride = 1 unless int($stride = $len/2500);
 
 my $mllt_file = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
-my $model_type;
-if (-r $mllt_file) {
-    $model_type = 'mllt_ci';
-}
-else {
-    $model_type = 'ci';
-}
+my $model_type = 'ci';
 
 my $logdir = "$ST::CFG_LOG_DIR/05.vector_quantize";
 mkdir ($logdir,0777);
