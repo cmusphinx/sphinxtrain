@@ -12,9 +12,9 @@ Sphinx-III.
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
-import s3file
+from s3file import S3File, S3File_write
 
-class S3LDAFile(s3file.S3File):
+class S3LDAFile(S3File):
     "Read Sphinx-III format LDA files"
     def __init__(self, file, mode):
         S3File.__init__(self, file, mode)
@@ -30,10 +30,10 @@ class S3LDAFile(s3file.S3File):
         self.fh.seek(self.data_start, 0)
         return self.read3d()
 
-class S3LDAFile_write(s3file.S3File_write):
+class S3LDAFile_write(S3File_write):
     "Write Sphinx-III format LDA files"
     def __init__(self, filename=None, mode="wb", attr={"version":0.1}):
-        s3file.S3File_write.__init__(self, filename, mode, attr)
+        S3File_write.__init__(self, filename, mode, attr)
 
     def writeall(self, stuff):
         self.write3d(stuff)

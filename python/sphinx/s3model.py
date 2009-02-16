@@ -18,6 +18,7 @@ import s3gau
 import s3mixw
 import s3tmat
 import s3mdef
+import s3file
 import sys
 import os
 import numpy
