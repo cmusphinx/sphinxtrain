@@ -322,7 +322,6 @@ sub RunTool {
   my $error_count = 0;
   my $warning_count = 0;
   my $processed_counter = 0;
-  my $processed_counter = 0;
   my $printed = 0;
 
   my ($pid, $pipe);
