@@ -26,19 +26,14 @@ def open(filename, mode="rb"):
 
 class S3TmatFile(S3File):
     "Read Sphinx-III format transition matrix files"
-
-    def getall(self):
-        try:
-            return self._params
-        except AttributeError:
-            self._params = self._load()
-            return self._params
+    def __init__(self, file, mode):
+        S3File.__init__(self, file, mode)
+        self._params = self._load()
 
     def readgauheader(self):
         if self.fileattr["version"] != "1.0":
             raise Exception("Version mismatch: must be 1.0 but is "
                             + self.fileattr["version"])
-
     def _load(self):
         self.readgauheader()
         self.fh.seek(self.data_start, 0)

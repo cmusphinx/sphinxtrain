@@ -16,13 +16,9 @@ import s3file
 
 class S3LDAFile(s3file.S3File):
     "Read Sphinx-III format LDA files"
-
-    def getall(self):
-        try:
-            return self._params
-        except AttributeError:
-            self._params = self._load()
-            return self._params
+    def __init__(self, file, mode):
+        S3File.__init__(self, file, mode)
+        self._params = self._load()
 
     def readgauheader(self):
         if self.fileattr["version"] != "0.1":

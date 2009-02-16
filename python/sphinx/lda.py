@@ -31,9 +31,9 @@ def makelda(gauden_counts):
     """
     if not gauden_counts.pass2var:
         raise Exception, "Please re-run bw with '-2passvar yes'"
-    mean = numpy.concatenate([x[0] for x in gauden_counts.getmeans()])
-    var = numpy.concatenate([x[0] for x in gauden_counts.getvars()])
-    dnom = gauden_counts.getdnom().ravel()
+    mean = numpy.concatenate([x[0] for x in gauden_counts.mean])
+    var = numpy.concatenate([x[0] for x in gauden_counts.var])
+    dnom = gauden_counts.dnom.ravel()
 
     # If CMN was used, this should actually be very close to zero
     globalmean = mean.sum(0) / dnom.sum()

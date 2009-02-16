@@ -34,12 +34,9 @@ def open_full(filename, mode="rb", attr={"version":1.0}):
 
 class S3GauFile(S3File):
     "Read Sphinx-III format Gaussian parameter files"
-    def getall(self):
-        try:
-            return self._params
-        except AttributeError:
-            self._params = self._load()
-            return self._params
+    def __init__(self, filename, mode):
+        S3File.__init__(self, filename, mode)
+        self._load()
 
     def readgauheader(self):
         if self.fileattr["version"] != "1.0":
@@ -81,7 +78,7 @@ class S3GauFile(S3File):
                 gmm = reshape(data[r:rnext], (self.density, self.veclen[j]))
                 mgau.append(gmm)
                 r = rnext
-        return params
+        self._params = params
 
 class S3FullGauFile(S3GauFile):
     "Read Sphinx-III format Gaussian full covariance matrix files"
@@ -115,7 +112,7 @@ class S3FullGauFile(S3GauFile):
                                               self.veclen[j]))
                 mgau.append(gmm)
                 r = rnext
-        return params
+        self._params = params
 
 class S3GauFile_write(S3File_write):
     "Write Sphinx-III format Gaussian parameter files"

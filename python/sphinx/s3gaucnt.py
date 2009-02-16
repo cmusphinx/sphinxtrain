@@ -35,14 +35,12 @@ def accumdirs(accumdirs):
             continue
         if gauden == None:
             gauden = subgau
-            gauden._load()
         else:
-            subgau._load()
-            for m, mgau in enumerate(gauden._means):
+            for m, mgau in enumerate(gauden.mean):
                 for f, feat in enumerate(mgau):
-                    gauden._means[m][f] += subgau._means[m][f]
-                    gauden._vars[m][f] += subgau._vars[m][f]
-                    gauden._dnom[m][f] += subgau._dnom[m][f]
+                    gauden.mean[m][f] += subgau.mean[m][f]
+                    gauden.var[m][f] += subgau.var[m][f]
+                    gauden.dnom[m][f] += subgau.dnom[m][f]
     return gauden
 
 def accumdirs_full(accumdirs):
@@ -56,14 +54,12 @@ def accumdirs_full(accumdirs):
             continue
         if gauden == None:
             gauden = subgau
-            gauden._load()
         else:
-            subgau._load()
-            for m, mgau in enumerate(gauden._means):
+            for m, mgau in enumerate(gauden.mean):
                 for f, feat in enumerate(mgau):
-                    gauden._means[m][f] += subgau._means[m][f]
-                    gauden._vars[m][f] += subgau._vars[m][f]
-                    gauden._dnom[m][f] += subgau._dnom[m][f]
+                    gauden.mean[m][f] += subgau.mean[m][f]
+                    gauden.var[m][f] += subgau.var[m][f]
+                    gauden.dnom[m][f] += subgau.dnom[m][f]
     return gauden
 
 def open_full(filename, mode="rb", attr={"version":1.0}):
@@ -74,41 +70,17 @@ def open_full(filename, mode="rb", attr={"version":1.0}):
 
 class S3GauCntFile(S3File):
     "Read Sphinx-III format Gaussian count files"
-    def getall(self):
-        try:
-            return self._means, self._vars, self._dnom
-        except AttributeError:
-            self._load()
-            return self._means, self._vars, self._dnom
-        
-    def getmeans(self):
-        try:
-            return self._means
-        except AttributeError:
-            self._load()
-            return self._means
-
-    def getvars(self):
-        try:
-            return self._vars
-        except AttributeError:
-            self._load()
-            return self._vars
-
-    def getdnom(self):
-        try:
-            return self._dnom
-        except AttributeError:
-            self._load()
-            return self._dnom
+    def __init__(self, file, mode):
+        S3File.__init__(self, file, mode)
+        self._load()
 
     def readgauheader(self):
         if self.fileattr["version"] != "1.0":
             raise Exception("Version mismatch: must be 1.0 but is "
                             + self.fileattr["version"])
         self.fh.seek(self.data_start, 0)
-        self.has_means = unpack(self.swap + "I", self.fh.read(4))[0]
-        self.has_vars = unpack(self.swap + "I", self.fh.read(4))[0]
+        self.has_mean = unpack(self.swap + "I", self.fh.read(4))[0]
+        self.has_var = unpack(self.swap + "I", self.fh.read(4))[0]
         self.pass2var = unpack(self.swap + "I", self.fh.read(4))[0]
         self.n_mgau = unpack(self.swap + "I", self.fh.read(4))[0]
         self.density = unpack(self.swap + "I", self.fh.read(4))[0]
@@ -119,11 +91,11 @@ class S3GauCntFile(S3File):
 
     def _load(self):
         self.readgauheader()
-        if self.has_means:
-            self._means = self._loadgau()
-        if self.has_vars:
-            self._vars = self._loadgau()
-        self._dnom = self.read3d()
+        if self.has_mean:
+            self.mean = self._loadgau()
+        if self.has_var:
+            self.var = self._loadgau()
+        self.dnom = self.read3d()
 
     def _loadgau(self):
         self._nfloats = unpack(self.swap + "I", self.fh.read(4))[0]
@@ -154,11 +126,11 @@ class S3FullGauCntFile(S3GauCntFile):
     "Read Sphinx-III format Gaussian full covariance matrix files"
     def _load(self):
         self.readgauheader()
-        if self.has_means:
-            self._means = self._loadgau()
-        if self.has_vars:
-            self._vars = self._loadfullgau()
-        self._dnom = self.read3d()
+        if self.has_mean:
+            self.mean = self._loadgau()
+        if self.has_var:
+            self.var = self._loadfullgau()
+        self.dnom = self.read3d()
 
     def _loadfullgau(self):
         self._nfloats = unpack(self.swap + "I", self.fh.read(4))[0]

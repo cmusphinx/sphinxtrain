@@ -60,14 +60,11 @@ class GMM(object):
         this directory.
         @ptype fromdir: string
         """
-        meanfile = s3gau.open(os.path.join(fromdir, "means"))
-        self.means = meanfile.getall()[0][0]
-        varfile = s3gau.open(os.path.join(fromdir, "variances"))
-        self.variances = varfile.getall()[0][0]
-        mixwfile = s3mixw.open(os.path.join(fromdir, "mixture_weights"))
-        self.mixw = mixwfile.getall()[0,0]
-        self.featlen = meanfile.veclen[0]
-        self.ndensity = meanfile.density
+        self.means = s3gau.open(os.path.join(fromdir, "means"))
+        self.variances = s3gau.open(os.path.join(fromdir, "variances"))
+        self.mixw = s3mixw.open(os.path.join(fromdir, "mixture_weights"))
+        self.featlen = self.means.veclen[0]
+        self.ndensity = self.means.density
 
     def write(self, todir):
         """

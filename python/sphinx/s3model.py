@@ -34,10 +34,10 @@ class S3Model(object):
 
     def read(self, path):
         self.mdef = s3mdef.open(os.path.join(path, "mdef"))
-        self.mean = s3gau.open(os.path.join(path, "means")).getall()
-        self.var = s3gau.open(os.path.join(path, "variances")).getall()
-        self.mixw = s3mixw.open(os.path.join(path, "mixture_weights")).getall()
-        self.tmat = s3tmat.open(os.path.join(path, "transition_matrices")).getall()
+        self.mean = s3gau.open(os.path.join(path, "means"))
+        self.var = s3gau.open(os.path.join(path, "variances"))
+        self.mixw = s3mixw.open(os.path.join(path, "mixture_weights"))
+        self.tmat = s3tmat.open(os.path.join(path, "transition_matrices"))
         # Normalize transition matrices and mixture weights
         for t in range(0, len(self.tmat)):
             self.tmat[t] = (self.tmat[t].T / self.tmat[t].sum(1)).T

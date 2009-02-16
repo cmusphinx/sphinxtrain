@@ -22,6 +22,24 @@ class S3File(object):
         if filename != None:
             self.open(filename, mode)
 
+    def getall(self):
+        return self._params
+
+    def __getitem__(self, key):
+        return self._params[key]
+
+    def __setitem__(self, key, value):
+        self._params[key] = value
+
+    def __delitem__(self, key):
+        del self._params[key]
+
+    def __iter__(self):
+        return iter(self._params)
+
+    def __len__(self):
+        return len(self._params)
+
     def open(self, filename, mode="rb"):
         self.filename = filename
         self.fh = file(filename, mode)

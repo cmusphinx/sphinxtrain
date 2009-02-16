@@ -45,9 +45,9 @@ class MLLTModel(object):
             raise Exception, "Please re-run bw with '-2passvar yes'"
         if ldadim == None:
             ldadim = gauden_counts.veclen[0]
-        self.cov = concatenate([x[0] for x in gauden_counts.getvars()])
+        self.cov = concatenate([x[0] for x in gauden_counts.var])
         self.cov = self.cov[:,0:ldadim,0:ldadim]
-        self.count = gauden_counts.getdnom().ravel()
+        self.count = gauden_counts.dnom.ravel()
         self.totalcount = sum(self.count)
         
     def objective(self, A, r, c):
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     mllt = m.train()
     if ldafn != None:
         # Compose this with the LDA transform if given
-        lda = s3lda.open(ldafn).getall()[0]
+        lda = s3lda.open(ldafn)[0]
         ldadim = mllt.shape[1]
         ldamllt = dot(mllt, lda[0:ldadim])
         s3lda.open(mlltfn, 'w').writeall(ldamllt[newaxis,:])

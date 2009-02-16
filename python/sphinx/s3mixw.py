@@ -12,7 +12,7 @@ SphinxTrain, Sphinx-III, and PocketSphinx.
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
-import s3file
+from s3file import S3File, S3File_write
 
 def open(filename, mode="rb"):
     if mode in ("r", "rb"):
@@ -22,15 +22,11 @@ def open(filename, mode="rb"):
     else:
         raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
 
-class S3MixwFile(s3file.S3File):
+class S3MixwFile(S3File):
     "Read Sphinx-III format mixture weight files"
-
-    def getall(self):
-        try:
-            return self._params
-        except AttributeError:
-            self._params = self._load()
-            return self._params
+    def __init__(self, file, mode):
+        S3File.__init__(self, file, mode)
+        self._params = self._load()
 
     def readgauheader(self):
         if self.fileattr["version"] != "1.0":
@@ -42,7 +38,7 @@ class S3MixwFile(s3file.S3File):
         self.fh.seek(self.data_start, 0)
         return self.read3d()
 
-class S3MixwFile_write(s3file.S3File_write):
+class S3MixwFile_write(S3File_write):
     "Write Sphinx-III format mixture weight files"
 
     def writeall(self, stuff):
