@@ -73,20 +73,24 @@ def estimate_mllr_mean(stats, inmean, invar):
             invvar = invar[i][0][k]
             if len(invvar.shape) > 1:
                 invvar = np.diag(invvar)
-            invvar = 1./invvar.clip(0,1e-5)
+            invvar = 1./invvar.clip(1e-5,np.inf)
             # Sum of posteriors (i.e. sum_t L_m_r(t))
             dnom = stats.dnom[i,0,k]
             # Sum of mean statistics
             obsmean = stats.mean[i][0][k]
             for l in range(0, ndim):
+                # v_{ll} = sum_t L(t) \Sigma_{ll}^{-1}
+                # D = \ksi \ksi^T
+                # G^{l} = v_{ll} D
                 G[l] += dnom * invvar[l] * np.outer(xmean, xmean)
+            # Z = \sum_r\sum_t L(t) \Sigma_r^{-1} o(t) \ksi_r^T
             Z += np.outer(invvar * obsmean, xmean)
     # Now solve for the rows of W
     for i in range(0, ndim):
         W[i] = np.linalg.solve(G[i], Z[i])
     return W
 
-def write_mllr_mean(W, fout):
+def write_mllr(fout, W, H=None):
     """
     Write out an MLLR transformation of the means in the format that
     Sphinx3 understands.
@@ -112,18 +116,27 @@ def write_mllr_mean(W, fout):
     for x in W[:,0]:
         fh.write("%f " % x)
     fh.write("\n")
+    if H != None:
+        for x in H:
+            fh.write("%f " % x)
+        fh.write("\n")
+    else:
+        fh.write("1.0 " * W.shape[0])
+        fh.write("\n")
 
 def estimate_mllr_variance(stats, inmean, invar, W):
     """
-    Estimate an MLLR transformation of the variances based on observed
-    statistics.
+    Estimate a diagonal MLLR transformation of the variances based on
+    observed statistics.
     
-    This function calculates an MLLR transformation H (an n by n
-    matrix) which maximizes the likelihood of the data as represented
-    by C{stats}, when applied to the inverse Cholesky factor of the
-    covariance matrix B as B^T H B.  For diagonal covariances this
-    reduces to a scaling of the variance by the diagonals of H, since
-    the diagonal b = (sqrt(var^{-1}))^{-1} = var^{0.5}.
+    This function calculates an MLLR transformation H (a diagonal nxn
+    matrix, represented as a vector) which maximizes the likelihood of
+    the data as represented by C{stats}, when applied to the inverse
+    Cholesky factor of the covariance matrix B as B^T H B.  For
+    diagonal covariances this reduces to a scaling of the variance by
+    the diagonal of H, since the diagonal b = (sqrt(var^{-1}))^{-1} =
+    var^{0.5} and thus B^T H B = \Sigma H when \Sigma and H are
+    diagonal.
 
     Note that this function will raise an exception if -2passvar yes
     was enabled when collecting the observation counts, since it
@@ -150,8 +163,8 @@ def estimate_mllr_variance(stats, inmean, invar, W):
     if stats.pass2var:
         raise RuntimeException, "Statistics using -2passvar yes are not allowed"
     ndim = inmean.veclen[0]
-    # Output matrix H
-    H = np.zeros((ndim, ndim))
+    # Output "matrix" H
+    H = np.zeros(ndim)
     # One-class MLLR: just sum over all densities
     norm = 0
     for i in range(0, inmean.n_mgau):
@@ -160,21 +173,21 @@ def estimate_mllr_variance(stats, inmean, invar, W):
             xmean = extend(inmean[i][0][k])
             # Transform it
             mean = np.dot(W, xmean)
-            # Calcluate C (Cholesky factor of inverse variance)
-            invvar = invar[i][0][k].clip(0,1e-5)
-            if len(invvar.shape) == 1:
+            # Cholesky factorization not needed for diagonals...
+            invvar = 1./invar[i][0][k].clip(1e-5,np.inf)
+            if len(invvar.shape) > 1:
                 invvar = np.diag(invvar)
-            C = np.linalg.cholesky(invvar)
+            # Note: the code actually just computes diagonals
             # sum(L_m_r o o^T) (obs squared)
             nom = stats.var[i][0][k]
             # \hat mu_m_r \bar o_m_r^T (cross term 1)
-            nom -= np.outer(mean, stats.mean[i][0][k])
-            # \bar o_m_r^T \hat mu_m_r^T (cross term 2)
-            nom -= np.outer(stats.mean[i][0][k], mean)
+            nom -= mean * stats.mean[i][0][k]
+            # \bar o_m_r \hat mu_m_r^T (cross term 2)
+            nom -= stats.mean[i][0][k] * mean
             # \mu_m_r \mu_m_r^T sum(L_m_r) (mean squared)
-            nom += np.outer(mean, mean) * stats.dnom[i][0][k]
-            # Multiply in Cholesky factors and accumulate
-            H += np.dot(np.dot(C, nom), C.T)
+            nom += mean * mean * stats.dnom[i][0][k]
+            # Multiply in variances and accumulate
+            H += invvar * nom
             # Accumulate normalizer
             norm += stats.dnom[i][0][k]
     return H / norm
@@ -202,5 +215,6 @@ if __name__ == '__main__':
     accumdirs = args[2:]
     stats = s3gaucnt.accumdirs(accumdirs)
 
-    mllr = estimate_mllr_mean(stats, inmean, invar)
-    write_mllr_mean(mllr, sys.stdout)
+    W = estimate_mllr_mean(stats, inmean, invar)
+    H = estimate_mllr_variance(stats, inmean, invar, W)
+    write_mllr(sys.stdout, W, H)
