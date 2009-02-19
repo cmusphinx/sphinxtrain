@@ -71,6 +71,11 @@ store_reg_mat (const char    *regmatfn,
 		fprintf(fp,"%f ",B[m][i][j]);
 	    }
 	    fprintf(fp,"\n");
+	    /* Identity transform for variances. */
+	    for (j = 0; j < veclen[i]; j++) {
+		fprintf(fp,"1.0 ");
+	    }
+	    fprintf(fp,"\n");
 	}
     }
     fclose(fp);
@@ -115,6 +120,11 @@ read_reg_mat (
 	    }
 	    for (j = 0; j < vlen[i]; j++) {
 		fscanf(fp,"%f ",&lB[m][i][j]);
+	    }
+	    /* Identity transform for variances. */
+	    for (j = 0; j < vlen[i]; j++) {
+		float32 dummy;
+		fscanf(fp,"%f ",&dummy);
 	    }
 	}
     }
