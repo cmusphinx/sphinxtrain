@@ -39,11 +39,11 @@ def estimate_mllr_mean(stats, inmean, invar):
     statistics.
     
     This function calculates an MLLR transformation W (an n by n+1
-    matrix) which, when applied to C{inmean}, maximizes the likelihood
-    of the data as represented by C{stats}.
+    matrix) for each feature stream which, when applied to C{inmean},
+    maximizes the likelihood of the data as represented by C{stats}.
 
-    Currently this does only one class and one stream, but it will
-    promptly be extended once the "learning exercise" is over.
+    Currently this does only one class, but it will promptly be
+    extended once the "learning exercise" is over.
 
     @param stats: Observation counts, as returned
                   by C{sphinx.s3gaucnt.accumdirs}
@@ -53,50 +53,55 @@ def estimate_mllr_mean(stats, inmean, invar):
     @type inmean: sphinx.s3gau.S3Gau
     @param invar: Input diagonal covariance parameters
     @type inmvar: sphinx.s3gau.S3Gau
-    @return: MLLR transformation
-    @rtype: numpy.ndarray
+    @return: MLLR transformations, one per feature stream
+    @rtype: list(numpy.ndarray)
     """
-    ndim = inmean.veclen[0]
+    # List of W matrices
+    Ws = []
+    for i in range(0, inmean.n_feat):
+        ndim = inmean.veclen[i]
+        # Collection of G matrices
+        G = np.zeros((ndim, ndim+1, ndim+1))
+        # Z matrix (for the single class and stream)
+        Z = np.zeros((ndim, ndim+1))
+        # W matrix
+        W = np.zeros((ndim, ndim+1))
+        # One-class MLLR: just sum over all densities
+        for j in range(0, inmean.n_mgau):
+            for k in range(0, inmean.density):
+                # Extended mean vector
+                xmean = extend(inmean[j][i][k])
+                # Inverse variance (also use only the diagonal)
+                invvar = invar[j][i][k]
+                if len(invvar.shape) > 1:
+                    invvar = np.diag(invvar)
+                invvar = 1./invvar.clip(1e-5,np.inf)
+                # Sum of posteriors (i.e. sum_t L_m_r(t))
+                dnom = stats.dnom[j,i,k]
+                # Sum of mean statistics
+                obsmean = stats.mean[j][i][k]
+                for l in range(0, ndim):
+                    # v_{ll} = sum_t L(t) \Sigma_{ll}^{-1}
+                    # D = \ksi \ksi^T
+                    # G^{l} = v_{ll} D
+                    G[l] += dnom * invvar[l] * np.outer(xmean, xmean)
+                # Z = \sum_r\sum_t L(t) \Sigma_r^{-1} o(t) \ksi_r^T
+                Z += np.outer(invvar * obsmean, xmean)
+        # Now solve for the rows of W
+        for j in range(0, ndim):
+            W[j] = np.linalg.solve(G[j], Z[j])
+        Ws.append(W)
+    return Ws
 
-    # Collection of G matrices
-    G = np.zeros((ndim, ndim+1, ndim+1))
-    # Z matrix (for the single class and stream)
-    Z = np.zeros((ndim, ndim+1))
-    # W matrix
-    W = np.zeros((ndim, ndim+1))
-    # One-class MLLR: just sum over all densities
-    for i in range(0, inmean.n_mgau):
-        for k in range(0, inmean.density):
-            # Extended mean vector
-            xmean = extend(inmean[i][0][k])
-            # Inverse variance (also use only the diagonal)
-            invvar = invar[i][0][k]
-            if len(invvar.shape) > 1:
-                invvar = np.diag(invvar)
-            invvar = 1./invvar.clip(1e-5,np.inf)
-            # Sum of posteriors (i.e. sum_t L_m_r(t))
-            dnom = stats.dnom[i,0,k]
-            # Sum of mean statistics
-            obsmean = stats.mean[i][0][k]
-            for l in range(0, ndim):
-                # v_{ll} = sum_t L(t) \Sigma_{ll}^{-1}
-                # D = \ksi \ksi^T
-                # G^{l} = v_{ll} D
-                G[l] += dnom * invvar[l] * np.outer(xmean, xmean)
-            # Z = \sum_r\sum_t L(t) \Sigma_r^{-1} o(t) \ksi_r^T
-            Z += np.outer(invvar * obsmean, xmean)
-    # Now solve for the rows of W
-    for i in range(0, ndim):
-        W[i] = np.linalg.solve(G[i], Z[i])
-    return W
-
-def write_mllr(fout, W, H=None):
+def write_mllr(fout, Ws, Hs=None):
     """
-    Write out an MLLR transformation of the means in the format that
+    Write out MLLR transformations of the means in the format that
     Sphinx3 understands.
 
-    @param W: MLLR transformation of means
-    @ptype W: numpy.ndarray
+    @param Ws: MLLR transformations of means, one per feature stream
+    @ptype Ws: list(numpy.ndarray)
+    @param Hs: MLLR transformations of variances, one per feature stream
+    @ptype Hs: list(numpy.ndarray)
     @param fout: Filename or filehandle to write to.
     @ptype fout: string or file
     """
@@ -104,27 +109,28 @@ def write_mllr(fout, W, H=None):
         fh = fout
     else:
         fh = file(fout)
-    # One-class, one-stream MLLR for now
+    # One-class MLLR for now
     fh.write("%d\n" % 1)
-    fh.write("%d\n" % 1)
-    fh.write("%d\n" % W.shape[0])
-    # Write rotation and bias terms separately
-    for w in W:
-        for x in w[1:]:
+    fh.write("%d\n" % len(Ws))
+    for i,W in enumerate(Ws):
+        fh.write("%d\n" % W.shape[0])
+        # Write rotation and bias terms separately
+        for w in W:
+            for x in w[1:]:
+                fh.write("%f " % x)
+            fh.write("\n")
+        for x in W[:,0]:
             fh.write("%f " % x)
         fh.write("\n")
-    for x in W[:,0]:
-        fh.write("%f " % x)
-    fh.write("\n")
-    if H != None:
-        for x in H:
-            fh.write("%f " % x)
-        fh.write("\n")
-    else:
-        fh.write("1.0 " * W.shape[0])
-        fh.write("\n")
+        if Hs != None:
+            for x in Hs[i]:
+                fh.write("%f " % x)
+            fh.write("\n")
+        else:
+            fh.write("1.0 " * W.shape[0])
+            fh.write("\n")
 
-def estimate_mllr_variance(stats, inmean, invar, W):
+def estimate_mllr_variance(stats, inmean, invar, Ws):
     """
     Estimate a diagonal MLLR transformation of the variances based on
     observed statistics.
@@ -155,42 +161,45 @@ def estimate_mllr_variance(stats, inmean, invar, W):
     @type inmean: sphinx.s3gau.S3Gau
     @param invar: Input covariance parameters
     @type inmvar: sphinx.s3gau.S3Gau
-    @param W: Previously computed MLLR transformation of means
-    @ptype W: numpy.ndarray
-    @return: MLLR transformation of variances
-    @rtype: numpy.ndarray
+    @param Ws: Previously computed MLLR transformations of means
+    @ptype Ws: list(numpy.ndarray)
+    @return: MLLR transformations of variances
+    @rtype: list(numpy.ndarray)
     """
     if stats.pass2var:
         raise RuntimeException, "Statistics using -2passvar yes are not allowed"
-    ndim = inmean.veclen[0]
-    # Output "matrix" H
-    H = np.zeros(ndim)
-    # One-class MLLR: just sum over all densities
-    norm = 0
-    for i in range(0, inmean.n_mgau):
-        for k in range(0, inmean.density):
-            # Extended mean vector
-            xmean = extend(inmean[i][0][k])
-            # Transform it
-            mean = np.dot(W, xmean)
-            # Cholesky factorization not needed for diagonals...
-            invvar = 1./invar[i][0][k].clip(1e-5,np.inf)
-            if len(invvar.shape) > 1:
-                invvar = np.diag(invvar)
-            # Note: the code actually just computes diagonals
-            # sum(L_m_r o o^T) (obs squared)
-            nom = stats.var[i][0][k]
-            # \hat mu_m_r \bar o_m_r^T (cross term 1)
-            nom -= mean * stats.mean[i][0][k]
-            # \bar o_m_r \hat mu_m_r^T (cross term 2)
-            nom -= stats.mean[i][0][k] * mean
-            # \mu_m_r \mu_m_r^T sum(L_m_r) (mean squared)
-            nom += mean * mean * stats.dnom[i][0][k]
-            # Multiply in variances and accumulate
-            H += invvar * nom
-            # Accumulate normalizer
-            norm += stats.dnom[i][0][k]
-    return H / norm
+    Hs = []
+    for i, W in enumerate(Ws):
+        ndim = inmean.veclen[i]
+        # Output "matrix" H
+        H = np.zeros(ndim)
+        # One-class MLLR: just sum over all densities
+        norm = 0
+        for j in range(0, inmean.n_mgau):
+            for k in range(0, inmean.density):
+                # Extended mean vector
+                xmean = extend(inmean[j][i][k])
+                # Transform it
+                mean = np.dot(W, xmean)
+                # Cholesky factorization not needed for diagonals...
+                invvar = 1./invar[j][i][k].clip(1e-5,np.inf)
+                if len(invvar.shape) > 1:
+                    invvar = np.diag(invvar)
+                # Note: the code actually just computes diagonals
+                # sum(L_m_r o o^T) (obs squared)
+                nom = stats.var[j][i][k]
+                # \hat mu_m_r \bar o_m_r^T (cross term 1)
+                nom -= mean * stats.mean[j][i][k]
+                # \bar o_m_r \hat mu_m_r^T (cross term 2)
+                nom -= stats.mean[j][i][k] * mean
+                # \mu_m_r \mu_m_r^T sum(L_m_r) (mean squared)
+                nom += mean * mean * stats.dnom[j][i][k]
+                # Multiply in variances and accumulate
+                H += invvar * nom
+                # Accumulate normalizer
+                norm += stats.dnom[j][i][k]
+        Hs.append(H / norm)
+    return Hs
 
 if __name__ == '__main__':
     def usage():
@@ -215,6 +224,6 @@ if __name__ == '__main__':
     accumdirs = args[2:]
     stats = s3gaucnt.accumdirs(accumdirs)
 
-    W = estimate_mllr_mean(stats, inmean, invar)
-    H = estimate_mllr_variance(stats, inmean, invar, W)
-    write_mllr(sys.stdout, W, H)
+    Ws = estimate_mllr_mean(stats, inmean, invar)
+    Hs = estimate_mllr_variance(stats, inmean, invar, Ws)
+    write_mllr(sys.stdout, Ws, Hs)
