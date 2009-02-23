@@ -108,7 +108,7 @@ def write_mllr(fout, Ws, Hs=None):
     if isinstance(fout, file):
         fh = fout
     else:
-        fh = file(fout)
+        fh = file(fout, 'w')
     # One-class MLLR for now
     fh.write("%d\n" % 1)
     fh.write("%d\n" % len(Ws))
