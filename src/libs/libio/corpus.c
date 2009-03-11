@@ -233,10 +233,10 @@ int strcmp_ci(const char *a, const char *b)
     strcpy(b_lc, b);
     
     for (i = 0; i < strlen(a_lc); i++)
-	a_lc[i] = tolower(a_lc[i]);
+	a_lc[i] = tolower((int)a_lc[i]);
 
     for (i = 0; i < strlen(b_lc); i++)
-	b_lc[i] = tolower(b_lc[i]);
+	b_lc[i] = tolower((int)b_lc[i]);
 
     return strcmp(a_lc, b_lc);
 }

@@ -81,7 +81,7 @@ int lts_apply(const char *in_word,const char *feats,
     word = ckd_salloc((char *)in_word);
     if (!r->letter_table)
 	for (i = 0; i < strlen(word); ++i)
-	    word[i] = tolower(word[i]);
+	    word[i] = tolower((int)word[i]);
 
     /* Fill in out_phones structure as best we can. */
     maxphones = strlen(word) + 10;
