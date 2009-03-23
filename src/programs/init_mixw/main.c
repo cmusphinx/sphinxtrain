@@ -331,7 +331,7 @@ init_mixw()
 		tmp_n_gau, n_gau);
     }
     if (n_cb_src != n_cb) {
-	E_FATAL("src mean n_cb (== %u) inconsistent w/ ts2cb mapping %u\n",
+	E_FATAL("src mean n_cb (== %u) is inconsistent with ts2cb mapping %u. Most probably phoneset has duplicated phones\n",
 		n_cb_src, n_cb);
     }
 
