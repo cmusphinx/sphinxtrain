@@ -1697,8 +1697,11 @@ gauden_norm_wt_var(vector_t ***in_var,
 			}
 
 			if (wt_var[i][j][k][l] < 0) {
-			    E_ERROR("var (mgau= %u, feat= %u, "
-				    "density=%u, component=%u) < 0\n",
+			    E_ERROR("Variance (mgau= %u, feat= %u, "
+				    "density=%u, component=%u) is less then 0. "
+				    "Most probably the number of senones is "
+				    "too high for such a small training "
+				    "database. Use smaller $CFG_N_TIED_STATES.\n",
 				    i, j, k, l);
 			}
 		    }
