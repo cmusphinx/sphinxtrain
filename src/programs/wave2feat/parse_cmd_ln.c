@@ -52,6 +52,7 @@
 
 #include <s3/cmd_ln.h>
 #include <s3/err.h>
+#include "fe.h"
 
 
 int

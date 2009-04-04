@@ -47,10 +47,6 @@
 #ifndef CMD_LN_DEFN_H
 #define CMD_LN_DEFN_H
 
-#include <s3/cmd_ln.h>
-#include "fe.h"
-#include "wave2feat.h"
-
 const char helpstr[] =
   "Description: \n\
 Create cepstra from audio file.\n\
@@ -302,9 +298,6 @@ static arg_def_t defn[] = {
   
   { NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
 };
-
-    
-#define CMD_LN_DEFN_H
 
 #endif /* CMD_LN_DEFN_H */ 
 
