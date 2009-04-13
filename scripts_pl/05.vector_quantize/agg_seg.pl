@@ -96,6 +96,7 @@ if (-r $mllt_file) {
 }
 
 # run it here 
+$ST::CFG_FEAT_WINDOW ||= 0;
 exit RunTool('agg_seg', $logfile, 0,
 	     -segdmpdirs => $segdmpdir,
 	     -segdmpfn => $dumpfile,
@@ -104,6 +105,7 @@ exit RunTool('agg_seg', $logfile, 0,
 	     -cepdir => $ST::CFG_FEATFILES_DIR,
 	     -cepext => $ST::CFG_FEATFILE_EXTENSION,
 	     -ceplen => $ST::CFG_VECTOR_LENGTH,
+	     -cepwin => $ST::CFG_FEAT_WINDOW,
 	     -agc => $ST::CFG_AGC,
 	     -cmn => $ST::CFG_CMN,
 	     -varnorm => $ST::CFG_VARNORM,

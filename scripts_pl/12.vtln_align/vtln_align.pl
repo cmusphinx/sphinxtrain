@@ -116,6 +116,7 @@ $ctl_counter = 1 unless ($ctl_counter);
 
 Log("Force alignment starting: ($part of $npart) ", 'result');
 
+$ST::CFG_FEAT_WINDOW ||= 0;
 my $return_value = RunTool
     ('sphinx3_align', $logfile, $ctl_counter,
      -mdef => $mdef,
@@ -142,6 +143,7 @@ my $return_value = RunTool
      -varnorm => $ST::CFG_VARNORM,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
+     -cepwin => $ST::CFG_FEAT_WINDOW,
      @feat_args
      );
 

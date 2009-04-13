@@ -274,6 +274,7 @@ sub FlatInitialize
 	     -ldafn => $MLLT_FILE,
 	     -ldadim => $ST::CFG_LDA_DIMENSION);
     }
+    $ST::CFG_FEAT_WINDOW ||= 0;
     if ($return_value = RunTool('init_gau', $logfile, 0,
 				-ctlfn => $ST::CFG_LISTOFFILES,
 				-part => 1, -npart => 1,
@@ -285,6 +286,7 @@ sub FlatInitialize
 				-varnorm => $ST::CFG_VARNORM,
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
+				-cepwin => $ST::CFG_FEAT_WINDOW,
 				@feat_args
 			       )) {
       return $return_value;
@@ -321,6 +323,7 @@ sub FlatInitialize
 				-varnorm => $ST::CFG_VARNORM,
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
+				-cepwin => $ST::CFG_FEAT_WINDOW,
 				-fullvar => $ST::CFG_FULLVAR,
 				@feat_args
 			       )) {

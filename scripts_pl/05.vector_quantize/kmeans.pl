@@ -94,6 +94,7 @@ if (-r $mllt_file) {
 	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
 
+$ST::CFG_FEAT_WINDOW ||= 0;
 exit RunTool('kmeans_init', $logfile, 0,
 	     -gthobj => 'single',
 	     -stride => 1,
@@ -107,6 +108,7 @@ exit RunTool('kmeans_init', $logfile, 0,
 	     -segdmpdirs => $segdmpdir,
 	     -segdmpfn => $dumpfile,
 	     -ceplen => $ST::CFG_VECTOR_LENGTH,
+	     -cepwin => $ST::CFG_FEAT_WINDOW,
 	     -feat => $ST::CFG_FEATURE,
 	     @feat_args,
 	     -agc => $ST::CFG_AGC,
