@@ -198,6 +198,7 @@ for (my $warp = $ST::CFG_VTLN_START;
 	my $rv = RunTool('../scripts_pl/extract_features.pl',
 			 $logfile, 0,
 			 -c => $ST::CFG_LISTOFFILES,
+			 -w => $ST::CFG_WAVFILE_EXTENSION,
 			 -e => "$warp.$ST::CFG_FEATFILE_EXTENSION",
 			 '--', 
 			 -warp_params => $warp);
@@ -213,6 +214,7 @@ for (my $warp = $ST::CFG_VTLN_START;
 			 $logfile, 0,
 			 -ctl => $ST::CFG_LISTOFFILES,
 			 -ext => "$warp.$ST::CFG_FEATFILE_EXTENSION",
+			 -w => $ST::CFG_WAVFILE_EXTENSION,
 			 -cfg => $ST::CFG_FILE,
 			 '--', 
 			 -warp_params => $warp);

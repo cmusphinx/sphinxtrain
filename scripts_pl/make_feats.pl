@@ -52,6 +52,7 @@ Getopt::Long::Configure('no_auto_abbrev', 'pass_through');
 GetOptions('help|h' => \$help,
 	   'ctl|c=s' => \$ctl,
 	   'wavext|w=s' => \$wavext,
+	   'wavtype|t=s' => \$wavtype,
 	   'ext|e=s' => \$cepext,
 	   'cfg=s' => \$cfg_file,
 	   'param=s' => \$param_file);
@@ -93,6 +94,7 @@ if (defined $ctl) {
 
   # Override things from the command line
   $ST::CFG_WAVFILE_EXTENSION = $wavext if defined($wavext);
+  $ST::CFG_WAVFILE_TYPE = $wavtype if defined($wavtype);
   $ST::CFG_FEATFILE_EXTENSION = $cepext if defined($cepext);
 
   # Read control file and create any necessary directories
