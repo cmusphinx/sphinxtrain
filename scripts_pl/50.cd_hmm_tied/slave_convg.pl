@@ -106,6 +106,10 @@ if (($iter == 1) && (($n_gau == 1) || ($ST::CFG_HMM_TYPE eq ".semi."))) {
     Log("Phase 3: Forward-Backward");
 }
 
+if ($n_gau == $ST::CFG_FINAL_NUM_DENSITIES and $iter == $ST::CFG_SINGLEPART_ITER) {
+    $n_parts = 1;
+}
+
 # Call baum_welch with iter part and n_parts,
 # once done call norm_and_lauchbw.pl
 my @deps;
