@@ -718,10 +718,9 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
         }
         else if (P->input_format == MSWAV){
             /* Read the header */
-            MSWAV_hdr *hdr_buf;
+            MSWAV_hdr *hdr_buf = NULL;
             /* MC: read till just before datatag */
-            const int hdr_len_to_read = ((char *) (&hdr_buf->datatag))
-                - (char *) hdr_buf;
+            const int hdr_len_to_read = offsetof (MSWAV_hdr, datatag);
             if ((hdr_buf =
                  (MSWAV_hdr *) calloc(1, sizeof(MSWAV_hdr))) == NULL) {
                 E_ERROR("Cannot allocate for input file header\n");
