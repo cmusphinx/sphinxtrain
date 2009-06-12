@@ -478,7 +478,7 @@ param_t *fe_parse_options(int32 argc, char **argv)
     P->nchans = cmd_ln_int32("-nchans");
     P->whichchan = cmd_ln_int32("-whichchan");
     P->PRE_EMPHASIS_ALPHA = cmd_ln_float32("-alpha");
-    P->SAMPLING_RATE = cmd_ln_float32("-srate");
+    P->SAMPLING_RATE = cmd_ln_float32("-samprate");
     P->WINDOW_LENGTH = cmd_ln_float32("-wlen");
     P->FRAME_RATE = cmd_ln_int32("-frate");
     if (!strcmp(cmd_ln_str("-feat"), "sphinx")) 

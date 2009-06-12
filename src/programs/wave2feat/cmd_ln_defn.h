@@ -206,7 +206,7 @@ static arg_def_t defn[] = {
     DEFAULT_PRE_EMPHASIS_ALPHA,
     "Preemphasis parameter" },
   
-  { "-srate",
+  { "-samprate",
     CMD_LN_FLOAT32,
     CMD_LN_NO_VALIDATION,
     DEFAULT_SAMPLING_RATE,
