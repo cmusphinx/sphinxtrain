@@ -13,6 +13,8 @@ use SimpleConfig;
 my %opts = (config => 'etc/wsj_files.cfg',
 	    outdir => 'feat',
 	    outext => 'mfc',
+	    wavext => 'wv1',
+	    wavtype => 'nist',
 	    params => 'etc/feat16k.params',
 	    parts => 'si84,devtest');
 GetOptions(\%opts,
@@ -22,7 +24,8 @@ GetOptions(\%opts,
 	   'outdir|o=s',
 	   'outext|e=s',
 	   'inctl|c=s',
-	   'wv2',
+	   'wavext|w=s',
+	   'wavtype|t=s',
 	   'keep-audio',
 	   'help|h|?')
     or pod2usage(2);
@@ -113,7 +116,7 @@ foreach my $dir (@dirs) {
 			-di => $outdir, -do => $outdir,
 			-ei => 'sph', -eo => $opts{outext},
 			@feat_params,
-			-c => $tmpfile, -nist => 'yes');
+			-c => $tmpfile, "-$opts{wavtype}" => 'yes');
 	foreach my $p (@l) {
 	    my $o = lc($p);
 	    $o =~ s/\.wv1$//;
