@@ -130,7 +130,6 @@ normalize()
     const char *out_var_fn;
     const char *out_dcount_fn;
     int err;
-    const char *out_reg_fn;
     uint32 mllr_mult;
     uint32 mllr_add;
     float32 *****regl = NULL;
@@ -152,12 +151,6 @@ normalize()
     in_var_fn = (const char *)cmd_ln_access("-invarfn");
     out_dcount_fn = (const char *)cmd_ln_access("-dcountfn");
     var_is_full = cmd_ln_int32("-fullvar");
-
-    out_reg_fn = (const char *)cmd_ln_access("-regmatfn");
-    if(out_reg_fn){
-      E_FATAL("Using norm for computing regression matrix is obsolete, please use mllr_transform\n");
-    }
-    
 
     /* must be at least one accum dir */
     assert(accum_dir[0] != NULL);
@@ -237,19 +230,7 @@ normalize()
 		       &tmat_acc, &n_tmat, &n_state_pm);
 	}
 
-        if (out_reg_fn) {
-            if (regmat_read(accum_dir[i], &regl, &regr, &veclen, &n_mllr_class, &n_stream, &mllr_mult, &mllr_add) != S3_SUCCESS) {
-                E_FATAL_SYSTEM("Couldn't read MLLR accumulator in %s", accum_dir[i]);
-            }
-        }
 	if (out_mean_fn || out_var_fn) {
-       	    /* if MLLR accumulator was defined, we need to free the
-	     * veclen vector, which will be allocated again in the
-	     * function calls below.*/
-	    if (out_reg_fn) {
-	        ckd_free((void *) veclen);
-	    }
-
 	    if (var_is_full)
 		rdacc_den_full(accum_dir[i],
 			       &wt_mean,
@@ -493,14 +474,6 @@ normalize()
      * Write the parameters to files
      */
 
-    /************ Added by VIPUL and BIXA on July 11th 1996 *******/
-    if (out_reg_fn) {
-        if(compute_mllr(regl,regr,veclen,n_mllr_class,n_stream,mllr_mult,mllr_add,&A,&B) != S3_SUCCESS) { 
-            E_FATAL_SYSTEM("MLLR computation failed\n");
-        }
-    }
-   /*********End of addition by VIPUL ************************/
-
     if (out_mixw_fn) {
 	if (mixw_acc) {
 	    if (s3mixw_write(out_mixw_fn,
@@ -520,14 +493,6 @@ normalize()
 	    E_INFO("Mixing weight accumulators seen, but -mixwfn NOT specified.\n");
 	}
     }
-
-    /************ Added by VIPUL and BHIKSHA on July 11th 1996 *******/
-    if (out_reg_fn) {
-        if(store_reg_mat(out_reg_fn,veclen,n_mllr_class,n_stream,A,B) != S3_SUCCESS) {
-            return S3_ERROR;
-        }
-    }
-    /*********End of addition by VIPUL ************************/
 
     if (out_tmat_fn) {
 	if (tmat_acc) {

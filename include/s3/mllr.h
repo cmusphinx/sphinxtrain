@@ -46,18 +46,6 @@ extern "C" {
 #define TINY 1.0e-20;
 
 
-int32 regmat_read (
-	     const char    *accumdir,
-             float32 ******regl,
-             float32 *****regr,
-             const uint32  **veclen,
-             uint32  *n_mllr_class,
-             uint32  *n_stream,
-             uint32  *mllr_mult,
-             uint32  *mllr_add
-            );
-
-
 int32 compute_mllr (
              float32 *****regl,
              float32 ****regr,
