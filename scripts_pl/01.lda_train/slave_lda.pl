@@ -70,7 +70,7 @@ $| = 1; # Turn on autoflushing
 my $logdir = "$ST::CFG_LOG_DIR/01.lda_train";
 
 if ($iter == 1) {
-    Log("MODULE: 05 Train LDA transformation\n");
+    Log("MODULE: 01 Train LDA transformation\n");
     Log("Phase 1: Cleaning up directories:");
     # Don't do this on a queue, because of NFS bugs
     unless ($ST::CFG_QUEUE_TYPE eq 'Queue::PBS') {
