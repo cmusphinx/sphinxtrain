@@ -71,7 +71,7 @@ my $minvar  = 1e-4;
 my $listoffiles = $ST::CFG_LISTOFFILES;
 my $transcriptfile = "$outdir/$ST::CFG_EXPTNAME.aligninput";
 my $dict = defined($ST::CFG_FORCE_ALIGN_DICTIONARY)
-    ? $ST::CFG_FORCE_ALIGN_DICT
+    ? $ST::CFG_FORCE_ALIGN_DICTIONARY
     : "$outdir/$ST::CFG_EXPTNAME.falign.dict";
 my $fdict = defined($ST::CFG_FORCE_ALIGN_FILLERDICT)
     ? $ST::CFG_FORCE_ALIGN_FILLERDICT
