@@ -143,13 +143,14 @@ sub align_hyp {
   my $ref = shift;
   my $hyp = shift;
   my $align = $ST::DEC_CFG_ALIGN;
+  my $use_cer = $ST::DEC_CFG_ALIGN_CER eq "yes" ? "--cer" : "";
 
   if ($align eq 'builtin') {
     my $outfile = "$ST::DEC_CFG_RESULT_DIR/${ST::DEC_CFG_EXPTNAME}.align";
     my $thisdir = dirname($0);
     my ($wer, $ser, $word_total, $sent_total, $sent_err);
     open (OUT, "> $outfile") or die "Can't open $outfile for writing\n";
-    my $cmdln = "perl \"$thisdir/word_align.pl\" -i \"$ref\" \"$hyp\"";
+    my $cmdln = "perl \"$thisdir/word_align.pl\" $use_cer -i \"$ref\" \"$hyp\"";
     $sent_total = 0;
     if (open (PIPE, "$cmdln 2>&1 |")) {
       while (<PIPE>) {
@@ -172,8 +173,9 @@ sub align_hyp {
 	die "word_align.pl failed with error code $?";
     }
     $ser = ($sent_err / $sent_total) * 100;
-    Log(sprintf("SENTENCE ERROR: %.1f%% (%d/%d)   WORD ERROR RATE: %.1f%% (%d/%d)",
+    Log(sprintf("SENTENCE ERROR: %.1f%% (%d/%d)   %s ERROR RATE: %.1f%% (%d/%d)",
 		$ser, $sent_err, $sent_total,
+		$use_cer ? "CHARACTER" : "WORD",
 		$wer, $word_total * $wer / 100, $word_total), 'result');
     HTML_Print("<p class='result'>", FormatURL("$outfile", "Log File"), "</p>");
   } elsif ($align =~ m/sclite/i) {
