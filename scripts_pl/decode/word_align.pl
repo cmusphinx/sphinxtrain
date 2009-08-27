@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -wC
 
 # word_align.pl - Calculate word error and accuracy for a recognition
 # hypothesis file vs. a reference transcription
@@ -10,12 +10,13 @@
 use strict;
 use Getopt::Long;
 use Pod::Usage;
-use vars qw($Verbose $IgnoreUttID);
+use vars qw($Verbose $CER $IgnoreUttID);
 
 my ($help,%hyphash);
 GetOptions(
 	   'help|?' => \$help,
 	   'verbose|v' => \$Verbose,
+	   'cer|c' => \$CER,
 	   'ignore-uttid|i' => \$IgnoreUttID,
 	  ) or pod2usage(1);
 pod2usage(1) if $help;
@@ -68,6 +69,11 @@ while (defined(my $ref_utt = <REF>)) {
     # Split the text into an array of words
     my @ref_words = split ' ', $ref_utt;
     my @hyp_words = split ' ', $hyp_utt;
+    if ($CER) {
+	# Split the text into an array of characters
+	@ref_words = map { split "" } @ref_words;
+	@hyp_words = map { split "" } @hyp_words;
+    }
 
     my (@align_matrix, @backtrace_matrix);
 
@@ -85,10 +91,19 @@ while (defined(my $ref_utt = <REF>)) {
 	my ($ref, $hyp) = @$_;
 	my $width = 0;
 
-	# Capitalize errors (they already are...), lowercase matches
-	if (defined($ref) and defined($hyp) and $ref eq $hyp) {
-	    $ref = lc $ref;
-	    $hyp = lc $hyp;
+	if ($CER) {
+	    # Assume this is Chinese, no capitalization so put ** around errors
+	    if (defined($ref) and defined($hyp) and $ref ne $hyp) {
+		$ref = "*$ref*";
+		$hyp = "*$hyp*";
+	    }
+	}
+	else {
+	    # Capitalize errors (they already are...), lowercase matches
+	    if (defined($ref) and defined($hyp) and $ref eq $hyp) {
+		$ref = lc $ref;
+		$hyp = lc $hyp;
+	    }
 	}
 
 	# Replace deletions with ***
@@ -148,7 +163,7 @@ sub s3_magic_norm{
     $word =~ s/\(([^) ]+)[^)]*\)$// ;
 
     # Split apart compound words and acronyms
-    $word =~ tr/_./  /;
+    $word =~ tr/-_./  /;
 
     return ($word,$1);
 }
