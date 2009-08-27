@@ -137,7 +137,7 @@ agg_all_seg(segdmp_type_t type,
 
 	    /* get the MFCC data for the utterance */
 	    if (corpus_get_generic_featurevec(&mfcc, &n_frame, mfc_veclen) < 0) {
-		E_FATAL("Can't read input features\n");
+	      E_FATAL("Can't read input features from %s\n", corpus_utt());
 	    }
 	}
 

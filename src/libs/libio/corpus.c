@@ -1735,7 +1735,8 @@ corpus_get_generic_featurevec(vector_t **mfc,
 	}
 
 	if (ret == S3_ERROR) {
-	    E_ERROR("MFCC read failed.  Retrying after sleep...\n");
+	    E_ERROR("MFCC read of %s failed.  Retrying after sleep...\n",
+		    mk_filename(DATA_TYPE_MFCC, cur_ctl_path));
 	    no_retries++;
 	    sleep(3);
 	    if(no_retries>100){ 
