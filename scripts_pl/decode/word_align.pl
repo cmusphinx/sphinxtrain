@@ -1,4 +1,4 @@
-#!/usr/bin/perl -wC
+#!/usr/bin/perl -w
 
 # word_align.pl - Calculate word error and accuracy for a recognition
 # hypothesis file vs. a reference transcription
@@ -11,6 +11,7 @@ use strict;
 use Getopt::Long;
 use Pod::Usage;
 use vars qw($Verbose $CER $IgnoreUttID);
+use encoding 'utf8';
 
 my ($help,%hyphash);
 GetOptions(
