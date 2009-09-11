@@ -22,6 +22,7 @@ class S3Mdef:
     "Read Sphinx-III format model definition files"
     def __init__(self, filename=None):
         self.info = {}
+        self.phoneset = set()
         if filename != None:
             self.read(filename)
 
@@ -70,6 +71,7 @@ class S3Mdef:
             self.max_emit_state = max(self.max_emit_state, len(sids))
 
             # Build phone mappings
+            self.phoneset.add(base)
             if wpos not in self.phonemap:
                 self.phonemap[wpos] = {}
             if base not in self.phonemap[wpos]:
@@ -118,8 +120,9 @@ class S3Mdef:
         if wpos == None:
             if lc != '-':
                 # Try all word positions to find one that matches
-                for wpos, pmap in self.phonemap.iteritems():
+                for new_wpos, pmap in self.phonemap.iteritems():
                     if ci in pmap and lc in pmap[ci] and rc in pmap[ci][lc]:
+                        wpos = new_wpos
                         break
             else:
                 wpos = '-' # context-independent phones have no wpos
@@ -128,6 +131,24 @@ class S3Mdef:
             return self.phonemap[wpos][ci]['-']['-']
         else:
             return self.phonemap[wpos][ci][lc][rc]
+
+    def phone_id_nearest(self, ci, lc='-', rc='-', wpos=None):
+        if wpos == None or wpos == '-':
+            return self.phone_id(ci, lc, rc, wpos)
+        else:
+            # First try to back off to a different word position
+            for new_wpos, pmap in self.phonemap.iteritems():
+                if ci in pmap and lc in pmap[ci] and rc in pmap[ci][lc]:
+                    return self.phonemap[new_wpos][ci][lc][rc]
+            # If not, try using silence in the left/right context
+            if wpos == 'e' and 'SIL' in self.phonemap[wpos][ci][lc]:
+                    return self.phonemap[wpos][ci][lc]['SIL']
+            if wpos == 'b' \
+               and 'SIL' in self.phonemap[wpos][ci] \
+               and rc in self.phonemap[wpos][ci]['SIL']:
+                return self.phonemap[wpos][ci]['SIL'][rc]
+            # If not, try context-independent
+            return self.phonemap['-'][ci]['-']['-']
 
     def phone_from_id(self, pid):
         return self.trimap[pid]
