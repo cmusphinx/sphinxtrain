@@ -210,6 +210,13 @@ my %phonelist_hash;
     Log("Phase 3: CTL - Check general format; utterance length (must be positive); files exist");
     $status = 'passed';
     my $estimated_training_data = 0;
+    # 3.5) Check that there is a newline at the end of the file (yes,
+    # this causes problems if it's not there, sorry...)
+    if ($ctl_lines[-1] !~ /\n$/) {
+	$status = 'FAILED';
+	$ret_value = -6;
+	LogWarning("CTL file missing a newline at end of file");
+    }
     for $ctl_line (@ctl_lines) {
         chomp($ctl_line);
 	# Accept: filename int int possible_comment
@@ -258,13 +265,24 @@ my %phonelist_hash;
     Log ("Phase 4: CTL - Checking number of lines in the transcript should match lines in control file");
     open TRN,"$ST::CFG_TRANSCRIPTFILE" or die "Can not open Transcript file ($ST::CFG_TRANSCRIPTFILE)";
     my $number_transcript_lines = 0;
+    my $trnline;
     while (<TRN>) {
 	$number_transcript_lines++;
+	$trnline = $_;
     }
     close TRN;
     
-    $status = ($number_ctl_lines == $number_transcript_lines) ? 'passed' : 'FAILED';
-    LogStatus($status);
+    # 4.5) Check that there is a newline at the end of the file (yes,
+    # this causes problems if it's not there, sorry...)
+    if ($trnline !~ /\n$/) {
+	$status = 'FAILED';
+	LogWarning("Transcript file missing a newline at end of file");
+	LogStatus($status);
+    }
+    else {
+	$status = ($number_ctl_lines == $number_transcript_lines) ? 'passed' : 'FAILED';
+	LogStatus($status);
+    }
 
     # 5) Should already have estimates on the total training time, 
     Log ("Phase 5: CTL - Determine amount of training data, see if n_tied_states seems reasonable.");
