@@ -370,7 +370,32 @@ my %transcript_phonelist_hash = ();
     
     my $status = 'passed';
     while (<TRN>) {
-	my ($text) = m/(.*)\s*\(.*\)$/;
+	# Some sanity checking:
+	#
+	# - uttids should not contain spaces
+	# - uttid should be separated from text by a space
+	chomp;
+	my ($text, $uttid) = m/^(.*)\s*\(([^()]+)\)\s*$/;
+	unless (defined($text) and defined($uttid)) {
+	    LogWarning("Bad line in transcript:\n$_");
+	    $status = 'FAILED';
+	    $ret_value = -6;
+	}
+	if ($uttid =~ m/\s/) {
+	    LogWarning("Utterance ID '$uttid' on line $. contains whitespace");
+	    $status = 'FAILED';
+	    $ret_value = -6;
+	}
+	if (/\S+\([^()]+\)$/) {
+	    LogWarning("No whitespace between text and utterance ID on line $.");
+	    $status = 'FAILED';
+	    $ret_value = -6;
+	}
+	if (/\)\s+$/) {
+	    LogWarning("Extra whitespace at end of line $.");
+	    $status = 'FAILED';
+	    $ret_value = -6;
+	}
 	if ($text) {
 	    my @words = split /\s+/,$text;
 	    for my $word (@words) {
