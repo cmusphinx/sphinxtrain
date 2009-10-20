@@ -43,7 +43,7 @@ class S3Dict(dict):
             if line.startswith(';;'):
                 continue
             spam = line.split()
-            word = spam[0]
+            word = unicode(spam[0], 'utf8')
             phones = spam[1:]
             m = self.altre.match(word)
             if m:
