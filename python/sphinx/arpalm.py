@@ -46,7 +46,12 @@ class ArpaLM(object):
                      gzip-compressed if you like.
         @type path: string
         """
-        fh = gzip.open(path)
+        try:
+            fh = gzip.open(path)
+            fh.readline()
+            fh.seek(0,0)
+        except:
+            fh = file(path)
         # Skip header
         while True:
             spam = fh.readline().rstrip()
