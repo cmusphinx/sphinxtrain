@@ -51,6 +51,7 @@ while (defined(my $ref_utt = <REF>)) {
 
     ($ref_utt,$ref_uttid)=s3_magic_norm($ref_utt);
 
+    last if ($ref_utt =~ /^\s*$/);
 
     if(defined $IgnoreUttID){
 	$hyp_utt = <HYP>;
