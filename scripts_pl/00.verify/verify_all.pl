@@ -236,6 +236,7 @@ my %phonelist_hash;
 		    $status = 'FAILED';
 		    LogWarning ("This file, $ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION, does not exist");
 		}
+		$estimated_training_data += ($end - $start);
 	    }
 	} else {
 	    # Accepts only the file name and possible comment on line by itself..no start/send markers
@@ -243,7 +244,7 @@ my %phonelist_hash;
 		$file = $1;
 		my $size = -s "$ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION";
 		# 1 frame = 13 floating point numbers = 13*4bytes = 52 bytes (only valid for MFC files)
-		$estimated_training_data += ($size / 52) if (lc($ST::CFG_FEATFILE_EXTENSION) eq 'mfc');
+		$estimated_training_data += ($size / 52);
 		if (! $size) {
 		    $ret_value = -4;
 		    $status = 'FAILED';
@@ -287,23 +288,9 @@ my %phonelist_hash;
     # 5) Should already have estimates on the total training time, 
     Log ("Phase 5: CTL - Determine amount of training data, see if n_tied_states seems reasonable.");
     $status = 'passed';
-    my $total_training_data = 0;
-    for $ctl_line (@ctl_lines) {
-	# Accept: filename int int possible_comment
-	#($file,$start,$end) = map /(.+)\s(\d+)\s(\d+).*/,$ctl_line;
-	# start and end time specify start and end frames
-	if ($ctl_line =~ m/(.+)\s(\d+)\s(\d+).*/) {
-	    $file = $1;
-	    $start = $2;
-	    $end = $3;
-	    $total_training_data += ($end - $start) unless (($end - $start) < 0);
-	} 
-    }
-    $total_training_data = $estimated_training_data if ($total_training_data == 0) ;
-
-    if ($total_training_data) {
-	my $total_training_hours = ($total_training_data / 3600)/100;
-	Log("Total Hours Training: $total_training_hours", 'result');
+    if ($estimated_training_data) {
+	my $total_training_hours = ($estimated_training_data / 3600)/100;
+	Log("Estimated Total Hours Training: $total_training_hours", 'result');
 	my $estimated_n_tied_states = 1000;
 	if ($total_training_hours < 10) {
 	    $status = 'WARNING';
