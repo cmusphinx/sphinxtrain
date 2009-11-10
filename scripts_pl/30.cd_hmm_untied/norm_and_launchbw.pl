@@ -55,6 +55,8 @@ $| = 1; # Turn on autoflushing
 die "USAGE: $0 <iter> <n_parts>" if (@ARGV != 2);
 
 my ($iter, $n_parts) = @ARGV;
+# Otherwise we use all memory in norm and die
+$n_parts = 15 if $n_parts > 15;
 
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");

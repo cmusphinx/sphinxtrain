@@ -59,6 +59,8 @@ use SphinxTrain::Util;
 my ($iter, $n_parts) = @ARGV;
 $iter = 1 unless defined $iter;
 $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
+# Otherwise we use all memory in norm and die
+$n_parts = 15 if $n_parts > 15;
 
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777);

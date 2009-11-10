@@ -127,11 +127,6 @@ if (-r $mllt_file) {
 }
 
 $ST::CFG_FEAT_WINDOW ||= 0;
-# Undocumented decoder magic since SphinxBase may not support -cepwin yet
-if ($ST::CFG_FEAT_WINDOW) {
-    $ST::CFG_FEATURE = "$ST::CFG_VECTOR_LENGTH:$ST::CFG_FEAT_WINDOW";
-}
-
 my $return_value = RunTool
     ('sphinx3_align', $logfile, $ctl_counter,
      -mdef => $mdef,
