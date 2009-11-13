@@ -93,16 +93,14 @@ while (defined(my $ref_utt = <REF>)) {
 	my ($ref, $hyp) = @$_;
 	my $width = 0;
 
-	if ($CER) {
-	    # Assume this is Chinese, no capitalization so put ** around errors
-	    if (defined($ref) and defined($hyp) and $ref ne $hyp) {
+	if (defined($ref) and defined($hyp)) {
+	    # If there's Hanzi then put * around errors
+	    if (($ref =~ /\p{Han}/ or $hyp =~ /\p{Han}/)and $ref ne $hyp) {
 		$ref = "*$ref*";
 		$hyp = "*$hyp*";
 	    }
-	}
-	else {
-	    # Capitalize errors (they already are...), lowercase matches
-	    if (defined($ref) and defined($hyp) and $ref eq $hyp) {
+	    # Otherwise lowercase matches
+	    elsif ($ref eq $hyp) {
 		$ref = lc $ref;
 		$hyp = lc $hyp;
 	    }
