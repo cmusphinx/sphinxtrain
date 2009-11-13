@@ -197,6 +197,9 @@ my %phonelist_hash;
 # 3.) Check that each utterance specified in the .ctl file has a positive length
 #     Verify that the files listed are available and are not of size 0
 # 4.) Check number of lines in the transcript and in ctl - they should be the same";
+#
+# Collect utterance IDs for transcript verification
+my @uttids;
 {
     my ($status,@ctl_lines,$ctl_line,$file,$start,$end,$number_ctl_lines,$number_lines_transcript);
     
@@ -219,11 +222,17 @@ my %phonelist_hash;
     }
     for $ctl_line (@ctl_lines) {
         chomp($ctl_line);
-	# Accept: filename int int possible_comment
-	if ($ctl_line =~ m/^\s*(\S+)\s+(\d+)\s+(\d+).*/) {
+	# Accept: filename int int possible_uttid
+	if ($ctl_line =~ m/^\s*(\S+)\s+(\d+)\s+(\d+)(\s+(\S+))?/) {
 	    $file = $1;
 	    $start = $2;
 	    $end = $3;
+	    if (defined($5)) {
+		push @uttids, $5;
+	    }
+	    else {
+		push @uttids, $file;
+	    }
 	    if ((defined $start) and (defined $file)) {
 		if ($end <= $start) {
 		    warn "Utterance length is <= 0: $start -> $end ($ctl_line)";
@@ -250,6 +259,7 @@ my %phonelist_hash;
 		    $status = 'FAILED';
 		    LogWarning ("CTL file, $ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION, does not exist");
 		}
+		push @uttids, $file;
 	    } else {
 		$status = 'FAILED';
 		$ret_value = -5;
@@ -356,11 +366,13 @@ my %transcript_phonelist_hash = ();
     open TRN,"$ST::CFG_TRANSCRIPTFILE" or die "Can not open the transcript file ($ST::CFG_TRANSCRIPTFILE)"; 
     
     my $status = 'passed';
+    my $i = 0;
     while (<TRN>) {
 	# Some sanity checking:
 	#
 	# - uttids should not contain spaces
 	# - uttid should be separated from text by a space
+	# - uttid should match
 	chomp;
 	my ($text, $uttid) = m/^(.*)\s*\(([^()]+)\)\s*$/;
 	unless (defined($text) and defined($uttid)) {
@@ -379,7 +391,12 @@ my %transcript_phonelist_hash = ();
 	    $ret_value = -6;
 	}
 	if (/\)\s+$/) {
-	    LogWarning("Extra whitespace at end of line $.");
+	    LogWarning("Extra whitespace at end of line $., perhaps line endings are wrong (run dos2unix on transcript)");
+	    $status = 'FAILED';
+	    $ret_value = -6;
+	}
+	if ($uttid ne $uttids[$i] and $uttid ne basename($uttids[$i])) {
+	    LogWarning("Utterance ID mismatch on line $.: $uttids[$i] vs $uttid");
 	    $status = 'FAILED';
 	    $ret_value = -6;
 	}
@@ -398,6 +415,9 @@ my %transcript_phonelist_hash = ();
 		}
 	    }
 	}
+    }
+    continue {
+	++$i;
     }
     close TRN;
     LogStatus($status);
