@@ -253,11 +253,12 @@ my @uttids;
 		$file = $1;
 		my $size = -s "$ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION";
 		# 1 frame = 13 floating point numbers = 13*4bytes = 52 bytes (only valid for MFC files)
-		$estimated_training_data += ($size / 52);
+		# also 4 bytes for header
+		$estimated_training_data += (($size - 4) / 52);
 		if (! $size) {
 		    $ret_value = -4;
 		    $status = 'FAILED';
-		    LogWarning ("CTL file, $ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION, does not exist");
+		    LogWarning ("CTL file, $ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION, does not exist, or is empty");
 		}
 		push @uttids, $file;
 	    } else {
