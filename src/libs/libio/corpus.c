@@ -1962,13 +1962,12 @@ corpus_read_next_lsn_line(char **trans)
     s = strrchr(lsn_line, ')');
 
     if (s != NULL) {
+	int nspace;
 	/* found a close paren */
 
-	if (s[1] == '\0') {
+	nspace = strspn(s + 1, " \t\r\n");
+	if (s[nspace + 1] == '\0') {
 	    /* it is at the end of the line */
-
-	    /* BEWARE: no space/tab charactes may follow the closing paren of an utt id */
-
 	    *s = '\0';		/* terminate the string at the paren */
 
 	    /* search for a matching open paren */
