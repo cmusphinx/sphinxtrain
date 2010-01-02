@@ -249,7 +249,7 @@ my @uttids;
 	    }
 	} else {
 	    # Accepts only the file name and possible comment on line by itself..no start/send markers
-	    if ($ctl_line =~ m/^(\S+)(\s.*)?$/) {
+	    if ($ctl_line =~ m/^(\S+)(\s+.*)?$/) {
 		$file = $1;
 		my $size = -s "$ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION";
 		# 1 frame = 13 floating point numbers = 13*4bytes = 52 bytes (only valid for MFC files)
