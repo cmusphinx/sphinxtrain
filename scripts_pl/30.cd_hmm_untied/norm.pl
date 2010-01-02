@@ -55,8 +55,10 @@ use SphinxTrain::Util;
 
 $| = 1; # Turn on autoflushing
 
-die "USAGE: $0 <iter>" if @ARGV != 1;
-my $iter = shift;
+die "USAGE: $0 <iter> [<nparts>]" if @ARGV < 1;
+my ($iter, $n_parts) = @ARGV;
+
+$n_parts = $ST::CFG_NPART unless defined $n_parts;
 
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
@@ -68,7 +70,8 @@ my $processpart="30.${MODEL_TYPE}_hmm_untied";
 opendir(ACCUMDIR, $ST::CFG_BWACCUM_DIR)
     or die "Could not open $ST::CFG_BWACCUM_DIR: $!";
 my @bwaccumdirs = map catdir($ST::CFG_BWACCUM_DIR, $_),
-    grep /^\Q${ST::CFG_EXPTNAME}_buff_/, readdir(ACCUMDIR);
+    grep { /^\Q${ST::CFG_EXPTNAME}_buff_\E(\d+)/ and $1 <= $n_parts } readdir(ACCUMDIR);
+die "No accumulator directories found in $ST::CFG_BWACCUM_DIR!\n" unless @bwaccumdirs;
 closedir(ACCUMDIR);
 my $hmmdir              = "${ST::CFG_BASE_DIR}/model_parameters/$modelname";
 mkdir ($hmmdir,0777);

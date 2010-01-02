@@ -157,7 +157,7 @@ else {
     $absprev = -$absprev if ($prevlkhd < 0);
     $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
 }
-RunScript('norm.pl', $iter);
+RunScript('norm.pl', $iter, $n_parts);
 
 open OUTPUT, ">> $log";
 print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
