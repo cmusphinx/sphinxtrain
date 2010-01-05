@@ -614,7 +614,22 @@ accum_stat(model_inventory_t *inv,
 
     for (i = 0, n_z = 0; i < inv->n_mixw; i++) {
 	for (j = 0; j < inv->gauden->n_feat; j++) {
+	    for (k = 0; k < inv->gauden->n_density; k++) {
+		if (inv->mixw_acc[i][j][k] != 0) {
+		    break;
+		}
+	    }
+	    if (k == inv->gauden->n_density)
+	      n_z++;
+	}
+    }
+    if (n_z > 500) {
+      E_WARN("Over 500 senones never occur in the input data.  This is normal for CD untied training, but could indicate a serious problem otherwise.\n");
+      return;
+    }
 
+    for (i = 0, n_z = 0; i < inv->n_mixw; i++) {
+	for (j = 0; j < inv->gauden->n_feat; j++) {
 	    for (k = 0; k < inv->gauden->n_density; k++) {
 		if (inv->mixw_acc[i][j][k] != 0) {
 		    break;
