@@ -249,7 +249,7 @@ sub FlatInitialize
       return $return_value;
     }
 
-    if ($ST::CFG_HMM_TYPE eq ".semi.") {
+    if ($ST::CFG_HMM_TYPE ne ".cont.") {
       return (0);
     }
 

@@ -207,7 +207,7 @@ sub Launch_BW {
 sub Launch_SplitGaussian {
     my $n_gau = shift;
 
-    if ($ST::CFG_HMM_TYPE eq '.semi.') {
+    if ($ST::CFG_HMM_TYPE ne '.cont.') {
 # No need to split Gaussians, however for convenience purposes we will
 # generate a PocketSphinx format sendump file in the model directory.
 	my $modelname = "${ST::CFG_EXPTNAME}.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}";

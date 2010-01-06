@@ -68,7 +68,7 @@ if (@ARGV) {
 }
 # as the next stage (deleted interpolation) requires at least 2 parts
 # we set the default number of parts to be 2, but only if we're using
-# semi continuous models
+# semi continuous models (not sure about tied mixture...)
 if (($n_parts < 2) and ($ST::CFG_HMM_TYPE eq ".semi.")) {
     $n_parts = 2;
 }
@@ -85,7 +85,7 @@ my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777);
 
 # We have to clean up and run flat initialize if it is the first iteration
-if (($iter == 1) && (($n_gau == 1) || ($ST::CFG_HMM_TYPE eq ".semi."))) {
+if (($iter == 1) && (($n_gau == 1) || ($ST::CFG_HMM_TYPE ne ".cont."))) {
     Log ("MODULE: 50 Training Context dependent models\n");
     Log("Phase 1: Cleaning up directories:");
     # Don't do this on a queue, because of NFS bugs
@@ -155,9 +155,12 @@ sub copyci2cd2initialize ()
     mkdir ($logdir,0777);
     my $logfile = "$logdir/$ST::CFG_EXPTNAME.copy.ci.2.cd.log";
 
+    # Anything that isn't fully continuous gets initialized from
+    # (single-codebook) semi-continuous models.
+    my $from_semi = ($ST::CFG_HMM_TYPE eq '.cont.') ? ".cont." : ".semi.";
     my $rv = RunTool('init_mixw', $logfile, 0,
 		   -src_moddeffn => $src_moddeffn,
-		   -src_ts2cbfn => $ST::CFG_HMM_TYPE,
+		   -src_ts2cbfn => $from_semi,
 		   -src_mixwfn => $src_mixwfn,
 		   -src_meanfn => $src_meanfn,
 		   -src_varfn => $src_varfn,

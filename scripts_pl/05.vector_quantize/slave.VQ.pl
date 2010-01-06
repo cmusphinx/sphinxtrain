@@ -69,11 +69,11 @@ $| = 1; # Turn on autoflushing
 # No error checking
 Log ("MODULE: 05 Vector Quantization\n");
 my $return_value = 0;
-if ($ST::CFG_HMM_TYPE eq ".semi.") {
+if ($ST::CFG_HMM_TYPE eq ".cont.") {
+  Log("Skipped for continuous models\n");
+} else {
   $return_value = (RunScript('agg_seg.pl')
 		   or RunScript('kmeans.pl'));
-} else {
-  Log("Skipped for continuous models\n");
 }
 exit ($return_value != 0);
 
