@@ -27,7 +27,7 @@ def makelda(gauden_counts):
     counts as output by the 'bw' program from SphinxTrain.
 
     @param gauden_counts: Set of full covariance occupation counts.
-    @type gauden_counts: sphinx.s3gaucnt.S3FullGauCntFile
+    @type gauden_counts: cmusphinx.s3gaucnt.S3FullGauCntFile
     """
     if not gauden_counts.pass2var:
         raise Exception, "Please re-run bw with '-2passvar yes'"

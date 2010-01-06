@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-sys.path.insert(0, '/home/dhuggins/Projects/Sphinx/SphinxTrain/python')
-import sphinx.s3mixw
+import s3mixw
 import struct
 import numpy
 
@@ -40,4 +39,4 @@ for i in range(0,4):
         # Negate, exponentiate, and untranspose
         opdf_8b[:,i,j] = numpy.power(1.0001, -mixw)
         
-sphinx.s3mixw.open(sys.argv[2], 'wb').writeall(opdf_8b)
+s3mixw.open(sys.argv[2], 'wb').writeall(opdf_8b)

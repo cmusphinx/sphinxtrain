@@ -36,8 +36,8 @@ class MLLTModel(object):
         Initialize an MLLTModel before training.
         
         @param gauden_counts: Full covariance observation counts, as
-        returned by C{sphinx.s3gaucnt.accumdirs_full}.
-        @type gauden_counts: sphinx.s3gaucnt.S3GauCntFull
+        returned by C{cmusphinx.s3gaucnt.accumdirs_full}.
+        @type gauden_counts: cmusphinx.s3gaucnt.S3GauCntFull
         @param ldadim: Output dimensionality of this model
         @type ldadim: int
         """

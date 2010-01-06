@@ -46,13 +46,13 @@ def estimate_mllr_mean(stats, inmean, invar):
     extended once the "learning exercise" is over.
 
     @param stats: Observation counts, as returned
-                  by C{sphinx.s3gaucnt.accumdirs}
-                  or C{sphinx.s3gaucnt.accumdirs_full}.
-    @type stats: sphinx.s3gaucnt.S3GauCnt
+                  by C{cmusphinx.s3gaucnt.accumdirs}
+                  or C{cmusphinx.s3gaucnt.accumdirs_full}.
+    @type stats: cmusphinx.s3gaucnt.S3GauCnt
     @param inmean: Input mean parameters
-    @type inmean: sphinx.s3gau.S3Gau
+    @type inmean: cmusphinx.s3gau.S3Gau
     @param invar: Input diagonal covariance parameters
-    @type inmvar: sphinx.s3gau.S3Gau
+    @type inmvar: cmusphinx.s3gau.S3Gau
     @return: MLLR transformations, one per feature stream
     @rtype: list(numpy.ndarray)
     """
@@ -154,13 +154,13 @@ def estimate_mllr_variance(stats, inmean, invar, Ws):
     promptly be extended once the "learning exercise" is over.
 
     @param stats: Observation counts, as returned
-                  by C{sphinx.s3gaucnt.accumdirs}
-                  or C{sphinx.s3gaucnt.accumdirs_full}.
-    @type stats: sphinx.s3gaucnt.S3GauCnt
+                  by C{cmusphinx.s3gaucnt.accumdirs}
+                  or C{cmusphinx.s3gaucnt.accumdirs_full}.
+    @type stats: cmusphinx.s3gaucnt.S3GauCnt
     @param inmean: Input mean parameters
-    @type inmean: sphinx.s3gau.S3Gau
+    @type inmean: cmusphinx.s3gau.S3Gau
     @param invar: Input covariance parameters
-    @type inmvar: sphinx.s3gau.S3Gau
+    @type inmvar: cmusphinx.s3gau.S3Gau
     @param Ws: Previously computed MLLR transformations of means
     @ptype Ws: list(numpy.ndarray)
     @return: MLLR transformations of variances

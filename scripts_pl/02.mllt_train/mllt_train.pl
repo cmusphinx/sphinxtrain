@@ -62,7 +62,7 @@ closedir(ACCUMDIR);
 
 # Add PYTHONPATH
 $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_BASE_DIR, 'python');
-my $rv = RunTool(catfile($ST::CFG_BASE_DIR, 'python', 'sphinx', 'mllt.py'),
+my $rv = RunTool(catfile($ST::CFG_BASE_DIR, 'python', 'cmusphinx', 'mllt.py'),
 		 $logfile, 0,
 		 -l => $ldafile, 
 		 $mlltfile,
