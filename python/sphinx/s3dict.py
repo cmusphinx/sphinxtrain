@@ -81,3 +81,13 @@ class S3Dict(dict):
         else:
             return self.get(key)
 
+    def getalts(self, key):
+        i = 1
+        alts = []
+        while True:
+            if (key,i) in self:
+                alts.append(self.get((key,i)))
+            else:
+                break
+            i += 1
+        return alts
