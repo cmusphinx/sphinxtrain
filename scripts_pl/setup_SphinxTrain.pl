@@ -191,24 +191,34 @@ closedir(DIR);
 @dirlist = map { "bin/$_" } @dirlist;
 chmod 0755, @dirlist;
 
-# Finally, we generate the config file for this specific task
-print "Generating SphinxTrain specific scripts and config file\n";
-# Look for a config template in the target directory
-unless (open (CFGIN, "<etc/sphinx_train.template")) {
+# Finally, we generate the config file for this specific task, backing
+# up any existing one, unless we are in leave-alone mode and it exists
+# already (that is the default)
+unless (-e "etc/sphinx_train.cfg" and $replace_mode == $LEAVE_MODE) {
+  print "Generating SphinxTrain configuration file in etc/sphinx_train.cfg\n";
+  if (-e "etc/sphinx_train.cfg") {
+    print "Backing up existing configuration file to etc/sphinx_train.cfg.orig\n";
+    unlink "etc/sphinx_train.cfg.orig";
+    rename "etc/sphinx_train.cfg", "etc/sphinx_train.cfg.orig";
+  }
+  # Look for a config template in the target directory
+  unless (open (CFGIN, "<etc/sphinx_train.template")) {
     open (CFGIN, "<$SPHINXTRAINDIR/etc/sphinx_train.cfg") or
-	die "Can't open etc/sphinx_train.template or $SPHINXTRAINDIR/etc/sphinx_train.cfg\n";
+      die "Can't open etc/sphinx_train.template or $SPHINXTRAINDIR/etc/sphinx_train.cfg\n";
+  }
+  open (CFGOUT, ">etc/sphinx_train.cfg") or die "Can't open etc/sphinx_train.cfg\n";
+  while (<CFGIN>)
+    {
+      chomp;
+      s/___DB_NAME___/$DBNAME/g;
+      my $currDir = cwd;
+      s/___BASE_DIR___/$currDir/g;
+      s/___SPHINXTRAIN_DIR___/$SPHINXTRAINDIR/g;
+      print CFGOUT "$_\n";
+    }
+  close(CFGIN);
+  close(CFGOUT);
 }
-open (CFGOUT, ">etc/sphinx_train.cfg") or die "Can't open etc/sphinx_train.cfg\n";
-while (<CFGIN>) {
-  chomp;
-  s/___DB_NAME___/$DBNAME/g;
-  my $currDir = cwd;
-  s/___BASE_DIR___/$currDir/g;
-  s/___SPHINXTRAIN_DIR___/$SPHINXTRAINDIR/g;
-  print CFGOUT "$_\n";
-}
-close(CFGIN);
-close(CFGOUT);
 
 print "Set up for acoustic training for $DBNAME complete\n";
 
@@ -247,7 +257,7 @@ sub replace_file {
   my $destination = shift;
   my $replace_mode = shift;
 
-  if (($replace_mode == $FORCE_MODE) or (! -s $destination)) {
+  if (($replace_mode == $FORCE_MODE) or (! -e $destination)) {
     if (-e $destination) {
       print "Replacing file $destination with $source\n";
     }
@@ -259,7 +269,7 @@ sub replace_file {
     my $source_time = stat($source);
     my $dest_time = stat($destination);
     if (($source_time->mtime) > ($dest_time->mtime)) {
-	print "Replacing file $destination with $source\n";
+      print "Replacing file $destination with $source\n";
       copy("$source", "$destination");
     }
   }
