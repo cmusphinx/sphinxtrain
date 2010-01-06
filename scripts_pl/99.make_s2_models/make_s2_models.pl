@@ -50,9 +50,9 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-# If we want to use sphinx2, either we created semi continuous models,
-# or we created continuous models, but with some restrictions, which
-# we have to check.
+# Sphinx2 has some restrictions on the form of its models which
+# Sphinx3 and PocketSphinx don't.  Warn about this and exit without
+# failing if that's the case.
 unless  (($ST::CFG_HMM_TYPE eq ".semi.") or
      (($ST::CFG_HMM_TYPE eq ".cont.") and
       ($ST::CFG_STATESPERHMM == 5) and

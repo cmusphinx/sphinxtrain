@@ -152,9 +152,8 @@ if ($prevlkhd == 0) {
     $convg_ratio = -1 if ($lkhd_per_frame < 0);
 }
 else {
-    $absprev = $prevlkhd;
-    $absprev = -$absprev if ($prevlkhd < 0);
-    $convg_ratio = ($lkhd_per_frame - $prevlkhd)/$absprev;
+    # These are log values, so normalizing them makes no sense.
+    $convg_ratio = $lkhd_per_frame - $prevlkhd;
 }
 RunScript('norm.pl', $iter, $n_gau);
 
