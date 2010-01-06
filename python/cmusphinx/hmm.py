@@ -35,7 +35,7 @@ class HMMGraph(object):
         interesting graph structures are possible, but not through
         this interface, yet).
 
-        Each argument is either a single sphinx.hmm.HMM object or a
+        Each argument is either a single cmusphinx.hmm.HMM object or a
         tuple of multiple HMM objects.  In the latter case, the
         multiple HMMs will be added as alternatives with equal
         transition probabilities into them.
@@ -69,7 +69,7 @@ class HMMGraph(object):
         @param idx: State ID in this graph
         @type idx: int
         @return: HMM object and ID of first state in HMM
-        @rtype: (sphinx.hmm.HMM, int)
+        @rtype: (cmusphinx.hmm.HMM, int)
         """
         i = bisect.bisect(self.offsets, idx)
         return self.hmms[i-1], idx - self.offsets[i-1]
@@ -363,7 +363,7 @@ class PhoneHMMFactory(object):
         Build a PhoneHMMFactory.
 
         @param acmod: Acoustic model containing HMM definitions
-        @type acmod: sphinx.s3model.S3Model
+        @type acmod: cmusphinx.s3model.S3Model
         """
         self.acmod = acmod
 
