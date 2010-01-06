@@ -248,12 +248,18 @@ sub replace_file {
   my $replace_mode = shift;
 
   if (($replace_mode == $FORCE_MODE) or (! -s $destination)) {
-    print "Replacing file $destination with $source\n";
+    if (-e $destination) {
+      print "Replacing file $destination with $source\n";
+    }
+    else {
+      print "Installing $source to $destination\n";
+    }
     copy("$source", "$destination");
   } elsif ($replace_mode == $UPDATE_MODE) {
     my $source_time = stat($source);
     my $dest_time = stat($destination);
     if (($source_time->mtime) > ($dest_time->mtime)) {
+	print "Replacing file $destination with $source\n";
       copy("$source", "$destination");
     }
   }
