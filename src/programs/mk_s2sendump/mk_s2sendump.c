@@ -297,14 +297,9 @@ static void pocketsphinx_senone_dump(const model_def_t *mdef,
 
     /* For each codebook, write #codewords, #pdfs */
     for (c = 0; c < s->n_mgau; ++c) {
-	int32 aligned_n_sen;
-
-	/* Align the number of pdfs to a 4-byte boundary. */
-	aligned_n_sen = (s->mgau2sen[c].n_sen + 3) & ~3;
-
 	/* Write #densities, #senones (indicates that they are transposed) */
 	fwrite_int32 (fpout, s->mgau2sen[c].feat_mixw[0].n_wt);
-	fwrite_int32 (fpout, aligned_n_sen);
+	fwrite_int32 (fpout, s->mgau2sen[c].n_sen);
 
 	/* Now write out transposed, quantized senones. */
 	/* Note!  PocketSphinx puts them in Sphinx3 order. */
@@ -312,11 +307,6 @@ static void pocketsphinx_senone_dump(const model_def_t *mdef,
 	    for (d = 0; d < s->mgau2sen[c].feat_mixw[f].n_wt; ++d) {
 		for (i = 0; i < s->mgau2sen[c].n_sen; ++i) {
 		    fputc(s->mgau2sen[c].feat_mixw[f].prob[i][d], fpout);
-		}
-		/* Pad out each row for alignment purposes */
-		if (aligned_n_sen > s->mgau2sen[c].n_sen) {
-		    fwrite("\0\0\0\0", 1,
-			   aligned_n_sen - s->mgau2sen[c].n_sen, fpout);
 		}
 	    }
 	}
