@@ -94,10 +94,12 @@ if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
     Log ("Processing each phone with each state\n", 'result');
     open INPUT,"${ST::CFG_RAWPHONEFILE}";
     foreach $phone (<INPUT>) {
-	# Use @jobs as a queue (better than nothing for Queue::POSIX)
-	if (@jobs > $ST::CFG_NPART) {
-	    my ($p, $j) = @{shift @jobs};
-	    WaitForScript($j);
+	if ($ST::CFG_QUEUE_TYPE eq "Queue::POSIX") {
+	    # Use @jobs as a queue (better than nothing for Queue::POSIX)
+	    if (@jobs > $ST::CFG_NPART) {
+		my ($p, $j) = @{shift @jobs};
+		WaitForScript($j);
+	    }
 	}
 	chomp $phone;
 	if (($phone =~ m/^(\+).*(\+)$/) || ($phone =~ m/^SIL$/)) {
