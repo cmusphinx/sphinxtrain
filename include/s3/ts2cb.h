@@ -54,15 +54,17 @@ extern "C" {
 #endif
 
 #include <s3/prim_type.h>
+#include <s3/model_def.h>
 
 #define CONT_LABEL	".cont."
 #define SEMI_LABEL	".semi."
+#define PTM_LABEL	".ptm."
 
-uint32 *
-semi_ts2cb(uint32 n_ts);
+uint32 *semi_ts2cb(uint32 n_ts);
 
-uint32 *
-cont_ts2cb(uint32 n_ts);
+uint32 *cont_ts2cb(uint32 n_ts);
+
+uint32 *ptm_ts2cb(model_def_t *mdef);
 
 #ifdef __cplusplus
 }

@@ -282,6 +282,12 @@ init_mixw()
 	n_ts = src_mdef->n_tied_state;
 	n_cb = src_mdef->n_tied_state;
     }
+    else if (strcmp(PTM_LABEL, ts2cbfn) == 0) {
+	E_INFO("Generating phonetically tied ts2cb mapping\n");
+	src_mdef->cb = ptm_ts2cb(src_mdef);
+	n_ts = src_mdef->n_tied_state;
+	n_cb = src_mdef->acmod_set->n_ci;
+    }
     else {
 	E_INFO("Reading src %s\n", (const char *)cmd_ln_access("-src_ts2cbfn"));
 	if (s3ts2cb_read(ts2cbfn,
@@ -404,6 +410,12 @@ init_mixw()
 	dest_mdef->cb = cont_ts2cb(dest_mdef->n_tied_state);
 	n_ts = dest_mdef->n_tied_state;
 	n_cb = dest_mdef->n_tied_state;
+    }
+    else if (strcmp(PTM_LABEL, ts2cbfn) == 0) {
+	E_INFO("Generating phonetically tied ts2cb mapping\n");
+	dest_mdef->cb = ptm_ts2cb(dest_mdef);
+	n_ts = dest_mdef->n_tied_state;
+	n_cb = dest_mdef->acmod_set->n_ci;
     }
     else {
 	E_INFO("Reading dest %s\n",

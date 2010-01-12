@@ -199,6 +199,12 @@ printp -lambdafn lambda ";
 	  "1",
 	  "Print int. wt. <= this"},
 
+	{ "-ts2cbfn",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "The tied state to codebook mapping file"},
+
 	{ "-norm",
 	  CMD_LN_BOOLEAN,
 	  CMD_LN_NO_VALIDATION,

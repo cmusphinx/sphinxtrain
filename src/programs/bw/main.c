@@ -277,6 +277,11 @@ main_initialize(int argc,
 	n_ts = mdef->n_tied_state;
 	n_cb = mdef->n_tied_state;
     }
+    else if (strcmp(fn, PTM_LABEL) == 0) {
+      mdef->cb = ptm_ts2cb(mdef);
+      n_ts = mdef->n_tied_state;
+      n_cb = mdef->acmod_set->n_ci;
+    }
     else if (s3ts2cb_read(fn,
 			  &mdef->cb,
 			  &n_ts,

@@ -462,6 +462,11 @@ main_initialize(int argc,
 		n_ts = omdef->n_tied_state;
 		n_cb = omdef->n_tied_state;
 	    }
+	    else if (strcmp(PTM_LABEL, ts2cbfn) == 0) {
+		omdef->cb = ptm_ts2cb(omdef);
+		n_ts = omdef->n_tied_state;
+		n_cb = omdef->acmod_set->n_ci;
+	    }
 	    else if (s3ts2cb_read(cmd_ln_access("-ts2cbfn"),
 				  &omdef->cb,
 				  &n_ts,

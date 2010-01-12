@@ -44,6 +44,7 @@
  *********************************************************************/
 
 #include <s3/ts2cb.h>
+#include <s3/mk_ts2ci.h>
 #include <s3/ckd_alloc.h>
 
 uint32 *
@@ -66,6 +67,11 @@ cont_ts2cb(uint32 n_ts)
     return out;
 }
 
+uint32 *
+ptm_ts2cb(model_def_t *mdef)
+{
+    return mk_ts2ci(mdef);
+}
 
 
 /*

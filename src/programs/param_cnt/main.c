@@ -128,6 +128,11 @@ initialize(lexicon_t **out_lex,
 	    n_ts = mdef->n_tied_state;
 	    mdef->n_cb = mdef->n_tied_state;
 	}
+	else if (strcmp(PTM_LABEL, ts2cbfn) == 0) {
+	    mdef->cb = ptm_ts2cb(mdef);
+	    n_ts = mdef->n_tied_state;
+	    mdef->n_cb = mdef->acmod_set->n_ci;
+	}
 	else if (s3ts2cb_read(cmd_ln_access("-ts2cbfn"),
 			      &mdef->cb,
 			      &n_ts,

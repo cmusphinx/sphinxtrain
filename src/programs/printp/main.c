@@ -57,6 +57,7 @@
 #include <s3/s3mixw_io.h>
 #include <s3/s3lamb_io.h>
 #include <s3/s3regmat_io.h>
+#include <s3/s3ts2cb_io.h>
 #include <s3/s3io.h>
 
 #include <sys_compat/file.h>
@@ -88,6 +89,25 @@ initialize(int argc,
     sprintf(e_fmt, "%%.%de ", *(int32 *)cmd_ln_access("-sigfig") - 1);
     sprintf(e_fmt_ld_sp, " %%.%de", *(int32 *)cmd_ln_access("-sigfig") - 1);
     
+    return S3_SUCCESS;
+}
+
+int
+print_ts2cb(const char *fn)
+{
+    uint32 *map;
+    uint32 n_ts, n_cb;
+    uint32 i;
+
+    E_INFO("Reading %s\n",  fn);
+
+    if (s3ts2cb_read(fn, &map, &n_ts, &n_cb) != S3_SUCCESS)
+	return S3_ERROR;
+
+    for (i = 0; i < n_ts; i++) {
+	printf("%d: %d\n", i, map[i]);
+    }
+
     return S3_SUCCESS;
 }
 
@@ -539,9 +559,14 @@ print()
     if (fn && (print_lda(fn) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
+
+    fn = (const char *)cmd_ln_access("-ts2cbfn");
+    if (fn && (print_ts2cb(fn) != S3_SUCCESS)) {
+	ret_val = S3_ERROR;
+    }
     
     if(ret_val != S3_SUCCESS){
-      E_FATAL("Please specify input by either -tmatfn, -mixwfn, -gaufn, -gaucntfn, -regmatcntfn, -ldafn or -lambdafn\n");
+      E_FATAL("Please specify input by either -tmatfn, -mixwfn, -gaufn, -gaucntfn, -regmatcntfn, -ldafn, -ts2cbfn or -lambdafn\n");
     }
     return ret_val;
 }
