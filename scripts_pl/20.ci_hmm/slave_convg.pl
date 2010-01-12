@@ -249,7 +249,28 @@ sub FlatInitialize
       return $return_value;
     }
 
+    # For semi-continuous, PTM, or generalized tied mixtures,
+    # duplicate the codebook in-place to produce the initial model
+    # (this does nothing for SC but is necessary for the others)
     if ($ST::CFG_HMM_TYPE ne ".cont.") {
+	if ($return_value = RunTool('init_mixw', $logfile, 0,
+				    # Flat K-means init always gives us one codebook
+				    -src_ts2cbfn => '.semi.',
+				    # There might be multiple codebooks here though
+				    -dest_ts2cbfn => $ST::CFG_HMM_TYPE,
+				    -src_moddeffn => $ci_mdeffile,
+				    -dest_moddeffn => $ci_mdeffile,
+				    -src_mixwfn => catfile($outhmm, 'mixture_weights'),
+				    -dest_mixwfn => catfile($outhmm, 'mixture_weights'),
+				    -src_tmatfn => catfile($outhmm, 'transition_matrices'),
+				    -dest_tmatfn => catfile($outhmm, 'transition_matrices'),
+				    -src_meanfn=> catfile($outhmm, 'means'),
+				    -dest_meanfn => catfile($outhmm, 'means'),
+				    -src_varfn=> catfile($outhmm, 'variances'),
+				    -dest_varfn => catfile($outhmm, 'variances'),
+	    )) {
+	    return $return_value;
+	}
       return (0);
     }
 

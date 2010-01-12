@@ -125,6 +125,10 @@ sub BuildTree
 		    -varfn => $variances_file,
 		    -fullvar => $ST::CFG_FULLVAR);
     }
+    else {
+	# Treat PTM as semi-continuous
+	$ST::CFG_HMM_TYPE = ".semi.";
+    }
 
     my @phnflag;
     if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {

@@ -155,12 +155,9 @@ sub copyci2cd2initialize ()
     mkdir ($logdir,0777);
     my $logfile = "$logdir/$ST::CFG_EXPTNAME.copy.ci.2.cd.log";
 
-    # Anything that isn't fully continuous gets initialized from
-    # (single-codebook) semi-continuous models.
-    my $from_semi = ($ST::CFG_HMM_TYPE eq '.cont.') ? ".cont." : ".semi.";
     my $rv = RunTool('init_mixw', $logfile, 0,
 		   -src_moddeffn => $src_moddeffn,
-		   -src_ts2cbfn => $from_semi,
+		   -src_ts2cbfn => $ST::CFG_HMM_TYPE,
 		   -src_mixwfn => $src_mixwfn,
 		   -src_meanfn => $src_meanfn,
 		   -src_varfn => $src_varfn,

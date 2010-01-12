@@ -114,6 +114,3 @@ exit RunTool('kmeans_init', $logfile, 0,
 	     -agc => $ST::CFG_AGC,
 	     -cmn => $ST::CFG_CMN,
 	     -varnorm => $ST::CFG_VARNORM);
-
-
-
