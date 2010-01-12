@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from distutils.core import setup, Extension
 
 setup(name='SphinxTrain',
       version='1.0',

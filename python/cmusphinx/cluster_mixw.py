@@ -288,16 +288,12 @@ def write_senmgau(outfile, tree, mixw, nclust):
         del clusters[0:1]
         clusters.extend((big[0][0], big[0][1]))
     print "cluster sizes:", [len(leaves(x)) for x in clusters]
-    outf = s3file.S3File_write(outfile, "wb", {"version":"1.2"})
-    outf.fh.write(struct.pack("=I", nclust))
     mixwmap = numpy.zeros(len(mixw), 'int32')
     for i, c in enumerate(clusters):
         for mixwid in leaves(c):
             mixwmap[mixwid] = i
     print "writing %d senone mappings" % len(mixwmap)
-    outf.fh.write(struct.pack("=I", len(mixwmap)))
-    mixwmap.tofile(outf.fh)
-    outf.close()
+    s3senmgau.open(outfile, "wb").write_mapping(mixwmap)
 
 if __name__ == '__main__':
     mixw, outfile = sys.argv[1:]

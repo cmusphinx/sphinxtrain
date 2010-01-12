@@ -22,7 +22,7 @@ class S3Mdef:
     "Read Sphinx-III format model definition files"
     def __init__(self, filename=None):
         self.info = {}
-        self.phoneset = set()
+        self.phoneset = {}
         if filename != None:
             self.read(filename)
 
@@ -59,6 +59,7 @@ class S3Mdef:
         self.fillermap = empty(self.n_phone, 'b')
         self.tmatmap = empty(self.n_phone, 'h')
         self.sidmap = empty(self.n_sen, 'i')
+        self.cisidmap = empty(self.n_sen, 'i')
         phoneid = 0
         self.max_emit_state = 0
         while True:
@@ -71,7 +72,8 @@ class S3Mdef:
             self.max_emit_state = max(self.max_emit_state, len(sids))
 
             # Build phone mappings
-            self.phoneset.add(base)
+            if lc == '-' and rc == '-' and wpos == '-':
+                self.phoneset[base] = phoneid
             if wpos not in self.phonemap:
                 self.phonemap[wpos] = {}
             if base not in self.phonemap[wpos]:
@@ -89,10 +91,10 @@ class S3Mdef:
                 ssidmap[sseq] = []
             ssidmap[sseq].append(phoneid)
             for s in sids:
-                # FIXME: Note this will break for one-to-many mappings
+                # FIXME: Note these will break for one-to-many mappings
                 self.sidmap[int(s)] = phoneid
+                self.cisidmap[int(s)] = self.phoneset[base]
             phoneid = phoneid + 1
-
 
         # Now invert the senone sequence mapping
         self.sseqmap = empty(self.n_phone, 'i')
@@ -160,6 +162,14 @@ class S3Mdef:
     # FIXME: This may be bogus, see def. of sidmap above
     def phone_from_senone_id(self, sid):
         return self.trimap[int(self.sidmap[sid])]
+
+    # FIXME: This may be bogus, see def. of sidmap above
+    def ciphone_id_from_senone_id(self,sid):
+        return self.cisidmap[sid]
+
+    # FIXME: This may be bogus, see def. of sidmap above
+    def ciphone_from_senone_id(self, sid):
+        return self.trimap[int(self.cisidmap[sid])][0]
 
     def triphones(self, ci, lc, wpos=None):
         if wpos == None:
