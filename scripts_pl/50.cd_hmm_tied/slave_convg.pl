@@ -68,8 +68,8 @@ if (@ARGV) {
 }
 # as the next stage (deleted interpolation) requires at least 2 parts
 # we set the default number of parts to be 2, but only if we're using
-# semi continuous models (not sure about tied mixture...)
-if (($n_parts < 2) and ($ST::CFG_HMM_TYPE eq ".semi.")) {
+# semi continuous or tied mixture models
+if (($n_parts < 2) and ($ST::CFG_HMM_TYPE ne ".cont.")) {
     $n_parts = 2;
 }
 

@@ -110,8 +110,8 @@ copy "$src_tmatfn", "$dest_tmatfn";
 
 # With semi continuous models, we already start with the right number
 # of components
-if ($ST::CFG_HMM_TYPE eq ".semi.") {
-  Log("Split Gaussian not performed for semi continuous\n");
+if ($ST::CFG_HMM_TYPE ne ".cont.") {
+  Log("Split Gaussian not performed for semi continuous or tied-mixture\n");
   exit 0;
 }
 

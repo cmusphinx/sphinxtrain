@@ -223,7 +223,7 @@ sub Launch_BW {
 sub Launch_SplitGaussian {
     my $n_gau = shift;
 
-    if ($n_gau < $ST::CFG_FINAL_NUM_DENSITIES && $ST::CFG_HMM_TYPE ne ".semi.") {
+    if ($n_gau < $ST::CFG_FINAL_NUM_DENSITIES && $ST::CFG_HMM_TYPE eq ".cont.") {
 # Do stuff
 	my $n_split;
         if ($ST::CFG_FINAL_NUM_DENSITIES >= 2 * $n_gau) {
