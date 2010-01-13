@@ -64,6 +64,11 @@ my $logfile = "$logdir/${ST::CFG_EXPTNAME}.make_questions.log";
 
 $| = 1; # Turn on autoflushing
 
+# Treat PTM and tied-mixtures as semi-continuous
+if ($ST::CFG_HMM_TYPE ne ".cont.") {
+    $ST::CFG_HMM_TYPE = ".semi.";
+}
+
 my $rv = RunTool('make_quests', $logfile, 0,
 		 -moddeffn => $mdeffn,
 		 -meanfn => $meanfn,
