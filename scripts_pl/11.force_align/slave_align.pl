@@ -253,4 +253,8 @@ foreach my $job (@jobs) {
     ++$i;
 }
 
+# Save these in the list directory (if possible) 
+copy($listoffiles, catfile($ST::CFG_LIST_DIR, "${ST::CFG_EXPTNAME}.alignedfiles"));
+copy($transcriptfile = catfile($ST::CFG_LIST_DIR, "${ST::CFG_EXPTNAME}.alignedtranscripts"));
+
 exit $return_value;
