@@ -568,8 +568,8 @@ viterbi_update(float64 *log_forw_prob,
 	    /* check if mixw and ci_mixw are different to avoid
 	     * doubling the EM counts in a CI run. */
 	    if (state_seq[j].mixw != state_seq[j].ci_mixw) {
-		if (n_cb == 1) {
-		    /* semi-continuous and discrete case */
+                if (n_cb < inv->n_mixw) {
+                    /* semi-continuous, tied mixture, and discrete case */
 		    accum_den_terms(wacc[state_seq[j].l_ci_mixw], d_term,
 				    now_den_idx[l_cb], n_feat, n_top);
 		}
