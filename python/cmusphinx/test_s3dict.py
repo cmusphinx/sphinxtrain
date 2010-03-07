@@ -9,9 +9,55 @@ class TestS3Dict(unittest.TestCase):
     def setUp(self):
         self.basedir = os.path.dirname(__file__)
 
-    def testCreate(self):
+    def testRead(self):
         foodict = s3dict.open(os.path.join(self.basedir, "foo.dict"))
+        self.assert_('AH' in foodict.phoneset)
+        self.assertEquals(foodict.get_phones('A'), ['AH'])
+        self.assertEquals(foodict.get_alt_phones('A', 2), ['EY'])
+        self.assertEquals(foodict.get_phones('ZSWANG'), ['S', 'W', 'AE', 'NG'])
+        try:
+            foo = foodict.get_phones('QRXG')
+            print foo
+        except KeyError:
+            pass # Expected fail
+        else:
+            self.fail()
+        try:
+            foo = foodict.get_alt_phones('A',3)
+        except IndexError:
+            pass # Expected fail
+        else:
+            self.fail()
+        try:
+            foo = foodict.get_alt_phones('!@#$!@',3)
+        except KeyError:
+            pass # Expected fail
+        else:
+            self.fail()
+        self.assertEquals(foodict['A'], ['AH'])
+        self.assertEquals(foodict['A',2], ['EY'])
+        self.assertEquals(foodict['A(2)'], ['EY'])
+        self.assertEquals(foodict['ZSWANG'], ['S', 'W', 'AE', 'NG'])
 
+    def testCreate(self):
+        mydict = s3dict.S3Dict()
+        mydict.set_phones('A', ['AH'])
+        mydict.add_alt_phones('A', ['EY'])
+        mydict.set_phones('ZSWANG', ['S', 'W', 'AE', 'NG'])
+        mydict.set_alt_phones('A', 2, ['EY'])
+        try:
+            mydict.set_alt_phones('A', 5, ['AX'])
+        except IndexError:
+            pass # Expected fail
+        else:
+            self.fail()
+        self.assertEquals(mydict.get_phones('A'), ['AH'])
+        self.assertEquals(mydict.get_alt_phones('A', 2), ['EY'])
+        self.assertEquals(mydict.get_phones('ZSWANG'), ['S', 'W', 'AE', 'NG'])
+        mydict.set_alt_phones('A', 2, ['AA'])
+        self.assertEquals(mydict.get_alt_phones('A', 2), ['AA'])
+        mydict.del_phones('ZSWANG')
+        self.assert_('NG' not in mydict.phoneset)
 
 if __name__ == '__main__':
     unittest.main()
