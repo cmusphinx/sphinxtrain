@@ -1,4 +1,4 @@
-#!/usr/bni/env python
+#!/usr/bin/env python
 
 import arpalm
 import unittest
