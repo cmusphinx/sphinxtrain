@@ -119,7 +119,7 @@ my $previter = $iter - 1;
 my $prev_norm = "${logdir}/${ST::CFG_EXPTNAME}.${previter}.norm.log";
 if (! -s $prev_norm) {
     # Either iter == 1 or we are starting from an intermediate iter value
-    RunScript('norm.pl', $iter);
+    RunScript('norm.pl', $iter, $n_parts);
     open OUTPUT, ">> $log";
     print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
     close OUTPUT;
@@ -138,7 +138,7 @@ close LOG;
 
 if ($prevlkhd == -99999999) {
     # Some error with previous norm.log. Continue Baum Welch
-    RunScript('norm.pl', $iter);
+    RunScript('norm.pl', $iter, $n_parts);
     open OUTPUT, ">> $log";
     print OUTPUT "Current Overall Likelihood Per Frame = $lkhd_per_frame\n";
     close OUTPUT;
