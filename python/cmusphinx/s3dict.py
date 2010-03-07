@@ -13,6 +13,7 @@ __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision $"
 
 from collections import defaultdict
+from itertools import chain
 import re
 
 def open(file):
@@ -29,6 +30,17 @@ class S3Dict(dict):
         if infile != None:
             self.read(infile)
 
+    def __contains__(self, key):
+        if not isinstance(key, tuple):
+            m = self.altre.match(key)
+            if m:
+                word, alt = m.groups()
+                return dict.__contains__(self, (word, int(alt)))
+            else:
+                return dict.__contains__(self, (key, 1))
+        else:
+            return dict.__contains__(self, key)
+
     def __getitem__(self, key):
         if not isinstance(key, tuple):
             m = self.altre.match(key)
@@ -40,7 +52,7 @@ class S3Dict(dict):
         else:
             return self.get_alt_phones(*key)
 
-    def __putitem__(self, key, val):
+    def __setitem__(self, key, val):
         if not isinstance(key, tuple):
             m = self.altre.match(key)
             if m:
@@ -71,8 +83,7 @@ class S3Dict(dict):
             spam = line.split()
             word = unicode(spam[0], 'utf8')
             phones = spam[1:]
-            # Why can't we just say self[word] = phones?
-            self.__putitem__(word, phones)
+            self[word] = phones
                 
     def write(self, outfile):
         """
@@ -108,9 +119,9 @@ class S3Dict(dict):
         IndexError will be raised.
         """
         
-        if (word, 1) not in self:
+        if not dict.__contains__(self, (word, 1)):
             raise KeyError
-        elif (word,alt) not in self:
+        elif not dict.__contains__(self, (word, alt)):
             raise IndexError, "Alternate pronunciation index %d does not exist" % alt
         return dict.__getitem__(self, (word, alt))
 
@@ -142,8 +153,8 @@ class S3Dict(dict):
         """
         Add a new alternate pronunciation for word.
         """
-        dict.__setitem__(self, (word, self.maxalt[word] + 1), phones)
         self.maxalt[word] += 1
+        dict.__setitem__(self, (word, self.maxalt[word]), phones)
         for ph in phones:
             self.phoneset[ph] += 1
 
@@ -159,7 +170,7 @@ class S3Dict(dict):
         pronunciations will be renumbered accordingly.
 
         """
-        if (word, alt) not in self:
+        if not dict.__contains__(self, (word, alt)):
             raise IndexError, "Alternate pronunciation index %d does not exist" % alt
         for ph in self[word, alt]:
             self.phoneset[ph] -= 1
@@ -184,13 +195,21 @@ class S3Dict(dict):
         del_alt_phones(word, 1).
         """
         for i in range(1, self.maxalt[word] + 1):
-            if (word,i) in self:
+            if dict.__contains__(self, (word, i)):
                 for ph in self[word,i]:
                     self.phoneset[ph] -= 1
                     if self.phoneset[ph] == 0: # FIXME: make a class
                         del self.phoneset[ph]
                 dict.__delitem__(self, (word, i))
         del self.maxalt[word]
+
+    def words(self):
+        """
+        Iterate over base words in this dictionary.
+        """
+        for word,alt in self:
+            if alt == 1:
+                yield word
 
     def alts(self, word):
         """
@@ -199,3 +218,45 @@ class S3Dict(dict):
         for i in range(1, self.maxalt[word] + 1):
             if (word,i) in self:
                 yield self[word,i]
+
+def copy(self, other, w):
+    """
+    Copy all pronunciations of w from other to self.
+    """
+    for phones in other.alts(w):
+        self.add_alt_phones(w, phones)
+
+def union(self, other):
+    """
+    Compute the union of two dictionaries, returning
+    the resulting dictionary.
+
+    Lists of alternate pronunciations for words will be merged between
+    the two dictionaries.  The numeric identifiers of said alternates
+    will not be preserved, however, the default pronunciation in the
+    output is guaranteed to be the default pronunciation in self.
+    """
+    
+    newdict = self.__class__()
+    sw = set(self.words())
+    ow = set(other.words())
+    # Simply copy words not shared between inputs
+    for w in sw ^ ow:
+        if w in self:
+            copy(newdict, self, w)
+        elif w in other:
+            copy(newdict, other, w)
+    # Merge pronunciations for all others
+    for w in sw & ow:
+        # Uniquify them
+        prons = set()
+        for phones in chain(self.alts(w), other.alts(w)):
+            prons.add(tuple(phones))
+        # Set default pronunciation
+        newdict[w] = self[w]
+        prons.remove(tuple(self[w]))
+        # Add all others in arbitrary order
+        for phones in prons:
+            newdict.add_alt_phones(w, list(phones))
+    return newdict
+

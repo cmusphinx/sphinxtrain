@@ -56,8 +56,19 @@ class TestS3Dict(unittest.TestCase):
         self.assertEquals(mydict.get_phones('ZSWANG'), ['S', 'W', 'AE', 'NG'])
         mydict.set_alt_phones('A', 2, ['AA'])
         self.assertEquals(mydict.get_alt_phones('A', 2), ['AA'])
+        self.assert_('ZSWANG' in mydict)
         mydict.del_phones('ZSWANG')
+        self.assert_('ZSWANG' not in mydict)
         self.assert_('NG' not in mydict.phoneset)
+
+    def testUnion(self):
+        foodict = s3dict.open(os.path.join(self.basedir, "foo.dict"))
+        bardict = s3dict.open(os.path.join(self.basedir, "bar.dict"))
+        bazdict = s3dict.union(foodict, bardict)
+        self.assertEquals(foodict['ACTUALLY'], bazdict['ACTUALLY'])
+        self.assert_('ABANDONED' in bazdict)
+        self.assert_('ZONES' in bazdict)
+        self.assert_('ZSWANG' in bazdict)
 
 if __name__ == '__main__':
     unittest.main()
