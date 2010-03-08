@@ -8,6 +8,7 @@
 -wlen 0.0256
 -transform legacy
 -feat __CFG_FEATURE__
+-svspec __CFG_SVSPEC__
 -agc __CFG_AGC__
 -cmn __CFG_CMN__
 -varnorm __CFG_VARNORM__
