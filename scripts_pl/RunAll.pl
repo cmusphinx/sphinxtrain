@@ -47,6 +47,11 @@ use lib catdir(dirname($0), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
+# Start and end numbers, useful if things get interrupted
+my ($start, $end) = @ARGV;
+$start = 0 unless defined($start);
+$end = 100 unless defined($end);
+
 # What pieces would you like to compute.
 my @steps =
     ("$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
@@ -67,6 +72,9 @@ my @steps =
 
 # Do the common initialization and state tying steps
 foreach my $step (@steps) {
+    my ($index) = ($step =~ m,.*/(\d\d)\.,);
+    next if $index < $start;
+    last if $index > $end;
     my $ret_value = RunScript($step);
     die "Something failed: ($step)\n" if $ret_value;
 }
