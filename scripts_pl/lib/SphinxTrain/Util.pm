@@ -584,8 +584,18 @@ sub SubstParams {
     open OUT, ">$out" or die "Failed to open $out: $!";
     no strict 'refs';
     while (<IN>) {
-	s/__(\w+)__/${"ST::$1"}/ge;
-	print OUT;
+	# For the time being assume there's only one of these per line.
+	if (/__(\w+)__/) {
+	    my $var = $1;
+	    # Skip the line if the variable is not defined
+	    if (defined(my $val = ${"ST::$var"})) {
+		s/__${var}__/$val/ge;
+		print OUT;
+	    }
+	}
+	else {
+	    print OUT;
+	}
     }
     close IN;
     close OUT or die "Failed to close $out: $!";
