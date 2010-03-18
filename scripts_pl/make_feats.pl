@@ -181,7 +181,7 @@ The recommended parameters for wideband (default) and narrowband (in parentheses
 
 =item B<-alpha>  0.97
 
-=item B<-srate>  16000 (8000)
+=item B<-samprate>  16000 (8000)
 
 =item B<-frate>  100
 
