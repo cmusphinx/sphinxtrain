@@ -61,11 +61,7 @@ BUILD_DIRS = agg_seg \
 	mk_flat \
 	mk_mdef_gen \
 	mk_mllr_class \
-	mk_s2cb \
-	mk_s2hmm \
 	mk_s2sendump \
-	mk_s2phone \
-	mk_s2phonemap \
 	mk_s3gau \
 	mk_s3mixw \
 	mk_s3tmat \

@@ -67,7 +67,6 @@ my @steps =
      "$ST::CFG_SCRIPT_DIR/45.prunetree/slave.state-tying.pl",
      "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/90.deleted_interpolation/deleted_interpolation.pl",
-     "$ST::CFG_SCRIPT_DIR/99.make_s2_models/make_s2_models.pl",
     );
 
 # Do the common initialization and state tying steps
