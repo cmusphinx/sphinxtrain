@@ -100,6 +100,9 @@ initialize(lexicon_t **out_lex,
 	    E_WARN_SYSTEM("Unable to open model def file");
 	    return S3_ERROR;
 	}
+    } else {
+        E_WARN_SYSTEM("No -modedeffn provided");
+	return S3_ERROR;
     }
 	
     fn = (const char *)cmd_ln_access("-ts2cbfn");
