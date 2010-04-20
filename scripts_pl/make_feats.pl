@@ -78,6 +78,44 @@ if (!defined $param_file) {
   $param_file = "./etc/feat.params";
 }
 
+if (! -s $param_file) {
+
+  $params = <<"EOP";
+-alpha 0.97
+-dither yes
+-doublebw no
+-nfilt 40
+-ncep 13
+-lowerf 133.33334
+-upperf 6855.4976
+-nfft 512
+-wlen 0.0256
+EOP
+
+  open PARAM, ">$param_file" or die "Failed to open param file $param_file for writing: $!";
+  print PARAM $params;
+  print PARAM <<"EOP";
+-transform legacy
+-feat __CFG_FEATURE__
+-agc __CFG_AGC__
+-cmn __CFG_CMN__
+-varnorm __CFG_VARNORM__
+EOP
+ close PARAM;    
+ 
+ $params =~ s/\n/ /gs;
+} else {
+
+  open PARAM, "<$param_file" or die "Failed to open param file $param_file for reading: $!";     
+  my @params;
+  while(<PARAM>) {
+     chomp;
+     push @params, $_ unless ($_ =~ /_CFG_/ or $_ =~ /transform/);
+  }
+
+  $params = join (" ", @params);
+}
+
 if (defined $ctl) {
   if (! -s "$cfg_file") {
     print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_train.cfg for default\n");
@@ -106,37 +144,12 @@ if (defined $ctl) {
   }
   close CTL;
 
-  $default_params = <<"EOP";
--alpha 0.97
--dither yes
--doublebw no
--nfilt 40
--ncep 13
--lowerf 133.33334
--upperf 6855.4976
--nfft 512
--wlen 0.0256
-EOP
-
-  # Now run sphinx_fe
-  $params = $default_params;
-  $params =~ s/\n/ /gs;
   system("bin/wave2feat -verbose yes $params -c \"$ctl\" -$ST::CFG_WAVFILE_TYPE yes " .
 	 "-di \"$ST::CFG_WAVFILES_DIR\" -ei \"$ST::CFG_WAVFILE_EXTENSION\" ".
 	 "-do \"$ST::CFG_FEATFILES_DIR\" " .
 	 "-eo \"$ST::CFG_FEATFILE_EXTENSION\"".
 	 " @ARGV");
 
-  open PARAM, ">$param_file" or die "Failed to open param file $param_file for writing: $!";
-  print PARAM $default_params;
-  print PARAM <<"EOP";
--transform legacy
--feat __CFG_FEATURE__
--agc __CFG_AGC__
--cmn __CFG_CMN__
--varnorm __CFG_VARNORM__
-EOP
-  close PARAM;
 } else {
   system("bin/wave2feat @ARGV");
   open PARAM, ">$param_file" or die "Failed to open param file $param_file for writing: $!";
