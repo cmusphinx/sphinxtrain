@@ -101,8 +101,7 @@ initialize(lexicon_t **out_lex,
 	    return S3_ERROR;
 	}
     } else {
-        E_WARN_SYSTEM("No -modedeffn provided");
-	return S3_ERROR;
+	mdef = NULL;
     }
 	
     fn = (const char *)cmd_ln_access("-ts2cbfn");
