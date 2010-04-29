@@ -99,7 +99,7 @@ class S3Dict(dict):
             word, alt = k
             if alt != 1:
                 word = "%s(%d)" % (word, alt)
-            fh.write("%-30s %s\n" % (word, " ".join(self[k])))
+            fh.write("%s\t%s\n" % (word.encode('utf8'), " ".join(self[k])))
 
     def get_phones(self, word):
         """
