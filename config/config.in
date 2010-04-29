@@ -8,6 +8,7 @@ CFLAGS   = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
 DEFS     = @DEFS@
 LIBS	 = @LIBS@
+LDFLAGS  = @LDFLAGS@
 
 # Determines whether we build lapack_lite or not
 LAPACK_LITE = @LAPACK_LITE@
