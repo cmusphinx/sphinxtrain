@@ -84,7 +84,7 @@ open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES:
 # Check control file format (determines if we add ,CTL below)
 my $line = <INPUT>;
 my $ctlext;
-if (split(" ", $line) ==1) {
+if (split(" ", $line) == 1 or $line =~ m,/,) {
     # Use full file path
     $ctlext = ",CTL";
 }

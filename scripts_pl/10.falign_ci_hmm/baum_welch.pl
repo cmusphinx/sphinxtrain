@@ -170,6 +170,8 @@ my $return_value = RunTool
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
      -cepwin => $ST::CFG_FEAT_WINDOW,
+     -outputfullpath => "yes",
+     -fullsuffixmatch => "yes",
      @feat_args,
      -timing => "no");
 

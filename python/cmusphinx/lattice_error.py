@@ -25,7 +25,7 @@ for c,r in izip(ctl, ref):
         try:
             l.sphinx2dag(os.path.join(latdir, c + ".lat"))
         except IOError:
-            continue
+            l.htk2dag(os.path.join(latdir, c + ".slf"))
     err, bt = l.minimum_error(r)
     maxlen = [max([len(y) for y in x]) for x in bt]
     print " ".join(["%*s" % (m, x[0]) for m, x in izip(maxlen, bt)])

@@ -986,7 +986,7 @@ class Dag(object):
                     delcost = align_matrix[i-1,j] + 1
                 # Substitution = cost(prev(w), prev(u)) + (w != u)
                 if i == 0 and bestp == -1: # Start node, start of ref
-                    subcost = int(baseword_noclasss(w) != baseword_noclass(u.sym))
+                    subcost = int(baseword_noclass(w) != baseword_noclass(u.sym))
                 elif i == 0: # Start of ref
                     subcost = (self.nodes[bestp].score
                                + int(baseword_noclass(w) != baseword_noclass(u.sym)))
