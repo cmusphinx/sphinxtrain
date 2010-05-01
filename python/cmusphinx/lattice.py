@@ -55,11 +55,18 @@ def is_filler(sym):
             (sym[0] == '+' and sym[-1] == '+'))
 
 basere = re.compile(r"(?::.*)?(?:\(\d+\))?$")
-def baseword(sym):
+def baseword_noclass(sym):
     """
-    Returns base word (no pronunciation variant or classtag) for sym.
+    Returns base word (no pronunciation variant or class tag) for sym.
     """
     return basere.sub("", sym)
+
+basere2 = re.compile(r"(?:\(\d+\))?$")
+def baseword(sym):
+    """
+    Returns base word (no pronunciation variant) for sym.
+    """
+    return basere2.sub("", sym)
 
 class Dag(object):
     """
@@ -979,17 +986,17 @@ class Dag(object):
                     delcost = align_matrix[i-1,j] + 1
                 # Substitution = cost(prev(w), prev(u)) + (w != u)
                 if i == 0 and bestp == -1: # Start node, start of ref
-                    subcost = int(baseword(w) != baseword(u.sym))
+                    subcost = int(baseword_noclasss(w) != baseword_noclass(u.sym))
                 elif i == 0: # Start of ref
                     subcost = (self.nodes[bestp].score
-                               + int(baseword(w) != baseword(u.sym)))
+                               + int(baseword_noclass(w) != baseword_noclass(u.sym)))
                 elif bestp == -1: # Start node
-                    subcost = i - 1 + int(baseword(w) != baseword(u.sym))
+                    subcost = i - 1 + int(baseword_noclass(w) != baseword_noclass(u.sym))
                 else:
                     # Find best predecessor in the previous reference position
                     bestp, bestscore = find_pred(i-1, j)
                     subcost = (align_matrix[i-1,bestp]
-                               + int(baseword(w) != baseword(u.sym)))
+                               + int(baseword_noclass(w) != baseword_noclass(u.sym)))
                 align_matrix[i,j] = min(subcost, inscost, delcost)
                 # Now find the argmin
                 if align_matrix[i,j] == subcost:
@@ -1007,21 +1014,21 @@ class Dag(object):
         while True:
             ip,jp = bp_matrix[i,j]
             if ip == i: # Insertion
-                bt.append(('**INS**', '*%s*' % baseword(self.nodes[j].sym)))
+                bt.append(('**INS**', '*%s*' % baseword_noclass(self.nodes[j].sym)))
             elif jp == j: # Deletion
                 bt.append(('*%s' % ref[i], '**DEL**'))
             else:
-                if ref[i] == baseword(self.nodes[j].sym):
-                    bt.append((ref[i], baseword(self.nodes[j].sym)))
+                if ref[i] == baseword_noclass(self.nodes[j].sym):
+                    bt.append((ref[i], baseword_noclass(self.nodes[j].sym)))
                 else:
-                    bt.append((ref[i], '*%s*' % baseword(self.nodes[j].sym)))
+                    bt.append((ref[i], '*%s*' % baseword_noclass(self.nodes[j].sym)))
             # If we consume both ref and hyp, we are done
             if ip == -1 and jp == -1:
                 break
             # If we hit the beginning of the ref, fill with insertions
             if ip == -1:
                 while True:
-                    bt.append(('**INS**', baseword(self.nodes[jp].sym)))
+                    bt.append(('**INS**', baseword_noclass(self.nodes[jp].sym)))
                     bestp, bestscore = find_pred(i,jp)
                     if bestp == -1:
                         break
