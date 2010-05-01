@@ -15,14 +15,17 @@ for c,r in izip(ctl, ref):
     c = c.strip()
     r = r.split()
     del r[-1]
-    if r[0] != '<s>': r.insert(0, '<s>')
+    if len(r) == 0 or r[0] != '<s>': r.insert(0, '<s>')
     if r[-1] != '</s>': r.append('</s>')
     r = filter(lambda x: not lattice.is_filler(x), r)
     l = lattice.Dag()
     try:
         l.sphinx2dag(os.path.join(latdir, c + ".lat.gz"))
     except IOError:
-        l.sphinx2dag(os.path.join(latdir, c + ".lat"))
+        try:
+            l.sphinx2dag(os.path.join(latdir, c + ".lat"))
+        except IOError:
+            continue
     err, bt = l.minimum_error(r)
     maxlen = [max([len(y) for y in x]) for x in bt]
     print " ".join(["%*s" % (m, x[0]) for m, x in izip(maxlen, bt)])
