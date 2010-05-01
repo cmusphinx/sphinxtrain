@@ -54,15 +54,12 @@ def is_filler(sym):
     return ((sym[0] == '<' and sym[-1] == '>') or
             (sym[0] == '+' and sym[-1] == '+'))
 
+basere = re.compile(r"(?::.*)?(?:\(\d+\))?$")
 def baseword(sym):
     """
-    Returns base word (no pronunciation variant) for sym.
+    Returns base word (no pronunciation variant or classtag) for sym.
     """
-    paren = sym.rfind('(')
-    if paren != -1:
-        return sym[0:paren]
-    else:
-        return sym
+    return basere.sub("", sym)
 
 class Dag(object):
     """
@@ -213,7 +210,7 @@ class Dag(object):
                     frame = int(float(fields['t']) * self.frate)
                     node = self.Node(fields['W'], frame)
                     self.nodes[int(fields['I'])] = node
-                    if 'p' in fields:
+                    if 'p' in fields and float(fields['p']) != 0:
                         node.post = math.log(float(fields['p']))
                     if frame > self.n_frames:
                         self.n_frames = frame
@@ -225,7 +222,8 @@ class Dag(object):
                     ascr = float(fields.get('a', 0))
                     lscr = float(fields.get('n', fields.get('l', 1.0)))
                     link = self.Link(fromnode, tonode, ascr, lscr)
-                    link.post = math.log(float(fields.get('p', 1.0)))
+                    if 'p' in fields and float(fields['p']) != 0:
+                        link.post = math.log(float(fields['p']))
                     self.nodes[int(fromnode)].exits.append(link)
                         
         # FIXME: Not sure if the first and last nodes are always the start and end?
@@ -923,7 +921,7 @@ class Dag(object):
                 x.dest.entries.remove(x)
         self.remove_unreachable()
 
-    def minimum_error(self, hyp):
+    def minimum_error(self, ref):
         """
         Find the minimum word error rate path through lattice,
         returning the number of errors and an alignment.
