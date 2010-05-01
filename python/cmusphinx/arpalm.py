@@ -198,11 +198,14 @@ class ArpaLM(object):
     def prob(self, *syms):
         """
         Return the language model log-probability for an N-Gram
+        (passed in reverse order, possibly with extra history)
 
         @return: The log probability for the N-Gram consisting of the
                  words given, in base e (natural log).
         @rtype: float
         """
+        syms = syms[0:min(len(syms,self.n))]
+        syms.reverse()
         # It makes the most sense to do this recursively
         n = len(syms)
         if n == 1:
@@ -213,12 +216,12 @@ class ArpaLM(object):
                 # Use <UNK>
                 return self.ngrams[0][self.ngmap[0]['<UNK>']][0]
         else:
-            if syms in self.ngmap[n-1]:
+            if tuple(syms) in self.ngmap[n-1]:
                 # N-Gram exists, just return its probability
-                return self.ngrams[n-1][self.ngmap[n-1][syms]][0]
+                return self.ngrams[n-1][self.ngmap[n-1][tuple(syms)]][0]
             else:
                 # Backoff: alpha(history) * probability (N-1-Gram)
-                hist = tuple(syms[0:-1])
+                hist = tuple(syms[:-1])
                 syms = syms[1:]
                 # Treat unigram histories a bit specially
                 if n == 2:
@@ -229,10 +232,12 @@ class ArpaLM(object):
                 if hist in self.ngmap[n-2]:
                     # Try to use the history if it exists
                     bowt = self.ngrams[n-2][self.ngmap[n-2][hist]][1]
-                    return bowt + self.score(*syms)
+                    syms.reverse()
+                    return bowt + self.prob(*syms)
                 else:
                     # Otherwise back off some more
-                    return self.score(*syms)
+                    syms.reverse()
+                    return self.prob(*syms)
 
     def adapt_rescale(self, unigram, vocab=None):
         """Update unigram probabilities with unigram (assumed to be in
