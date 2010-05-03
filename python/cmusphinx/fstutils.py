@@ -10,8 +10,7 @@ FST utility functions
 """
 
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
-__version__ = "$Revision$"
-
+__version__ = "$Revision $"
 
 import sys
 import os
@@ -203,6 +202,126 @@ def build_lmfst(lm, use_phi=False):
     openfst.ArcSortInput(fst)
     return fst
 
+class SphinxProbdef(object):
+    """
+    Probability definition file used for Sphinx class language models.
+    """
+    def __init__(self, infile=None):
+        self.classes = {}
+        if infile != None:
+            self.read(infile)
+
+    def read(self, infile):
+        """
+        Read probability definition from a file.
+        """
+        if not isinstance(infile, file):
+            infile = file(infile)
+        inclass = None
+        for spam in infile:
+            spam = spam.strip()
+            if spam.startswith('#') or spam.startswith(';'):
+                continue
+            if spam == "":
+                continue
+            if inclass:
+                parts = spam.split()
+                if len(parts) == 2 \
+                       and parts[0] == "END" and parts[1] == classname:
+                    inclass = None
+                else:
+                    prob = 1.0
+                    if len(parts) > 1:
+                        prob = float(parts[1])
+                    self.add_class_word(inclass, parts[0], prob)
+            else:
+                if spam.startswith('LMCLASS'):
+                    foo, classname = spam.split()
+                    self.add_class(classname)
+                    inclass = classname
+
+    def add_class(self, name):
+        """
+        Add a class to this probability definition.
+        """
+        self.classes[name] = {}
+
+    def add_class_word(self, name, word, prob):
+        """
+        Add a word to a class in this probability definition.
+        """
+        self.classes[name][word] = prob
+    
+    def write(self, outfile):
+        """
+        Write out probability definition to a file.
+        """
+        if not isinstance(outfile, file):
+            outfile = file(outfile)
+        for c in self.classes:
+            outfile.write("LMCLASS %s\n" % c)
+            for word, prob in self.classes[c]:
+                outfile.write("%s %g\n" % (word, prob))
+            outfile.write("END %s\n" % c)
+            outfile.write("\n")
+
+    def normalize(self):
+        """
+        Normalize probabilities.
+        """
+        for c in self.classes:
+            t = sum(self.classes[c].itervalues())
+            if t != 0:
+                for w in self.classes[c]:
+                    self.classes[c][w] /= t
+
+def build_classfst(probdef, isyms=None):
+    """
+    Build an FST from the classes in a Sphinx probability definition
+    file.  This transducer maps words to classes, and can either be
+    composed with the input, or pre-composed with the language model.
+    In the latter case you can project the resulting transducer to its
+    input to obtain an equivalent non-class-based model.
+    """
+    if not isinstance(probdef, SphinxProbdef):
+        probdef = SphinxProbdef(probdef)
+    fst = openfst.StdVectorFst()
+    if isyms:
+        symtab = isyms
+    else:
+        symtab = openfst.SymbolTable("words")
+        symtab.AddSymbol("&epsilon;")
+    st = fst.AddState()
+    fst.SetStart(st)
+    fst.SetFinal(st, 0)
+    for word, label in symtab:
+        if label == openfst.epsilon:
+            continue
+        fst.AddArc(st, label, label, 0, st)
+    for c in probdef.classes:
+        clabel = symtab.AddSymbol(c)
+        for word, prob in probdef.classes[c].iteritems():
+            wlabel = symtab.AddSymbol(word)
+            fst.AddArc(st, wlabel, clabel, -math.log(prob), st)
+    fst.SetOutputSymbols(symtab)
+    fst.SetInputSymbols(symtab)
+    return fst
+
+def build_class_lmfst(lm, probdef, use_phi=False):
+    """
+    Build an FST from a class-based language model.  By default this
+    returns the lazy composition of the class definition transducer
+    and the language model.  To obtain the full language model, create
+    a VectorFst from it and project it to its input.
+    """
+    lmfst = build_lmfst(lm, use_phi)
+    lmfst.Write("lm.fst")
+    classfst = build_classfst(probdef, lmfst.InputSymbols())
+    classfst.Write("class.fst")
+    openfst.ArcSortInput(lmfst)
+    openfst.ArcSortInput(classfst)
+    return openfst.StdComposeFst(classfst, lmfst)
+
 def build_dictfst(lmfst):
     """
     Build a character-to-word FST based on the symbol table of lmfst.
@@ -362,7 +481,9 @@ def lmfst_eval(lmfst, sent):
     ll = 0
     while st != -1 and o.NumArcs(st):
         a = o.GetArc(st, 0)
-        #print o.InputSymbols().Find(a.ilabel), -a.weight.Value() / math.log(10)
+#        print o.InputSymbols().Find(a.ilabel), \
+#              o.OutputSymbols().Find(a.olabel), \
+#              -a.weight.Value() / math.log(10)
         ll -= a.weight.Value()
         st = a.nextstate
     return ll
