@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (c) 2007 Carnegie Mellon University
 #
 # You may copy and modify this freely under the same terms as
