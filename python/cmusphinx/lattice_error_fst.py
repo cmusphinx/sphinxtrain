@@ -94,6 +94,7 @@ class CompoundWordModel(openfst.StdVectorFst):
 if __name__ == '__main__':
     from optparse import OptionParser
     parser = OptionParser(usage="%prog CTL REF LATDIR")
+    parser.add_option("--prune", type="float")
     opts, args = parser.parse_args(sys.argv[1:])
     
     ctl, ref, latdir = args
@@ -119,6 +120,8 @@ if __name__ == '__main__':
                 l = lattice.Dag(os.path.join(latdir, c + ".lat.gz"))
             except IOError:
                 l = lattice.Dag(htk_file=os.path.join(latdir, c + ".slf"))
+        if opts.prune != None:
+            l.posterior_prune(-opts.prune)
         # Convert it to an FSM
         lfst = lat2fsg.build_lattice_fsg(l, rfst.OutputSymbols(),
                                          addsyms=True, determinize=False,

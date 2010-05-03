@@ -315,9 +315,7 @@ def build_class_lmfst(lm, probdef, use_phi=False):
     a VectorFst from it and project it to its input.
     """
     lmfst = build_lmfst(lm, use_phi)
-    lmfst.Write("lm.fst")
     classfst = build_classfst(probdef, lmfst.InputSymbols())
-    classfst.Write("class.fst")
     openfst.ArcSortInput(lmfst)
     openfst.ArcSortInput(classfst)
     return openfst.StdComposeFst(classfst, lmfst)
