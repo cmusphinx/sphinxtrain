@@ -62,17 +62,17 @@ closedir(ACCUMDIR);
 
 # Add PYTHONPATH
 $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_BASE_DIR, 'python');
-my $rv = RunTool(catfile($ST::CFG_BASE_DIR, 'python', 'cmusphinx', 'mllt.py'),
+my $return_value = RunTool(catfile($ST::CFG_BASE_DIR, 'python', 'cmusphinx', 'mllt.py'),
 		 $logfile, 0,
 		 -l => $ldafile, 
 		 $mlltfile,
 		 @bwaccumdirs);
-if ($rv != 0) {
-    LogError("mllt.py failed with status $rv");
-}
-else {
+
+if (! -s $mlltfile || $return_value != 0) {
+    LogError("mllt.py failed to create MLLT transform with status $return_value");
+} else {
     open LOG, ">>$logfile" or die "Failed to open $logfile: $!";
     print LOG "MLLT training complete\n";
     close LOG;
 }
-exit $rv;
+exit($return_value);

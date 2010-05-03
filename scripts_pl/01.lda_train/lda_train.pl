@@ -64,8 +64,9 @@ $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_BASE_DIR, 'python');
 my $rv = RunTool(catfile($ST::CFG_BASE_DIR, 'python', 'cmusphinx', 'lda.py'),
 		 $logfile, 0,
 		 $ldafile, @bwaccumdirs);
-if ($rv != 0) {
-    LogError("lda.py failed with status $rv");
+
+if (! -s $ldafile || $rv != 0) {
+    LogError("lda.py failed to create LDA transform with status $rv");
 }
 else {
     open LOG, ">>$logfile" or die "Failed to open $logfile: $!";

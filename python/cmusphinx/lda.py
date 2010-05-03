@@ -16,7 +16,13 @@ __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
 import sys, os
-import numpy
+
+try:
+    import numpy
+except ImportError:
+    print "FATAL: Failed to import numpy modules. Check that numpy and scipy are installed"
+    sys.exit(1)
+
 import s3lda
 import s3gaucnt
 import itertools

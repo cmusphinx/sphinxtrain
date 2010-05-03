@@ -16,12 +16,17 @@ Distributions for Classification", in proceedings of ICASSP 1998.
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
-from numpy import dot, prod, diag, log, eye, sqrt, newaxis, concatenate
-from numpy.random import random
-from numpy.linalg import det, inv
-from scipy.optimize import fmin_l_bfgs_b
-
 import sys
+
+try:
+    from numpy import dot, prod, diag, log, eye, sqrt, newaxis, concatenate
+    from numpy.random import random
+    from numpy.linalg import det, inv
+    from scipy.optimize import fmin_l_bfgs_b
+except ImportError:
+    print "FATAL: Failed to import numpy modules. Check that numpy and scipy are installed"
+    sys.exit(1)
+
 import s3gaucnt
 import s3lda
 import getopt
