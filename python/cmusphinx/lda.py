@@ -13,7 +13,7 @@ stream Sphinx-III acoustic models.
 # Sphinx-III
 
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
-__version__ = "$Revision: 6368 $"
+__version__ = "$Revision$"
 
 import sys, os
 import numpy
