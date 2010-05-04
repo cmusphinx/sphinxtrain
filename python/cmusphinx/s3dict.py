@@ -118,7 +118,6 @@ class S3Dict(dict):
         be raised.  If no alternate pronunciation alt exists,
         IndexError will be raised.
         """
-        
         if not dict.__contains__(self, (word, 1)):
             raise KeyError
         elif not dict.__contains__(self, (word, alt)):
@@ -180,7 +179,11 @@ class S3Dict(dict):
         if alt == self.maxalt[word]:
             self.maxalt[word] -= 1
         if not self.preserve_alts:
-            alts = list(self.alts(word))
+            alts = []
+            for i in range(1, self.maxalt[word] + 1):
+                if (word,i) in self:
+                    alts.append(dict.__getitem__(self, (word, i)))
+                    del self[word, i]
             self.del_phones(word)
             for i, phones in enumerate(alts):
                 dict.__setitem__(self, (word, i + 1), phones)
@@ -260,3 +263,40 @@ def union(self, other):
             newdict.add_alt_phones(w, list(phones))
     return newdict
 
+def convert_to_40(d):
+    badalts = []
+    for w in d.words():
+        baw = []
+        for i, p in enumerate(d.alts(w)):
+            # Remove 'DX' outright because it is ambiguous
+            if 'DX' in p:
+                baw.append((w, i+1))
+            # Otherwise do AX -> AH, AXR -> ER
+            else:
+                j = 0
+                while j < len(p):
+                    if p[j] == 'AX':
+                        p[j] = 'AH'
+                    elif p[j] == 'IX':
+                        p[j] = 'IH'
+                    elif p[j] == 'AXR':
+                        p[j] = 'ER'
+                    elif p[j] == 'NX':
+                        p[j] = 'N'
+                    elif p[j] == 'TD':
+                        p[j] = 'T'
+                    elif p[j] == 'DD':
+                        p[j] = 'D'
+                    elif p[j] == 'TS':
+                        p[j:j+1] = ['T', 'S']
+                        j += 1
+                    elif p[j] == 'EN':
+                        p[j:j+1] = ['AH', 'N']
+                        j += 1
+                    elif p[j] == 'EM':
+                        p[j:j+1] = ['AH', 'M']
+                        j += 1
+                    j += 1
+        badalts.extend(baw[::-1])
+    for w, i in badalts:
+        d.del_alt_phones(w, i)    
