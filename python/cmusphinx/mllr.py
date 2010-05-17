@@ -25,7 +25,6 @@ import sys
 import s3gaucnt
 import s3gau
 import getopt
-import s3lda
 
 def extend(mean):
     """

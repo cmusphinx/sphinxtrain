@@ -13,6 +13,7 @@ __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
 from s3file import S3File, S3File_write
+import os
 
 def open(filename, mode="rb"):
     if mode in ("r", "rb"):
@@ -43,3 +44,18 @@ class S3MixwFile_write(S3File_write):
 
     def writeall(self, stuff):
         self.write3d(stuff)
+
+def accumdirs(accumdirs):
+    "Read and accumulate counts from several directories"
+    mixw = None
+    for d in accumdirs:
+        try:
+            submixw = S3MixwFile(os.path.join(d, "mixw_counts"), "rb")
+        except:
+            submixw = None
+            continue
+        if mixw == None:
+            mixw = submixw
+        else:
+            mixw._params += submixw._params
+    return mixw
