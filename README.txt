@@ -65,15 +65,15 @@ Also, check the section title "All Platforms" above.
 
 Windows Installation:
 ^^^^^^^^^^^^^^^^^^^^^
-To compile SphinxTrain in Visual C++ 6.0, 
-1, uncompress the file (e.g. using WinZip) and save it to the disk.
-2, click SphinxTrain.dsw.
-3, build all projects; each of them is a tool used by the training script.
+To compile the SphinxTrain under MS Visual Studio 2008 (or newer - we test
+with Visual C++ 2008 Express):
 
-Step 3 can be done easily in VC6.0 by clicking the "Build" menu at the
-top bar, and selecting "Batch Build...". Make sure all projects are
-selected, preferably the "Release" version of each. You can also run
-with the "Debug" version, but this version is usually slower.
+ 1. load SphinxTrain.sln located in SphinxTrain directory
+ 2. compile all the projects in SphinxTrain (from SphinxTrain.sln)
+
+MS Visual Studio will build the executables under .\bin\Release or
+.\bin\Debug (depending on the version you choose on MS Visual Studio),
+and the libraries under .\lib\Release or .\lib\Build.
 
 If you are using cygwin, the installation procedure is very similar to
 the Unix installation. 
