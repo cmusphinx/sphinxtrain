@@ -70,6 +70,17 @@ SCRIPTS = 00.verify/verify_all.pl				\
 	50.cd_hmm_tied/norm.pl					\
 	50.cd_hmm_tied/slave_convg.pl				\
 	50.cd_hmm_tied/split_gaussians.pl			\
+	60.lattice_generation/slave_genlat.pl			\
+	60.lattice_generation/force_align.pl			\
+	60.lattice_generation/s3decode.pl			\
+	61.lattice_pruning/slave_prune.pl			\
+	61.lattice_pruning/lattice_prune.pl			\
+	62.lattice_conversion/slave_conv.pl			\
+	62.lattice_conversion/lattice_conv.pl			\
+	65.mmie_train/slave_convg.pl				\
+	65.mmie_train/baum_welch.pl				\
+	65.mmie_train/norm_and_launchbw.pl			\
+	65.mmie_train/norm.pl					\
 	90.deleted_interpolation/deleted_interpolation.pl	\
 	decode/slave.pl						\
 	copy_setup.pl						\

@@ -597,6 +597,100 @@ model_def_read(model_def_t **out_model_def,
 
     return S3_SUCCESS;
 }
+
+/* the following function is for preventing memory leak
+   lqin 2010-03 */
+int32
+model_def_free(model_def_t *mdef)
+{
+  uint32 i, j;
+  uint32 len;
+
+  if (mdef->acmod_set) {
+    if (mdef->acmod_set->ci) {
+      for (i = 0; i < mdef->acmod_set->n_ci; i++) {
+	ckd_free(mdef->acmod_set->ci[i].name);
+	if (mdef->acmod_set->ci[i].attrib) {
+	  for (len = 0; mdef->acmod_set->ci[i].attrib[len]; len++)
+
+	    for (j = 0; j < len; j++)
+	      ckd_free(mdef->acmod_set->ci[i].attrib[j]);
+	  ckd_free(mdef->acmod_set->ci[i].attrib);
+	}
+      }
+      ckd_free(mdef->acmod_set->ci);
+    }
+    mdef->acmod_set->ci = NULL;
+
+    if (mdef->acmod_set->multi) {
+      for (i = 0; i < mdef->acmod_set->n_multi; i ++) {
+	if (mdef->acmod_set->multi[i].attrib) {
+	  for (len = 0; mdef->acmod_set->multi[i].attrib[len]; len++)
+
+	    for (j = 0; j < len; j++)
+	      ckd_free(mdef->acmod_set->multi[i].attrib[j]);
+	  ckd_free(mdef->acmod_set->multi[i].attrib);
+	}
+      }
+      ckd_free(mdef->acmod_set->multi);
+    }
+    mdef->acmod_set->multi = NULL;
+
+    if (mdef->acmod_set->multi_idx) {
+      for (i = 0; i < mdef->acmod_set->n_ci; i++) {
+	ckd_free(mdef->acmod_set->multi_idx[i]->cell);
+	ckd_free(mdef->acmod_set->multi_idx[i]);
+      }
+      ckd_free(mdef->acmod_set->multi_idx);
+    }
+    mdef->acmod_set->multi_idx = NULL;
+
+    if (mdef->acmod_set->attrib) {
+      for (len = 0; mdef->acmod_set->attrib[len]; len++)
+
+	for (j = 0; j < len; j++)
+	  ckd_free(mdef->acmod_set->attrib[j]);
+      ckd_free(mdef->acmod_set->attrib);
+    }
+    mdef->acmod_set->attrib = NULL;
+
+    if (mdef->acmod_set->n_with)
+      ckd_free(mdef->acmod_set->n_with);
+    mdef->acmod_set->n_with = NULL;
+  }
+  ckd_free(mdef->acmod_set);
+  mdef->acmod_set = NULL;
+
+  if (mdef->defn) {
+    ckd_free(mdef->defn->state);
+    for (i = 0; i < mdef->n_defn; i++) {
+      if (mdef->defn[i].attrib) {
+	for (len = 0; mdef->defn[i].attrib[len]; len++)
+
+	  for (j = 0; j < len; j++)
+	    ckd_free(mdef->defn[i].attrib[j]);
+	ckd_free(mdef->defn[i].attrib);
+      }
+    }
+  }
+  ckd_free(mdef->defn);
+  mdef->defn = NULL;
+
+  if (mdef->cb)
+    ckd_free(mdef->cb);
+  mdef->cb = NULL;
+
+  if (mdef->ts2ci)
+    ckd_free(mdef->ts2ci);
+  mdef->ts2ci = NULL;
+
+  ckd_free(mdef);
+  mdef = NULL;
+
+  return S3_SUCCESS;
+}
+/* end */
+
 
 /*
  * Log record.  Maintained by RCS.

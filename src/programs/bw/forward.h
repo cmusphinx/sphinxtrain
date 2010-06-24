@@ -68,7 +68,8 @@ forward(float64 **active_alpha,
 	uint32 n_state,
 	model_inventory_t *inv,
 	float64 beam,
-	s3phseg_t *phseg);
+	s3phseg_t *phseg,
+	uint32 mmi_train);
 
 void
 forward_set_viterbi(int state);

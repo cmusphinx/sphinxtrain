@@ -337,7 +337,7 @@ viterbi_update(float64 *log_forw_prob,
     ret = forward(active_alpha, active_astate, n_active_astate, bp,
 		  scale, dscale,
 		  feature, n_obs, state_seq, n_state,
-		  inv, a_beam, phseg);
+		  inv, a_beam, phseg, 0);
     /* Dump a phoneme segmentation if requested */
     if (cmd_ln_str("-outphsegdir")) {
 	    const char *phsegdir;
@@ -695,6 +695,412 @@ viterbi_update(float64 *log_forw_prob,
 
     return ret;
 }
+
+/* the following functions are used for MMIE training
+   lqin 2010-03 */
+int32
+mmi_viterbi_run(float64 *log_forw_prob,
+		vector_t **feature,
+		uint32 n_obs,
+		state_t *state_seq,
+		uint32 n_state,
+		model_inventory_t *inv,
+		float64 a_beam)
+{
+    float64 *scale = NULL;
+    float64 **dscale = NULL;
+    float64 **active_alpha;
+    uint32 **active_astate;
+    uint32 **bp;
+    uint32 *n_active_astate;
+    uint32 *active_cb;
+    uint32 i;
+    int ret;
+    int final_state_error = 0;
+    float64 log_fp;/* accumulator for the log of the probability
+		    * of observing the input given the model */
+    
+    /* caller must ensure that there is some non-zero amount
+       of work to be done here */
+    assert(n_obs > 0);
+    assert(n_state > 0);
+    
+    scale = (float64 *)ckd_calloc(n_obs, sizeof(float64));
+    dscale = (float64 **)ckd_calloc(n_obs, sizeof(float64 *));
+    n_active_astate = (uint32 *)ckd_calloc(n_obs, sizeof(uint32));
+    active_alpha  = (float64 **)ckd_calloc(n_obs, sizeof(float64 *));
+    active_astate = (uint32 **)ckd_calloc(n_obs, sizeof(uint32 *));
+    active_cb = ckd_calloc(2*n_state, sizeof(uint32));
+    bp = (uint32 **)ckd_calloc(n_obs, sizeof(uint32 *));
+
+    /* Run forward algorithm, which has embedded Viterbi. */
+    ret = forward(active_alpha, active_astate, n_active_astate, bp,
+		  scale, dscale,
+		  feature, n_obs, state_seq, n_state,
+		  inv, a_beam, NULL, 1);
+
+    if (ret != S3_SUCCESS) {
+
+	/* Some problem with the utterance, release per utterance storage and
+	 * forget about adding the utterance accumulators to the global accumulators */
+	
+	goto all_done;
+    }
+
+    /* Find the non-emitting ending state */
+    for (i = 0; i < n_active_astate[n_obs-1]; ++i) {
+	if (active_astate[n_obs-1][i] == n_state-1)
+	    break;
+    }
+    if (i == n_active_astate[n_obs-1]) {
+	/* since there are so many such errors during the mmie training,
+	      it's very annoying to output this error message
+	      E_ERROR("final state not reached\n"); */
+	ret = S3_ERROR;
+	final_state_error = 1;
+	goto all_done;
+    }
+
+    /* Calculate log[ p( O | \lambda ) ] */
+    assert(active_alpha[n_obs-1][i] > 0);
+    log_fp = log(active_alpha[n_obs-1][i]);
+
+    *log_forw_prob = log_fp;
+
+ all_done:
+    ckd_free((void *)scale);
+    for (i = 0; i < n_obs; i++) {
+	if (dscale[i])
+	    ckd_free((void *)dscale[i]);
+    }
+    ckd_free((void **)dscale);
+    
+    ckd_free(n_active_astate);
+    for (i = 0; i < n_obs; i++) {
+	ckd_free((void *)active_alpha[i]);
+	ckd_free((void *)active_astate[i]);
+	ckd_free((void *)bp[i]);
+    }
+    ckd_free((void *)active_alpha);
+    ckd_free((void *)active_astate);
+    ckd_free((void *)active_cb);
+    ckd_free((void **)bp);
+
+    if (ret != S3_SUCCESS && !final_state_error)
+	E_ERROR("viterbi run error in sentence %s\n", corpus_utt_brief_name());
+    
+    return ret;
+}
+
+int32
+mmi_viterbi_update(vector_t **feature,
+		   uint32 n_obs,
+		   state_t *state_seq,
+		   uint32 n_state,
+		   model_inventory_t *inv,
+		   float64 a_beam,
+		   int32 mean_reest,
+		   int32 var_reest,
+		   float64 arc_gamma,
+		   float32 ***lda)
+{
+    float64 *scale = NULL;
+    float64 **dscale = NULL;
+    float64 **active_alpha;
+    uint32 **active_astate;
+    uint32 **bp;
+    uint32 *n_active_astate;
+    gauden_t *g;/* Gaussian density parameters and reestimation sums */
+    float32 ***mixw;/* all mixing weights */
+    float64 ***now_den = NULL;/* Short for den[t] */
+    uint32 ***now_den_idx = NULL;/* Short for den_idx[t] */
+    uint32 *active_cb;
+    uint32 n_active_cb;
+    float32 ***denacc = NULL;/* mean/var reestimation accumulators for time t */
+    size_t denacc_size;/* Total size of data references in denacc.  Allows
+			  for quick clears between time frames */
+    uint32 n_lcl_cb;
+    uint32 *cb_inv;
+    uint32 i, j, q;
+    int32 t;
+    uint32 n_feat;
+    uint32 n_density;
+    uint32 n_top;
+    int ret;
+    uint32 n_cb;
+
+    static float64 *p_op = NULL;
+    static float64 *p_ci_op = NULL;
+    static float64 **d_term = NULL;
+    static float64 **d_term_ci = NULL;
+
+    /* caller must ensure that there is some non-zero amount
+       of work to be done here */
+    assert(n_obs > 0);
+    assert(n_state > 0);
+
+    g = inv->gauden;
+    n_feat = gauden_n_feat(g);
+    n_density = gauden_n_density(g);
+    n_top = gauden_n_top(g);
+    n_cb = gauden_n_mgau(g);
+
+    if (p_op == NULL) {
+	p_op    = ckd_calloc(n_feat, sizeof(float64));
+	p_ci_op = ckd_calloc(n_feat, sizeof(float64));
+    }
+
+    if (d_term == NULL) {
+	d_term    = (float64 **)ckd_calloc_2d(n_feat, n_top, sizeof(float64));
+	d_term_ci = (float64 **)ckd_calloc_2d(n_feat, n_top, sizeof(float64));
+    }
+
+    scale = (float64 *)ckd_calloc(n_obs, sizeof(float64));
+    dscale = (float64 **)ckd_calloc(n_obs, sizeof(float64 *));
+    n_active_astate = (uint32 *)ckd_calloc(n_obs, sizeof(uint32));
+    active_alpha  = (float64 **)ckd_calloc(n_obs, sizeof(float64 *));
+    active_astate = (uint32 **)ckd_calloc(n_obs, sizeof(uint32 *));
+    active_cb = ckd_calloc(2*n_state, sizeof(uint32));
+    bp = (uint32 **)ckd_calloc(n_obs, sizeof(uint32 *));
+
+    /* Run forward algorithm, which has embedded Viterbi. */
+    ret = forward(active_alpha, active_astate, n_active_astate, bp,
+		  scale, dscale,
+		  feature, n_obs, state_seq, n_state,
+		  inv, a_beam, NULL, 1);
+    
+    if (cmd_ln_str("-outphsegdir")) {
+	E_FATAL("current MMI implementation don't support -outphsegdir\n");
+    }
+
+
+    if (ret != S3_SUCCESS) {
+
+	/* Some problem with the utterance, release per utterance storage and
+	 * forget about adding the utterance accumulators to the global accumulators */
+
+	goto all_done;
+    }
+
+    mixw = inv->mixw;
+
+    n_lcl_cb = inv->n_cb_inverse;
+    cb_inv = inv->cb_inverse;
+
+    /* Allocate local accumulators for mean, variance reestimation
+       sums if necessary */
+    gauden_alloc_l_acc(g, n_lcl_cb,
+		       mean_reest, var_reest,
+		       FALSE);
+
+    n_active_cb = 0;
+    now_den = (float64 ***)ckd_calloc_3d(n_lcl_cb,
+					 n_feat,
+					 n_top,
+					 sizeof(float64));
+    now_den_idx =  (uint32 ***)ckd_calloc_3d(n_lcl_cb,
+					     n_feat,
+					     n_top,
+					     sizeof(uint32));
+
+    if (mean_reest || var_reest) {
+	/* allocate space for the per frame density counts */
+	denacc = (float32 ***)ckd_calloc_3d(n_lcl_cb,
+					    n_feat,
+					    n_density,
+					    sizeof(float32));
+
+	/* # of bytes required to store all weighted vectors */
+	denacc_size = n_lcl_cb * n_feat * n_density * sizeof(float32);
+    }
+    else {
+	denacc = NULL;
+	denacc_size = 0;
+    }
+
+    /* Okay now run through the backtrace and accumulate counts. */
+    /* Find the non-emitting ending state */
+    for (q = 0; q < n_active_astate[n_obs-1]; ++q) {
+	if (active_astate[n_obs-1][q] == n_state-1)
+	    break;
+    }
+    if (q == n_active_astate[n_obs-1]) {
+	E_ERROR("final state not reached\n");
+	ret = S3_ERROR;
+	goto all_done;
+    }
+
+    for (t = n_obs-1; t >= 0; --t) {
+	uint32 l_cb;
+	uint32 l_ci_cb;
+	float64 op, p_reest_term;
+	uint32 prev;
+
+	j = active_astate[t][q];
+
+	/* Follow any non-emitting states at time t first. */
+	while (state_seq[j].mixw == TYING_NON_EMITTING) {
+	    prev = active_astate[t][bp[t][q]];
+	    q = bp[t][q];
+	    j = prev;
+	}
+
+	/* Now accumulate statistics for the real state. */
+	l_cb = state_seq[j].l_cb;
+	l_ci_cb = state_seq[j].l_ci_cb;
+	n_active_cb = 0;
+
+	gauden_compute_log(now_den[l_cb],
+			   now_den_idx[l_cb],
+			   feature[t],
+			   g,
+			   state_seq[j].cb,
+			   NULL);
+	active_cb[n_active_cb++] = l_cb;
+
+	if (l_cb != l_ci_cb) {
+	    gauden_compute_log(now_den[l_ci_cb],
+			       now_den_idx[l_ci_cb],
+			       feature[t],
+			       g,
+			       state_seq[j].ci_cb,
+			       NULL);
+	    active_cb[n_active_cb++] = l_ci_cb;
+	}
+	ret = gauden_scale_densities_bwd(now_den, now_den_idx,
+					 &dscale[t],
+					 active_cb, n_active_cb, g);
+	if (ret != S3_SUCCESS)
+	    goto all_done;
+	
+	assert(state_seq[j].mixw != TYING_NON_EMITTING);
+	/* Now calculate mixture densities. */
+	/* This is the normalizer sum_m c_{jm} p(o_t|\lambda_{jm}) */
+	op = gauden_mixture(now_den[l_cb], now_den_idx[l_cb],
+			    mixw[state_seq[j].mixw], g);
+
+	/* Make up this bogus value to be consistent with backward.c */
+	p_reest_term = 1.0 / op;
+
+	/* Compute the output probability excluding the contribution
+	 * of each feature stream.  i.e. p_op[0] is the output
+	 * probability excluding feature stream 0 */
+	partial_op(p_op,
+		   op,
+		   now_den[l_cb],
+		   now_den_idx[l_cb],
+		   mixw[state_seq[j].mixw],
+		   n_feat,
+		   n_top);
+
+	/* compute the probability of each (of possibly topn) density */
+	den_terms(d_term,
+		  p_reest_term,
+		  p_op,
+		  now_den[l_cb],
+		  now_den_idx[l_cb],
+		  mixw[state_seq[j].mixw],
+		  n_feat,
+		  n_top);
+
+	if (l_cb != l_ci_cb) {
+	    /* For each feature stream f, compute:
+	     *     sum_k(mixw[f][k] den[f][k])
+	     * and store the results in p_ci_op */
+	    partial_ci_op(p_ci_op,
+			  now_den[l_ci_cb],
+			  now_den_idx[l_ci_cb],
+			  mixw[state_seq[j].ci_mixw],
+			  n_feat,
+			  n_top);
+
+	    /* For each feature stream and density compute the terms:
+	     *   w[f][k] den[f][k] / sum_k(w[f][k] den[f][k]) * post_j
+	     * and store results in d_term_ci */
+	    den_terms_ci(d_term_ci,
+			 1.0, /* post_j = 1.0 */
+			 p_ci_op,
+			 now_den[l_ci_cb],
+			 now_den_idx[l_ci_cb],
+			 mixw[state_seq[j].ci_mixw],
+			 n_feat,
+			 n_top);
+	}
+	    
+	/* accumulate the probability for each density in the 
+	 * density reestimation accumulators */
+	if (mean_reest || var_reest) {
+	    accum_den_terms(denacc[l_cb], d_term,
+			    now_den_idx[l_cb], n_feat, n_top);
+	    if (l_cb != l_ci_cb) {
+		accum_den_terms(denacc[l_ci_cb], d_term_ci,
+				now_den_idx[l_ci_cb], n_feat, n_top);
+	    }
+	}
+	
+	/* Note that there is only one state/frame so this is kind of
+	   redundant */
+	if (mean_reest || var_reest) {
+	    /* Update the mean and variance reestimation accumulators */
+	    mmi_accum_gauden(denacc,
+			     cb_inv,
+			     n_lcl_cb,
+			     feature[t],
+			     now_den_idx,
+			     g,
+			     mean_reest,
+			     var_reest,
+			     arc_gamma,
+			     lda);
+	    memset(&denacc[0][0][0], 0, denacc_size);
+	}
+	
+	if (t > 0) { 
+	    prev = active_astate[t-1][bp[t][q]];
+	    q = bp[t][q];
+	    j = prev;
+	}
+    }
+
+    /* If no error was found, add the resulting utterance reestimation
+     * accumulators to the global reestimation accumulators */
+    accum_global(inv, state_seq, n_state,
+		 FALSE, FALSE, mean_reest, var_reest,
+		 FALSE);
+
+ all_done:
+    ckd_free((void *)scale);
+    for (i = 0; i < n_obs; i++) {
+	if (dscale[i])
+	    ckd_free((void *)dscale[i]);
+    }
+    ckd_free((void **)dscale);
+    
+    ckd_free(n_active_astate);
+    for (i = 0; i < n_obs; i++) {
+	ckd_free((void *)active_alpha[i]);
+	ckd_free((void *)active_astate[i]);
+	ckd_free((void *)bp[i]);
+    }
+    ckd_free((void *)active_alpha);
+    ckd_free((void *)active_astate);
+    ckd_free((void *)active_cb);
+    ckd_free((void **)bp);
+
+    if (denacc)
+	ckd_free_3d((void ***)denacc);
+
+    if (now_den)
+	ckd_free_3d((void ***)now_den);
+    if (now_den_idx)
+	ckd_free_3d((void ***)now_den_idx);
+
+    if (ret != S3_SUCCESS)
+	E_ERROR("viterbi update error in sentence %s\n", corpus_utt_brief_name());
+
+    return ret;
+}
+/* end */
 
 
 /*

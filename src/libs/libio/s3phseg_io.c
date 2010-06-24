@@ -168,3 +168,114 @@ s3phseg_free(s3phseg_t *phseg)
 		phseg = next;
 	}
 }
+
+/* the following function is used for MMIE training
+   lqin 2010-03 */
+int
+s3lattice_read(const char *fn,
+	       s3lattice_t **lattice)
+{
+  FILE *fp;
+  uint32 id;
+  char line[1024], temp[16];
+  s3lattice_t *out_lattice;
+  uint32 i, j, n;
+  
+  if ((fp = fopen(fn, "r")) == NULL) {
+    E_ERROR("Failed to open lattice file %s\n", fn);
+    return S3_ERROR;
+  }
+  
+  out_lattice = ckd_calloc(1, sizeof(*out_lattice));
+  
+  /* process file head */
+  /* read the number of total arcs */
+  fgets(line, sizeof(line), fp);
+  if (strstr(line, "Total arcs") == NULL) {
+    E_ERROR("Lattice Format Error, missing Total arcs\n");
+    goto error_out;
+  }
+  fgets(line, sizeof(line), fp);
+  n = sscanf(line, "%d", &out_lattice->n_arcs);
+  if (n!=1) {
+    E_ERROR("Lattice Format Error, missing Total arcs\n");
+    goto error_out;
+  }
+  if (out_lattice->n_arcs == 0) {
+    E_ERROR("No arc exits in the lattice\n");
+    goto error_out;
+  }
+
+  /* read the number of true arcs */
+  fgets(line, sizeof(line), fp);
+  if (strstr(line, "True arcs") == NULL) {
+    E_ERROR("Lattice Format Error, missing True arcs\n");
+    goto error_out;
+  }
+  fgets(line, sizeof(line), fp);
+  n = sscanf(line, "%d", &out_lattice->n_true_arcs);
+  if (n!=1) {
+    E_ERROR("Lattice Format Error, missing True arcs\n");
+    goto error_out;
+  }
+  if (out_lattice->n_true_arcs == 0) {
+    E_ERROR("No arc from the numerator lattice\n");
+    goto error_out;
+  }
+  if (out_lattice->n_true_arcs > out_lattice->n_arcs) {
+    E_ERROR("The number of arcs from numerator lattice is larger than the number of total arcs\n");
+    goto error_out;
+  }
+
+  /* read parameter lists */
+  fgets(line, sizeof(line), fp);
+  if (strstr(line, "arc_id") == NULL) {
+    E_ERROR("Lattice Format Error\n");
+    goto error_out;
+  }
+  
+  /* allocate memory for arcs */
+  out_lattice->arc = ckd_calloc(out_lattice->n_arcs, sizeof(*out_lattice->arc));
+  
+  i = 0;
+  /* Get each arc */
+  while (fscanf(fp, "%d", &id) != EOF) {/* arc id */
+    fscanf(fp, "%s", out_lattice->arc[i].word);/* word */
+    fscanf(fp, "%d", &out_lattice->arc[i].sf);/* start frame */
+    fscanf(fp, "%d", &out_lattice->arc[i].ef);/* end frame */
+    fscanf(fp, "%lf", &out_lattice->arc[i].lm_score);/* LM score */
+    fscanf(fp, "%d", &out_lattice->arc[i].n_prev_arcs);/* num of previous arcs */
+    fscanf(fp, "%d", &out_lattice->arc[i].n_next_arcs);/* num of succeeding arcs */
+    
+    /* read preceding arc ids */
+    fscanf(fp, "%s", temp);/* move over '<' */
+    if (out_lattice->arc[i].n_prev_arcs == 0) {
+      E_ERROR("No preceding arc exits\n");
+      goto error_out;
+    }
+    out_lattice->arc[i].prev_arcs = ckd_calloc(out_lattice->arc[i].n_prev_arcs, sizeof(int));
+    for (j=0; j<out_lattice->arc[i].n_prev_arcs; j++)
+      fscanf(fp, "%d", &out_lattice->arc[i].prev_arcs[j]);
+    
+    /* read succeeding arc ids */
+    fscanf(fp, "%s", temp);/* move over '<' */
+    if (out_lattice->arc[i].n_next_arcs == 0) {
+      E_ERROR("No succeeding arc exits\n");
+      goto error_out;
+    }
+    out_lattice->arc[i].next_arcs = ckd_calloc(out_lattice->arc[i].n_next_arcs, sizeof(int));
+    for (j=0; j<out_lattice->arc[i].n_next_arcs; j++)
+      fscanf(fp, "%d", &out_lattice->arc[i].next_arcs[j]);
+    
+    i++;
+  }
+  fclose(fp);
+  
+  *lattice = out_lattice;
+  
+  return S3_SUCCESS;
+ error_out:
+  fclose(fp);
+  return S3_ERROR;
+}
+/* end */

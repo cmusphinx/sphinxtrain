@@ -211,6 +211,88 @@ acmod_id_t *mk_phone_list(char **btw_mark,
 }
 
 
+/* the following functions are used for MMIE training
+   lqin 2010-03 */
+acmod_id_t *
+mk_word_phone_list(char **btw_mark,
+		   uint32 *n_phone,
+		   char *word,
+		   lexicon_t *lex)
+{
+  uint32 n_p;
+  lex_entry_t *e;
+  char *btw;
+  unsigned int i;
+  acmod_id_t *p;
+  
+  /*
+   * Determine the # of phones in the word.
+   */
+  
+  e = lexicon_lookup(lex, word);
+  if (e == NULL) {
+    E_WARN("Unable to lookup %s in the lexicon\n", word);
+    
+    return NULL;
+  }
+  n_p = e->phone_cnt;
+  
+  /*
+   * Allocate the phone sequence
+   */
+  p = ckd_calloc(n_p, sizeof(acmod_id_t));
+  
+  /*
+   * Allocate the between word markers
+   */
+  btw = ckd_calloc(n_p, sizeof(char));
+  
+  if (n_p != 0)
+    {
+      for (i = 0; i < n_p; i++) {
+	p[i] = e->ci_acmod_id[i];
+      }
+      
+      btw[n_p-1] = TRUE;/* mark word boundary following
+			   kth phone */
+    }
+  
+  *btw_mark = btw;
+  *n_phone = n_p;
+  
+  return p;
+}
+
+acmod_id_t *
+mk_boundary_phone(char *word,
+		  uint32 n_begin,
+		  lexicon_t *lex)
+{
+  uint32 n_p;
+  lex_entry_t *e;
+  acmod_id_t *p;
+  
+  e = lexicon_lookup(lex, word);
+  if (e == NULL) {
+    E_WARN("Unable to lookup %s in the lexicon\n", word);
+    
+    return NULL;
+  }
+  n_p = e->phone_cnt;
+  
+  p = ckd_calloc(1, sizeof(acmod_id_t));
+  
+  if (n_p != 0) {
+    if (n_begin == 1)
+      p[0] = e->ci_acmod_id[0];
+    else
+      p[0] = e->ci_acmod_id[n_p-1];
+  }
+  
+  return p;
+}
+/* end */
+
 
 /*
  * Log record.  Maintained by RCS.

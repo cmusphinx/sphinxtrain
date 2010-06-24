@@ -288,6 +288,118 @@ cvt2triphone(acmod_set_t *acmod_set,
 
     return S3_SUCCESS;
 }
+
+/* the following function is used for MMIE training
+   lqin 2010-03 */
+int
+cvt2triphone_mmie(acmod_set_t *acmod_set,
+		  acmod_id_t *phone,
+		  acmod_id_t *l_phone,
+		  acmod_id_t *r_phone,
+		  char *btw_mark,
+		  uint32 n_phone)
+{
+  uint32 i;
+  ci_acmod_id_t b = (ci_acmod_id_t)NO_ACMOD;
+  ci_acmod_id_t l = (ci_acmod_id_t)NO_ACMOD;
+  ci_acmod_id_t r = (ci_acmod_id_t)NO_ACMOD;
+  acmod_id_t tri_id;
+  word_posn_t posn;
+  static int spoke_my_peace = FALSE;
+  acmod_id_t sil = acmod_set_name2id(acmod_set, "SIL");
+  char *word_posn_map = WORD_POSN_CHAR_MAP;
+
+  if (acmod_set_n_multi(acmod_set) == 0) {
+    /* nothing to do */
+    
+    if (!spoke_my_peace) {
+      fflush(stdout);
+      E_INFO("no multiphones defined, no conversion done\n");
+      spoke_my_peace = TRUE;
+      fflush(stderr);
+    }
+    return S3_SUCCESS;
+  }
+  
+  /* if left phone and right phone is filler */
+  if (acmod_set_has_attrib(acmod_set, *l_phone, "filler"))
+    *l_phone = sil;
+  if (acmod_set_has_attrib(acmod_set, *r_phone, "filler"))
+    *r_phone = sil;
+  
+  for (i = 0, l = *l_phone, r = sil, posn = WORD_POSN_END; i < n_phone-1; i++) {
+    /* get new right context */
+    r = phone[i+1];
+    if (acmod_set_has_attrib(acmod_set, r, "filler"))
+      r = sil;
+    
+    b = phone[i];
+    
+    /* determine between word position {begin|start|single} */
+    posn = btw_posn(btw_mark[i], posn);
+    
+    if (!acmod_set_has_attrib(acmod_set, b, "filler")) {
+      tri_id = acmod_set_tri2id(acmod_set,
+				b, l, r, posn);
+      if (tri_id != NO_ACMOD) {
+	/* got good triphone, so replace CI w/ tri */
+	phone[i] = tri_id;
+      }
+      else {
+	/* Try to back off to other word positions */
+	int j;
+	
+	for (j = 0; j < N_WORD_POSN; ++j) {
+	  tri_id = acmod_set_tri2id(acmod_set,
+				    b, l, r, j);
+	  if (tri_id != NO_ACMOD) {
+	    phone[i] = tri_id;
+	    break;
+	  }
+	}
+      }
+    }
+    else {
+      /* phone[i] is a filler phone, so just leave it as is */
+      /* Change b to SIL for triphone context purposes */
+      b = sil;
+    }
+    
+    /* Set next left context is the current base phone (where filler phones
+     * are mapped to SIL) */
+    l = b;
+  }
+  
+  b = phone[i];
+  r = *r_phone;
+  
+  /* At this point, b is the right context of
+   * the next to last phone.  Typically, this
+   * is sil or some other filler phone. */
+  
+  if (!acmod_set_has_attrib(acmod_set, b, "filler")) {
+    
+    assert( btw_mark[i] );
+    
+    posn = btw_posn(btw_mark[i], posn);
+    
+    tri_id = acmod_set_tri2id(acmod_set,
+			      b, l, r, posn);
+    if (tri_id != NO_ACMOD)
+      phone[i] = tri_id;
+    else {
+      E_WARN("Missing triphone, (%s %s %s %c), left as CI phone",
+	     acmod_set_id2name(acmod_set, b),
+	     acmod_set_id2name(acmod_set, l),
+	     acmod_set_id2name(acmod_set, r),
+	     word_posn_map[(int)posn]);
+    }
+  }
+  
+  return S3_SUCCESS;
+}
+/* end */
+
 
 /*
  * Log record.  Maintained by RCS.

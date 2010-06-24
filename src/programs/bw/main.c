@@ -92,6 +92,12 @@
 
 #define DUMP_RETRY_PERIOD	3	/* If a count dump fails, retry every # of sec's */
 
+/* the following parameters are used for MMIE training 
+   lqin 2010-03 */
+#define LOG_ZERO	-1.0E10
+static float32 lm_scale = 11.5;
+/* end */
+
 /* FIXME: Should go in libutil */
 static char *
 string_join(const char *base, ...)
@@ -1045,7 +1051,885 @@ main_reestimate(model_inventory_t *inv,
     if (lda)
 	ckd_free_3d((void ***)lda);
 }
+
+/* the following functions are used for MMIE training
+   lqin 2010-03 */
+
+/* x=log(a) y=log(b), log_add(x,y) = log(a+b) */
+float64
+log_add(float64 x, float64 y)
+{
+  float64 z;
+  
+  if (x<y)
+    return log_add(y, x);
+  if (y == LOG_ZERO)
+    return x;
+  else
+    {
+      z = exp(y-x);
+      return x+log(1.0+z);
+    }
+}
+
+/* forward-backward computation on lattice */
+int
+lat_fwd_bwd(s3lattice_t *lat)
+{
+  int i, j;
+  uint32 id;
+  float64 ac_score, lm_score;
+  
+  /* step forward */
+  for (i=0; i<lat->n_arcs; i++) {
+    /* initialise alpha */
+    lat->arc[i].alpha = LOG_ZERO;
+    
+    if (lat->arc[i].good_arc == 1) {
+      /* get the acoustic and lm socre for a word hypothesis */
+      ac_score = lat->arc[i].ac_score;
+      lm_score = lat->arc[i].lm_score * lm_scale;
+      
+      /* compute alpha */
+      for (j=0; j<lat->arc[i].n_prev_arcs; j++) {
+	id = lat->arc[i].prev_arcs[j];
+	if (id == 0) {
+	  if (lat->arc[i].sf == 1) {
+	    lat->arc[i].alpha = log_add(lat->arc[i].alpha, 0);
+	  }
+	}
+	else {
+	  if (lat->arc[id-1].good_arc == 1)
+	    lat->arc[i].alpha = log_add(lat->arc[i].alpha, lat->arc[id-1].alpha);
+	}
+      }
+      lat->arc[i].alpha += ac_score + lm_score;
+    }
+  }
+  
+  /* initialise overall log-likelihood */
+  lat->prob = LOG_ZERO;
+  
+  /* step backward */
+  for (i=lat->n_arcs-1; i>=0 ;i--) {
+    /* initialise beta */
+    lat->arc[i].beta = LOG_ZERO;
+    
+    if (lat->arc[i].good_arc == 1) {
+      /* get the acoustic and lm socre for a word hypothesis */
+      ac_score = lat->arc[i].ac_score;
+      lm_score = lat->arc[i].lm_score * lm_scale;
+      
+      /* compute beta */
+      for (j=0; j<lat->arc[i].n_next_arcs; j++) {
+	id = lat->arc[i].next_arcs[j];
+	if (id == 0) {
+	  lat->arc[i].beta = log_add(lat->arc[i].beta, 0);
+	}
+	else {
+	  if (lat->arc[id-1].good_arc == 1);
+	  lat->arc[i].beta = log_add(lat->arc[i].beta, lat->arc[id-1].beta);
+	}
+      }
+      lat->arc[i].beta += ac_score + lm_score;
+      
+      /* compute overall log-likelihood loglid=beta(1)=alpha(Q) */
+      if (lat->arc[i].sf == 1)
+	lat->prob = log_add(lat->prob, lat->arc[i].beta);
+    }
+  }
+  
+  /* compute gamma */
+  for (i=0; i<lat->n_arcs; i++)
+    {
+      /* initialise gamma */
+      lat->arc[i].gamma = LOG_ZERO;
+      if (lat->arc[i].good_arc == 1)
+	{
+	  ac_score = lat->arc[i].ac_score;
+	  lm_score = lat->arc[i].lm_score * lm_scale;
+	  lat->arc[i].gamma = lat->arc[i].alpha + lat->arc[i].beta - (ac_score + lm_score + lat->prob);
+	}
+    }
+
+  /* compute the posterior probability of the true path */
+  lat->postprob = 0;
+  for (i=lat->n_arcs-lat->n_true_arcs; i<lat->n_arcs; i++)
+    lat->postprob += lat->arc[i].gamma;
+  
+  return S3_SUCCESS;
+}
+
+/* mmie training: take random left and right context for viterbi run */
+int
+mmi_rand_train(model_inventory_t *inv,
+	       model_def_t *mdef,
+	       lexicon_t *lex,
+	       vector_t **f,
+	       s3lattice_t *lat,
+	       int32 sil_del,
+	       char* silence_str,
+	       float64 a_beam,
+	       uint32 mean_reest,
+	       uint32 var_reest,
+	       float32 ***lda)
+{
+  uint32 k, n;
+  uint32 n_rand;/* random number */
+  uint32 n_max_run;/* the maximum number of viterbi run */
+  char pword[128], cword[128], nword[128];      /* previous, current, next word */
+  vector_t **arc_f = NULL;/* feature vector for a word arc */
+  uint32 n_word_obs;/* frames of a word arc */
+  uint32 rand_prev_id, rand_next_id;/* randomly selected previous and next arc id */
+  uint32 *lphone, *rphone;        /* the last and first phone of previous and next word hypothesis */
+  state_t *state_seq;/* HMM state sequence for an arc */
+  uint32 n_state = 0;/* number of HMM states */
+  float64 log_lik;/* log-likelihood of an arc */
+  
+  /* viterbi run on each arc */
+  printf(" %5u", lat->n_arcs);
+  
+  for(n=0; n<lat->n_arcs; n++) {
+
+    /* total observations of this arc */
+    /* this is not very accurate, as it consumes one more frame for each word at the end */
+    n_word_obs = lat->arc[n].ef - lat->arc[n].sf + 1;
+    
+    /* get the feature for this arc */
+    arc_f = (vector_t **) ckd_calloc(n_word_obs, sizeof(vector_t *));
+    for (k=0; k<n_word_obs; k++)
+      arc_f[k] = f[k+lat->arc[n].sf-1];
+    
+    /* in case the viterbi run fails at a certain left and right context,
+       at most randomly pick context n_prev_arcs * n_next_arcs times */
+    n_max_run = lat->arc[n].n_prev_arcs * lat->arc[n].n_next_arcs;
+    
+    /* seed the random-number generator with current time */
+    srand( (unsigned)time( NULL ) );
+    
+    /* randomly pick the left and right context */
+    while (n_max_run > 0 && lat->arc[n].good_arc == 0) {
+      
+      /* get left arc id */
+      if (lat->arc[n].n_prev_arcs == 1) {
+	n_rand = 0;
+      }
+      else {
+	n_rand = (uint32) (((double) rand() / (((double) RAND_MAX) + 1)) * lat->arc[n].n_prev_arcs );
+      }
+      rand_prev_id = lat->arc[n].prev_arcs[n_rand];
+
+      /* get right arc id */
+      if (lat->arc[n].n_next_arcs == 1) {
+	n_rand = 0;
+      }
+      else {
+	n_rand = (uint32) (((double) rand() / (((double) RAND_MAX) + 1)) * lat->arc[n].n_next_arcs );
+      }
+      rand_next_id = lat->arc[n].next_arcs[n_rand];
+      
+      /* get the triphone list */
+      strcpy(cword, lat->arc[n].word);
+      if (rand_prev_id == 0)
+	strcpy(pword, "<s>");
+      else
+	strcpy(pword, lat->arc[rand_prev_id-1].word);
+      lphone = mk_boundary_phone(pword, 0, lex);
+      if (rand_next_id == 0)
+	strcpy(nword, "</s>");
+      else
+	strcpy(nword, lat->arc[rand_next_id-1].word);
+      rphone = mk_boundary_phone(nword, 1, lex);
+
+      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, sil_del, silence_str);
+
+      /* viterbi compuation to get the acoustic score for a word hypothesis */
+      if (mmi_viterbi_run(&log_lik,
+			  arc_f, n_word_obs,
+			  state_seq, n_state,
+			  inv,
+			  a_beam) == S3_SUCCESS) {
+	lat->arc[n].good_arc = 1;
+	lat->arc[n].ac_score = log_lik;
+	lat->arc[n].best_prev_arc = rand_prev_id;
+	lat->arc[n].best_next_arc = rand_next_id;
+      }
+
+      n_max_run--;
+      ckd_free(lphone);
+      ckd_free(rphone);
+    }
+    
+    ckd_free(arc_f);
+    
+    if (lat->arc[n].good_arc == 0) {
+      E_INFO("arc_%d is ignored (viterbi run failed)\n", n+1);
+    }
+  }
+
+  /* lattice-based forward-backward computation */
+  lat_fwd_bwd(lat);
+
+  /* update Gaussian parameters */
+  for (n=0; n<lat->n_arcs; n++) {
+    
+    /* only if the arc was successful in viterbi run */
+    if (lat->arc[n].good_arc == 1) {
+      
+      /* total observations of this arc */
+      n_word_obs = lat->arc[n].ef - lat->arc[n].sf + 1;
+      arc_f = (vector_t **) ckd_calloc(n_word_obs, sizeof(vector_t *));
+      for (k=0; k<n_word_obs; k++)
+	arc_f[k] = f[k+lat->arc[n].sf-1];
+      
+      /* get the randomly picked left and right context */
+      rand_prev_id = lat->arc[n].best_prev_arc;
+      rand_next_id = lat->arc[n].best_next_arc;
+      
+      /* get the triphone list */
+      strcpy(cword, lat->arc[n].word);
+      if (rand_prev_id == 0)
+	strcpy(pword, "<s>");
+      else
+	strcpy(pword, lat->arc[rand_prev_id-1].word);
+      lphone = mk_boundary_phone(pword, 0, lex);
+      if (rand_next_id == 0)
+	strcpy(nword, "</s>");
+      else
+	strcpy(nword, lat->arc[rand_next_id-1].word);
+      rphone = mk_boundary_phone(nword, 1, lex);
+      
+      /* make state list */
+      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, sil_del, silence_str);
+      
+      /* viterbi update model parameters */
+      if (mmi_viterbi_update(arc_f, n_word_obs,
+			     state_seq, n_state,
+			     inv,
+			     a_beam,
+			     mean_reest,
+			     var_reest,
+			     lat->arc[n].gamma,
+			     lda) != S3_SUCCESS) {
+	E_ERROR("arc_%d is ignored (viterbi update failed)\n", n+1);
+      }
+      ckd_free(arc_f);
+      ckd_free(lphone);
+      ckd_free(rphone);
+    }
+  }
+  
+  return S3_SUCCESS;
+}
+
+/* mmie training: take the best left and right context for viterbi run */
+int
+mmi_best_train(model_inventory_t *inv,
+	       model_def_t *mdef,
+	       lexicon_t *lex,
+	       vector_t **f,
+	       s3lattice_t *lat,
+	       int32 sil_del,
+	       char* silence_str,
+	       float64 a_beam,
+	       uint32 mean_reest,
+	       uint32 var_reest,
+	       float32 ***lda)
+{
+  uint32 i, j, k, n;
+  char pword[128], cword[128], nword[128];      /* previous, current and next word hypothesis */
+  vector_t **arc_f = NULL;/* feature vector for a word arc */
+  uint32 n_word_obs;/* frames of a word arc */
+  uint32 prev_id, next_id;/* previous and next arc id */
+  uint32 *lphone, *rphone;/* the last and first phone of previous and next arc */
+  uint32 prev_lphone, prev_rphone;/* the lphone and rphone of previous viterbi run on arc */
+  state_t *state_seq;/* HMM state sequence for an arc */
+  uint32 n_state = 0;/* number of HMM states */
+  float64 log_lik;/* log-likelihood of an arc */
+  
+  /* viterbi run on each arc */
+  printf(" %5u", lat->n_arcs);
+  
+  for(n=0; n<lat->n_arcs; n++) {
+    
+    /* total observations of this arc */
+    /* this is not very accurate, as it consumes one more frame for each word at the end */
+    n_word_obs = lat->arc[n].ef - lat->arc[n].sf + 1;
+    
+    /* get the feature for this arc */
+    arc_f = (vector_t **) ckd_calloc(n_word_obs, sizeof(vector_t *));
+    for (k=0; k<n_word_obs; k++)
+      arc_f[k] = f[k+lat->arc[n].sf-1];
+    
+    /* now try to find the best left and right context for viterbi run */
+    /* current word hypothesis */
+    strcpy(cword, lat->arc[n].word);
+    
+    /* initialise previous lphone */
+    prev_lphone = 0;
+    
+    /* try all left context */
+    for (i=0; i<lat->arc[n].n_prev_arcs; i++) {
+      /* preceding word */
+      prev_id = lat->arc[n].prev_arcs[i];
+      if (prev_id == 0) {
+	strcpy(pword, "<s>");
+      }
+      else {
+	strcpy(pword, lat->arc[prev_id-1].word);
+      }
+      
+      /* get the left boundary triphone */
+      lphone = mk_boundary_phone(pword, 0, lex);
+      
+      /* if the previous preceeding arc has different context as the new one */
+      if (*lphone != prev_lphone || i == 0) {
+	
+	/* initialize rphone */
+	prev_rphone = 0;
+	
+	/* try all right context */
+	for(j=0; j<lat->arc[n].n_next_arcs; j++) {
+	  /* succeeding word */
+	  next_id = lat->arc[n].next_arcs[j];
+	  if (next_id == 0)
+	    strcpy(nword, "</s>");
+	  else
+	    strcpy(nword, lat->arc[next_id-1].word);
+	    
+	  /* get the right boundary triphone */
+	  rphone = mk_boundary_phone(nword, 1, lex);
+	    
+	  /* if the previous succeeding arc has different context as the new one */
+	  if (*rphone != prev_rphone || j == 0) {
+	        
+	    /* make state list */
+	    state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, sil_del, silence_str);
+	        
+	    /* viterbi compuation to get the acoustic score for a word hypothesis */
+	    if (mmi_viterbi_run(&log_lik,
+				arc_f, n_word_obs,
+				state_seq, n_state,
+				inv,
+				a_beam) == S3_SUCCESS) {
+	      if (lat->arc[n].good_arc == 0) {
+		lat->arc[n].good_arc = 1;
+		lat->arc[n].ac_score = log_lik;
+		lat->arc[n].best_prev_arc = lat->arc[n].prev_arcs[i];
+		lat->arc[n].best_next_arc = lat->arc[n].next_arcs[j];
+	      }
+	      else if (log_lik > lat->arc[n].ac_score) {
+		lat->arc[n].ac_score = log_lik;
+		lat->arc[n].best_prev_arc = lat->arc[n].prev_arcs[i];
+		lat->arc[n].best_next_arc = lat->arc[n].next_arcs[j];
+	      }
+	    }
+	    /* save the current right context */
+	    prev_rphone = *rphone;
+	  }
+	  ckd_free(rphone);
+	}
+	/* save the current left context */
+	prev_lphone = *lphone;
+      }
+      ckd_free(lphone);
+    }
+    
+    ckd_free(arc_f);
+    
+    if (lat->arc[n].good_arc == 0) {
+      E_INFO("arc_%d is ignored (viterbi run failed)\n", n+1);
+    }
+  }
+  
+  /* lattice-based forward-backward computation */
+  lat_fwd_bwd(lat);
+  
+  /* update Gaussian parameters */
+  for (n=0; n<lat->n_arcs; n++) {
+    
+    /* only if the arc was successful in viterbi run */
+    if (lat->arc[n].good_arc == 1) {
+      
+      /* total observations of this arc */
+      n_word_obs = lat->arc[n].ef - lat->arc[n].sf + 1;
+      arc_f = (vector_t **) ckd_calloc(n_word_obs, sizeof(vector_t *));
+      for (k=0; k<n_word_obs; k++)
+	arc_f[k] = f[k+lat->arc[n].sf-1];
+      
+      /* get the best left and right context */
+      prev_id = lat->arc[n].best_prev_arc;
+      next_id = lat->arc[n].best_next_arc;
+      
+      /* get best triphone list */
+      strcpy(cword, lat->arc[n].word);
+      if (prev_id == 0)
+	strcpy(pword, "<s>");
+      else
+	strcpy(pword, lat->arc[prev_id-1].word);
+      lphone = mk_boundary_phone(pword, 0, lex);
+      if (next_id == 0)
+	strcpy(nword, "</s>");
+      else
+	strcpy(nword, lat->arc[next_id-1].word);
+      rphone = mk_boundary_phone(nword, 1, lex);
+      
+      /* make state list */
+      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, sil_del, silence_str);
+      
+      /* viterbi update model parameters */
+      if (mmi_viterbi_update(arc_f, n_word_obs,
+			     state_seq, n_state,
+			     inv,
+			     a_beam,
+			     mean_reest,
+			     var_reest,
+			     lat->arc[n].gamma,
+			     lda) != S3_SUCCESS) {
+	E_ERROR("arc_%d is ignored (viterbi update failed)\n", n+1);
+      }
+      ckd_free(arc_f);
+      ckd_free(lphone);
+      ckd_free(rphone);
+    }
+  }
+  
+  return S3_SUCCESS;
+}
+
+/* mmie training: use context-independent hmms for word boundary models */
+int
+mmi_ci_train(model_inventory_t *inv,
+	     model_def_t *mdef,
+	     lexicon_t *lex,
+	     vector_t **f,
+	     s3lattice_t *lat,
+	     int32 sil_del,
+	     char* silence_str,
+	     float64 a_beam,
+	     uint32 mean_reest,
+	     uint32 var_reest,
+	     float32 ***lda)
+{
+  uint32 k, n;
+  vector_t **arc_f = NULL;/* feature vector for a word arc */
+  uint32 n_word_obs;/* frames of a word arc */
+  state_t *state_seq;/* HMM state sequence for an arc */
+  uint32 n_state = 0;/* number of HMM states */
+  float64 log_lik;/* log-likelihood of an arc */
+  
+  /* viterbi run on each arc */
+  printf(" %5u", lat->n_arcs);
+
+  for(n=0; n<lat->n_arcs; n++) {
+    
+    /* total observations of this arc */
+    /* this is not very accurate, as it consumes one more frame for each word at the end */
+    n_word_obs = lat->arc[n].ef - lat->arc[n].sf + 1;
+    
+    /* get the feature for this arc */
+    arc_f = (vector_t **) ckd_calloc(n_word_obs, sizeof(vector_t *));
+    for (k=0; k<n_word_obs; k++)
+      arc_f[k] = f[k+lat->arc[n].sf-1];
+    
+    /* make state list */
+    state_seq = next_utt_states(&n_state, lex, inv, mdef, lat->arc[n].word, sil_del, silence_str);
+    
+    /* viterbi compuation to get the acoustic score for a word hypothesis */
+    if (mmi_viterbi_run(&log_lik,
+			arc_f, n_word_obs,
+			state_seq, n_state,
+			inv,
+			a_beam) == S3_SUCCESS) {
+      lat->arc[n].good_arc = 1;
+      lat->arc[n].ac_score = log_lik;
+    }
+    
+    ckd_free(arc_f);
+    
+    if (lat->arc[n].good_arc == 0) {
+      E_INFO("arc_%d is ignored (viterbi run failed)\n", n+1);
+    }
+  }
+  
+  /* lattice-based forward-backward computation */
+  lat_fwd_bwd(lat);
+  
+  /* update Gaussian parameters */
+  for (n=0; n<lat->n_arcs; n++) {
+    
+    /* only if the arc was successful in viterbi run */
+    if (lat->arc[n].good_arc == 1) {
+      
+      /* total observations of this arc */
+      n_word_obs = lat->arc[n].ef - lat->arc[n].sf + 1;
+      arc_f = (vector_t **) ckd_calloc(n_word_obs, sizeof(vector_t *));
+      for (k=0; k<n_word_obs; k++)
+	arc_f[k] = f[k+lat->arc[n].sf-1];
+      
+      /* make state list */
+      state_seq = next_utt_states(&n_state, lex, inv, mdef, lat->arc[n].word, sil_del, silence_str);
+      
+      /* viterbi update model parameters */
+      if (mmi_viterbi_update(arc_f, n_word_obs,
+			     state_seq, n_state,
+			     inv,
+			     a_beam,
+			     mean_reest,
+			     var_reest,
+			     lat->arc[n].gamma,
+			     lda) != S3_SUCCESS) {
+	E_ERROR("arc_%d is ignored (viterbi update failed)\n", n+1);
+      }
+      
+      ckd_free(arc_f);
+    }
+  }
+  
+  return S3_SUCCESS;
+}
+
+/* main mmie training program */
+void
+main_mmi_reestimate(model_inventory_t *inv,
+		    lexicon_t *lex,
+		    model_def_t *mdef)
+{
+  vector_t *mfcc;/* utterance cepstra */
+  uint32 n_frame;/* # of cepstrum frames  */
+  uint32 svd_n_frame;        /* # of cepstrum frames  */
+  uint32 mfc_veclen;        /* # of MFC coefficients per frame */
+  vector_t **f;/* independent feature streams derived from cepstra */
+  float32 ***lda = NULL;
+  uint32 n_lda = 0, m, n;
+  uint32 total_frames;        /* # of frames over the corpus */
+  float64 a_beam;/* alpha pruning beam */
+  float64 b_beam;/* beta pruning beam */
+  float32 spthresh;        /* state posterior probability threshold */
+  uint32 seq_no;/* sequence # of utterance in corpus */
+  uint32 mean_reest;        /* if TRUE, reestimate means */
+  uint32 var_reest;        /* if TRUE, reestimate variances */
+  uint32 sil_del;/* if TRUE optionally delete silence at the end */
+
+  char *lat_dir;        /* lattice directory */
+  char *lat_ext;/* denominator or numerator lattice */
+  char *mmi_type;/* different methods to get left and right context for Viterbi run on lattice */
+  uint32 n_mmi_type = 0;/* convert the mmi_type string to a int */
+  s3lattice_t *lat = NULL;/* input lattice */
+  float64 total_log_postprob = 0;/* total posterior probability of the correct hypotheses */
+  uint32 n_utt_fail = 0;        /* number of sentences failed */
+  uint32 i;
+
+  char *trans;
+  char* silence_str;
+  uint32 in_veclen;
+  uint32 n_utt;
+
+  uint32 *del_sf;
+  uint32 *del_ef;
+  uint32 n_del;
+
+  uint32 no_retries=0;
+
+  uint32 maxuttlen;
+  uint32 n_frame_skipped = 0;
+
+  /* get rid of unnecessary arguments */
+  if (cmd_ln_int32("-2passvar")) {
+    E_FATAL("for MMIE training, set -2passvar to no\n");
+  }
+  if (cmd_ln_int32("-fullvar")) {
+    E_FATAL("current MMIE training don't support full variance matrix, set -fullvar to no\n");
+  }
+  if (cmd_ln_int32("-timing")) {
+    E_FATAL("current MMIE training don't support timing, set -timing to no\n");
+  }
+  if (cmd_ln_int32("-mixwreest")) {
+    E_FATAL("current MMIE training don't support mixture weight reestimation, set -mixwreest to no\n");
+  }
+  if (cmd_ln_int32("-tmatreest")) {
+    E_FATAL("current MMIE training don't support transition matrix reestimation, set -tmatreest to no\n");
+  }
+  if (cmd_ln_int32("-outputfullpath")) {
+    E_FATAL("current MMIE training don't support outputfullpath, set -outputfullpath to no\n");
+  }
+  if (cmd_ln_int32("-fullsuffixmatch")) {
+    E_FATAL("current MMIE training don't support fullsuffixmatch, set -fullsuffixmatch to no\n");
+  }
+  if (cmd_ln_access("-ckptintv")) {
+    E_FATAL("current MMIE training don't support ckptintv, remove -ckptintv\n");
+  }
+  if (cmd_ln_access("-pdumpdir")) {
+    E_FATAL("current MMIE training don't support pdumpdir, set -pdumpdir to no\n");
+  }
+
+  /* get lattice related parameters */
+  lat_dir = (char *) cmd_ln_access("-latdir");
+  lat_ext = (char *) cmd_ln_access("-latext");
+  if (strcmp(lat_ext, "denlat") != 0 && strcmp(lat_ext, "numlat") != 0) {
+    E_FATAL("-latext should be either denlat or numlat\n");
+  }
+  else {
+    printf("MMIE training for %s \n", lat_ext);
+  }
+  mmi_type = (char *) cmd_ln_access("-mmie_type");
+  if (strcmp(mmi_type, "rand") == 0) {
+    n_mmi_type = 1;
+    printf("MMIE training: take random left and right context for Viterbi run \n");
+  }
+  else if (strcmp(mmi_type, "best") == 0) {
+    n_mmi_type = 2;
+    printf("MMIE training: take the best left and right context for Viterbi run \n");
+  }
+  else if (strcmp(mmi_type, "ci") == 0) {
+    printf("MMIE training: use context-independent hmms for boundary word models \n");
+    n_mmi_type = 3;
+  }
+  else {
+    E_FATAL("-mmie_type should be rand, best or ci\n");
+  }
+  lm_scale = *(float32 *)cmd_ln_access("-lw");
+
+  mean_reest = *(int32 *)cmd_ln_access("-meanreest");
+  var_reest = *(int32 *)cmd_ln_access("-varreest");
+  sil_del    = *(int32 *)cmd_ln_access("-sildel");
+  silence_str = (char *)cmd_ln_access("-siltag");
+  in_veclen = cmd_ln_int32("-ceplen");
+  
+  /* Read in an LDA matrix for accumulation. */
+  if (cmd_ln_access("-ldafn") && cmd_ln_boolean("-ldaaccum")) {
+    lda = lda_read(cmd_ln_access("-ldafn"), &n_lda,
+		   &m, &n);
+  }
+
+  if (cmd_ln_access("-accumdir") == NULL) {
+    E_WARN("NO ACCUMDIR SET.  No counts will be written; assuming debug\n");
+    return;
+  }
+
+  if (!mean_reest && !var_reest) {
+    E_FATAL("No reestimation specified! Nothing done. Set -meanreest or -varreest \n");
+    return;
+  }
+
+  total_frames = 0;
+
+  a_beam = *(float64 *)cmd_ln_access("-abeam");
+  b_beam = *(float64 *)cmd_ln_access("-bbeam");
+  spthresh = *(float32 *)cmd_ln_access("-spthresh");
+  maxuttlen = *(int32 *)cmd_ln_access("-maxuttlen");
+
+  /* Begin by skipping over some (possibly zero) # of utterances.
+   * Continue to process utterances until there are no more (either EOF
+   * or end of run). */
+  seq_no = corpus_get_begin();
+
+  printf("column defns\n");
+  printf("\t<seq>\n");
+  printf("\t<id>\n");
+  printf("\t<n_frame_in>\n");
+  printf("\t<n_frame_del>\n");
+  printf("\t<lattice_cat>\n");
+  printf("\t<n_word>\n");
+  printf("\t<lattice_log_postprob>\n");
+
+  /* accumulate density for each training sentence */
+  n_utt = 0;
+  while (corpus_next_utt()) {
+    printf("utt> %5u %25s",  seq_no, corpus_utt());
+    
+    if (in_veclen == S2_CEP_VECLEN) {
+      if (corpus_get_mfcc(&mfcc, &n_frame, &mfc_veclen) < 0) {
+	E_FATAL("Can't read input features\n");
+      }
+      assert(mfc_veclen == in_veclen);
+    }
+    else {
+      if (corpus_get_generic_featurevec(&mfcc, &n_frame, in_veclen) < 0) {
+	E_FATAL("Can't read input features\n");
+      }
+    }
+    
+    printf(" %4u", n_frame);
+      
+    if (n_frame < 9) {
+      E_WARN("utt %s too short\n", corpus_utt());
+      if (mfcc) {
+	ckd_free(mfcc[0]);
+	ckd_free(mfcc);
+      }
+      continue;
+    }
+      
+    if ((maxuttlen > 0) && (n_frame > maxuttlen)) {
+      E_INFO("utt # frames > -maxuttlen; skipping\n");
+      n_frame_skipped += n_frame;
+      if (mfcc) {
+	ckd_free(mfcc[0]);
+	ckd_free(mfcc);
+      }
+      continue;
+    }
+      
+    corpus_get_sildel(&del_sf, &del_ef, &n_del);
+    silcomp_set_del_seg(del_sf, del_ef, n_del);
+      
+    svd_n_frame = n_frame;
+      
+    /* compute feature vectors from the MFCC data */
+    f = feat_compute(mfcc, &n_frame);
+      
+    printf(" %4u", n_frame - svd_n_frame);
+      
+    /* Get the transcript */
+    corpus_get_sent(&trans);
+
+    /* accumulate density counts on lattice */
+    if (load_lattice(&lat, lat_dir, lat_ext) == S3_SUCCESS) {
+      
+      /* different type of mmie training */
+      switch (n_mmi_type) {
+	/* take random left and right context for viterbi run */
+      case 1:
+	{
+	  if (mmi_rand_train(inv, mdef, lex, f, lat,
+			     sil_del, silence_str, a_beam, mean_reest,
+			     var_reest, lda) == S3_SUCCESS) {
+	    total_log_postprob += lat->postprob;
+	    printf("   %e", lat->postprob);
+	  }
+	  else {
+	    n_utt_fail++;
+	  }
+	  break;
+	}
+	/* take the best left and right context for viterbi run */
+      case 2:
+	{
+	  if (mmi_best_train(inv, mdef, lex, f, lat,
+			     sil_del, silence_str, a_beam, mean_reest,
+			     var_reest, lda) == S3_SUCCESS) {
+	    total_log_postprob += lat->postprob;
+	    printf("   %e", lat->postprob);
+	  }
+	  else {
+	    n_utt_fail++;
+	  }
+	  break;
+	}
+	/* use context-independent hmms for word boundary models */
+      case 3:
+	{
+	  if (mmi_ci_train(inv, mdef, lex, f, lat,
+			   sil_del, silence_str, a_beam, mean_reest,
+			   var_reest, lda) == S3_SUCCESS) {
+	    total_log_postprob += lat->postprob;
+	    printf("   %e", lat->postprob);
+	  }
+	  else {
+	    n_utt_fail++;
+	  }
+	  break;
+	}
+	/* mmi_type error */
+      default:
+	{
+	  E_FATAL("Invalid -mmie_type, try rand, best or ci \n");
+	  break;
+	}
+      }
+      
+      /* free memory for lattice */
+      for(i=0; i<lat->n_arcs; i++) {
+	ckd_free(lat->arc[i].prev_arcs);
+	ckd_free(lat->arc[i].next_arcs);
+      }
+      ckd_free(lat->arc);
+      ckd_free(lat);
+    }
+    else {
+      E_WARN("Can't read input lattice");
+    }
+    
+    free(mfcc[0]);
+    ckd_free(mfcc);
+    feat_free(f);
+    free(trans);
+      
+    seq_no++;
+
+    printf("\n");
+    fflush(stdout);
+      
+    ++n_utt;
+  }
+    
+  printf ("overall> %s %u (-%u) %e %e",
+	  get_host_name(),
+	  n_utt-n_utt_fail,
+	  n_utt_fail,
+	  (n_utt-n_utt_fail>0 ? total_log_postprob/(n_utt-n_utt_fail) : 0.0),
+	  total_log_postprob);
+  
+  printf("\n");
+    
+  fflush(stdout);
+
+  no_retries=0;
+  /* dump the accumulators to a file system */
+  while (cmd_ln_access("-accumdir") != NULL &&
+	 accum_mmie_dump(cmd_ln_access("-accumdir"),
+			 lat_ext,
+			 inv,
+			 mean_reest,
+			 var_reest) != S3_SUCCESS) {
+    static int notified = FALSE;
+    time_t t;
+    char time_str[64];
+      
+    /*
+     * If we were not able to dump the parameters, write one log entry
+     * about the failure
+     */
+    if (notified == FALSE) {
+      t = time(NULL);
+      strcpy(time_str, (const char *)ctime((const time_t *)&t));
+      /* nuke the newline at the end of this. */
+      time_str[strlen(time_str)-1] = '\0';
+      E_WARN("Count dump failed on %s.  Retrying dump every %3.1f hour until success.\n",
+	     time_str, DUMP_RETRY_PERIOD/3600.0);
+      
+      notified = TRUE;
+      no_retries++;
+      if(no_retries>10){ 
+	E_FATAL("Failed to get the files after 10 retries(about 5 minutes).\n ");
+      }
+    }
+    sleep(DUMP_RETRY_PERIOD);
+  }
+    
+  /* Write a log entry on success */
+  if (cmd_ln_access("-accumdir"))
+    E_INFO("Counts saved to %s\n", cmd_ln_access("-accumdir"));
+  else
+    E_INFO("Counts NOT saved.\n");
+    
+  /* free model parameters memory */
+  mod_inv_free(inv);
+    
+  /* free lda memory */
+  if (lda)
+    ckd_free_3d((void ***)lda);
+    
+  /* free model definition memory */
+  model_def_free(mdef);
+    
+}
+/* end */
+
 
+/* the following main() function is modified for MMIE training
+   lqin 2010-03 */
 int main(int argc, char *argv[])
 {
     model_inventory_t *inv;
@@ -1059,10 +1943,16 @@ int main(int argc, char *argv[])
 	E_FATAL("initialization failed\n");
     }
 
-    main_reestimate(inv, lex, mdef, *(int32 *)cmd_ln_access("-viterbi"));
-		    
+    if (cmd_ln_int32("-mmie")) {
+      main_mmi_reestimate(inv, lex, mdef);
+    }
+    else {
+      main_reestimate(inv, lex, mdef, *(int32 *)cmd_ln_access("-viterbi"));
+    }
+
     return 0;
 }
+/* end */
 
 /*
  * Log record.  Maintained by RCS.

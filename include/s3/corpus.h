@@ -239,6 +239,12 @@ corpus_provides_ddcode(void);
 int
 corpus_get_ddcode(unsigned char **ddcode, uint32 *n_frame);
 
+/* the following function is used for MMIE training
+   lqin 2010-03 */
+int
+load_lattice(s3lattice_t **out_lattice, char *lat_dir, char *lat_ext);
+/* end */
+
 #ifdef __cplusplus
 }
 #endif

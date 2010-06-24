@@ -2006,6 +2006,171 @@ gauden_massage_var(vector_t ***var,
     return S3_SUCCESS;
 }
 
+/* the following functions are used for MMIE training
+   lqin 2010-03 */
+uint32
+solve_quadratic(float64 x, float64 y, float64 z, float64 *root1, float64 *root2)
+{
+    float64 temp;
+    
+    if (x == 0) {
+	if (y != 0) {
+	    (*root1) = (*root2) = -z/y;
+	    return TRUE;
+	}
+	else
+	    return FALSE;
+    }
+    
+    temp = y * y - (4 * x * z);
+    if (temp < 0) {
+	if (y != 0 && fabs(temp/(y*y)) < 0.0001) {
+	    (*root1) = (*root2) = (-y / (2*x));
+	    return TRUE;
+	}
+	else
+	    return FALSE;
+    }
+    
+    temp = sqrt(temp);
+    
+    (*root1) = (temp - y) / (2*x);
+    (*root2) = (-temp - y) / (2*x);
+    
+    return TRUE;
+}
+
+float32
+cal_constD(vector_t in_mean,
+	   vector_t wt_num_mean,
+	   vector_t wt_den_mean,
+	   vector_t in_var,
+	   vector_t wt_num_var,
+	   vector_t wt_den_var,
+	   float32 num_dnom,
+	   float32 den_dnom,
+	   uint32 n_veclen,
+	   float32 constE)
+{
+    uint32 l;
+    float32 d = 0.0;
+    float64 x, y, z;
+    float64 root1, root2;
+    float32 d_mmi = 0.0;
+    
+    for (l = 0; l < n_veclen; l++) {
+	x = in_var[l];
+	y = (in_var[l] + in_mean[l]*in_mean[l]) * (num_dnom - den_dnom) + (wt_num_var[l] - wt_den_var[l])
+	    - 2*in_mean[l]*(wt_num_mean[l] - wt_den_mean[l]);
+	z = (wt_num_var[l] - wt_den_var[l]) * (num_dnom - den_dnom) - (wt_num_mean[l] - wt_den_mean[l]) * (wt_num_mean[l] - wt_den_mean[l]);
+	
+	if (solve_quadratic(x, y, z, &root1, &root2))
+	    d = MAX(root1, root2) * D_FACTOR;
+	
+	d = MAX(d, constE*den_dnom);
+	
+	d_mmi = MAX(d_mmi, d);
+    }
+    
+    return d_mmi;
+}
+
+void
+gauden_norm_wt_mmie_mean(vector_t ***in_mean,
+			 vector_t ***wt_mean,
+			 vector_t ***wt_num_mean,
+			 vector_t ***wt_den_mean,
+			 vector_t ***in_var,
+			 vector_t ***wt_num_var,
+			 vector_t ***wt_den_var,
+			 float32 ***num_dnom,
+			 float32 ***den_dnom,
+			 uint32 n_mgau,
+			 uint32 n_feat,
+			 uint32 n_density,
+			 const uint32 *veclen,
+			 float32 constE)
+{
+    uint32 i, j, k, l;
+    float32 d_mmi  = 0.0;
+    
+    for (i = 0; i < n_mgau; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    for (k = 0; k < n_density; k++) {
+		if (num_dnom[i][j][k] != 0 || den_dnom[i][j][k] != 0) {
+		        
+		    /* compute constant D, which controls the convergence speed and accuracy */
+		    d_mmi = cal_constD(in_mean[i][j][k], wt_num_mean[i][j][k], wt_den_mean[i][j][k],
+				       in_var[i][j][k], wt_num_var[i][j][k], wt_den_var[i][j][k], num_dnom[i][j][k], den_dnom[i][j][k], veclen[j], constE);
+		    if (!finite(d_mmi))
+			E_FATAL("Constant D:%f (gau:%d feat:%d density:%d) is INFINITE\n", d_mmi, i, j, k);
+		        
+		    /* update mean parameters */
+		    for (l = 0; l < veclen[j]; l++) {
+			wt_mean[i][j][k][l] = (wt_num_mean[i][j][k][l] - wt_den_mean[i][j][k][l] + d_mmi * in_mean[i][j][k][l]) / (num_dnom[i][j][k] - den_dnom[i][j][k] + d_mmi);
+			if (!finite(wt_mean[i][j][k][l]))
+			    E_FATAL("The new mean:%f (gau:%d feat:%d density:%d vec:%d) is INFINITE\n", wt_mean[i][j][k][l], i, j, k, l);
+		    }
+		}
+	    }
+	}
+    }
+}
+
+
+void
+gauden_norm_wt_mmie_var(vector_t ***in_var,
+			vector_t ***wt_var,
+			vector_t ***wt_num_var,
+			vector_t ***wt_den_var,
+			float32 ***num_dnom,
+			float32 ***den_dnom,
+			vector_t ***in_mean,
+			vector_t ***wt_mean,
+			vector_t ***wt_num_mean,
+			vector_t ***wt_den_mean,
+			uint32 n_mgau,
+			uint32 n_feat,
+			uint32 n_density,
+			const uint32 *veclen,
+			float32 constE)
+{
+    uint32 i, j, k, l;
+    float32 d_mmi = 0.0;
+    
+    for (i = 0; i < n_mgau; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    for (k = 0; k < n_density; k++) {
+		if (num_dnom[i][j][k] != 0 || den_dnom[i][j][k] != 0) {
+		        
+		    /* compute constant D, which controls the convergence speed and accuracy */
+		    d_mmi = cal_constD(in_mean[i][j][k], wt_num_mean[i][j][k], wt_den_mean[i][j][k],
+				       in_var[i][j][k], wt_num_var[i][j][k], wt_den_var[i][j][k], num_dnom[i][j][k], den_dnom[i][j][k], veclen[j], constE);
+		    if (!finite(d_mmi))
+			E_FATAL("Constant D:%f (gau:%d feat:%d density:%d) is INFINITE\n", d_mmi, i, j, k);
+		        
+		    /* update variance parameters */
+		    for (l = 0; l < veclen[j]; l++) {
+			wt_var[i][j][k][l] = ((wt_num_var[i][j][k][l] - wt_den_var[i][j][k][l]) + 
+					      d_mmi * (in_var[i][j][k][l] + in_mean[i][j][k][l] * in_mean[i][j][k][l])) / 
+			    (num_dnom[i][j][k] - den_dnom[i][j][k] + d_mmi)
+			    - (wt_mean[i][j][k][l] * wt_mean[i][j][k][l]);
+			if (!finite(wt_var[i][j][k][l]))
+			    E_FATAL("The new variance:%f (gau:%d feat:%d density:%d vec:%d) is INFINITE\n", wt_var[i][j][k][l], i, j, k, l);
+			
+			/* if the new var<0, keep it unchanged */
+			if (wt_var[i][j][k][l] < 0) {
+			    E_WARN("var (mgau= %u, feat= %u, ""density=%u, component=%u) < 0\n", i, j, k, l);
+			    wt_var[i][j][k][l] = in_var[i][j][k][l];
+			}
+		    }
+		}
+	    }
+	}
+    }
+}
+/* end */
+
 /*
  * Log record.  Maintained by RCS.
  *

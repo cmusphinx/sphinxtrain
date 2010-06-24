@@ -70,6 +70,20 @@ mk_phone_list(char **btw_mark,
 	      uint32 n_word,
 	      lexicon_t *lex);
 
+/* the following functions are used for MMIE training
+   lqin 2010-03 */
+acmod_id_t *
+mk_word_phone_list(char **btw_mark,
+		   uint32 *n_phone,
+		   char *word,
+		   lexicon_t *lex);
+
+acmod_id_t *
+mk_boundary_phone(char *word,
+		  uint32 n_begin,
+		  lexicon_t *lex);
+/* end */
+
 #ifdef __cplusplus
 }
 #endif

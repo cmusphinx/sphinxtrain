@@ -683,6 +683,42 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  CMD_LN_NO_DEFAULT,
 	  "Dump state/mixture posterior probabilities to files in this directory" },
 
+	/* The following parameters are used for MMIE training
+	   lqin 2010-3 */
+	{ "-latdir",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Directory that contains lattice files" },
+
+	{ "-mmie",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Whether to do MMIE training or not" },
+
+	{ "-mmie_type",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  "rand",
+	  "how to get different context for Viterbi run on lattice, such as rand, best or ci. \n\
+           \t\t\trand: randomly take the left and right context \n\
+           \t\t\tbest: take the left and right context with the best acoustic score \n\
+           \t\t\tci:   use context-independent hmm for word boundary models" },
+
+	{ "-latext",
+	  CMD_LN_STRING,
+	  CMD_LN_NO_VALIDATION,
+	  CMD_LN_NO_DEFAULT,
+	  "Denominator or Numerator lattice. Use denlat or numlat" },
+
+	{ "-lw",
+	  CMD_LN_FLOAT32,
+	  CMD_LN_NO_VALIDATION,
+	  "11.5",
+	  "Language model weight" },
+	/* end */
+
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 

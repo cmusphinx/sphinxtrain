@@ -2167,6 +2167,31 @@ read_sildel(uint32 **out_sf,
 
     return S3_SUCCESS;
 }
+
+/* the following function is used for MMIE training
+   lqin 2010-03 */
+int
+load_lattice(s3lattice_t **out_lattice, char *lat_dir, char *lat_ext)
+{
+    char *rel_path;
+    char *s;
+    char fn[1024];
+
+    /* If control file specifies an utt ID, use it.  O/W use the path */
+    if (cur_ctl_utt_id != NULL)
+	rel_path = cur_ctl_utt_id;
+    else {
+	rel_path = cur_ctl_path;
+    }
+
+    sprintf(fn, "%s/%s.%s",  lat_dir, rel_path, lat_ext);
+    if (s3lattice_read(fn, out_lattice) < 0)
+	return S3_ERROR;
+    
+    return S3_SUCCESS;
+}
+/* end */
+
 
 /*
  * Log record.  Maintained by RCS.

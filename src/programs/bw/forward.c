@@ -188,7 +188,8 @@ forward(float64 **active_alpha,
 	uint32 n_state,
 	model_inventory_t *inv,
 	float64 beam,
-	s3phseg_t *phseg)
+	s3phseg_t *phseg,
+	uint32 mmi_train)
 {
     uint32 i, j, s, t, u;
     uint32 l_cb;
@@ -717,7 +718,8 @@ forward(float64 **active_alpha,
 
 	n_sum_active += n_active;
     }
-    printf(" %u ", n_sum_active / n_obs);
+    if (!mmi_train)
+	printf(" %u ", n_sum_active / n_obs);
     
 cleanup:
     ckd_free(active_a);

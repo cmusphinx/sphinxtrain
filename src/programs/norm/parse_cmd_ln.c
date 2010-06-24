@@ -158,6 +158,21 @@ norm \n\
 	  "no",
 	  "Tie all covariances together"},
 
+	/* the following parameters are used for MMIE training
+	   lqin 2010-03 */
+	{ "-mmie",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "MMIE training parameter update"},
+
+	{ "-constE",
+	  CMD_LN_FLOAT32,
+	  CMD_LN_NO_VALIDATION,
+	  "3.0",
+	  "Constant E for calculating constant D"},
+	/* end */
+
 	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 

@@ -79,6 +79,12 @@
 
 static int normalize(void);
 
+
+/* the following function is used for MMIE training
+   lqin 2010-03 */
+static int mmi_normalize(void);
+/* end */
+
 static int
 initialize(int argc,
 	   char *argv[])
@@ -581,6 +587,283 @@ normalize()
     return S3_SUCCESS;
 }
 
+
+/* the following function is used for MMIE training
+   lqin 2010-03 */
+static int
+mmi_normalize()
+{
+  uint32 i;
+  
+  uint32 n_mgau;
+  uint32 n_stream;
+  uint32 n_density;
+  vector_t ***in_mean = NULL;
+  vector_t ***in_var = NULL;
+  vector_t ***wt_mean = NULL;
+  vector_t ***wt_var = NULL;
+  const uint32 *veclen = NULL;
+  
+  const char **accum_dir;
+  const char *in_mean_fn;
+  const char *out_mean_fn;
+  const char *in_var_fn;
+  const char *out_var_fn;
+  
+  vector_t ***wt_num_mean = NULL;
+  vector_t ***wt_den_mean = NULL;
+  vector_t ***wt_num_var = NULL;
+  vector_t ***wt_den_var = NULL;
+  float32 ***num_dnom = NULL;
+  float32 ***den_dnom = NULL;
+  uint32 n_num_mgau;
+  uint32 n_den_mgau;
+  uint32 n_num_stream;
+  uint32 n_den_stream;
+  uint32 n_num_density;
+  uint32 n_den_density;
+  
+  float32 constE;
+  
+  uint32 n_temp_mgau;
+  uint32 n_temp_stream;
+  uint32 n_temp_density;
+  const uint32 *temp_veclen = NULL;
+  
+  accum_dir = (const char **)cmd_ln_access("-accumdir");
+  
+  /* the following variables are used for mmie training */
+  out_mean_fn = (const char *)cmd_ln_access("-meanfn");
+  out_var_fn = (const char *)cmd_ln_access("-varfn");
+  in_mean_fn = (const char *)cmd_ln_access("-inmeanfn");
+  in_var_fn = (const char *)cmd_ln_access("-invarfn");
+  constE = cmd_ln_float32("-constE");
+  
+  /* get rid of some unnecessary parameters */
+  if (cmd_ln_int32("-fullvar")) {
+    E_FATAL("Current MMIE training can not be done for full variance, set -fulllvar as no\n");
+  }
+  if (cmd_ln_int32("-tiedvar")) {
+    E_FATAL("Current MMIE training can not be done for tied variance, set -tiedvar as no\n");
+  }
+  if (cmd_ln_access("-mixwfn")) {
+    E_FATAL("Current MMIE training does not support mixture weight update, remove -mixwfn \n");
+  }
+  if (cmd_ln_access("-inmixwfn")) {
+    E_FATAL("Current MMIE training does not support mixture weight update, remove -inmixwfn \n");
+  }
+  if (cmd_ln_access("-tmatfn")) {
+    E_FATAL("Current MMIE training does not support transition matrix update, remove -tmatfn \n");
+  }
+  if (cmd_ln_access("-regmatfn")) {
+    E_FATAL("Using norm for computing regression matrix is obsolete, please use mllr_transform \n");
+  }
+  
+  /* must be at least one accum dir */
+  if (accum_dir[0] == NULL) {
+    E_FATAL("No accumulated reestimation path is specified, use -accumdir \n");
+  }
+  
+  /* at least update mean or variance parameters */
+  if (out_mean_fn == NULL && out_var_fn == NULL) {
+    E_FATAL("Neither -meanfn nor -varfn is specified, at least do mean or variance update \n");
+  }
+  else if (out_mean_fn == NULL) {
+    E_INFO("No -meanfn specified, will skip if any\n");
+  }
+  else if (out_var_fn == NULL) {
+    E_INFO("No -varfn specified, will skip if any\n");
+  }
+  
+  /* read input mean */
+  if (in_mean_fn != NULL) {
+    E_INFO("read original density mean parameters from %s\n", in_mean_fn);
+    if (s3gau_read(in_mean_fn,
+		   &in_mean,
+		   &n_mgau,
+		   &n_stream,
+		   &n_density,
+		   &veclen) != S3_SUCCESS) {
+      E_FATAL_SYSTEM("Couldn't read %s", in_mean_fn);
+    }
+    ckd_free((void *)veclen);
+    veclen = NULL;
+  }
+
+  /* read input variance */
+  if (in_var_fn != NULL) {
+    E_INFO("read original density variance parameters from %s\n", in_var_fn);
+    if (s3gau_read(in_var_fn,
+		   &in_var,
+		   &n_mgau,
+		   &n_stream,
+		   &n_density,
+		   &veclen) != S3_SUCCESS) {
+      E_FATAL_SYSTEM("Couldn't read %s", in_var_fn);
+    }
+    ckd_free((void *)veclen);
+    veclen = NULL;
+  }
+  
+  /* read accumulated numerator and denominator counts */
+  for (i = 0; accum_dir[i]; i++) {
+    E_INFO("Reading and accumulating counts from %s\n", accum_dir[i]);
+    
+    rdacc_mmie_den(accum_dir[i],
+		   "numlat",
+		   &wt_num_mean,
+		   &wt_num_var,
+		   &num_dnom,
+		   &n_num_mgau,
+		   &n_num_stream,
+		   &n_num_density,
+		   &veclen);
+    
+    rdacc_mmie_den(accum_dir[i],
+		   "denlat",
+		   &wt_den_mean,
+		   &wt_den_var,
+		   &den_dnom,
+		   &n_den_mgau,
+		   &n_den_stream,
+		   &n_den_density,
+		   &veclen);
+    
+    if (n_num_mgau != n_den_mgau)
+      E_FATAL("number of gaussians inconsistent between num and den lattice\n");
+    else if (n_num_mgau != n_mgau)
+      E_FATAL("number of gaussians inconsistent between imput model and accumulator (%u != %u)\n", n_mgau, n_num_mgau);
+    
+    if (n_num_stream != n_den_stream)
+      E_FATAL("number of gaussian streams inconsistent between num and den lattice\n");
+    else if (n_num_stream != n_stream)
+      E_FATAL("number of gaussian streams inconsistent between imput model and accumulator (%u != %u)\n", n_stream, n_num_stream);
+    
+    if (n_num_density != n_den_density)
+      E_FATAL("number of gaussian densities inconsistent between num and den lattice\n");
+    else if (n_num_density != n_density)
+      E_FATAL("number of gaussian densities inconsistent between imput model and accumulator (%u != %u)\n", n_density, n_num_density);
+  }
+  
+  /* initialize update parameters as the input parameters */
+  if (out_mean_fn) {
+    if (s3gau_read(in_mean_fn,
+		   &wt_mean,
+		   &n_temp_mgau,
+		   &n_temp_stream,
+		   &n_temp_density,
+		   &temp_veclen) != S3_SUCCESS) {
+      E_FATAL_SYSTEM("Couldn't read %s", in_mean_fn);
+    }
+    ckd_free((void *)temp_veclen);
+    temp_veclen = NULL;
+  }
+
+  if (out_var_fn) {
+    if (s3gau_read(in_var_fn,
+		   &wt_var,
+		   &n_temp_mgau,
+		   &n_temp_stream,
+		   &n_temp_density,
+		   &temp_veclen) != S3_SUCCESS) {
+      E_FATAL_SYSTEM("Couldn't read %s", in_var_fn);
+    }
+    ckd_free((void *)temp_veclen);
+    temp_veclen = NULL;
+  }
+  
+  /* update mean parameters */
+  if (wt_mean) {
+    if (out_mean_fn) {
+      E_INFO("Normalizing mean for n_mgau= %u, n_stream= %u, n_density= %u\n",
+	     n_mgau, n_stream, n_density);
+      
+      gauden_norm_wt_mmie_mean(in_mean, wt_mean, wt_num_mean, wt_den_mean,
+			       in_var, wt_num_var, wt_den_var, num_dnom, den_dnom,
+			       n_mgau, n_stream, n_density, veclen, constE);
+    }
+    else {
+      E_INFO("Ignoring means since -meanfn not specified\n");
+    }
+  }
+  else {
+    E_INFO("No means to normalize\n");
+  }
+  
+  /* update variance parameters */
+  if (wt_var) {
+    if (out_var_fn) {
+      E_INFO("Normalizing variance for n_mgau= %u, n_stream= %u, n_density= %u\n",
+	     n_mgau, n_stream, n_density);
+      
+      gauden_norm_wt_mmie_var(in_var, wt_var, wt_num_var, wt_den_var, num_dnom, den_dnom,
+			      in_mean, wt_mean, wt_num_mean, wt_den_mean,
+			      n_mgau, n_stream, n_density, veclen, constE);
+    }
+    else {
+      E_INFO("Ignoring variances since -varfn not specified\n");
+    }
+  }
+  else {
+    E_INFO("No variances to normalize\n");
+  }
+  
+  /* write the updated mean parameters to files */
+  if (out_mean_fn) {
+    if (wt_mean) {
+      if (s3gau_write(out_mean_fn,
+		      (const vector_t ***)wt_mean,
+		      n_mgau,
+		      n_stream,
+		      n_density,
+		      veclen) != S3_SUCCESS) {
+	return S3_ERROR;
+      }
+    }
+    else {
+      E_WARN("NO reestimated means seen, but -meanfn specified\n");
+    }
+  }
+  else {
+    if (wt_mean) {
+      E_INFO("Reestimated means seen, but -meanfn NOT specified\n");
+    }
+  }
+  
+  /* write the updated variance parameters to files */
+  if (out_var_fn) {
+    if (wt_var) {
+      if (s3gau_write(out_var_fn,
+		      (const vector_t ***)wt_var,
+		      n_mgau,
+		      n_stream,
+		      n_density,
+		      veclen) != S3_SUCCESS) {
+	return S3_ERROR;
+      }
+    }
+    else {
+      E_WARN("NO reestimated variances seen, but -varfn specified\n");
+    }
+  }
+  else {
+    if (wt_var) {
+      E_INFO("Reestimated variances seen, but -varfn NOT specified\n");
+    }
+  }
+  
+  if (veclen)
+    ckd_free((void *)veclen);
+  
+  if (temp_veclen)
+    ckd_free((void *)temp_veclen);
+  
+  return S3_SUCCESS;
+}
+/* end */
+
+/* the main() function is modified for MMIE training
+   lqin 2010-03 */
 int
 main(int argc, char *argv[])
 {
@@ -588,12 +871,20 @@ main(int argc, char *argv[])
 	E_FATAL("errors initializing.\n");
     }
 
-    if (normalize() != S3_SUCCESS) {
+    if (cmd_ln_int32("-mmie")) {
+      if (mmi_normalize() != S3_SUCCESS) {
+	E_FATAL("errors mmie normalizing.\n");
+      }
+    }
+    else {
+      if (normalize() != S3_SUCCESS) {
 	E_FATAL("errors normalizing.\n");
+      }
     }
 
     return 0;
 }
+/* end */
 
 /*
  * Log record.  Maintained by RCS.

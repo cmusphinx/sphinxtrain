@@ -114,6 +114,51 @@ state_t *next_utt_states(uint32 *n_state,
     return state_seq;
 }
 
+/* the following function is used for MMIE training
+   lqin 2010-03 */
+state_t *next_utt_states_mmie(uint32 *n_state,
+			      lexicon_t *lex,
+			      model_inventory_t *inv,
+			      model_def_t *mdef,
+			      char *curr_word,
+			      acmod_id_t *l_phone,
+			      acmod_id_t *r_phone,
+			      int32 sil_del,
+			            char* silence_str
+			      )
+{
+  uint32 n_phone;
+  char *btw_mark;
+  acmod_set_t *acmod_set;
+  acmod_id_t *phone;
+  acmod_id_t optSil;
+  
+  state_t *state_seq;
+  
+  phone = mk_word_phone_list(&btw_mark, &n_phone, curr_word,lex);
+  
+  if (phone == NULL) {
+    E_WARN("Unable to produce CI phones for utt\n");
+    return NULL;
+  }
+  
+  acmod_set = inv->acmod_set;
+  
+  cvt2triphone_mmie(acmod_set, phone, l_phone, r_phone, btw_mark, n_phone);
+  
+  optSil= acmod_set_name2id(acmod_set, silence_str);
+  
+  state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef,sil_del,(acmod_id_t)optSil);
+  
+  /* state_seq_print(state_seq, *n_state, mdef); */
+  
+  ckd_free(phone);
+  ckd_free(btw_mark);
+  
+  return state_seq;
+}
+/* end */
+
 
 /*
  * Log record.  Maintained by RCS.

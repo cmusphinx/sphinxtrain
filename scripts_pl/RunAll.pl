@@ -66,6 +66,10 @@ my @steps =
      "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
      "$ST::CFG_SCRIPT_DIR/45.prunetree/slave.state-tying.pl",
      "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
+     "$ST::CFG_SCRIPT_DIR/60.lattice_generation/slave_genlat.pl",
+     "$ST::CFG_SCRIPT_DIR/61.lattice_pruning/slave_prune.pl",
+     "$ST::CFG_SCRIPT_DIR/62.lattice_conversion/slave_conv.pl",
+     "$ST::CFG_SCRIPT_DIR/65.mmie_train/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/90.deleted_interpolation/deleted_interpolation.pl",
     );
 

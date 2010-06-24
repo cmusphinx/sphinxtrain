@@ -194,7 +194,7 @@ baum_welch_update(float64 *log_forw_prob,
     ret = forward(active_alpha, active_astate, n_active_astate, bp,
 		  scale, dscale,
 		  feature, n_obs, state, n_state,
-		  inv, a_beam, phseg);
+		  inv, a_beam, phseg, 0);
 
 #if BW_DEBUG
     for (i=0 ; i < n_obs;i++){

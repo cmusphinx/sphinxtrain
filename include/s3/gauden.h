@@ -53,6 +53,13 @@ extern "C" {
 }
 #endif
 
+/* the following parameters are used for MMIE training 
+   lqin 2010-03 */
+#define D_FACTOR 2.0
+#define MAX(a,b) ( (a) > (b) ? (a) : (b) )
+#define MIN_VAR 1.0E-20
+/* end */
+
 #include <s3/s3.h>
 #include <s3/vector.h>
 
@@ -350,6 +357,57 @@ gauden_massage_var(vector_t ***var,
                   uint32 n_stream,
                   uint32 n_density,
                   const uint32 *veclen);
+
+/* the following functions are used for MMIE training
+   lqin 2010-03 */
+void
+gauden_norm_wt_mmie_mean(vector_t ***in_mean,
+			 vector_t ***wt_mean,
+			 vector_t ***wt_num_mean,
+			 vector_t ***wt_den_mean,
+			 vector_t ***in_var,
+			 vector_t ***wt_num_var,
+			 vector_t ***wt_den_var,
+			 float32 ***num_dnom,
+			 float32 ***den_dnom,
+			 uint32 n_mgau,
+			 uint32 n_feat,
+			 uint32 n_density,
+			 const uint32 *veclen,
+			 float32 constE);
+
+void
+gauden_norm_wt_mmie_var(vector_t ***in_var,
+			vector_t ***wt_var,
+			vector_t ***wt_num_var,
+			vector_t ***wt_den_var,
+			float32 ***num_dnom,
+			float32 ***den_dnom,
+			vector_t ***in_mean,
+			vector_t ***wt_mean,
+			vector_t ***wt_num_mean,
+			vector_t ***wt_den_mean,
+			uint32 n_mgau,
+			uint32 n_feat,
+			uint32 n_density,
+			const uint32 *veclen,
+			float32 constE);
+
+float32
+cal_constD(vector_t in_mean,
+	   vector_t wt_num_mean,
+	   vector_t wt_den_mean,
+	   vector_t in_var,
+	   vector_t wt_num_var,
+	   vector_t wt_den_var,
+	   float32 num_dnom,
+	   float32 den_dnom,
+	   uint32 n_veclen,
+	   float32 constE);
+
+uint32
+solve_quadratic(float64 x, float64 y, float64 z, float64 *root1, float64 *root2);
+/* end */
 
 #ifdef __cplusplus
 }

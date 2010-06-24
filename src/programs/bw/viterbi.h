@@ -92,6 +92,30 @@ viterbi_update(float64 *log_forw_prob,
 	       FILE *pdumpfh,
 	       float32 ***lda);
 
+/* the following functions are used for MMIE training
+   lqin 2010-03 */
+int32
+mmi_viterbi_run(float64 *log_forw_prob,
+		vector_t **feature,
+		uint32 n_obs,
+		state_t *state,
+		uint32 n_state,
+		model_inventory_t *inv,
+		float64 a_beam);
+
+int32
+mmi_viterbi_update(vector_t **feature,
+		   uint32 n_obs,
+		   state_t *state,
+		   uint32 n_state,
+		   model_inventory_t *inv,
+		   float64 a_beam,
+		   int32 mean_reest,
+		   int32 var_reest,
+		   float64 arc_gamma,
+		   float32 ***lda);
+/* end */
+
 #endif /* VITERBI_H */ 
 
 

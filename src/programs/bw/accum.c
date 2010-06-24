@@ -985,6 +985,144 @@ accum_viterbi(uint32 *vit_sseq,
 {
 	return S3_SUCCESS;
 }
+
+/* the following functions are used for MMIE training
+   lqin 2010-03*/
+int
+mmi_accum_gauden(float32 ***denacc,
+		 uint32 *lcl2gbl,
+		 uint32 n_lcl2gbl,
+		 vector_t *frame,
+		 uint32 ***den_idx,
+		 gauden_t *g,
+		 int32 mean_reest,
+		 int32 var_reest,
+		 float64 arc_gamma,
+		 float32 ***lda)
+{
+  uint32 g_i, i, j, k, kk, l;
+  
+  vector_t ***macc = g->l_macc;     /* local to utt */
+  vector_t m;
+  
+  vector_t ***vacc = g->l_vacc;
+  vector_t v = NULL;
+  
+  float32 ***dnom = g->l_dnom;
+  
+  float32 obs_cnt;
+  vector_t feat = NULL;
+  
+  /* Apply LDA if desired. */
+  if (lda) {
+    /* Note that we ignore -ldadim here, because it's rather
+     * complicated to change the length of veclen for the
+     * output only. */
+    lda_transform(&frame, 1, lda, g->veclen[0], g->veclen[0]);
+  }
+
+  /* for each density family found in the utterance */
+  for (i = 0; i < n_lcl2gbl; i++) {
+
+    g_i = lcl2gbl[i];
+    
+    /* for each feature */
+    for (j = 0; j < gauden_n_feat(g); j++) {
+      
+      feat = frame[j];
+      
+      /* for each density in the mixture density */
+      for (kk = 0; kk < gauden_n_top(g); kk++) {
+	
+	k = den_idx[i][j][kk];                       /* i.e. density k is one of the n_top densities */
+	
+	obs_cnt = denacc[i][j][k] * exp(arc_gamma);  /* observation count for density (k) at this time frame
+							given the model */
+	
+	/* don't bother adding a bunch of essentially zero values */
+	if (obs_cnt <= MIN_POS_FLOAT32)
+	  continue;
+	
+	m = macc[i][j][k];                          /* the vector accumulator for mean (i,j,k) */
+	
+	if (var_reest) {
+	  v = vacc[i][j][k];                        /* the vector accumulator for variance (i,j,k) */
+	}
+	
+	for (l = 0; l < g->veclen[j]; l++) {
+	  if (mean_reest) {
+	    m[l] += obs_cnt * feat[l];
+	  }
+	    
+	  if (var_reest) {
+	    v[l] += obs_cnt * feat[l] * feat[l];
+	  }
+	}
+	/* accumulate observation count for all densities */
+	dnom[i][j][k] += obs_cnt;
+      }
+    }
+  }
+  
+  return S3_SUCCESS;
+}
+
+int32
+accum_mmie_dump(const char *out_dir,
+		const char *lat_ext,
+		model_inventory_t *inv,
+		int32 mean_reest,
+		int32 var_reest)      /* checkpoint dump flag */
+{
+  char fn[MAXPATHLEN+1];
+  gauden_t *g;
+  
+  /* run over the accumulators and report anything exceptional */
+  accum_stat(inv, FALSE);
+  
+  g = inv->gauden;
+  
+  mk_bkp(FALSE, FALSE, mean_reest, var_reest, out_dir);
+  
+  if (mean_reest || var_reest) {
+    int32 rv;
+    
+    sprintf(fn, "%s/%s_gauden_counts", out_dir, lat_ext);
+    
+    rv = s3gaucnt_write(fn,
+			(mean_reest ? g->macc : NULL),
+			(var_reest ? g->vacc : NULL),
+			FALSE,
+			g->dnom,
+			g->n_mgau,
+			g->n_feat,
+			g->n_density,
+			g->veclen);
+    if (rv != S3_SUCCESS) {
+      revert_bkp(FALSE,
+		 FALSE,
+		 mean_reest,
+		 var_reest,
+		 out_dir);
+      
+      return S3_ERROR;
+    }
+  }
+  else {
+    E_INFO("means and variances not reestimated.  "
+	   "No %s/%s_gauden_counts produced.\n",
+	   out_dir, lat_ext);
+  }
+  
+  return commit(FALSE,
+		FALSE,
+		mean_reest,
+		var_reest,
+		FALSE,
+		out_dir);
+}
+/* end */
+
 
 /*
  * Log record.  Maintained by RCS.

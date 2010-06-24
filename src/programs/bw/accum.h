@@ -138,6 +138,28 @@ accum_global_tmat(model_inventory_t *inv,
 		  state_t *state,
 		  uint32 n_state);
 
+/* the following functions are used for MMIE training
+   lqin 2010-03 */
+int32
+accum_mmie_dump(const char *out_dir,
+		const char *lat_ext,
+		model_inventory_t *inv,
+		int32 mean_reest,
+		int32 var_reest);
+
+int32
+mmi_accum_gauden(float32 ***cbacc,
+		 uint32 *lcl2gbl,
+		 uint32 n_lcl2gbl,
+		 vector_t *frame,
+		 uint32 ***den_idx,
+		 gauden_t *g,
+		 int32 mean_reest,
+		 int32 var_reest,
+		 float64 arc_gamma,
+		 float32 ***lda);
+/* end */
+
 #endif /* ACCUM_H */ 
 
 

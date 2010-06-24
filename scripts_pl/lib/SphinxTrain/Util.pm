@@ -45,7 +45,7 @@ use vars qw(@ISA @EXPORT);
            ImgSrc LogWarning LogError LogProgress
            LogStatus Converged RunTool SubstParams
            RunScript LaunchScript WaitForScript GetLists
-	   WaitForConvergence TiedWaitForConvergence);
+	   WaitForConvergence TiedWaitForConvergence WaitForMMIEConverge);
 
 use Sys::Hostname;
 use File::Basename;
@@ -349,7 +349,7 @@ sub RunTool {
   else {
     while (<$pipe>) {
       print LOG "$_";
-      if (/(FATAL).*/) {
+      if (/^FATAL:.*line \d+/) {
 	LogError($_);
         $returnvalue = 1;
         last;
@@ -557,6 +557,50 @@ sub TiedWaitForConvergence {
 	sleep $interval;
     }
     return 0;
+}
+
+sub WaitForMMIEConverge {
+  my $logdir = shift;
+  my $interval = shift;
+
+  # For some reason (probably due to stupidity of system()), we
+  # can't do this globally or in Queue::POSIX, but we need it here
+  # (hopefully it does nothing on Windows)
+  local $SIG{CHLD} = sub { wait; };
+
+  $interval = 5 unless defined($interval);
+  # Wait for training to complete (FIXME: This needs to be more robust)
+  my $maxiter = 0;
+  while (1) {
+    my $iter;
+    my $postprob;
+    for ($iter = 1; $iter <= $ST::CFG_MAX_ITERATIONS; ++$iter) {
+      my $norm_log = File::Spec->catfile($logdir, "$ST::CFG_EXPTNAME.$iter.norm.log");
+
+      open LOG, "<$norm_log" or last;
+      while (<LOG>) {
+	if (/failed/ or /Aborting/) {
+	  LogError("Training failed in iteration $iter");
+	  return -1;
+	}
+	elsif (/COMPLETE/) {
+	  Log("Training completed after $iter iterations", 'result');
+	  return 0;
+	}
+	elsif (/Log Posterior Probability Per Utterance = (\S+)/) {
+	  $postprob = $1;
+	}
+      }
+      close LOG;
+    }
+    --$iter;
+    if ($iter > $maxiter) {
+      print "Baum-Welch iteration $iter Average Log Posterior Probability $postprob\n";
+      $maxiter = $iter;
+    }
+    sleep $interval;
+  }
+  return 0;
 }
 
 sub GetLists {

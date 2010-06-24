@@ -71,6 +71,12 @@ int32
 model_def_write(model_def_t *mdef,
 		const char *file_name);
 
+/* the following function is for preventing memory leak
+   lqin 2010-03 */
+int32
+model_def_free(model_def_t *mdef);
+/* end */
+
 #ifdef __cplusplus
 }
 #endif

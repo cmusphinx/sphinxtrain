@@ -63,6 +63,17 @@ cvt2triphone(acmod_set_t *acmod_set,
 	     char *btw_mark,
 	     uint32 n_phone);
 
+/* the following function is used for MMIE training
+   lqin 2010-03 */
+int
+cvt2triphone_mmie(acmod_set_t *acmod_set,
+		  acmod_id_t *phone,
+		  acmod_id_t *l_phone,
+		  acmod_id_t *r_phone,
+		  char *btw_mark,
+		  uint32 n_phone);
+/* end */
+
 #ifdef __cplusplus
 }
 #endif
