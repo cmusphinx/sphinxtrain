@@ -117,6 +117,18 @@ $ctl_counter = 1 unless ($ctl_counter);
 Log ("Baum welch starting for iteration: $iter ($part of $npart) ", 'result');
 Log ("$lat_ext density accumulation", 'result');
 
+
+use vars qw($MLLT_FILE);
+$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+
+my @extra_args;
+if (-r $MLLT_FILE) {
+    push(@extra_args,
+	 -ldafn => $MLLT_FILE,
+	 -ldadim => $ST::CFG_LDA_DIMENSION);
+}
+$ST::CFG_FEAT_WINDOW ||= 0;
+
 my $return_value = RunTool
     ('bw', $logfile, $ctl_counter,
      -moddeffn => $moddeffn,
@@ -152,6 +164,8 @@ my $return_value = RunTool
      -diagfull => $ST::CFG_DIAGFULL,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
+     -cepwin => $ST::CFG_FEAT_WINDOW,
+     @extra_args,
      -timing => "no",
      -mmie => "yes",
      -mmie_type => $ST::CFG_MMIE_TYPE,
