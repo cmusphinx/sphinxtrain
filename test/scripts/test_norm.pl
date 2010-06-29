@@ -23,5 +23,5 @@ foreach my $i (@params)
 #    copy("./globalmean","./norm/globalmean.$i");
     test_this("${bin_printp} -gaufn ./globalmean > $out ",$exec_resdir,"Print output of norm");
     compare_these_two($out,"./norm/test_globalmean.$i.txt",$exec_resdir,"norm, generate global mean. ");
-    unlink("./gauden_counts",$out,"./globalmean");
+#    unlink("./gauden_counts",$out,"./globalmean");
 }

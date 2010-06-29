@@ -9,10 +9,10 @@
 0.1
 # Number of states per model followed by transition matrix
 6
-1.0	1.0	1.0	0.0	0.0	0.0	
-0.0	1.0	1.0	1.0	0.0	0.0	
-0.0	0.0	1.0	1.0	1.0	0.0	
-0.0	0.0	0.0	1.0	1.0	1.0	
-0.0	0.0	0.0	0.0	1.0	1.0	
+3.0	1.0	1.0	0.0	0.0	0.0	
+0.0	3.0	1.0	1.0	0.0	0.0	
+0.0	0.0	3.0	1.0	1.0	0.0	
+0.0	0.0	0.0	3.0	1.0	1.0	
+0.0	0.0	0.0	0.0	3.0	1.0	
 # Last state has no outgoing arcs unless
 # embedded in a sentence hmm structure
