@@ -116,7 +116,10 @@ sub BuildTree
     } elsif  ($ST::CFG_STATESPERHMM == 2) {
       @stwt = qw(1.0 0.025);
     } elsif  ($ST::CFG_STATESPERHMM == 1) {
-      @stwt = qw(1);
+      @stwt = qw(1);      
+    } else {
+      LogError("Failed to guess weights for training the tree for large number $ST::CFG_STATESPERHMM of states per HMM");
+      exit (1);
     }
 
     my @gauflag;
