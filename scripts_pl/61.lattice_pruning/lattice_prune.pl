@@ -54,7 +54,7 @@ my ($part, $npart, $abeam, $nbeam) = @ARGV;
 my $logdir   = "$ST::CFG_LOG_DIR/61.lattice_pruning";
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$part.latprune.log";
 my $lmfile   = $ST::CFG_LANGUAGEMODEL;
-my $lw       = $ST::CFG_LANGUAGEWEIGHT;
+my $lw       = defined($ST::CFG_LANGUAGEWEIGHT) ? $ST::CFG_LANGUAGEWEIGHT : "11.5";
 
 my $numlatdir = defined($ST::CFG_NUMLAT_DIR)
     ? $ST::CFG_NUMLAT_DIR

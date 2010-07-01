@@ -82,6 +82,9 @@ my $varfn       = "$hmm_dir/variances";
 my $minvar      = 1e-4;
 my $topn        = $ST::CFG_FINAL_NUM_DENSITIES;
 
+my $mmie_type   = defined($ST::CFG_MMIE_TYPE) ? $ST::CFG_MMIE_TYPE : "rand";
+my $lw          = defined($ST::CFG_LANGUAGEWEIGHT) ? $ST::CFG_LANGUAGEWEIGHT : "11.5";
+
 my $numlatdir = defined($ST::CFG_NUMLAT_DIR)
     ? $ST::CFG_NUMLAT_DIR
     : "$ST::CFG_BASE_DIR/numlat";
@@ -168,10 +171,10 @@ my $return_value = RunTool
      @extra_args,
      -timing => "no",
      -mmie => "yes",
-     -mmie_type => $ST::CFG_MMIE_TYPE,
+     -mmie_type => $mmie_type,
      -latext => $lat_ext,
      -latdir => $latdir,
-     -lw => $ST::CFG_LANGUAGEWEIGHT);
+     -lw => $lw);
 
 if ($return_value) {
   LogError("Failed to run bw");

@@ -110,6 +110,14 @@ if ($tot_utt == 0) {
 
 # run norm script
 RunScript('norm.pl', $iter);
+open LOG, $log;
+while (<LOG>) {
+    if (/.*(ERROR).*/) {
+        close LOG;
+        Log("norm.pl failed to run!!! Please check the log file for details\n");
+        exit 1;
+    }
+}
 
 # Compute average posterior probability per utt
 my $pp_per_utt = $tot_pp / $tot_utt;

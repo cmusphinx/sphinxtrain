@@ -89,6 +89,9 @@ my $out_hmm_dir   = "${ST::CFG_BASE_DIR}/model_parameters/$mmie_modelname/iter_$
 my $out_means     = "$out_hmm_dir/means";
 my $out_variances = "$out_hmm_dir/variances";
 
+my $constE  = defined($ST::CFG_MMIE_CONSTE) ? $ST::CFG_MMIE_CONSTE : "3.0";
+my $fullvar = defined($ST::CFG_FULLVAR) ? $ST::CFG_FULLVAR : "no";
+
 Log ("Normalization for iteration: $iter", 'result');
 
 my $return_value = RunTool
@@ -97,10 +100,10 @@ my $return_value = RunTool
      -accumdir => @bwaccumdirs,
      -inmeanfn => $in_means,
      -invarfn => $in_variances,
-     -constE => $ST::CFG_MMIE_CONSTE,
+     -constE => $constE,
      -meanfn => $out_means,
 #     -varfn => $out_variances,
-     -fullvar => $ST::CFG_FULLVAR
+     -fullvar => $fullvar
     );
 
 if ($return_value) {

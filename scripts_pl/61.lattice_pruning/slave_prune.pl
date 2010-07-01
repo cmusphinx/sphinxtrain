@@ -48,8 +48,8 @@ use SphinxTrain::Config;
 use SphinxTrain::Util;
 
 my ($abeam, $nbeam) = @ARGV;
-$abeam = (defined($ST::CFG_ARC_BEAM) ? $ST::CFG_ARC_BEAM : 1e-50) unless defined $abeam;
-$nbeam = (defined($ST::CFG_NODE_BEAM) ? $ST::CFG_NODE_BEAM : 1e-10) unless defined $nbeam;
+$abeam = (defined($ST::CFG_ABEAM) ? $ST::CFG_ABEAM : 1e-50) unless defined $abeam;
+$nbeam = (defined($ST::CFG_NBEAM) ? $ST::CFG_NBEAM : 1e-10) unless defined $nbeam;
 
 my $n_parts = defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1;
 

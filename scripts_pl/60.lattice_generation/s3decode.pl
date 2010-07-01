@@ -104,18 +104,23 @@ close INPUT;
 my $ctloffset = int ( ( $nlines * ( $part - 1 ) ) / $npart );
 my $ctlcount = int ( ( $nlines * $part ) / $npart ) - $ctloffset;
 
+my $lw    = defined($ST::CFG_LANGUAGEWEIGHT) ? $ST::CFG_LANGUAGEWEIGHT : "11.5";
+my $beam  = defined($ST::CFG_BEAMWIDTH) ? $ST::CFG_BEAMWIDTH : "1e-100";
+my $wbeam = defined($ST::CFG_WORDBEAM) ? $ST::CFG_WORDBEAM : "1e-80";
+my $wip   = defined($ST::CFG_WORDPENALTY) ? $ST::CFG_WORDPENALTY : "0.2";
+
 Log("Decoding $ctlcount segments starting at $ctloffset (part $part of $npart) ", 'result');
 my $rv = RunTool('sphinx3_decode', $logfile, $ctlcount,
 		 -senmgau => $statepdeffn,
 		 -hmm => $hmm_dir,
-		 -lw => $ST::CFG_LANGUAGEWEIGHT,
+		 -lw => $lw,
 		 -feat => $ST::CFG_FEATURE,
-		 -beam => $ST::CFG_BEAMWIDTH,
-		 -wbeam => $ST::CFG_WORDBEAM,
+		 -beam => $beam,
+		 -wbeam => $wbeam,
 		 -dict => $ST::CFG_DICTIONARY,
 		 -fdict => $ST::CFG_FILLERDICT,
 		 -lm => $ST::CFG_LANGUAGEMODEL,
-		 -wip => $ST::CFG_WORDPENALTY,
+		 -wip => $wip,
 		 -ctl => $listoffiles,
 		 -ctloffset => $ctloffset,
 		 -ctlcount => $ctlcount,
