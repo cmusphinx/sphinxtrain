@@ -126,17 +126,17 @@ open OUTPUT, ">> $log";
 print OUTPUT "Current Overall Log Posterior Probability Per Utterance = $pp_per_utt\n";
 close OUTPUT;
 
-if ($iter < $ST::CFG_MAX_ITERATIONS) {
+if ($iter < $ST::CFG_MMIE_MAX_ITERATIONS) {
     Launch_BW($iter);
     exit (0);
 }
 else {
     open OUTPUT, ">> $log";
-    print OUTPUT "Maximum desired iterations $ST::CFG_MAX_ITERATIONS performed. Terminating MMIE training\n";
+    print OUTPUT "Maximum desired iterations $ST::CFG_MMIE_MAX_ITERATIONS performed. Terminating MMIE training\n";
     print OUTPUT "******************************TRAINING COMPLETE*************************\n";
     my $date = localtime;
     print OUTPUT "$date\n";
-    Log("Maximum desired iterations $ST::CFG_MAX_ITERATIONS performed. Terminating MMIE training",
+    Log("Maximum desired iterations $ST::CFG_MMIE_MAX_ITERATIONS performed. Terminating MMIE training",
 	'result');
     close OUTPUT;
     exit (0);
