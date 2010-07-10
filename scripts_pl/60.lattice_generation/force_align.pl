@@ -113,6 +113,17 @@ close INPUT;
 $ctl_counter = int ($ctl_counter / $npart) if $npart;
 $ctl_counter = 1 unless ($ctl_counter);
 
+my @feat_args;
+if (defined($ST::CFG_SVSPEC)) {
+    push(@feat_args, -svspec =>$ST::CFG_SVSPEC);
+}
+if (-r $MLLT_FILE) {
+    push(@feat_args,
+	 -ldafn => $MLLT_FILE,
+	 -ldadim => $ST::CFG_LDA_DIMENSION);
+}
+$ST::CFG_FEAT_WINDOW ||= 0;
+
 Log("Force alignment starting: ($part of $npart) ", 'result');
 
 my $return_value = RunTool
@@ -140,6 +151,7 @@ my $return_value = RunTool
      -cmn => $ST::CFG_CMN,
      -varnorm => $ST::CFG_VARNORM,
      -feat => $ST::CFG_FEATURE,
+     @feat_args,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
      );
 
