@@ -53,7 +53,6 @@ die "Usage: $0 <part> <nparts>\n" unless @ARGV == 2;
 my ($part, $npart) = @ARGV;
 
 my $hmm_dir = "$ST::CFG_MODEL_DIR/$ST::CFG_EXPTNAME.cd_${ST::CFG_DIRLABEL}_${ST::CFG_N_TIED_STATES}";
-my $mdef    = "$ST::CFG_BASE_DIR/model_architecture/${ST::CFG_EXPTNAME}.${ST::CFG_N_TIED_STATES}.mdef";
 
 my $logdir = "$ST::CFG_LOG_DIR/60.lattice_generation";
 
@@ -73,11 +72,7 @@ if ($ST::CFG_FORCEDALIGN eq "yes") {
 }
 
 my $statepdeffn = $ST::CFG_HMM_TYPE; # indicates the type of HMMs
-my $mixwfn  = "$hmm_dir/mixture_weights";
 my $mwfloor = 1e-8;
-my $tmatfn  = "$hmm_dir/transition_matrices";
-my $meanfn  = "$hmm_dir/means";
-my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 my $transcriptfile = "$outdir/$ST::CFG_EXPTNAME.aligninput";
 my $dict = defined($ST::CFG_FORCE_ALIGN_DICTIONARY)
@@ -113,28 +108,13 @@ close INPUT;
 $ctl_counter = int ($ctl_counter / $npart) if $npart;
 $ctl_counter = 1 unless ($ctl_counter);
 
-my @feat_args;
-if (defined($ST::CFG_SVSPEC)) {
-    push(@feat_args, -svspec =>$ST::CFG_SVSPEC);
-}
-if (-r $MLLT_FILE) {
-    push(@feat_args,
-	 -ldafn => $MLLT_FILE,
-	 -ldadim => $ST::CFG_LDA_DIMENSION);
-}
-$ST::CFG_FEAT_WINDOW ||= 0;
-
 Log("Force alignment starting: ($part of $npart) ", 'result');
 
 my $return_value = RunTool
     ('sphinx3_align', $logfile, $ctl_counter,
-     -mdef => $mdef,
+     -hmm => $hmm_dir,
      -senmgau => $statepdeffn,
-     -mixw => $mixwfn,
      -mixwfloor => $mwfloor,
-     -tmat => $tmatfn,
-     -mean => $meanfn,
-     -var => $varfn,
      -varfloor => $minvar,
      -dict => $dict,
      -fdict => $fdict,
@@ -151,7 +131,6 @@ my $return_value = RunTool
      -cmn => $ST::CFG_CMN,
      -varnorm => $ST::CFG_VARNORM,
      -feat => $ST::CFG_FEATURE,
-     @feat_args,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
      );
 

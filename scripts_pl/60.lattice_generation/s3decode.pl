@@ -109,18 +109,6 @@ my $beam  = defined($ST::CFG_BEAMWIDTH) ? $ST::CFG_BEAMWIDTH : "1e-100";
 my $wbeam = defined($ST::CFG_WORDBEAM) ? $ST::CFG_WORDBEAM : "1e-80";
 my $wip   = defined($ST::CFG_WORDPENALTY) ? $ST::CFG_WORDPENALTY : "0.2";
 
-my @feat_args;
-if (defined($ST::CFG_SVSPEC)) {
-    push(@feat_args, -svspec =>$ST::CFG_SVSPEC);
-}
-if (-r $MLLT_FILE) {
-    push(@feat_args,
-	 -ldafn => $MLLT_FILE,
-	 -ldadim => $ST::CFG_LDA_DIMENSION);
-}
-$ST::CFG_FEAT_WINDOW ||= 0;
-
-
 Log("Decoding $ctlcount segments starting at $ctloffset (part $part of $npart) ", 'result');
 my $rv = RunTool('sphinx3_decode', $logfile, $ctlcount,
 		 -senmgau => $statepdeffn,
@@ -142,7 +130,6 @@ my $rv = RunTool('sphinx3_decode', $logfile, $ctlcount,
 		 -varnorm => $ST::CFG_VARNORM,
 		 -cmn => $ST::CFG_CMN,
 		 -ugonly => "yes",
-		 @feat_args,
 		 -outlatdir => $outlatdir);
 
 if ($rv) {
