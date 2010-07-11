@@ -216,10 +216,10 @@ s3gau_write_full(const char *fn,
     }
 
     for (blk = 0, i = 0; i < n_feat; i++)
-	blk += veclen[i];
+	blk += veclen[i] * veclen[i];
 
     if (s3write_1d(out[0][0][0][0], sizeof(float32),
-		   n_mgau*n_density*blk*blk, fp, &chksum) != S3_SUCCESS) {
+		   n_mgau*n_density*blk, fp, &chksum) != S3_SUCCESS) {
 	goto error;
     }
 
