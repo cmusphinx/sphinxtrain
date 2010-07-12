@@ -45,6 +45,7 @@
 #include <s3/acmod_set.h>
 #include <s3/model_def_io.h>
 #include <s3/ckd_alloc.h>
+#include <s3/read_line.h>
 
 #include <s3/cmd_ln.h>
 #include <s3/err.h>
@@ -119,7 +120,7 @@ int32 make_ci_list_cd_hash_frm_phnlist(char  *phnlist,
     swdtphs = bwdtphs = ewdtphs = iwdtphs = 0;
     /* Always install SIL in phonelist */
     phninstall(silence,phnhash);
-    while (fgets(line,MAXLINESIZE,fp) != NULL){
+    while (read_line(line, MAXLINESIZE, NULL, fp) != NULL){
         nwds = sscanf(line,"%s %s %s %s",bphn,lctx,rctx,wdpos);
         if (nwds != 1 && nwds != 3 &&  nwds != 4)
 	    E_FATAL("Incorrect format in triphone file %s\n%s\n",phnlist,line);
@@ -257,6 +258,7 @@ int32  read_dict(char *dictfile, char *fillerdict,
     dicthashelement_t   **lhash, *sptr;
     int32  maxphnlen, vocabsiz=0, nphns, numdicts, idict;
     FILE   *dict;
+    uint32 n_read;
 
     numdicts = 1;  dictfn[0] = dictfile;
     if (fillerdict != NULL){
@@ -274,8 +276,13 @@ int32  read_dict(char *dictfile, char *fillerdict,
             E_FATAL("Unable to open dictionary %s\n",dictfile);
 
         vocabsiz = 0;
-        while (fgets(dictentry,MAXLINESIZE,dict) != NULL)
+	n_read = 0;
+        while (read_line(dictentry,MAXLINESIZE,&n_read,dict) != NULL)
         {
+	    if (dictentry[0] == 0) {
+		E_WARN ("Empty line %d in the dictionary file %s\n", n_read, dictfn[idict]);
+		continue;
+	    }
             strcpy(dictsent,dictentry); /* HACK */
             if ((dictword = strtok(dictsent," \t\n")) == NULL)
                 E_FATAL("Empty line in dictionary!\n");

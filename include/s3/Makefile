@@ -49,7 +49,7 @@ H=  \
   bcomment_io.h best_q.h bo_magic.h bquest_io.h btree.h cep_manip.h \
   ck_seg.h ckd_alloc.h cmd_ln.h cmn.h common.h corpus.h \
   cvt2triphone.h div.h dtree.h enum_subset.h err.h feat.h \
-  fgets_wo_nl.h floatbuf_io.h fp_cache.h fread_retry.h gauden.h gauden_io.h \
+  floatbuf_io.h fp_cache.h fread_retry.h gauden.h gauden_io.h \
   get_cpu_time.h get_host_name.h get_time.h hash.h heap.h int32_io.h \
   intbuf_io.h itree.h kmeans.h lambda_io.h lda.h lexicon.h* \
   live_norm.h matrix.h merge_den.h metric.h mixw_param_io.h mk_phone_list.h \

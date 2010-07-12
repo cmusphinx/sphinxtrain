@@ -87,9 +87,7 @@ if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
     open INPUT,"<$ST::CFG_RAWPHONEFILE" or die "Failed to open $ST::CFG_RAWPHONEFILE: $!";
     open OUTPUT, ">>$questfn" or die "Failed to append to $questfn: $!";
     foreach my $phone (<INPUT>) {
-	chomp $phone;
-	$phone =~ s/^\s+//;
-	$phone =~ s/\s+$//;
+	$phone = Trim($phone);
 	if (($phone =~ m/^(\+).*(\+)$/) || ($phone =~ m/^SIL$/)) {
 	    next;
 	}

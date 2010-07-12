@@ -45,7 +45,7 @@ use vars qw(@ISA @EXPORT);
            ImgSrc LogWarning LogError LogProgress
            LogStatus Converged RunTool SubstParams
            RunScript LaunchScript WaitForScript GetLists
-	   WaitForConvergence TiedWaitForConvergence WaitForMMIEConverge);
+	   WaitForConvergence TiedWaitForConvergence WaitForMMIEConverge Trim);
 
 use Sys::Hostname;
 use File::Basename;
@@ -645,6 +645,16 @@ sub SubstParams {
     close OUT or die "Failed to close $out: $!";
 }
 
+
+# Perl trim function to remove whitespace from the start and end of the string
+sub Trim($)
+{
+    my $string = shift;
+    $string =~ s/^\s+//;
+    $string =~ s/\s+$//;
+    return $string;
+}
+
 1;
 __END__
 
@@ -695,6 +705,8 @@ This module exports various utility functions used by the Sphinx trainer.
 =item TiedWaitForConvergence
 
 =item SubstParams
+
+=item Trim
 
 =back
 

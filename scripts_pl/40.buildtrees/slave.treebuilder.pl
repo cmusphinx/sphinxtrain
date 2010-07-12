@@ -101,7 +101,7 @@ if ($ST::CFG_CROSS_PHONE_TREES eq 'yes') {
 		WaitForScript($j);
 	    }
 	}
-	chomp $phone;
+	$phone = Trim($phone);
 	if (($phone =~ m/^(\+).*(\+)$/) || ($phone =~ m/^SIL$/)) {
 	    Log ("Skipping $phone\n", 'result');
 	    next;

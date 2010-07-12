@@ -90,10 +90,6 @@
 static
 int strcmp_ci(const char *a, const char *b);
 
-static char *
-fgets_wo_nl(char *str,
-	    size_t max,
-	    FILE *fp);
 static int
 read_sildel(uint32 **del_sf,
 	    uint32 **del_ef,
@@ -221,7 +217,7 @@ static uint32 n_run = UNTIL_EOF;
 static uint32 n_proc = 0;
 
 static uint32 begin;
-
+
 static
 int strcmp_ci(const char *a, const char *b)
 {
@@ -240,81 +236,55 @@ int strcmp_ci(const char *a, const char *b)
 
     return strcmp(a_lc, b_lc);
 }
-
-static char *
-fgets_wo_nl(char *str,
-	    size_t max,
-	    FILE *fp)
-{
-    char *out;
-    uint32 len;
 
-    out = fgets(str, max, fp);
-
-    if (out == NULL)
-	return NULL;
-
-    len = strlen(out);
-
-    if (out[len-1] == '\n')
-	out[len-1] = '\0';
-    else {
-	E_FATAL("input string too long.  Truncated.\n");
-
-	return NULL;
-    }
-
-    return out;
-}
-
 int32
 corpus_provides_mfcc()
 {
     return requires_mfcc;
 }
-
+
 int32
 corpus_provides_sent()
 {
     return requires_sent;
 }
-
+
 int32
 corpus_provides_seg()
 {
     return requires_seg;
 }
-
+
 int32
 corpus_provides_phseg()
 {
     return requires_phseg;
 }
-
+
 int32
 corpus_provides_ccode()
 {
     return requires_ccode;
 }
-
+
 int32
 corpus_provides_dcode()
 {
     return requires_dcode;
 }
-
+
 int32
 corpus_provides_pcode()
 {
     return requires_pcode;
 }
-
+
 int32
 corpus_provides_ddcode()
 {
     return requires_ddcode;
 }
-
+
 static void
 parse_ctl_line(char *line,
 	       char **path,
@@ -413,7 +383,7 @@ corpus_set_ctl_filename(const char *ctl_filename)
 	return S3_ERROR;
     }
 
-    if (fgets_wo_nl(next_ctl_line, MAXPATHLEN, ctl_fp) == NULL) {
+    if (read_line(next_ctl_line, MAXPATHLEN, NULL, ctl_fp) == NULL) {
 	E_ERROR("Must be at least one line in the control file\n");
 
 	return S3_ERROR;
@@ -524,7 +494,7 @@ corpus_reset()
 	rewind(sil_fp);
 
     cur_ctl_line[0] = '\0';
-    if (fgets_wo_nl(next_ctl_line, MAXPATHLEN, ctl_fp) == NULL) {
+    if (read_line(next_ctl_line, MAXPATHLEN, NULL, ctl_fp) == NULL) {
 	E_ERROR("Must be at least one line in the control file\n");
 
 	return S3_ERROR;
@@ -640,11 +610,11 @@ corpus_set_partition(uint32 r,
 	return S3_ERROR;
     }
 
-    for (lineno = 0; fgets(ignore, MAXPATHLEN+1, ctl_fp); lineno++);
+    for (lineno = 0; read_line(ignore, MAXPATHLEN + 1, &lineno, ctl_fp););
 
     rewind(ctl_fp);
 
-    fgets_wo_nl(next_ctl_line, MAXPATHLEN, ctl_fp);
+    read_line(next_ctl_line, MAXPATHLEN, NULL, ctl_fp);
 
     run_len = lineno / of_s;
 
@@ -1402,7 +1372,7 @@ corpus_next_utt()
      *       behind ctl_fp. */
 
     if (lsn_fp) {
-	if (fgets_wo_nl(lsn_line, MAX_LSN_LINE, lsn_fp) == NULL) {
+	if (read_line(lsn_line, MAX_LSN_LINE, NULL, lsn_fp) == NULL) {
 	    /* ahem! */
 	    E_FATAL("File length mismatch at line %d in %s\n", n_proc, lsn_filename);
 	}
@@ -1414,13 +1384,13 @@ corpus_next_utt()
 	if (del_ef)
 	    ckd_free(del_ef);
 
-	if (fgets_wo_nl(sil_line, MAXPATHLEN, sil_fp) == NULL)
+	if (read_line(sil_line, MAXPATHLEN, NULL, sil_fp) == NULL)
 	    sil_line[0] = '\0';
 
 	read_sildel(&del_sf, &del_ef, &n_del);
     }
 
-    if (fgets_wo_nl(next_ctl_line, MAXPATHLEN, ctl_fp) == NULL)
+    if (read_line(next_ctl_line, MAXPATHLEN, NULL, ctl_fp) == NULL)
 	next_ctl_line[0] = '\0';
 
     return TRUE;
@@ -1566,7 +1536,7 @@ corpus_read_next_sent_file(char **trans)
     /* open the current file */
     fp = open_file_for_reading(DATA_TYPE_SENT);
 
-    if (fgets_wo_nl(big_str, 8192, fp) == NULL) {
+    if (read_line(big_str, 8192, NULL, fp) == NULL) {
 	E_ERROR("Unable to read data in sent file %s\n",
 		mk_filename(DATA_TYPE_SENT, cur_ctl_path));
 	

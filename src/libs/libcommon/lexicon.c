@@ -177,12 +177,12 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
     for (start_wid = wid = lex->entry_cnt;
 	 read_line(line, 1023, &lineno, lex_fp) != NULL;
 	 /* wid incremented in body of loop */ ) {
-	if (line[0] == '\n') {
+	if (line[0] == 0) {
 	    E_WARN("Lexicon %s has a blank line at line %d\n",
 		   filename, lineno);
 	    continue;
 	}
-
+	
 	if (!reuse_entry) {
 	    next_entry = lexicon_append_entry(lex);
 	}

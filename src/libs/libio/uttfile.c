@@ -44,7 +44,7 @@
  *********************************************************************/
 
 #include <s3/uttfile.h>
-#include <s3/fgets_wo_nl.h>
+#include <s3/read_line.h>
 #include <s3/ckd_alloc.h>
 
 #include <s3/err.h>
@@ -71,7 +71,7 @@ uttfile_open(const char *fn)
 	return NULL;
     }
 
-    for (i = 0; fgets_wo_nl(tmp, 32000, uf->fp) != NULL; i++);
+    for (i = 0; read_line(tmp, 32000, &i, uf->fp) != NULL;);
 
     uf->len = i;
 
@@ -108,7 +108,7 @@ uttfile_data_at(uttfile_t *uf, uint32 off, char *buf, uint32 max_sz)
     }
 
     if (off == uf->off) {
-	if (fgets_wo_nl(buf, max_sz, uf->fp) == NULL) {
+	if (read_line(buf, max_sz, NULL, uf->fp) == NULL) {
 	    E_ERROR("Unable to read data at offset %u\n", off);
 
 	    return S3_ERROR;
@@ -119,9 +119,8 @@ uttfile_data_at(uttfile_t *uf, uint32 off, char *buf, uint32 max_sz)
     }
     else {
 	for (i = off; i < uf->off; i++) {
-	    if (fgets_wo_nl(buf, max_sz, uf->fp) == NULL) {
-		E_ERROR("Unable to read data at offset %u\n", off);
-		
+	    if (read_line(buf, max_sz, NULL, uf->fp) == NULL) {
+		E_ERROR("Unable to read data at offset %u\n", off);		
 		return S3_ERROR;
 	    }
 	}
@@ -133,14 +132,9 @@ uttfile_data_at(uttfile_t *uf, uint32 off, char *buf, uint32 max_sz)
 int
 uttfile_data_next(uttfile_t *uf, char *buf, uint32 max_sz)
 {
-    if (fgets_wo_nl(buf, max_sz, uf->fp) != NULL) {
-
-	uf->off++;
-
+    if (read_line(buf, max_sz, &uf->off, uf->fp) != NULL)
 	return 1;
-    }
-    else
-	return 0;
+    return 0;
 }
 
 const char *

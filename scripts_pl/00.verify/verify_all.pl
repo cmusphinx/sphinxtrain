@@ -136,17 +136,12 @@ my %phonelist_hash;
     open PHONE,"$ST::CFG_RAWPHONEFILE" or die "Can not open phone list ($ST::CFG_RAWPHONEFILE)\n";
     my $has_SIL = 0;
     while (<PHONE>) {
-	chomp;
-	if (m/\s/) {
-	  my $status = 'FAILED';
-	  $ret_value = -1;
-	  LogWarning("Phone \"$_\" has extra white spaces")
-	}
-	$has_SIL = 1 if m/^SIL$/;
+	my $line = Trim($_);
+	$has_SIL = 1 if ($line =~ m/^SIL$/);
 	if ($is_case_sensitive) {
-	  $phonelist_hash{$_} = 0;
+	  $phonelist_hash{$line} = 0;
 	} else {
-	  $phonelist_hash{uc($_)} = 0;
+	  $phonelist_hash{uc($line)} = 0;
 	}
     }
     close PHONE;
@@ -388,11 +383,6 @@ my %transcript_phonelist_hash = ();
 	}
 	if (/\S+\([^()]+\)$/) {
 	    LogWarning("No whitespace between text and utterance ID on line $.");
-	    $status = 'FAILED';
-	    $ret_value = -6;
-	}
-	if (/\)\s+$/) {
-	    LogWarning("Extra whitespace at end of line $., perhaps line endings are wrong (run dos2unix on transcript)");
 	    $status = 'FAILED';
 	    $ret_value = -6;
 	}

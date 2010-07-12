@@ -47,7 +47,6 @@ ALL_DIRS= $(BUILD_DIRS)
 OTHER_SRCS =   corpus.bhiksha.c
 SRCS = \
   corpus.c \
-  fgets_wo_nl.c \
   fp_cache.c \
   fread_retry.c \
   model_def_io.c \

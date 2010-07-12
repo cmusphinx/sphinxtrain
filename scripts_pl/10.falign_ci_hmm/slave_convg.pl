@@ -159,7 +159,7 @@ sub FlatInitialize ()
     my $NUM_PHONES = 0;
     my @phonelist;
     while (defined(my $line = <PHONELIST>)) {
-      chomp($line);
+      $line = Trim($line);
       next if $line =~ m/^\s*$/;
       $line =~ s/$/ - - - /;
       push @phonelist, $line;

@@ -47,7 +47,16 @@
 #include <s3/err.h>
 
 #include <string.h>
-
+
+/**
+ * Reads the line from the file skipping the comments.
+ * Trims whitespaces in the begining and in the end
+ *
+ *  @buf buffer to read into
+ *  @max_len size of the buffer
+ *  @n_read line counter, may be NULL
+ *  @fp file to read from
+ */
 char *
 read_line(char *buf,
 	  size_t max_len,
@@ -55,46 +64,46 @@ read_line(char *buf,
 	  FILE *fp)
 {
     char *out;
-    int last;
+    char *start;
+    char *end;
+    int read = 0;
+    
+    if (n_read != NULL)
+	read = *n_read;
 
     do {
 	out = fgets(buf, max_len, fp);
-	(*n_read)++;
+	read++;
     } while ((out != NULL) && (out[0] == '#'));
 
     if (strlen(buf) == (max_len-1)) {
-	E_WARN("line %d may be truncated due to max_len==%d\n",
-	       *n_read, max_len);
+	E_WARN("line %d may be truncated because it's longer than max_len %d\n",
+	       read, max_len);
     }
     
-    if (out != NULL) {
-	last = strlen(out)-1;
+    if (n_read != NULL)
+	*n_read = read;
     
-	if (out[last] == '\n')
-	    out[last] = '\0';
+    if (out == NULL)
+	return out;
+    
+    start = out;
+    end = out + strlen(out) - 1;
+
+    while (*start == ' ' || 
+	   *start == '\t') {
+	start++;
     }
+
+    while ((end >= start) &&
+	   (*end == ' ' || 
+           *end == '\t' ||
+	   *end == '\r' ||
+	   *end == '\n'))
+	end--;
+    *(++end) = 0;
+    
+    strncpy (out, start, end - start + 1);
     
     return out;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/11/29  01:11:17  egouvea
- * Fixed license terms in some new files.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/03/17  15:01:49  eht
- * Initial revision
- * 
- *
- */
