@@ -2,8 +2,9 @@ dnl Welcome to the Sphinx automated build system.
 dnl try not to hurt yourself ;)
 
 AC_INIT(SphinxTrain, 1.0.99)
+AM_INIT_AUTOMAKE([no-define])
 
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_HOST
 AC_PROG_CC
 if test "x$GCC" = "xyes"; then
 	CFLAGS="$CFLAGS -Wall"
@@ -142,7 +143,7 @@ if test x$sphinxbase != x && test x$cross_compiling = xyes; then
 		     -L$sphinxbasebuild/src/libsphinxbase/.libs"
 fi
 if test x$sphinxbase != x && test x$cross_compiling != xyes; then
-   AC_CHECK_FILE($sphinxbase/include/prim_type.h,CPPFLAGS="-I$sphinxbase/include $CPPFLAGS",
+   AC_CHECK_FILE($sphinxbase/include/sphinxbase/prim_type.h,CPPFLAGS="-I$sphinxbase/include $CPPFLAGS",
    AC_ERROR(
 [SphinxBase headers not found in $sphinxbase.  Please use the
 --with-sphinxbase option to `configure' to specify the location of
