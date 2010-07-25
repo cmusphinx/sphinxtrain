@@ -37,9 +37,8 @@
  *
  * File: main.c
  * 
- * Description: 
- * 
- * Author: 
+ * Description: Main code for mk_mllr_class. Converts cb2mllr mapping
+ * from text form to binary form.
  * 
  *********************************************************************/
 
@@ -102,28 +101,3 @@ main(int argc, char *argv[])
 
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2004/07/21  18:30:36  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.4  2004/06/17 19:17:23  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/03/07  09:01:29  eht
- * Initial revision
- * 
- *
- */

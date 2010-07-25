@@ -37,9 +37,7 @@
  *
  * File: parse_cmd_ln.c
  * 
- * Description: 
- * 
- * Author: 
+ * Description: command line arguments for mk_mllr_class.
  * 
  *********************************************************************/
 
@@ -57,12 +55,20 @@ parse_cmd_ln(int argc, char *argv[])
   uint32      isExample;
 
   const char helpstr[]=
-"Description: \n\
-Create the senone to mllr class mapping.";
+"Description: \n"
+"Create the senone to mllr class mapping. This program just reads the mapping from \n"
+"stdin one map per line and converts it to binary form. No real work on estimation \n"
+"of the number of classes id done. The format of the input maps is simple, \n"
+"just one mapping per line:\n"
+"\n"
+"0 0\n"
+"1 0\n"
+"2 0\n"
+"3 2\n";
 
   const char examplestr[]=
 "Example: \n\
-mk_mllr_class -nmap mapfile -nclass 4 -cb2mllrfn out.cb2mllr";
+mk_mllr_class -nmap 100 -nclass 4 -cb2mllrfn out.cb2mllr.bin < in.cb2mllr.txt";
 
     static arg_def_t defn[] = {
 	{ "-help",
@@ -130,44 +136,6 @@ mk_mllr_class -nmap mapfile -nclass 4 -cb2mllrfn out.cb2mllr";
     if(!isHelp && !isExample){
       cmd_ln_print_configuration();
     }
-
-
+    
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2004/11/29  01:43:47  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- * 
- * Revision 1.4  2004/11/29 01:11:34  egouvea
- * Fixed license terms in some new files.
- *
- * Revision 1.3  2004/11/29 00:49:23  egouvea
- * Added missing include files to prevent warnings about printf not being defined
- *
- * Revision 1.2  2004/08/08 04:40:47  arthchan2003
- * mk_mllr_class help and example
- *
- * Revision 1.1  2004/06/17 19:39:49  arthchan2003
- * add back all command line information into the code
- *
- * Revision 1.4  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.3  2001/02/20 00:28:35  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/03/07  09:01:35  eht
- * Initial revision
- * 
- *
- */
