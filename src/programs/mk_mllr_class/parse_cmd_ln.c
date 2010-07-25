@@ -61,10 +61,12 @@ parse_cmd_ln(int argc, char *argv[])
 "of the number of classes id done. The format of the input maps is simple, \n"
 "just one mapping per line:\n"
 "\n"
-"0 0\n"
-"1 0\n"
-"2 0\n"
-"3 2\n";
+"0\n"
+"0\n"
+"0\n"
+"1\n"
+"\n"
+"Which means that we map senones 0,1,2 to class 0 and senone 3 to class 1.";
 
   const char examplestr[]=
 "Example: \n\
