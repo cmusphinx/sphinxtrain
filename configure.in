@@ -117,8 +117,9 @@ if test x$sphinxbase = x || test x$sphinxbase = xauto; then
    else
       PKG_CHECK_MODULES(SphinxBase, [sphinxbase],,[
       AC_MSG_FAILURE(dnl
-[SphinxBase was not found on your system.
-Make sure that you have installed it and that the
+[SphinxBase was not found in the parent directories or
+installed system-wide on your system.  Make sure that
+you have compiled it or installed it and that the
 PKG_CONFIG_PATH environment variable is set correctly, if
 it was installed in a non-standard prefix.])])
    fi
