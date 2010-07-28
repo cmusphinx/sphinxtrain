@@ -75,6 +75,15 @@ s3gau_read_full(const char *fn,
 		const uint32 **out_veclen);
 
 int
+s3gau_read_maybe_full(const char *fn,
+		      vector_t *****out,
+		      uint32 *out_n_mgau,
+		      uint32 *out_n_feat,
+		      uint32 *out_n_density,
+		      const uint32 **out_veclen,
+		      uint32 expect_full);
+
+int
 s3gau_write(const char *fn,
 	    const vector_t ***out,
 	    uint32 n_mgau,

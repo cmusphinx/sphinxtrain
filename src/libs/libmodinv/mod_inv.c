@@ -193,12 +193,12 @@ mod_inv_read_gauden(model_inventory_t *minv,
     }
 
     if (var_is_full) {
-	if (s3gau_read_full(varfn,
-		       &fullvar,
-		       &i,
-		       &j,
-		       &k,
-		       &vl) != S3_SUCCESS) {
+	if (s3gau_read_maybe_full(varfn,
+		    		  &fullvar,
+		    		  &i,
+		    		  &j,
+		    		  &k,
+		    		  &vl, FALSE) != S3_SUCCESS) {
 	    return S3_ERROR;
 	}
     }

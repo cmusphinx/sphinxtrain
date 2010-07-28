@@ -56,12 +56,13 @@
 #include <string.h>
 
 int
-s3gau_read_full(const char *fn,
-		vector_t *****out,
-		uint32 *out_n_mgau,
-		uint32 *out_n_feat,
-		uint32 *out_n_density,
-		const uint32 **out_veclen)
+s3gau_read_maybe_full(const char *fn,
+		      vector_t *****out,
+		      uint32 *out_n_mgau,
+		      uint32 *out_n_feat,
+	  	      uint32 *out_n_density,
+		      const uint32 **out_veclen,
+		      uint32 need_full)
 {
     FILE *fp;
     const char *do_chk;
@@ -126,8 +127,9 @@ s3gau_read_full(const char *fn,
 	if (veclen[i] > maxveclen) maxveclen = veclen[i];
     }
     if (n != n_mgau * n_density * blk) {
-	E_ERROR("Failed to read full covariance file %s (expected %d values, got %d)\n",
-		fn, n_mgau * n_density * blk, n);
+	if (need_full)
+	     E_ERROR("Failed to read full covariance file %s (expected %d values, got %d)\n",
+	     	     fn, n_mgau * n_density * blk, n);
 	goto error;
     }
 
@@ -177,6 +179,18 @@ error:
     if (fp) s3close(fp);
 
     return S3_ERROR;
+}
+
+int
+s3gau_read_full(const char *fn,
+		vector_t *****out,
+		uint32 *out_n_mgau,
+		uint32 *out_n_feat,
+		uint32 *out_n_density,
+		const uint32 **out_veclen)
+{
+    return s3gau_read_maybe_full(fn, out, out_n_mgau, out_n_feat, 
+                                 out_n_density, out_veclen, TRUE);
 }
 
 int
