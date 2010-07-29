@@ -185,7 +185,7 @@ while (<INPUT>) {
     chomp;
     # Remove silences
     foreach my $sil (keys %silences) {
-        s,(\s|^)$sil(\s|$),$1$2,g;
+        s,(\s|^)\Q$sil\E(\s|$),$1$2,g;
     }
     # These are now done by the above removal of silence
     #s,</?s>,,g;
