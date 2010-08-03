@@ -89,10 +89,6 @@ SOURCE=..\..\..\..\src\libs\libio\corpus.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\libs\libio\fgets_wo_nl.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\..\src\libs\libio\fp_cache.c
 # End Source File
 # Begin Source File
