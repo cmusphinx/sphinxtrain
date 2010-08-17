@@ -169,8 +169,8 @@ unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN
     while (<INDICT>) {
 	print OUTDICT;
     }
-    while (my ($k, $v) = each %fillers) {
-	print OUTDICT "$k\t$v\n";
+    for my $k (sort keys %fillers) {
+	print OUTDICT "$k\t$fillers{$k}\n";
     }
     close INDICT;
     close OUTDICT;
