@@ -95,7 +95,7 @@ if test x$sphinxbase = x; then
    for sb in "$sbdir/sphinxbase" \
 	  "$sbdir/sphinxbase"*; do
        AC_MSG_CHECKING([for sphinxbase in $sb])
-       if test -f "$sb/src/libsphinxbase/libsphinxbase.la"; then
+       if test -f "$sb/include/sphinxbase/cmd_ln.h"; then
           sphinxbase="$sb"
 	  AC_MSG_RESULT(yes)
 	  break
