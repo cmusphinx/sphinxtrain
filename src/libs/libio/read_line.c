@@ -103,7 +103,7 @@ read_line(char *buf,
 	end--;
     *(++end) = 0;
     
-    strncpy (out, start, end - start + 1);
+    memmove(out, start, end - start + 1);
     
     return out;
 }
