@@ -264,7 +264,10 @@ feat_read_lda(const char *ldafile, uint32 dim)
     if (lda.lda == NULL)
 	return S3_ERROR;
     lda.lda_dim = dim;
-
+    
+    if (lda.lda_rows < dim)
+        E_FATAL("LDA matrix doesn't have enough rows. Expected size at least %d, available %d\n", dim, lda.lda_rows);
+        
     assert(lda.lda_cols == feat_conf[fid].blksize());
     return S3_SUCCESS;
 }
