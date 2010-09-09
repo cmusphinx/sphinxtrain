@@ -2,7 +2,6 @@ test: check
 
 check:
 	perl ./scripts/test_cp_parm.pl
-	perl ./scripts/test_dict2tri.pl
 	perl ./scripts/test_init_gau.pl
 	perl ./scripts/test_init_gau_lda.pl
 	perl ./scripts/test_printp.pl
@@ -15,8 +14,6 @@ check:
 	perl ./scripts/test_bugcase2.pl
 
 clean:
-	rm -f dict2tri.no_triphones
-	rm -f dict2tri.triphones
 	rm -f printp.mean.txt
 	rm -f printp.mixw.txt
 	rm -f printp.tmat.txt

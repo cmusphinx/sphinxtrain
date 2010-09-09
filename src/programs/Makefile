@@ -49,7 +49,6 @@ BUILD_DIRS = agg_seg \
 	cdcn_norm \
 	cp_parm \
 	delint \
-	dict2tri \
 	inc_comp \
 	init_gau \
 	init_mixw \

@@ -607,10 +607,6 @@ Note : read two mixture weight files and interpolate them using a log function
 
 Chapter : mk_mllr_class
 
-Chapter : dict2tri
-
-Chapter : count_3phone
-
 Completed Tools:
 printp
 wave2feat
