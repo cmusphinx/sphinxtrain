@@ -624,7 +624,9 @@ accum_stat(model_inventory_t *inv,
 	}
     }
     if (n_z > 500) {
-      E_WARN("Over 500 senones never occur in the input data.  This is normal for CD untied training, but could indicate a serious problem otherwise.\n");
+      E_WARN("Over 500 senones never occur in the input data. "
+             "This is normal for context-dependent untied senone training or for adaptation, "
+             "but could indicate a serious problem otherwise.\n");
       return;
     }
 
@@ -638,7 +640,7 @@ accum_stat(model_inventory_t *inv,
 
 	    if (k == inv->gauden->n_density) {
 		if (n_z == 0) {
-		    E_WARN("The following seno never occur in the input data\n\t");
+		    E_WARN("The following senones never occur in the input data\n\t");
 		}
 
 		fprintf(stderr, "%u ", i);
