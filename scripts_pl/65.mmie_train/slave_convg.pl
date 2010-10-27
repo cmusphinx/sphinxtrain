@@ -74,6 +74,12 @@ my $return_value = 0;
 if ($iter == 1) {
     # Clean up junk from earlier runs
     Log ("MODULE: 65 MMIE Training\n");
+
+    if ($ST::CFG_MMIE ne "yes") {
+        Log("Skipped:  \$ST::CFG_MMIE set to \'$ST::CFG_MMIE\' in sphinx_train.cfg\n");
+        exit(0);
+    }
+
     Log("Phase 1: Cleaning up directories:");
     # Don't do this on a queue, because of NFS bugs
     unless ($ST::CFG_QUEUE_TYPE eq 'Queue::PBS') {

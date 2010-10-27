@@ -54,6 +54,11 @@ my $logdir  = "$ST::CFG_LOG_DIR/62.lattice_conversion";
 
 Log("MODULE: 62 Lattice Format Conversion\n");
 
+if ($ST::CFG_MMIE ne "yes") {
+    Log("Skipped:  \$ST::CFG_MMIE set to \'$ST::CFG_MMIE\' in sphinx_train.cfg\n");
+    exit(0);
+}
+
 # some global variable
 my $numlatdir = defined($ST::CFG_NUMLAT_DIR)
         ? $ST::CFG_NUMLAT_DIR

@@ -54,6 +54,11 @@ my $logdir  = "$ST::CFG_LOG_DIR/60.lattice_generation";
 
 Log("MODULE: 60 Lattice Generation\n");
 
+if ($ST::CFG_MMIE ne "yes") {
+    Log("Skipped:  \$ST::CFG_MMIE set to \'$ST::CFG_MMIE\' in sphinx_train.cfg\n");
+    exit(0);
+}
+
 # mmie training doesn't work for semi-continuous model
 if ($ST::CFG_HMM_TYPE eq ".semi.") {
     Log("Skipped:  \$CFG_DIRLABEL = .semi. \n");
