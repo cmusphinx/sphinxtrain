@@ -10,7 +10,7 @@ class TestS3Dict(unittest.TestCase):
         self.basedir = os.path.dirname(__file__)
 
     def testRead(self):
-        foodict = s3dict.open(os.path.join(self.basedir, "foo.dict"))
+        foodict = s3dict.open(os.path.join(self.basedir, "test", "foo.dict"))
         self.assert_('AH' in foodict.phoneset)
         self.assertEquals(foodict.get_phones('A'), ['AH'])
         self.assertEquals(foodict.get_alt_phones('A', 2), ['EY'])
@@ -62,8 +62,8 @@ class TestS3Dict(unittest.TestCase):
         self.assert_('NG' not in mydict.phoneset)
 
     def testUnion(self):
-        foodict = s3dict.open(os.path.join(self.basedir, "foo.dict"))
-        bardict = s3dict.open(os.path.join(self.basedir, "bar.dict"))
+        foodict = s3dict.open(os.path.join(self.basedir, "test", "foo.dict"))
+        bardict = s3dict.open(os.path.join(self.basedir, "test", "bar.dict"))
         bazdict = s3dict.union(foodict, bardict)
         self.assertEquals(foodict['ACTUALLY'], bazdict['ACTUALLY'])
         self.assert_('ABANDONED' in bazdict)

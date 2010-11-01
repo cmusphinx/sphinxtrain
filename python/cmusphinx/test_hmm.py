@@ -6,12 +6,11 @@ import s3model
 import s2mfc
 from feat import _1s_c_d_dd
 import os
-import sys
 from math import log
 
 class TestHMM(unittest.TestCase):
     def setUp(self):
-        thisdir = os.path.dirname(sys.argv[0])
+        thisdir = os.path.dirname(__file__)
         self.testdir = os.path.join(thisdir, 'test', 'tidigits')
         self.acmod = s3model.S3Model(self.testdir)
 
@@ -49,7 +48,7 @@ class TestHMM(unittest.TestCase):
 
 class TestPhoneHMM(unittest.TestCase):
     def setUp(self):
-        thisdir = os.path.dirname(sys.argv[0])
+        thisdir = os.path.dirname(__file__)
         self.testdir = os.path.join(thisdir, 'test', 'tidigits')
         self.acmod = s3model.S3Model(self.testdir)
         self.factory = hmm.PhoneHMMFactory(self.acmod)
@@ -63,7 +62,7 @@ class TestPhoneHMM(unittest.TestCase):
 
 class TestHMMGraph(unittest.TestCase):
     def setUp(self):
-        thisdir = os.path.dirname(sys.argv[0])
+        thisdir = os.path.dirname(__file__)
         self.testdir = os.path.join(thisdir, 'test', 'tidigits')
         self.acmod = s3model.S3Model(self.testdir)
         self.factory = hmm.PhoneHMMFactory(self.acmod)
@@ -116,7 +115,7 @@ def read_dict(dictfile):
 
 class TestSentenceHMM(unittest.TestCase):
     def setUp(self):
-        thisdir = os.path.dirname(sys.argv[0])
+        thisdir = os.path.dirname(__file__)
         self.testdir = os.path.join(thisdir, 'test', 'tidigits')
         acmod = s3model.new(self.testdir)
         dictionary = read_dict(os.path.join(self.testdir, 'dictionary'))

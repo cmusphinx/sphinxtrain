@@ -16,15 +16,33 @@ from collections import defaultdict
 from itertools import chain
 import re
 
-def open(file):
-    return S3Dict(file)
+def open(file, *args, **kwargs):
+    return S3Dict(file, *args, **kwargs)
+
+altre = re.compile(r'(.*)\(([^\)]+)\)')
+def word_to_str(w):
+    if w[1] == 1:
+        return w[0]
+    else:
+        return "%s(%d)" % w
+
+def str_to_word(w):
+    m = altre.match(w)
+    if m:
+        word, alt = m.groups()
+        return word, int(alt)
+    else:
+        return w, 1
+
+tagre = re.compile(r':[^\(]+')
 
 class S3Dict(dict):
     """
     Class for reading / processing Sphinx format dictionary files.
     """
-    def __init__(self, infile=None, preserve_alts=False):
+    def __init__(self, infile=None, preserve_alts=False, strip_classtags=False):
         self.preserve_alts = preserve_alts
+        self.strip_classtags = strip_classtags
         self.phoneset = defaultdict(int)
         self.maxalt = defaultdict(int)
         if infile != None:
@@ -32,39 +50,26 @@ class S3Dict(dict):
 
     def __contains__(self, key):
         if not isinstance(key, tuple):
-            m = self.altre.match(key)
-            if m:
-                word, alt = m.groups()
-                return dict.__contains__(self, (word, int(alt)))
-            else:
-                return dict.__contains__(self, (key, 1))
+            word, alt = str_to_word(key)
+            return dict.__contains__(self, (word, alt))
         else:
             return dict.__contains__(self, key)
 
     def __getitem__(self, key):
         if not isinstance(key, tuple):
-            m = self.altre.match(key)
-            if m:
-                word, alt = m.groups()
-                return self.get_alt_phones(word, int(alt))
-            else:
-                return self.get_phones(key)
+            word, alt = str_to_word(key)
+            return self.get_alt_phones(word, alt)
         else:
             return self.get_alt_phones(*key)
 
     def __setitem__(self, key, val):
         if not isinstance(key, tuple):
-            m = self.altre.match(key)
-            if m:
-                word, alt = m.groups()
-                return self.set_alt_phones(word, int(alt), val)
-            else:
-                self.set_phones(key, val)
+            word, alt = str_to_word(key)
+            return self.set_alt_phones(word, alt, val)
         else:
             w, p = key
             self.set_alt_phones(w, p, val)
 
-    altre = re.compile(r'(.*)\(([^\)]+)\)')
     def read(self, infile):
         """
         Read dictionary from a file.
@@ -82,6 +87,8 @@ class S3Dict(dict):
                 continue
             spam = line.split()
             word = unicode(spam[0], 'utf8')
+            if self.strip_classtags:
+                word = self.tagre.sub("", word)
             phones = spam[1:]
             self[word] = phones
                 
@@ -96,9 +103,7 @@ class S3Dict(dict):
         wlist = self.keys()
         wlist.sort()
         for k in wlist:
-            word, alt = k
-            if alt != 1:
-                word = "%s(%d)" % (word, alt)
+            word = word_to_str(k)
             fh.write("%s\t%s\n" % (word.encode('utf8'), " ".join(self[k])))
 
     def get_phones(self, word):

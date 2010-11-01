@@ -12,15 +12,160 @@ format statistical language model files.
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
+from collections import defaultdict
 import numpy
 import gzip
 import re
+import os
 
 LOG10TOLOG = numpy.log(10)
 LOGTOLOG10 = 1./LOG10TOLOG
 
+class SphinxLMCtl(object):
+    """
+    Language model control file used for Sphinx class language models
+    and language model sets.
+    """
+    def __init__(self, infile=None):
+        self.probdeffile = None
+        self.lmfiles = {}
+        self.classes = defaultdict(list)
+        self.basedir = "."
+        if infile != None:
+            self.read(infile)
+
+    def read(self, infile):
+        """
+        Read language model control file.
+        """
+        if not isinstance(infile, file):
+            self.basedir = os.path.dirname(infile)
+            infile = file(infile)
+        # Format is:
+        #
+        # { probdef }
+        #
+        # arpafile lmname { classes }
+        # ...
+        def tokenize():
+            for spam in infile:
+                for x in spam.strip().split():
+                    yield x
+        def fail(msg):
+            raise RuntimeError, msg
+        t = tokenize()
+        if t.next() != '{':
+            fail("Expected {")
+        self.probdeffile = os.path.join(self.basedir, t.next())
+        if t.next() != '}':
+            fail("Expected }")
+        while True:
+            try:
+                arpafile = t.next()
+                lmname = t.next()
+                self.lmfiles[lmname] = os.path.join(self.basedir, arpafile)
+                if t.next() != '{':
+                    fail("Expected {")
+                while True:
+                    classname = t.next()
+                    if classname == '}':
+                        break
+                    self.classes[lmname].append(classname)
+            except StopIteration:
+                break
+                
+
+class SphinxProbdef(object):
+    """
+    Probability definition file used for Sphinx class language models.
+    """
+    def __init__(self, infile=None):
+        self.classes = {}
+        if infile != None:
+            self.read(infile)
+
+    def read(self, infile):
+        """
+        Read probability definition from a file.
+        """
+        if not isinstance(infile, file):
+            infile = file(infile)
+        inclass = None
+        for spam in infile:
+            spam = spam.strip()
+            if spam.startswith('#') or spam.startswith(';'):
+                continue
+            if spam == "":
+                continue
+            if inclass:
+                parts = spam.split()
+                if len(parts) == 2 \
+                       and parts[0] == "END" and parts[1] == classname:
+                    inclass = None
+                else:
+                    prob = 1.0
+                    if len(parts) > 1:
+                        prob = float(parts[1])
+                    self.add_class_word(inclass, parts[0], prob)
+            else:
+                if spam.startswith('LMCLASS'):
+                    foo, classname = spam.split()
+                    self.add_class(classname)
+                    inclass = classname
+
+    def add_class(self, name):
+        """
+        Add a class to this probability definition.
+        """
+        self.classes[name] = {}
+
+    def add_class_word(self, name, word, prob):
+        """
+        Add a word to a class in this probability definition.
+        """
+        self.classes[name][word] = prob
+    
+    def write(self, outfile):
+        """
+        Write out probability definition to a file.
+        """
+        if not isinstance(outfile, file):
+            outfile = file(outfile)
+        for c in self.classes:
+            outfile.write("LMCLASS %s\n" % c)
+            for word, prob in self.classes[c]:
+                outfile.write("%s %g\n" % (word, prob))
+            outfile.write("END %s\n" % c)
+            outfile.write("\n")
+
+    def normalize(self):
+        """
+        Normalize probabilities.
+        """
+        for c in self.classes:
+            t = sum(self.classes[c].itervalues())
+            if t != 0:
+                for w in self.classes[c]:
+                    self.classes[c][w] /= t
+
 class ArpaLM(object):
     "Class for reading ARPA-format language models"
+    class NGram(object):
+        """
+        Representation of a single N-Gram (only used for iteration)
+
+        @ivar words: List of words
+        @type words: tuple(str)
+        @ivar log_prob: Log probability in base e
+        @type log_prob: float
+        @ivar log_bowt: Log backoff weight in base e
+        @type log_bowt: float
+        """
+        __slots__ = ['words', 'log_prob', 'log_bowt']
+        def __init__(self, words, log_prob=0, log_bowt=0):
+            self.words = words
+            self.log_prob = log_prob
+            self.log_bowt = log_bowt
 
     def __init__(self, path=None, lw=1.0, wip=1.0):
         """
@@ -116,12 +261,14 @@ class ArpaLM(object):
             else:
                 spam = spam.split()
                 p = float(spam[0]) * LOG10TOLOG
-                if n == self.n:
+                if len(spam) == n + 2:
+                    ng = tuple(spam[1:-1])
+                    b = float(spam[-1]) * LOG10TOLOG
+                elif len(spam) == n + 1:
                     ng = tuple(spam[1:])
                     b = 0.0
                 else:
-                    ng = tuple(spam[1:-1])
-                    b = float(spam[-1]) * LOG10TOLOG
+                    raise RuntimeError, "Found %d-gram in %d-gram section" % (len(spam)-1, n)
                 # N-Gram info
                 self.ngrams[n-1][ngramid,:] = p, b
                 self.ngmap[n-1][ng] = ngramid
@@ -132,6 +279,15 @@ class ArpaLM(object):
                     self.succmap[mgram] = []
                 self.succmap[mgram].append(ng[-1])
                 ngramid = ngramid + 1
+
+    def get_size(self):
+        """
+        Get the order (i.e. N) of this N-Gram model.
+
+        @return: Order of this model.
+        @rtype: int
+        """
+        return len(self.ngmap)
 
     def save(self, path):
         """
@@ -178,19 +334,66 @@ class ArpaLM(object):
         fh.write("\n\\end\\\n")
         fh.close()
 
-    def successors(self, *syms):
+    def ngram(self, word, *hist):
         """
-        Return all successor words for an M-Gram
+        Get the N-gram record for word with given history.
 
-        @return: The list of end words for all (M+1)-Grams begining
-                 with the words given.
-        @rtype: [string]
+        As with prob() and score(), the history is given in reverse order.
         """
-        try:
-            return self.succmap[syms]
-        except:
-            return []
+        syms = tuple(reversed((word,) + hist))
+        if len(syms) == 1:
+            ngid = self.ngmap[0][syms[0]]
+        else:
+            ngid = self.ngmap[len(syms)-1][syms]
+        return self.NGram(syms, *self.ngrams[len(syms)-1][ngid])
 
+    def mgrams(self, m):
+        """
+        Return an iterator over N-Grams of order M+1.
+
+        @param m: Length of history (i.e. order-1) of desired N-Grams.
+        @type m: int
+        @return: Iterator over N-Grams
+        @rtype: generator(NGram)
+        """
+        for ng, ngid in self.ngmap[m].iteritems():
+            if isinstance(ng, str):
+                ng = (ng,)
+            yield self.NGram(ng, *self.ngrams[m][ngid,:])
+
+    def successor_words(self, words):
+        """
+        Return all successor words for a word-tuple
+
+        @param words: A sequence of words.
+        @type words: sequence of words
+        @return: A generator over successor words
+        @rtype: generator(str)
+        """
+        if isinstance(words, str):
+            words = (words,)
+        else:
+            words = tuple(words)
+        if words in self.succmap:
+            for w in self.succmap[words]:
+                yield w
+        
+    def successors(self, ng):
+        """
+        Return all successors for an M-Gram
+
+        @param ng: An Ngram as returned by mgrams()
+        @type ng: NGram
+        @return: An iterator over all (M+1)-Gram successors to ng.
+        @rtype: generator(NGram)
+        """
+        if ng.words in self.succmap:
+            for w in self.succmap[ng.words]:
+                succ = ng.words + (w,)
+                ngid = self.ngmap[len(succ)-1][succ]
+                yield self.NGram(ng.words + (w,),
+                                 *self.ngrams[len(succ)-1][ngid])
+                
     def score(self, *syms):
         p = self.prob(*syms)
         return p * self.lw + self.log_wip
@@ -204,90 +407,41 @@ class ArpaLM(object):
                  words given, in base e (natural log).
         @rtype: float
         """
-        syms = syms[0:min(len(syms,self.n))]
-        syms.reverse()
+        syms = syms[0:min(len(syms),self.n)]
         # It makes the most sense to do this recursively
         n = len(syms)
         if n == 1:
             if syms[0] in self.ngmap[0]:
                 # 1-Gram exists, just return its probability
                 return self.ngrams[0][self.ngmap[0][syms[0]]][0]
-            else:
+            elif '<UNK>' in self.ngmap[0]:
                 # Use <UNK>
                 return self.ngrams[0][self.ngmap[0]['<UNK>']][0]
+            else:
+                raise IndexError, "Unknown unigram %s" % syms[0]
         else:
-            if tuple(syms) in self.ngmap[n-1]:
+            # Forward N-gram (since syms is reversed)
+            fsyms = tuple(reversed(syms))
+            if fsyms in self.ngmap[n-1]:
                 # N-Gram exists, just return its probability
-                return self.ngrams[n-1][self.ngmap[n-1][tuple(syms)]][0]
+                return self.ngrams[n-1][self.ngmap[n-1][fsyms]][0]
             else:
                 # Backoff: alpha(history) * probability (N-1-Gram)
-                hist = tuple(syms[:-1])
-                syms = syms[1:]
+                fhist = fsyms[:-1]
+                # New N-1 gram symbols (reversed order)
+                syms = syms[:-1]
                 # Treat unigram histories a bit specially
-                if n == 2:
-                    hist = hist[0]
-                    # Back off to <UNK> if word doesn't exist
-                    if not hist in self.ngmap[0]:
-                        hist = '<UNK>'
-                if hist in self.ngmap[n-2]:
+                if len(fhist) == 1:
+                    fhist = fhist[0]
+                    # Try to back off to <UNK> if word doesn't exist -
+                    # if this is a closed vocab model this will just
+                    # return the unigram prob for syms[0]
+                    if not fhist in self.ngmap[0]:
+                        fhist = '<UNK>'
+                if fhist in self.ngmap[n-2]:
                     # Try to use the history if it exists
-                    bowt = self.ngrams[n-2][self.ngmap[n-2][hist]][1]
-                    syms.reverse()
+                    bowt = self.ngrams[n-2][self.ngmap[n-2][fhist]][1]
                     return bowt + self.prob(*syms)
                 else:
                     # Otherwise back off some more
-                    syms.reverse()
                     return self.prob(*syms)
-
-    def adapt_rescale(self, unigram, vocab=None):
-        """Update unigram probabilities with unigram (assumed to be in
-        linear domain), then rescale N-grams ending with the same word
-        by the corresponding factors.  If unigram is not the same size
-        as the original vocabulary, you must pass vocab, which is a
-        list of the words in unigram, in the same order as their
-        probabilities are listed in unigram."""
-        if vocab:
-            # Construct a temporary list mapping for the unigrams
-            vmap = map(lambda w: self.ngmap[0][w], vocab)
-            # Get the original unigrams
-            og = numpy.exp(self.ngrams[0][:,0].take(vmap))
-            # Compute the individual scaling factors
-            ascale = unigram * og.sum() / og
-            # Put back the normalized version of unigram
-            self.ngrams[0][:,0].put(numpy.log(unigram * og.sum()), vmap)
-            # Now reconstruct vocab as a dictionary mapping words to
-            # scaling factors
-            vv = {}
-            for i, w in enumerate(vocab):
-                vv[w] = i
-            vocab = vv
-        else:
-            ascale = unigram / numpy.exp(self.ngrams[0][:,0])
-            self.ngrams[0][:,0] = numpy.log(unigram)
-
-        for n in range(1, self.n):
-            # Total discounted probabilities for each history
-            tprob = numpy.zeros(self.ngrams[n-1].shape[0], 'd')
-            # Rescaled total probabilities
-            newtprob = numpy.zeros(self.ngrams[n-1].shape[0], 'd')
-            # For each N-gram, accumulate and rescale
-            for ng,idx in self.ngmap[n].iteritems():
-                h = ng[0:-1]
-                if n == 1: # Quirk of unigrams
-                    h = h[0]
-                w = ng[-1]
-                prob = numpy.exp(self.ngrams[n][idx,0])
-                tprob[self.ngmap[n-1][h]] += prob
-                if vocab == None or w in vocab:
-                    prob = prob * ascale[vocab[w]]
-                newtprob[self.ngmap[n-1][h]] += prob
-                self.ngrams[n][idx,0] = numpy.log(prob)
-            # Now renormalize everything
-            norm = tprob / newtprob
-            for ng,idx in self.ngmap[n].iteritems():
-                h = ng[0:-1]
-                if n == 1: # Quirk of unigrams
-                    h = h[0]
-                w = ng[-1]
-                prob = numpy.exp(self.ngrams[n][idx,0])
-                self.ngrams[n][idx,0] = numpy.log(prob * norm[self.ngmap[n-1][h]])

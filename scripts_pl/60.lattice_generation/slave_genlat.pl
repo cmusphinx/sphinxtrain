@@ -160,7 +160,7 @@ sub gennumlat () {
 	close OUTFDICT;
 	
 	# Add the extra fillers to the main dictionary
-	open INDICT, "<$ST::CFG_DICTIONARY" or die "Failed to open $ST::CFG_DICTIONARY: $!";
+	open INDICT, "<".GetDict() or die "Failed to open ", GetDict(), ": $!";
 	open OUTDICT, ">$dict" or die "Failed to open $dict: $!";
 	while (<INDICT>) {
 	    print OUTDICT;

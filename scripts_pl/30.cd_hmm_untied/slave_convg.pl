@@ -146,7 +146,7 @@ sub Initialize () {
 
   my $rv = RunTool('mk_mdef_gen', $logfile, 0,
 		   -phnlstfn => $ST::CFG_RAWPHONEFILE,
-		   -dictfn => $ST::CFG_DICTIONARY,
+		   -dictfn => GetDict(),
 		   -fdictfn => $ST::CFG_FILLERDICT,
 		   -lsnfn => $transcriptfile,
 		   -ountiedmdef => $untiedmdef,

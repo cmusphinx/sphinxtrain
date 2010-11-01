@@ -67,11 +67,11 @@ my $phonefile           = "$modarchdir/$ST::CFG_EXPTNAME.phonelist";
 my $ALLTRIPHONESMDEF = "$modarchdir/$ST::CFG_EXPTNAME.alltriphones.mdef";
 
 my $status = RunTool('mk_mdef_gen', $logfile, 0,
-		  -phnlstfn => $phonefile,
-		  -oalltphnmdef => $ALLTRIPHONESMDEF,
-		  -dictfn => $ST::CFG_DICTIONARY,
-		  -fdictfn => $ST::CFG_FILLERDICT,
-		  -n_state_pm => $ST::CFG_STATESPERHMM);
+		     -phnlstfn => $phonefile,
+		     -oalltphnmdef => $ALLTRIPHONESMDEF,
+		     -dictfn => GetDict(),
+		     -fdictfn => $ST::CFG_FILLERDICT,
+		     -n_state_pm => $ST::CFG_STATESPERHMM);
 exit $status if $status;
 
 Log("Phase 1: Tree Pruning\n");

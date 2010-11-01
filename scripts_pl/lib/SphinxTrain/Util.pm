@@ -44,7 +44,7 @@ use vars qw(@ISA @EXPORT);
 @EXPORT=qw(DateStr CreateHeader Log HTML_Print FormatURL
            ImgSrc LogWarning LogError LogProgress
            LogStatus Converged RunTool SubstParams
-           RunScript LaunchScript WaitForScript GetLists
+           RunScript LaunchScript WaitForScript GetLists GetDict
 	   WaitForConvergence TiedWaitForConvergence WaitForMMIEConverge Trim);
 
 use Sys::Hostname;
@@ -603,11 +603,24 @@ sub WaitForMMIEConverge {
   return 0;
 }
 
+sub GetDict {
+    if ($ST::CFG_FORCE_ALIGN_SPD eq "yes") {
+	return File::Spec->catfile($ST::CFG_BASE_DIR, "falignout",
+				   "${ST::CFG_EXPTNAME}.spdict");
+    }
+    else {
+      return $ST::CFG_DICTIONARY;
+    }
+}
+
 sub GetLists {
     # aligned transcripts and the list of aligned files is obtained as a result
     # of (03.) forced alignment or (04.) VTLN
     my ($listoffiles, $transcriptfile);
-    if ($ST::CFG_FORCEDALIGN eq "yes") {
+    if ($ST::CFG_FORCE_ALIGN_SPD eq "yes") {
+	$listoffiles     = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
+	$transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.sptranscripts";
+    } elsif ($ST::CFG_FORCEDALIGN eq "yes") {
 	$listoffiles   = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
 	$transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedtranscripts";
     } elsif ($ST::CFG_VTLN eq "yes") {

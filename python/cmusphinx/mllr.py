@@ -4,8 +4,8 @@
 Adapt acoustic models using maximum-likelihood linear regression.
 
 This module implements single-class mean and variance adaptation using
-MLLR as described in M.J.F. Gales & P.C. Woodland, "Mean and Variance
-Adaptation within the MLLR Framework", Computer Speech and Language,
+MLLR as described in M.J.F. Gales & P.C. Woodland, \"Mean and Variance
+Adaptation within the MLLR Framework\", Computer Speech and Language,
 vol. 10, pp 249-264.
 
 TODO: Multiple regression classes.
@@ -42,7 +42,7 @@ def estimate_mllr_mean(stats, inmean, invar):
     maximizes the likelihood of the data as represented by C{stats}.
 
     Currently this does only one class, but it will promptly be
-    extended once the "learning exercise" is over.
+    extended once the \"learning exercise\" is over.
 
     @param stats: Observation counts, as returned
                   by C{cmusphinx.s3gaucnt.accumdirs}
@@ -150,7 +150,7 @@ def estimate_mllr_variance(stats, inmean, invar, Ws):
     (L_m_r(t)o(t)o(t)^T in Cambridge papers).
 
     Currently this does only one class and one stream, but it will
-    promptly be extended once the "learning exercise" is over.
+    promptly be extended once the \"learning exercise\" is over.
 
     @param stats: Observation counts, as returned
                   by C{cmusphinx.s3gaucnt.accumdirs}

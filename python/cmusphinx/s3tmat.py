@@ -44,7 +44,7 @@ class S3TmatFile_write(S3File_write):
 
     def writeall(self, stuff):
         n_tmat, n_state, spam = shape(stuff)
-        if n_state != spam:
-            raise Exception("n_state rows %d != n_state columns %d" % n_state, spam)
+        if n_state + 1 != spam:
+            raise Exception("n_state rows %d != n_state columns %d - 1" % n_state, spam)
         self.fh.seek(self.data_start, 0)
         self.write3d(stuff)

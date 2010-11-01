@@ -6,12 +6,11 @@ import s3model
 import s2mfc
 from feat import _1s_c_d_dd
 import os
-import sys
 import numpy
 
 class TestS3Model(unittest.TestCase):
     def setUp(self):
-        thisdir = os.path.dirname(sys.argv[0])
+        thisdir = os.path.dirname(__file__)
         self.testdir = os.path.join(thisdir, 'test', 'tidigits')
         self.acmod = s3model.S3Model(self.testdir)
 
