@@ -54,7 +54,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/vector.h>
 #include <s3/acmod_set_ds.h>
 #include <s3/s3phseg_io.h>
@@ -304,7 +304,7 @@ load_lattice(s3lattice_t **out_lattice, char *lat_dir, char *lat_ext);
  * - Added corpus_utt() function to just get the utt id
  *
  * Revision 1.2  1995/10/10  13:10:34  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/10/09  21:04:24  eht
  * Initial revision

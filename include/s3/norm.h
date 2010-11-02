@@ -54,7 +54,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 void norm_mean (float32 *vec,		/* the data */
 		uint32 nvec,	/* number of vectors (frames) */
@@ -83,7 +83,7 @@ void norm_mean (float32 *vec,		/* the data */
  * *** empty log message ***
  *
  * Revision 1.2  1995/10/10  12:35:52  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/08/15  13:45:04  eht
  * Initial revision

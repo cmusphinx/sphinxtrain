@@ -56,7 +56,7 @@ extern "C" {
 
 #include <s3/acmod_set.h>
 #include <s3/gauden.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/model_def.h>
 
 /* data structure definition */
@@ -185,7 +185,7 @@ mod_inv_restore_acc(model_inventory_t *minv,
  * Commented
  *
  * Revision 1.3  1995/10/10  13:10:34  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.2  1995/09/08  19:13:52  eht
  * Updated to use acmod_set module instead of pset module

@@ -47,7 +47,7 @@
 #define CEP_FRAME_H
 
 #include <s3/vector.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 void
 cep_frame_set_size(uint32 sz);

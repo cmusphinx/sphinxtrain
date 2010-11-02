@@ -47,7 +47,7 @@
 
 #include <s3/mk_trans_seq.h>
 #include <s3/s2_param.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/s3.h>
 
 #include <assert.h>

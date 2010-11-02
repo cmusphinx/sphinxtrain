@@ -46,7 +46,7 @@
 #ifndef PARSE_CMDLN_H
 #define PARSE_CMDLN_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 void
 parse_cmd_ln(int argc,

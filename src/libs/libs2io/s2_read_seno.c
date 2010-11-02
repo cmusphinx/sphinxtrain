@@ -457,7 +457,7 @@ s2_read_seno_2(acmod_set_t *acmod_set,		/* the phone set of the model inventory 
  * Get SPHINX-II header files from <s2/...>
  *
  * Revision 1.6  1995/10/10  12:27:37  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.5  1995/10/09  15:08:24  eht
  * changed ckd_alloc interface to remove need for __FILE__, __LINE__

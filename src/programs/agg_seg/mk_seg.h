@@ -46,7 +46,7 @@
 #ifndef MK_SEG_H
 #define MK_SEG_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/acmod_set.h>
 
 int

@@ -1,8 +1,8 @@
 #include <stdio.h>
 
 #include <s3/mllr.h>
-#include <s3/matrix.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/matrix.h>
+#include <sphinxbase/ckd_alloc.h>
 
 /* cc -I../../../include test.c -L../../../lib.i686-pc-linux-gnu -lutil -lmllr -llapack_lite -lcommon -lio -lm */
 

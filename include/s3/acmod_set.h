@@ -59,7 +59,7 @@ extern "C" {
 
 #include <s3/acmod_set_ds.h>	/* defines the data structures used by this
 				 * module */
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 acmod_set_t *
 acmod_set_new(void);

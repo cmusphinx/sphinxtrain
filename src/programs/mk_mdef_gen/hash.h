@@ -48,7 +48,7 @@
 #ifndef HASH_H
 #define HASH_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 #define EOLN  -1
 #define HASHSIZE 	24001

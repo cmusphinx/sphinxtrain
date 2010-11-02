@@ -118,7 +118,7 @@ mk_boundary_phone(char *word,
  * Updated comments and changed <s3/state.h> to "state.h"
  *
  * Revision 1.3  1995/10/10  12:44:06  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.2  1995/09/08  19:13:11  eht
  * Updated to use the new acmod_set module.  Prior to

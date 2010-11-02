@@ -47,7 +47,7 @@
 #include <s3/read_line.h>
 #include <s3/acmod_set.h>
 #include <s3/model_def_io.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/s3.h>
 
 #include <assert.h>

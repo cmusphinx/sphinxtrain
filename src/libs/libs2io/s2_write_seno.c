@@ -46,7 +46,7 @@
 #include <s3/s2_write_seno.h>
 
 #include <s3/s2_param.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/s2io.h>
 #include <s3/err.h>
 #include <s3/s3.h>
@@ -273,7 +273,7 @@ s2_write_seno_3(float ***new_mixw,		/* the sphinx-3 mixture weights we are savin
  * Get SPHINX-II header files from <s2/...>
  *
  * Revision 1.4  1995/10/10  12:27:37  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.3  1995/10/09  15:08:24  eht
  * changed ckd_alloc interface to remove need for __FILE__, __LINE__

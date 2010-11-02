@@ -47,7 +47,7 @@
 
 #include <s3/itree.h>
 
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 
 #include <s3/s3.h>
 

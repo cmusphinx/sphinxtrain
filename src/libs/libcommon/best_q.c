@@ -46,7 +46,7 @@
 #include <s3/best_q.h>
 
 #include <s3/metric.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/err.h>
 #include <s3/s3.h>
 #include <s3/cmd_ln.h>

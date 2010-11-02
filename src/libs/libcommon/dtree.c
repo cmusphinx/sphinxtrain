@@ -48,7 +48,7 @@
 #include <s3/best_q.h>
 #include <s3/two_class.h>
 
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/read_line.h>
 #include <s3/quest.h>
 #include <s3/div.h>

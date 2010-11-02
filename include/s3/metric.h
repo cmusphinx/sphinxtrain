@@ -52,7 +52,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 float64
 wt_ent_inc(float32 **a,

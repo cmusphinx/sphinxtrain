@@ -58,7 +58,7 @@
 #endif
 #include <assert.h>
 
-#include "s3/prim_type.h"
+#include "sphinxbase/prim_type.h"
 #include "io.h"
 #include "s3/err.h"
 #include "sys_compat/file.h"

@@ -56,7 +56,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/feat.h>
 
 #ifndef NULL

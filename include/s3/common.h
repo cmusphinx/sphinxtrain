@@ -58,8 +58,6 @@ extern "C" {
 #endif
 
 #include <s3/cmd_ln.h>
-#include <s3/ckd_alloc.h>
-#include <s3/matrix.h>
 #include <s3/vector.h>
 #include <s3/prefix_upto.h>
 #include <s3/hash.h>
@@ -70,7 +68,10 @@ extern "C" {
 #include <s3/lexicon.h>
 #include <s3/feat.h>
 #include <s3/err.h>
-#include <s3/prim_type.h>
+
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/matrix.h>
+#include <sphinxbase/prim_type.h>
 
 #ifdef __cplusplus
 }

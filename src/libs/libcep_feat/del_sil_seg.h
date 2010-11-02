@@ -46,7 +46,7 @@
 #ifndef DEL_SIL_SEG_H
 #define DEL_SIL_SEG_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/vector.h>
 
 uint32

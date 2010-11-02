@@ -54,7 +54,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 typedef uint32 cell_id_t;
 typedef uint32 cell_index_t;

@@ -49,7 +49,7 @@
 #include <s3/model_inventory.h>
 #include <s3/s3phseg_io.h>
 #include <s3/vector.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/gauden.h>
 #include <s3/state.h>
 #include <s3/feat.h>
@@ -791,7 +791,7 @@ cleanup:
  * Made state.h a "local" header file
  *
  * Revision 1.6  1995/10/10  12:43:50  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.5  1995/10/09  14:55:33  eht
  * Change interface to new ckd_alloc routines

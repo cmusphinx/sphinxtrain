@@ -53,7 +53,7 @@ extern "C" {
 #endif
 
 #include <s3/acmod_set.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/quest.h>
 
 pset_t *

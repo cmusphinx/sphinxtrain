@@ -64,7 +64,7 @@
 
 #include <s3/profile.h>
 #include <s3/err.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 
 
 typedef struct {

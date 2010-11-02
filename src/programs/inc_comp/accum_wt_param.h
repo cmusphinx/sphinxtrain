@@ -47,7 +47,7 @@
 #define ACCUM_WT_PARAM_H
 
 #include <s3/vector.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int
 accum_wt_param(char **accum_dir,

@@ -41,7 +41,7 @@
  */
 
 #include "s3/feat.h"
-#include "s3/ckd_alloc.h"
+#include "sphinxbase/ckd_alloc.h"
 #include "s3/s3io.h"
 #include "s3/err.h"
 

@@ -46,7 +46,7 @@
 #ifndef DCEP_FRAME_H
 #define DCEP_FRAME_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/vector.h>
 
 void

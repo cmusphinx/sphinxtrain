@@ -53,7 +53,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/s3.h>
 #include <s3/common.h>
 
@@ -173,7 +173,7 @@ gauden_dcount_write(const char *file_name,
  * Use the const specification for the veclen (it shouldn't be written to inside this module)
  *
  * Revision 1.2  1995/10/10  13:10:34  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/08/15  13:46:15  eht
  * Initial revision

@@ -47,7 +47,7 @@
 
 
 #include <s3/agc_max.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 
 void
@@ -100,7 +100,7 @@ agc_max (float *cep,		/* The cepstrum data */
  * Cleaned up code a bit so that it is more ANSI compliant
  *
  * Revision 1.2  1995/10/10  12:36:12  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/06/02  20:57:22  eht
  * Initial revision

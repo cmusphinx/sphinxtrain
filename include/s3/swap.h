@@ -59,7 +59,7 @@ extern "C" {
 
 #define SWAP_FLOAT32(x)	SWAP_INT32((int32 *) x)
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 #include <s3/s3.h>
 
@@ -103,7 +103,7 @@ swap_little_endian(void);
  * Include missing prototype for swap_stamp()
  *
  * Revision 1.2  1995/10/10  13:10:34  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/08/15  13:46:15  eht
  * Initial revision

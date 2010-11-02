@@ -48,7 +48,7 @@
 
 #include <stdio.h>
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/vector.h>
 #include <s3/gauden.h>
 #include <s3/model_inventory.h>
@@ -199,7 +199,7 @@ mmi_accum_gauden(float32 ***cbacc,
  * Updated comments and changed <s3/state.h> to "state.h"
  *
  * Revision 1.3  1995/10/10  12:44:06  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.2  1995/08/09  20:19:19  eht
  * Add mixing weight id argument so that error output count

@@ -46,7 +46,7 @@
 #ifndef MK_SSEQ_H
 #define MK_SSEQ_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/acmod_set.h>
 #include <s3/model_def_io.h>
 

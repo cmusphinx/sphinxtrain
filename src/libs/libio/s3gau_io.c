@@ -44,10 +44,10 @@
  *********************************************************************/
 
 #include <s3/s3gau_io.h>
-#include <s3/matrix.h>
 #include <s3/s3io.h>
 
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/matrix.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/s3.h>
 
 #include <assert.h>

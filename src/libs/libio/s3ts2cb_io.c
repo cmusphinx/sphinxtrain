@@ -45,7 +45,7 @@
 
 #include <s3/s3ts2cb_io.h>
 #include <s3/s3map_io.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/err.h>
 #include <s3/s3.h>
 

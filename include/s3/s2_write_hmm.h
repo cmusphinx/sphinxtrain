@@ -55,7 +55,7 @@ extern "C" {
 
 #include <s3/acmod_set.h>
 #include <s3/model_def.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int
 s2_write_hmm(float32 ***tmat,
@@ -94,7 +94,7 @@ s2_write_dhmm(float32 ***tmat,
  * *** empty log message ***
  * 
  * Revision 1.3  95/10/10  13:10:34  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  * 
  *
  */

@@ -46,7 +46,7 @@
 #include <s3/s2_mixing_weights.h>
 
 #include <s3/s2_param.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/int32_io.h>
 #include <s3/s3.h>
 
@@ -208,10 +208,10 @@ s2_mixing_weights(float32 ***out_mixw,
  * Get SPHINX-II header files from <s2/...>
  *
  * Revision 1.5  1995/10/10  12:27:37  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.4  1995/10/09  15:40:24  eht
- * Included missing <s3/ckd_alloc.h>
+ * Included missing <sphinxbase/ckd_alloc.h>
  *
  * Revision 1.3  1995/10/09  15:08:24  eht
  * changed ckd_alloc interface to remove need for __FILE__, __LINE__

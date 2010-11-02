@@ -60,7 +60,7 @@
 #include <s3/s3tmat_io.h>
 #include <s3/s3acc_io.h>
 #include <s3/regmat_io.h>
-#include <s3/matrix.h>
+#include <sphinxbase/matrix.h>
 
 /* Some SPHINX-II compatibility definitions */
 #include <s3/s2_param.h>
@@ -967,7 +967,7 @@ main(int argc, char *argv[])
  * Get log.h from <s2/log.h>
  *
  * Revision 1.5  1995/10/10  13:09:40  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.4  1995/10/09  15:29:21  eht
  * Removed __FILE__, __LINE__ arguments to ckd_alloc stuff

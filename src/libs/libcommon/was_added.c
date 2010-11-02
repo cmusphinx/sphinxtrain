@@ -52,7 +52,7 @@
 
 #include <s3/was_added.h>
 
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 
 /*********************************************************************
  *

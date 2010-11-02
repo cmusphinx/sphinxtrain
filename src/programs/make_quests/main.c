@@ -77,7 +77,7 @@
 #include <s3/s3mixw_io.h>
 #include <s3/metric.h>
 #include <s3/div.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/err.h>
 #include <s3/s3.h>
 #include <s3/vector.h>

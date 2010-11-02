@@ -54,7 +54,7 @@ extern "C" {
 
 #define MLLR_CLASS_VERSION	"0.1"
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/gauden.h>
 
 int

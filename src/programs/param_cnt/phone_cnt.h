@@ -46,7 +46,7 @@
 #ifndef PHONE_CNT_H
 #define PHONE_CNT_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/model_def_io.h>
 #include <s3/acmod_set.h>
 

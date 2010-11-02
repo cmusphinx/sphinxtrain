@@ -57,7 +57,7 @@ extern "C" {
 }
 #endif
 
-#include "prim_type.h"
+#include <sphinxbase/prim_type.h>
 
 typedef int32 hash_t;	/* Type of handle to hash tables */
 

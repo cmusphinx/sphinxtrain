@@ -47,7 +47,7 @@
  *********************************************************************/
 
 #include <s3/agc_emax.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 #include <string.h>
 
@@ -106,7 +106,7 @@ int agc_emax_proc (float32 *ocep,		/* ouput cepstrum frame */
  * Cleaned up code a bit so that it is more ANSI compliant
  *
  * Revision 1.2  1995/10/10  12:36:12  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/06/02  20:57:22  eht
  * Initial revision

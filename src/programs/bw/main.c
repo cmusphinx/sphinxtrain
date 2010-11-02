@@ -57,7 +57,7 @@
 #include <s3/common.h>
 #include <s3/prefetch.h>
 #include <s3/profile.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/get_host_name.h>
 #include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
@@ -2095,7 +2095,7 @@ int main(int argc, char *argv[])
  * Changed so that would port to Windows NT
  *
  * Revision 1.14  1995/10/10  12:43:50  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.13  1995/10/09  14:55:33  eht
  * Change interface to new ckd_alloc routines

@@ -54,7 +54,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int32
 read_int32 (FILE *stream);

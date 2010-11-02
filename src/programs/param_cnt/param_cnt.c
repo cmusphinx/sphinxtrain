@@ -55,7 +55,7 @@
 #include "enum_corpus.h"
 
 #include <s3/acmod_set.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 
 #include <string.h>
 

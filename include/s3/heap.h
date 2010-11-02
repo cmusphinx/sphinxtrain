@@ -53,7 +53,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 #ifndef NO_KEY
 #define NO_KEY (uint32)(0xffffffff)

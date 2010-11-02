@@ -54,7 +54,7 @@ extern "C" {
 #endif
 
 #include <s3/acmod_set.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 #include <s3/model_def.h>
 
@@ -113,7 +113,7 @@ model_def_free(model_def_t *mdef);
  * structure
  *
  * Revision 1.3  1995/10/10  13:10:34  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.2  1995/09/08  19:13:52  eht
  * Updated to replace pset module with acmod_set module

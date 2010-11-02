@@ -103,11 +103,11 @@
 #include <s3/model_inventory.h>
 #include <s3/model_def.h>
 
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/cmd_ln.h>
 #include <s3/s2_param.h>
 #include <s3/feat.h>
-#include <s3/matrix.h>
+#include <sphinxbase/matrix.h>
 #include <s3/lda.h>
 #include <s3/s3.h>
 
@@ -280,8 +280,8 @@ accum_gauden(float32 ***denacc,
 			    dvec[l] = feat[l] - pm[l];
 			outerproduct(cov, dvec, dvec, g->veclen[j]);
 		    }
-		    scalarmultiply(cov, obs_cnt, g->veclen[j], g->veclen[j]);
-		    matrixadd(fv, cov, g->veclen[j], g->veclen[j]);
+		    scalarmultiply(cov, obs_cnt, g->veclen[j]);
+		    matrixadd(fv, cov, g->veclen[j]);
 		}
 		for (l = 0; l < g->veclen[j]; l++) {
 		    if (mean_reest) {
@@ -1200,7 +1200,7 @@ accum_mmie_dump(const char *out_dir,
  * Changed so that would port to Windows NT
  *
  * Revision 1.8  1995/10/10  12:43:50  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.7  1995/09/08  19:11:14  eht
  * Updated to use new acmod_set module.  Prior to testing

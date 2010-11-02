@@ -54,7 +54,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int
 timer_start(uint32 id);

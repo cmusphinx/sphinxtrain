@@ -47,7 +47,7 @@
  *********************************************************************/
 
 #include <s3/kmeans.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/profile.h>
 #include <s3/s3.h>
 
@@ -355,7 +355,7 @@ k_means_label_trineq(codew_t *label,
     return sqerr;
 }
 
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 
 /*********************************************************************
  *

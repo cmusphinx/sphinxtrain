@@ -47,7 +47,7 @@
 #define S2_DDCEP_H
 
 #include <s3/vector.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 void
 s2_ddcep_set_veclen(uint32 veclen);

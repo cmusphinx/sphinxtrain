@@ -53,7 +53,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int
 get_time(uint32 *sec, float32 *frac_sec);

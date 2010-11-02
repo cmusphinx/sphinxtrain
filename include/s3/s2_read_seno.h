@@ -53,7 +53,7 @@ extern "C" {
 #endif
 
 #include <s3/model_inventory.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 float32 ***
 s2_read_seno(model_inventory_t *mi,
@@ -102,7 +102,7 @@ s2_read_seno_3(acmod_set_t *phone_set,
  * *** empty log message ***
  *
  * Revision 1.3  1995/10/10  13:10:34  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.2  1995/09/08  19:13:52  eht
  * Updated to replace pset module with acmod_set module

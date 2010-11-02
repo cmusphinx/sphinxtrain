@@ -47,8 +47,8 @@
 
 #include <s3/s3gau_io.h>
 #include <s3/gauden.h>
-#include <s3/ckd_alloc.h>
-#include <s3/matrix.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/matrix.h>
 #include <s3/s3.h>
 
 #include <sys_compat/file.h>

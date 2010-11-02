@@ -49,7 +49,6 @@ SRCS = \
   best_q.c \
   btree.c \
   ck_seg.c \
-  ckd_alloc.c \
   cmd_ln.c \
   cmu6_lts_rules.c \
   cvt2triphone.c \
@@ -64,7 +63,6 @@ SRCS = \
   itree.c \
   lexicon.c \
   lts.c \
-  matrix.c \
   mk_phone_list.c \
   mk_phone_seq.c \
   mk_sseq.c \

@@ -45,7 +45,7 @@
 
 #ifndef PARSE_CMD_LN_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/cmd_ln.h>
 
 int

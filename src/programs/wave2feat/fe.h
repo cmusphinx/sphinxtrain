@@ -36,7 +36,7 @@
 #ifndef _FE_H_
 #define _FE_H_
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 #ifdef __cplusplus
 extern "C" {

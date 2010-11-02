@@ -45,7 +45,7 @@
  *********************************************************************/
 
 #include <s3/s3tmat_io.h>
-#include <s3/matrix.h>
+#include <sphinxbase/matrix.h>
 #include <s3/s3io.h>
 #include <s3/s3.h>
 

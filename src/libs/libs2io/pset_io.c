@@ -46,7 +46,7 @@
  *********************************************************************/
 
 #include <s3/pset_io.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/err.h>
 #include <s3/s3.h>
 

@@ -49,7 +49,7 @@
 
 #include <s3/model_def_io.h>
 #include <s3/s3ts2cb_io.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/cmd_ln.h>
 #include <s3/s3.h>
 

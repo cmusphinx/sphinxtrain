@@ -48,7 +48,7 @@
 #include <s3/lexicon.h>
 #include <s3/model_inventory.h>
 #include <s3/mk_wordlist.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/mk_phone_list.h>
 #include <s3/cvt2triphone.h>
 
@@ -200,10 +200,10 @@ state_t *next_utt_states_mmie(uint32 *n_state,
  * Made state.h a "local" header file
  *
  * Revision 1.9  1995/10/10  12:43:50  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.8  1995/10/09  15:37:18  eht
- * added missing include of <s3/ckd_alloc.h>
+ * added missing include of <sphinxbase/ckd_alloc.h>
  *
  * Revision 1.7  1995/10/09  15:32:34  eht
  * forgot semi-colon

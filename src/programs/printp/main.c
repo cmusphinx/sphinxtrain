@@ -635,7 +635,7 @@ main(int argc, char *argv[])
  * add print_var() function
  *
  * Revision 1.6  1995/10/10  13:09:40  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.5  1995/10/09  15:30:33  eht
  * Removed __FILE__, __LINE__ arguments to ckd_alloc routines

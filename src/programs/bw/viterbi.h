@@ -46,7 +46,7 @@
 #ifndef VITERBI_H
 #define VITERBI_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/vector.h>
 #include <s3/state.h>
 #include <s3/model_inventory.h>

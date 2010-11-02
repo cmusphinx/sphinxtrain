@@ -52,7 +52,7 @@
 #include <s3/ck_seg.h>
 #include <s3/mk_sseq.h>
 #include <s3/mk_phone_seq.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 
 
 static uint32 *

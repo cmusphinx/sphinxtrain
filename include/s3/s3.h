@@ -55,29 +55,11 @@ extern "C" {
 #endif
 
 #include <s3/err.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 #define	S3_SUCCESS	0
 #define S3_ERROR	-1
 #define S3_WARNING	-2
-
-#define MAX_IEEE_NORM_POS_FLOAT32	 3.4e+38
-#define MAX_POS_FLOAT32	 		 3.4e+38
-
-#define MIN_IEEE_NORM_POS_FLOAT32	 1.2e-38
-#define MIN_POS_FLOAT32	 		 1.2e-38
-
-#define MIN_IEEE_NORM_NEG_FLOAT32	-3.4e+38
-#define MIN_NEG_FLOAT32			-3.4e+38
-
-#define MAX_IEEE_NORM_POS_FLOAT64	 1.8e+307
-#define MAX_POS_FLOAT64	 		 1.8e+307
-
-#define MIN_IEEE_NORM_POS_FLOAT64	 2.2e-308
-#define MIN_POS_FLOAT64	 		 2.2e-308
-
-#define MIN_IEEE_NORM_NEG_FLOAT64	-1.8e+307
-#define MIN_NEG_FLOAT64			-1.8e+307
 
 /* The maximum # of states for any given acoustic model */
 #define MAX_N_STATE	20

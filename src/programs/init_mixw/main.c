@@ -640,7 +640,7 @@ main(int argc, char *argv[])
  * to do the work of clone_ci.
  *
  * Revision 1.3  1995/10/10  13:09:40  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.2  1995/10/09  15:16:02  eht
  * Added some status printf's

@@ -46,7 +46,7 @@
 #ifndef AGG_ALL_SEG_H
 #define AGG_ALL_SEG_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/segdmp.h>
 
 int

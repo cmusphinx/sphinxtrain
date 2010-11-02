@@ -55,7 +55,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 void
 cmn_set_veclen(uint32 l);

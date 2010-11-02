@@ -38,7 +38,7 @@
 #define HEAP_H
 
 #include <stdlib.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 #define MAXSWAPS 1000 	/* Dont expect more than a 1000 swaps */
 

@@ -52,7 +52,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int
 s3cb2mllr_read(const char *fn,

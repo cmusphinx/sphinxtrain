@@ -43,9 +43,9 @@
  */
 
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/err.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/hash.h>
 
 #include <stdio.h>

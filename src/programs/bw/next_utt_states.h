@@ -47,7 +47,7 @@
 #define NEXT_UTT_STATES_H
 
 #include <s3/state.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/lexicon.h>
 #include <s3/model_inventory.h>
 #include <s3/model_def.h>
@@ -105,7 +105,7 @@ state_t *next_utt_states_mmie(uint32 *n_state,
  * Updated comments and changed <s3/state.h> to "state.h"
  *
  * Revision 1.3  1995/10/10  12:44:06  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.2  1995/08/09  20:20:10  eht
  * Use mdef structure for tying info rather than DAG thing

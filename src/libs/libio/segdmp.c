@@ -47,7 +47,7 @@
  *********************************************************************/
 
 #include <s3/segdmp.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/cmd_ln.h>
 #include <s3/s3io.h>
 #include <s3/fp_cache.h>

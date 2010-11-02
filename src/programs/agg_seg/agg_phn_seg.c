@@ -52,7 +52,7 @@
 #include <s3/mk_phone_list.h>
 #include <s3/ck_seg.h>
 #include <s3/cvt2triphone.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/feat.h>
 
 #include <stdio.h>

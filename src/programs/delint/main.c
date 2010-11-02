@@ -57,9 +57,9 @@
 #include <s3/s3gau_io.h>
 #include <s3/gauden_io.h>
 #include <s3/gauden.h>
-#include <s3/matrix.h>
-#include <s3/prim_type.h>	/* define int32, etc. */
-#include <s3/ckd_alloc.h>	/* memory allocation */
+#include <sphinxbase/matrix.h>
+#include <sphinxbase/prim_type.h>	/* define int32, etc. */
+#include <sphinxbase/ckd_alloc.h>	/* memory allocation */
 #include <s3/err.h>		/* define E_ERROR, E_INFO, etc */
 
 #include <sys_compat/file.h>
@@ -636,7 +636,7 @@ main(int argc, char *argv[])
  * Added some type cases for memory alloc/free
  *
  * Revision 1.9  1995/10/10  12:53:35  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.8  1995/10/09  15:30:33  eht
  * Removed __FILE__, __LINE__ arguments to ckd_alloc routines

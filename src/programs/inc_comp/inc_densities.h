@@ -46,7 +46,7 @@
 #ifndef INC_DENSITIES_H
 #define INC_DENSITIES_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/vector.h>
 
 int

@@ -60,7 +60,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 /* The state ID representing "No state" */
 #define NO_STATE	0xffffffff

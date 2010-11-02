@@ -49,7 +49,7 @@
 
 #include <s3/model_def_io.h>
 #include <s3/acmod_set.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/cmd_ln.h>
 #include <s3/s2_read_tmat.h>
 #include <s3/s3tmat_io.h>

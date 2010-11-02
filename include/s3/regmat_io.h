@@ -54,7 +54,7 @@ extern "C" {
 
 #define REGMAT_PARAM_VERSION 	"0.1"
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int32
 regmat_param_write(const char *file_name,

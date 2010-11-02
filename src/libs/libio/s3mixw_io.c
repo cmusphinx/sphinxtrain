@@ -44,7 +44,7 @@
  *********************************************************************/
 
 #include <s3/s3mixw_io.h>
-#include <s3/matrix.h>
+#include <sphinxbase/matrix.h>
 #include <s3/s3io.h>
 #include <s3/s3.h>
 

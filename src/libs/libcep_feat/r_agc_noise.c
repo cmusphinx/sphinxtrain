@@ -46,7 +46,7 @@
 /* static char rcsid[] = "@(#)$Id$";*/
 
 #include <s3/r_agc_noise.h>
-#include <s3/prim_type.h>	/* defines int32, etc. */
+#include <sphinxbase/prim_type.h>	/* defines int32, etc. */
 #include <s3/s3.h>	/* defines TRUE and FALSE */
 
 #include <stdio.h>
@@ -321,7 +321,7 @@ compute_noise_level ()
  * Cleaned up code a bit so that it is more ANSI compliant
  *
  * Revision 1.3  1995/10/10  12:36:12  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.2  1995/09/07  19:55:41  eht
  * include <s3/s3.h> to pick up define for TRUE and FALSE

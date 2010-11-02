@@ -48,7 +48,7 @@
 
 #include <s3/lexicon.h>
 #include <s3/model_def_io.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include "cnt_fn.h"
 
 int

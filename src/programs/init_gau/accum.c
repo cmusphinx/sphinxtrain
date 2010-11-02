@@ -44,8 +44,8 @@
  * 	Eric H. Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
-#include <s3/matrix.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/matrix.h>
+#include <sphinxbase/ckd_alloc.h>
 #include "accum.h"
 
 int
@@ -198,13 +198,13 @@ accum_state_fullvar(vector_t ****var,
 		dvec[c] = feat[t][f][c] - mean[s][f][0][c];
 
 	    outerproduct(cov, dvec, dvec, veclen[f]);
-	    matrixadd(var[s][f][0], cov, veclen[f], veclen[f]);
+	    matrixadd(var[s][f][0], cov, veclen[f]);
 
 	    if (s != ci_s) {
 		for (c = 0; c < veclen[f]; c++)
 		    dvec[c] = feat[t][f][c] - mean[ci_s][f][0][c];
 		outerproduct(cov, dvec, dvec, veclen[f]);
-		matrixadd(var[ci_s][f][0], cov, veclen[f], veclen[f]);
+		matrixadd(var[ci_s][f][0], cov, veclen[f]);
 	    }
 	    ckd_free(dvec);
 	    ckd_free_2d((void **)cov);

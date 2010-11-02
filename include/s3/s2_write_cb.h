@@ -86,7 +86,7 @@ s2_write_cb(gauden_t *g,
  * *** empty log message ***
  *
  * Revision 1.2  1995/10/10  13:10:34  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/09/08  19:13:52  eht
  * Initial revision

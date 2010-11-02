@@ -48,7 +48,7 @@
 #ifndef AGC_MAX_H
 #define AGC_MAX_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 void
 agc_max (float32 *cep,		/* The cepstrum data */
@@ -78,7 +78,7 @@ agc_max (float32 *cep,		/* The cepstrum data */
  * Initial revision
  *
  * Revision 1.2  1995/10/10  12:35:52  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/08/15  13:45:04  eht
  * Initial revision

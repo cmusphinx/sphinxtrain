@@ -53,13 +53,13 @@
 /* END BHIKSHA FIX */
 
 #include <s3/ck_seg.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/corpus.h>
 #include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
 #include <s3/vector.h>
 #include <s3/feat.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/s3.h>
 
 #include <stdio.h>

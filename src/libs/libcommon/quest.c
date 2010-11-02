@@ -46,7 +46,7 @@
 
 #include <s3/quest.h>
 #include <s3/bquest_io.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/s3.h>
 
 #include <string.h>

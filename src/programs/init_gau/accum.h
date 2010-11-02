@@ -47,7 +47,7 @@
 #define ACCUM_H
 
 #include <s3/vector.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int
 accum_state_mean(vector_t ***mean_acc,

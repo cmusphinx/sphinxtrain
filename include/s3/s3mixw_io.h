@@ -54,7 +54,7 @@ extern "C" {
 
 #define MIXW_FILE_VERSION "1.0"
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/s3.h>
 
 int

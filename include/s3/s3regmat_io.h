@@ -54,7 +54,7 @@ extern "C" {
 
 #define REGMATCNT_FILE_VERSION	"1.0"
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int
 s3regmatcnt_read(const char *fn,

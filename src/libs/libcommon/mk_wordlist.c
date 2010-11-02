@@ -44,7 +44,7 @@
  *********************************************************************/
 
 #include <s3/mk_wordlist.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/n_words.h>
 
 #include <assert.h>

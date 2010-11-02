@@ -47,7 +47,7 @@
 #define S2_FEAT_H
 
 #include <s3/vector.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 uint32
 s2_feat_n_stream(void);

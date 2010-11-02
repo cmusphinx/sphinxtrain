@@ -48,7 +48,7 @@
 
 #ifdef __cplusplus
 extern "C" 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 #define LAMBDA_VERSION "0.1"
 

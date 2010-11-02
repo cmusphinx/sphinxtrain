@@ -54,7 +54,7 @@ extern "C" {
 
 #define STATE_PARAM_DEF_VERSION	"0.1"
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/model_def_io.h>
 
 int

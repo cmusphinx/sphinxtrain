@@ -54,7 +54,7 @@ extern "C" {
 
 #define TMAT_PARAM_VERSION	"0.1"
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int32
 tmat_param_write(const char *file_name,
@@ -107,7 +107,7 @@ tmat_param_unbundle(const char *dir,
  * added bundle/unbundle routines
  * 
  * Revision 1.2  1995/10/10  13:10:34  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/08/15  13:46:15  eht
  * Initial revision

@@ -51,7 +51,7 @@
 
 #include <s3/remap.h>
 #include <s3/cmd_ln.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/s2_param.h>
 #include <s3/acmod_set.h>
 #include <s3/model_def_io.h>	/* should be broken into model_def.h and model_def_io.h */

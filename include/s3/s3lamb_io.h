@@ -56,7 +56,7 @@ extern "C" {
 #define LAMBDA_FILE_VERSION "1.0"
 #define LAMBDACNT_FILE_VERSION "1.0"
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int
 s3lamb_read(const char *fn,

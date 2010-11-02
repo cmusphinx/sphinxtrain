@@ -68,7 +68,7 @@
 #include <s3/s3cb2mllr_io.h>
 #include <s3/state_param_def_io.h>
 #include <s3/cmd_ln.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/feat.h>
 #include <s3/corpus.h>
 #include <s3/err.h>

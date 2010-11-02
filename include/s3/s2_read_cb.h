@@ -55,7 +55,7 @@ extern "C" {
 #endif
 
 #include <s3/gauden.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int
 s2_read_cb(gauden_t *g,

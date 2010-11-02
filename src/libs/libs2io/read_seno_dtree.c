@@ -46,7 +46,7 @@
 static char rcsid[] = "@(#)$Id$";
 
 #include <s3/read_seno_dtree.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/s3.h>
 
 #include <string.h>

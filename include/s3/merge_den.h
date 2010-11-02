@@ -53,7 +53,7 @@ extern "C" {
 #endif
 
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 void
 merge_d(float32 ***opdf,

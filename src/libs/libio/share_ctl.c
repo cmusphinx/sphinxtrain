@@ -43,7 +43,7 @@
  * 
  *********************************************************************/
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/swap.h>
 #include <s3/bo_magic.h>
 #include <s3/s3.h>

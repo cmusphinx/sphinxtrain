@@ -47,7 +47,7 @@
 #ifndef CMD_LN_H
 #define CMD_LN_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 int32
 parse_cmd_ln(int argc,

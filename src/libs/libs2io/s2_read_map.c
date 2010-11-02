@@ -45,10 +45,10 @@
 
 #include <s3/s2_read_map.h>
 
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/acmod_set.h>
 #include <s3/s2_param.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/s3.h>
 
 #include <string.h>
@@ -259,7 +259,7 @@ s2_read_seno_mapping_file(uint32 **smap,
  * Get SPHINX-II header files from <s2/...>
  *
  * Revision 1.5  1995/10/10  12:27:37  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.4  1995/10/09  15:08:24  eht
  * changed ckd_alloc interface to remove need for __FILE__, __LINE__

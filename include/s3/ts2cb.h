@@ -53,7 +53,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/model_def.h>
 
 #define CONT_LABEL	".cont."

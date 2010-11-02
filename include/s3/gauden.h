@@ -449,7 +449,7 @@ solve_quadratic(float64 x, float64 y, float64 z, float64 *root1, float64 *root2)
  * w/in.
  *
  * Revision 1.2  1995/10/10  13:10:34  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/09/08  15:21:06  eht
  * Initial revision

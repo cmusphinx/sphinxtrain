@@ -35,7 +35,7 @@
 #include <s3/s3mixw_io.h>
 #include <s3/s3tmat_io.h>
 #include <s3/s3acc_io.h>
-#include <s3/matrix.h>
+#include <sphinxbase/matrix.h>
 
 /* Some SPHINX-II compatibility definitions */
 #include <s3/s2_param.h>

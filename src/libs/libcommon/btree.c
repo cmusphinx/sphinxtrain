@@ -45,7 +45,7 @@
 
 
 #include <s3/btree.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/err.h>
 
 #include <assert.h>

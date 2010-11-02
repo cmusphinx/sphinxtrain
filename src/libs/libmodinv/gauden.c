@@ -58,11 +58,11 @@
 
 #include <s3/gauden.h>
 
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/cmd_ln.h>
 #include <s3/feat.h>
 #include <s3/err.h>
-#include <s3/matrix.h>
+#include <sphinxbase/matrix.h>
 
 #include <float.h>
 #include <math.h>
@@ -2226,7 +2226,7 @@ gauden_norm_wt_mmie_var(vector_t ***in_var,
  * does not seem to be defined always in math.h on all machines.
  *
  * Revision 1.6  1995/10/10  13:09:40  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.5  1995/10/09  15:11:53  eht
  * Changed interface to ckd_alloc to remove need for __FILE__, __LINE__ arguments

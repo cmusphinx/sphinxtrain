@@ -44,7 +44,7 @@
  *********************************************************************/
 
 #include <s3/lexicon.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/n_words.h>
 #include <s3/read_line.h>
 

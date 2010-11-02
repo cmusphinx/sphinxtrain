@@ -52,7 +52,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 float64
 two_class(float32 ****mixw_occ,

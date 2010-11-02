@@ -45,7 +45,7 @@
 
 #include <s3/ts2cb.h>
 #include <s3/mk_ts2ci.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 
 uint32 *
 semi_ts2cb(uint32 n_ts)

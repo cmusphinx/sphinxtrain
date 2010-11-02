@@ -54,7 +54,7 @@ extern "C" {
 #endif
 
 #include <s3/vector.h>
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 #define FEAT_ID_SPHINX_II_STD	0
 #define FEAT_ID_V1		1

@@ -66,7 +66,7 @@
 
 #include <s3/corpus.h>
 
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/read_line.h>
 #include <s3/prefetch.h>
 #include <s3/mllr_io.h>
@@ -2285,7 +2285,7 @@ load_lattice(s3lattice_t **out_lattice, char *lat_dir, char *lat_ext)
  * Changed so that it would port to Windows NT
  *
  * Revision 1.10  1995/10/10  12:27:37  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.9  1995/10/09  15:07:37  eht
  * Moved most of prefetching calls into corpus.c

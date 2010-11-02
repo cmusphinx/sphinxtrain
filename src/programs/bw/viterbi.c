@@ -50,7 +50,7 @@
 #include "viterbi.h"
 #include "accum.h"
 
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/profile.h>
 #include <s3/remap.h>
 #include <s3/corpus.h>

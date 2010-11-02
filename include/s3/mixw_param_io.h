@@ -56,7 +56,7 @@ extern "C" {
 
 #define MIXW_PARAM_VERSION "0.1"
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 int32
 mixw_param_bundle(const char *dir,
 		  float32 ****out_mixw,
@@ -116,7 +116,7 @@ mixw_param_read(const char **out_comment,
  * added bundle/unbundle functions
  *
  * Revision 1.2  1995/10/10  13:10:34  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/08/15  13:46:15  eht
  * Initial revision

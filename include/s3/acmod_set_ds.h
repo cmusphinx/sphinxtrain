@@ -55,7 +55,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 
 typedef unsigned char ci_acmod_id_t;
 

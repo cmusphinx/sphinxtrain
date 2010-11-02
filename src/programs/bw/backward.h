@@ -46,7 +46,7 @@
 #ifndef BACKWARD_H
 #define BACKWARD_H
 
-#include <s3/prim_type.h>
+#include <sphinxbase/prim_type.h>
 #include <s3/vector.h>
 #include <s3/state.h>
 #include <s3/model_inventory.h>
@@ -150,7 +150,7 @@ den_terms(float64 **d_term,
  * Updated comments and changed <s3/state.h> to "state.h"
  *
  * Revision 1.2  1995/10/10  12:44:06  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.1  1995/06/02  20:43:56  eht
  * Initial revision

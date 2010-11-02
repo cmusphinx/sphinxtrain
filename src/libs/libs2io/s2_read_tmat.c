@@ -48,7 +48,7 @@
 #include <s3/s2_param.h>
 #include <s3/cmd_ln.h>
 #include <s3/vector.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/acmod_set.h>
 #include <s3/int32_io.h>
 #include <s3/s3.h>
@@ -324,7 +324,7 @@ s2_read_tmat(const char *in_dir_name,
  * Get SPHINX-II header files from <s2/...>
  *
  * Revision 1.6  1995/10/10  12:27:37  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.5  1995/09/08  19:11:14  eht
  * Updated to use new acmod_set module.  Prior to testing

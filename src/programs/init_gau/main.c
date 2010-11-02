@@ -58,7 +58,7 @@
 #include <s3/model_def_io.h>
 #include <s3/s3ts2cb_io.h>
 #include <s3/ts2cb.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/feat.h>
 #include <s3/s3.h>
 

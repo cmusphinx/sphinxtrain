@@ -45,8 +45,8 @@
 
 #include "interp_fn.h"
 
-#include <s3/matrix.h>
-#include <s3/ckd_alloc.h>
+#include <sphinxbase/matrix.h>
+#include <sphinxbase/ckd_alloc.h>
 #include <s3/s3.h>	/* define TYING_NO_ID */
 #include <s3/err.h>	/* define E_ERROR, E_INFO, etc */
 
@@ -259,7 +259,7 @@ interp_mixw(float32 ****out_mixw,
  * *** empty log message ***
  * 
  * Revision 1.5  1995/10/10  12:53:35  eht
- * Changed to use <s3/prim_type.h>
+ * Changed to use <sphinxbase/prim_type.h>
  *
  * Revision 1.4  1995/10/05  12:55:06  eht
  * Deal w/ untrained tied states and change in acmod_set interface
