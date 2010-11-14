@@ -445,3 +445,56 @@ class ArpaLM(object):
                 else:
                     # Otherwise back off some more
                     return self.prob(*syms)
+
+    def adapt_rescale(self, unigram, vocab=None):
+        """Update unigram probabilities with unigram (assumed to be in
+        linear domain), then rescale N-grams ending with the same word
+        by the corresponding factors.  If unigram is not the same size
+        as the original vocabulary, you must pass vocab, which is a
+        list of the words in unigram, in the same order as their
+        probabilities are listed in unigram."""
+        if vocab:
+            # Construct a temporary list mapping for the unigrams
+            vmap = map(lambda w: self.ngmap[0][w], vocab)
+            # Get the original unigrams
+            og = numpy.exp(self.ngrams[0][:,0].take(vmap))
+            # Compute the individual scaling factors
+            ascale = unigram * og.sum() / og
+            # Put back the normalized version of unigram
+            self.ngrams[0][:,0].put(numpy.log(unigram * og.sum()), vmap)
+            # Now reconstruct vocab as a dictionary mapping words to
+            # scaling factors
+            vv = {}
+            for i, w in enumerate(vocab):
+                vv[w] = i
+            vocab = vv
+        else:
+            ascale = unigram / numpy.exp(self.ngrams[0][:,0])
+            self.ngrams[0][:,0] = numpy.log(unigram)
+
+        for n in range(1, self.n):
+            # Total discounted probabilities for each history
+            tprob = numpy.zeros(self.ngrams[n-1].shape[0], 'd')
+            # Rescaled total probabilities
+            newtprob = numpy.zeros(self.ngrams[n-1].shape[0], 'd')
+            # For each N-gram, accumulate and rescale
+            for ng,idx in self.ngmap[n].iteritems():
+                h = ng[0:-1]
+                if n == 1: # Quirk of unigrams
+                    h = h[0]
+                w = ng[-1]
+                prob = numpy.exp(self.ngrams[n][idx,0])
+                tprob[self.ngmap[n-1][h]] += prob
+                if vocab == None or w in vocab:
+                    prob = prob * ascale[vocab[w]]
+                newtprob[self.ngmap[n-1][h]] += prob
+                self.ngrams[n][idx,0] = numpy.log(prob)
+            # Now renormalize everything
+            norm = tprob / newtprob
+            for ng,idx in self.ngmap[n].iteritems():
+                h = ng[0:-1]
+                if n == 1: # Quirk of unigrams
+                    h = h[0]
+                w = ng[-1]
+                prob = numpy.exp(self.ngrams[n][idx,0])
+                self.ngrams[n][idx,0] = numpy.log(prob * norm[self.ngmap[n-1][h]])

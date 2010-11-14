@@ -15,6 +15,7 @@ searching them, and calculating word posterior probabilities.
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision$"
 
+import sphinxbase
 import gzip
 import re
 import math
@@ -770,6 +771,12 @@ class Dag(object):
         # Mark reachable nodes from the end
         for w in self.reverse_breadth():
             w.score += 27
+        # Mark deleted nodes and start, end node
+        for w in self.nodes:
+            if w == self.start or w == self.end:
+                w.score = 69
+            elif w.entries == [] and w.exits == []:
+                w.score = 0
         # Find and remove unreachable ones
         begone = {}
         for i, w in enumerate(self.nodes):
@@ -1046,3 +1053,141 @@ class Dag(object):
             i,j = ip,jp
         bt.reverse()
         return align_matrix[len(ref)-1,last], bt
+
+    def dt_forward(self, aw=1.0):
+        """
+        Compute forward variable for all arcs in the lattice.
+        @param lm: Language model to use in computation
+        @type lm: sphinxbase.ngram_model (or equivalent)
+        """
+        for wx in self.traverse_edges_topo():
+            # This is alpha_t(w)
+            wx.alpha = LOGZERO
+            # If wx.src has no predecessors the previous alpha is 1.0
+            if len(wx.src.entries) == 0:
+                wx.alpha = wx.ascr * aw
+            # use unigram lm score from each edge
+            lscr = wx.lscr
+            # For each predecessor node to wx.src
+            for vx in wx.src.entries:
+                # Accumulate alpha for this arc
+                wx.alpha = logadd(wx.alpha, vx.alpha + lscr + wx.ascr * aw)
+    
+    def dt_backward(self, aw=1.0):
+        """
+        Compute backward variable for all arcs in the lattice.
+        @param lm: Language model to use in computation
+        @type lm: sphinxbase.ngram_model.NGramModel (or equivalent)
+        """
+        for vx in self.reverse_edges_topo():
+            # Beta for arcs into </s> = 1.0
+            if vx.dest == self.end:
+                beta = 0
+            else:
+                beta = LOGZERO
+                # For each outgoing arc from vx.dest
+                for wx in vx.dest.exits:
+                    # use unigram lm score from each edge
+                    lscr = wx.lscr
+                    # Accumulate beta for this arc
+                    beta = logadd(beta, wx.beta + lscr + wx.ascr * aw)
+            # Update beta for this arc
+            vx.beta = logadd(vx.beta, beta)
+
+    def dt_posterior(self, aw=1.0):
+        """
+        Compute arc posterior probabilities.
+        @param lm: Language model to use in computation
+        @type lm: sphinxbase.ngram_model.NGramModel (or equivalent)
+        """
+        # Clear alphas, betas, and posteriors
+        for w in self.nodes:
+            for wx in w.exits:
+                wx.alpha = wx.beta = wx.post = LOGZERO
+        # Run forward and backward
+        self.dt_forward(aw)
+        self.dt_backward(aw)
+        # Sum over alpha for arcs entering the end node to get normalizer
+        norm = LOGZERO
+        for vx in self.end.entries:
+            norm = logadd(norm, vx.alpha)
+        # Iterate over all arcs and normalize
+        for w in self.nodes:
+            w.post = LOGZERO
+            for wx in w.exits:
+                wx.post = wx.alpha + wx.beta - norm
+                w.post = logadd(w.post, wx.post)
+
+    def forward_edge_prune(self, beam=1.0e-50):
+        # prune exist edges which has very small posterior probability
+        logbeam = math.log(beam)
+	for n in self.nodes:
+            if n != self.start and n != self.end:
+                newexits =[]
+                bestpost = LOGZERO
+                for e in n.exits:
+                    if e.post > bestpost:
+                        bestpost = e.post
+                for e in n.exits:
+                    if e.post > bestpost + logbeam:
+                        newexits.append(e)
+                    elif e.dest == self.end:
+                        newexits.append(e)
+                n.exits = newexits
+
+    def backward_edge_prune(self, beam=1.0e-50):
+        # prune entry edges which has very small posterior probability
+        logbeam = math.log(beam)
+	for n in self.nodes:
+            if n != self.start and n != self.end:
+                newentries = []
+                bestpost = LOGZERO
+                for e in n.entries:
+                    if e.post > bestpost:
+                        bestpost = e.post
+                for e in n.entries:
+                    if e.post > bestpost + logbeam:
+                        newentries.append(e)
+                    elif e.src == self.start:
+                        newentries.append(e)
+                n.entries = newentries
+
+    def post_node_prune(self, beam=1.0e-10):
+        # prune nodes which has the same word and similar entry and exist points
+        #  but with very small posterior probability
+        seen = {}
+        win = 10
+	logbeam = math.log(beam)
+        for n in self.nodes:
+            if n != self.start and n != self.end and n not in seen:
+                seen[n] = 1
+                start = n.entry - win
+                end = n.entry + win
+                if start < 1:
+                    start = 1
+                if end > self.end.entry - 1:
+                    end  = self.end.entry - 1
+                align = self.node_range(start, end)
+
+                similar = []
+                for m in align:
+                    if m.sym == n.sym:
+                        seen[m] = 1
+                        if m != self.start and m != self.end:
+                            similar.append(m)
+
+                bestpost = LOGZERO
+                for m in similar:
+                    if m.post > bestpost:
+                        bestpost = m.post
+                for m in similar:
+                    if m.post < bestpost + logbeam:
+                        m.entries = []
+                        m.exits = []
+
+    def edges_unigram_score(self, lm, lw=1.0):
+        # assign unigram lm score to edge
+        for n in self.nodes:
+            for e in n.exits:
+                e.lscr = lm.prob(baseword(e.src.sym))[0] * lw
+
