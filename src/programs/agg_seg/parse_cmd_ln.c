@@ -265,7 +265,7 @@ ctl -cepdir cepdir -cepext .mfc -ceplen 13 -stride 10 ";
 	{ "-agc",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  "max",
+	  "none",
 	  "The type of automatic gain control to do {max|emax}"},
 	{ "-cmn",
 	  CMD_LN_STRING,

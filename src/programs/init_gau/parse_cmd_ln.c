@@ -205,7 +205,7 @@ init_gau -accumdir accumdir -ctlfn controlfn -part 1 -npart 1 -cepdir cepdir -fe
 	{ "-agc",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  "max",
+	  "none",
 	  "Controls automatic gain control."},
 	{ "-feat",
 	  CMD_LN_STRING,

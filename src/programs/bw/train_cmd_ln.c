@@ -508,7 +508,7 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	{ "-agc",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  "max",
+	  "none",
 	  "The type of automatic gain control to do {max|emax}"},
 
 	{ "-cmn",

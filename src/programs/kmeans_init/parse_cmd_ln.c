@@ -189,7 +189,7 @@ kmeans_init -gthobj single -stride 1 -ntrial 1 -minratio 0.001 \n\
 	{ "-agc",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,
-	  "max",
+	  "none",
 	  "The type of automatic gain control to do {max|emax}"},
 	{ "-cmn",
 	  CMD_LN_STRING,
