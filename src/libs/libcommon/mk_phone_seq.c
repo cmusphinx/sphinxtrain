@@ -72,7 +72,7 @@ mk_phone_seq(acmod_id_t **out_phone,
     word = mk_wordlist(trans, &n_word);
     phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
     if (phone == NULL) {
-	E_WARN("Unable to produce CI phones for utt %s.\n", corpus_utt());
+	E_WARN("Unable to produce phonetic transcription for the utterance '%s'.\n", corpus_utt());
     }
 
     cvt2triphone(acmod_set, phone, btw_mark, n_phone);

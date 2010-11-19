@@ -79,7 +79,7 @@ state_t *next_utt_states(uint32 *n_state,
 
     phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
     if (phone == NULL) {
-	E_WARN("Unable to produce CI phones for utt\n");
+	E_WARN("Unable to produce phonetic transcription for the word '%s'\n", n_word);
 	ckd_free(word);
 	return NULL;
     }
@@ -138,7 +138,7 @@ state_t *next_utt_states_mmie(uint32 *n_state,
   phone = mk_word_phone_list(&btw_mark, &n_phone, curr_word,lex);
   
   if (phone == NULL) {
-    E_WARN("Unable to produce CI phones for utt\n");
+    E_WARN("Unable to produce phonetic transcription for the word '%s'\n", curr_word);
     return NULL;
   }
   
