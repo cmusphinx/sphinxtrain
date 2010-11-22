@@ -1,9 +1,0 @@
-sgeev
-ssyevd
-sgelsd
-sgesv
-sgetrf
-spotrf
-sgesdd
-sgeev
-IGNORE: slamch

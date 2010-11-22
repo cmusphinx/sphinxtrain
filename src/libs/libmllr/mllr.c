@@ -39,7 +39,7 @@
 #include <s3/common.h>
 #include <s3/s3regmat_io.h>
 #include <s3/mllr.h>
-#include <s3/clapack_lite.h>
+#include <sphinxbase/matrix.h>
 
 
 void dump_regmat_statistics(float64 *****regl,
@@ -212,61 +212,6 @@ compute_mllr (
     return S3_SUCCESS;
 }
 
-/* Solve x for equations Ax=b */
-int32
-solve(float32 **A, /*Input : an n*n matrix A */
-      float32 *b,  /*Input : a n dimesion vector b */
-      float32 *x,  /*Output : a n dimesion vector x */
-      int32   n)
-
-{
-  float32 *tmp_l;
-  float32 *tmp_r;
-  int i, j;
-  int32 N, NRHS, LDA, LDB, INFO;
-  int32 *IPIV;
-
-  N=n;
-  NRHS=1;    
-  LDA=n;    
-  LDB=n;
-
-    /* don't know whether we HAVE to do this to get the f2c routine
-       running. */
-
-    tmp_l = (float32 *)ckd_calloc(N * N, sizeof(float32));
-
-    /*To use the f2c lapack function, row/column ordering of the
-      arrays need to be changed. */
-
-    for (i = 0; i < N; i++) 
-      for (j = 0; j < N; j++) 
-	tmp_l[j*N+i] = A[i][j]; 
-
-    tmp_r = (float32*) ckd_calloc(N, sizeof(float32));
-
-    for (i = 0; i < N; i++) 
-      tmp_r[i] = b[i];
-
-    IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
-
-    /* Beware ! all arguments of lapack have to be a pointer */
-    sgesv_(&N, &NRHS, tmp_l,&LDA,IPIV,tmp_r, &LDB, &INFO);
-
-    if( INFO==0 ){ /*fprintf( stderr, "OK\n" );*/ }
-    else{ return S3_ERROR; }
-
-    for(i= 0 ; i< n ; i++){
-      x[i] = tmp_r[i]; 
-    }
-    
-    ckd_free ((void *)tmp_l);
-    ckd_free ((void *)tmp_r);
-    ckd_free ((void *)IPIV);
-
-
-    return S3_SUCCESS;
-}
 
 /* Transform means using MLLR. */
 int32

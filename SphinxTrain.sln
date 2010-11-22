@@ -119,8 +119,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcommon", "win32\msdev\li
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libio", "win32\msdev\libs\libio\libio.vcproj", "{C5392DBC-E1EC-4801-A532-C278C63AC445}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "liblapack_lite", "win32\msdev\libs\liblapack_lite\liblapack_lite.vcproj", "{E7BB83AD-6AD0-4BB2-A1AD-30CA6599153C}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmllr", "win32\msdev\libs\libmllr\libmllr.vcproj", "{A07FF398-A675-4546-A1A4-94330982B260}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E7BB83AD-6AD0-4BB2-A1AD-30CA6599153C} = {E7BB83AD-6AD0-4BB2-A1AD-30CA6599153C}
