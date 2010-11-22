@@ -2063,18 +2063,11 @@ cal_constD(vector_t in_mean,
 	y = (in_var[l] + in_mean[l]*in_mean[l]) * (num_dnom - den_dnom) + (wt_num_var[l] - wt_den_var[l])
 	    - 2*in_mean[l]*(wt_num_mean[l] - wt_den_mean[l]);
 	z = (wt_num_var[l] - wt_den_var[l]) * (num_dnom - den_dnom) - (wt_num_mean[l] - wt_den_mean[l]) * (wt_num_mean[l] - wt_den_mean[l]);
-
 	
 	if (solve_quadratic(x, y, z, &root1, &root2))
 	    d = MAX(root1, root2) * D_FACTOR;
 	
 	d = MAX(d, constE*den_dnom);
-
-	if (in_var[l] < 1e-10) {
-	printf ("  %.2d: %f %f %f %f\n", l, x, y, z, d);
-	printf ("    %f %f %f %f\n", in_var[l], in_mean[l], num_dnom, den_dnom);
-	printf ("    %f %f %f %f\n", wt_num_mean[l], wt_den_mean[l], wt_num_var[l], wt_den_var[l]);
-	}
 	
 	d_mmi = MAX(d_mmi, d);
     }
@@ -2106,7 +2099,6 @@ gauden_norm_wt_mmie_mean(vector_t ***in_mean,
 	    for (k = 0; k < n_density; k++) {
 		if (num_dnom[i][j][k] != 0 || den_dnom[i][j][k] != 0) {
 		        
-		    printf ("%d %d %d %d %f\n", i, j, k, veclen[j], constE);
 		    /* compute constant D, which controls the convergence speed and accuracy */
 		    d_mmi = cal_constD(in_mean[i][j][k], wt_num_mean[i][j][k], wt_den_mean[i][j][k],
 				       in_var[i][j][k], wt_num_var[i][j][k], wt_den_var[i][j][k], num_dnom[i][j][k], den_dnom[i][j][k], veclen[j], constE);

@@ -58,13 +58,6 @@ int32 compute_mllr (
              float32 ****B
             );
 
-int32 solve  (
-        float32 **regl,
-        float32 *regr,
-        float32 *x,
-        int32   len
-       );
-
 int32 mllr_transform_mean(vector_t ***mean,
 			  vector_t ***var, /* NOT USED */
 			  uint32 gau_begin,
