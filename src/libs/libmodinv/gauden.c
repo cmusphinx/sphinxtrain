@@ -833,6 +833,8 @@ dist_unrolled(float32 *out,
 }
 #endif
 
+/* This is a most used function during the training. Be very careful
+ * when you modify it */
 float64
 log_diag_eval(vector_t obs,
 	      float32 norm,
@@ -840,17 +842,15 @@ log_diag_eval(vector_t obs,
 	      vector_t var_fact,
 	      uint32 veclen)
 {
-    float64 d, diff;
+    float64 d = 0.0, diff;
     uint32 l;
-    
-    d = norm;	/* log (1 / 2 pi |sigma^2|) */
 
     for (l = 0; l < veclen; l++) {
 	diff = obs[l] - mean[l];
-	d -= var_fact[l] * diff * diff;	/* compute -1 / (2 sigma ^2) * (x - m) ^ 2 terms */
+	d += var_fact[l] * diff * diff;	/* compute -1 / (2 sigma ^2) * (x - m) ^ 2 terms */
     }
-
-    return d;
+    
+    return norm - d;	/* log (1 / 2 pi |sigma^2|) */
 }
 
 float64
