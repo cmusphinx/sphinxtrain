@@ -116,20 +116,30 @@ write_phseg(const char *filename,
 	if (state_seq[j].mixw == TYING_NON_EMITTING) {
 	    s3phseg_t *prev;
 	    uint32 phn;
+	    int k, l;
 
 	    while (state_seq[j].mixw == TYING_NON_EMITTING) {
 		j = active_astate[t][bp[t][q]];
 		q = bp[t][q];
 	    }
+	    
 
 	    /* Do a rather nasty mdef scan to find the triphone in question. */
 	    for (phn = 0; phn < n_defn; phn++) {
-		if (state_seq[j].mixw == defn[phn].state[defn[phn].n_state-2])
-		    break;
+
+    	        for (k = defn[phn].n_state - 2, l = j; k >= 0 && l >= 0; k--, l--) {
+	    	    if (state_seq[l].mixw != defn[phn].state[k])
+	    		break;
+	        }
+
+	        if (k < 0)
+	    	    break;
 	    }
+	    
 	    if (phn == n_defn) {
-		E_ERROR("mixw %u not found\n", state_seq[j].mixw);
+		E_ERROR("Failed to find triphone for senone %u\n", state_seq[j].mixw);
 	    }
+	    
 	    /* Record ascr and sf for the next phone */
 	    if (phseg) {
 		phseg->score = (int32)(ascr * INVLOGS3);
