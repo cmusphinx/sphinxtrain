@@ -346,23 +346,23 @@ mod_inv_read_mixw(model_inventory_t *minv,
     minv->n_mixw = n_mixw;
 
     if (n_mixw != mdef->n_tied_state) {
-	E_WARN("# of tied states in mdef file, %u != # of mixing weight sets, %u, in %s\n",
+	E_WARN("Number of tied states in mdef file %u differs from the number of mixtures %u in %s, do files belong to the same model?\n",
 	       mdef->n_tied_state, n_mixw, fn);
     }
 
     if ((minv->n_feat > 0) && (n_feat != minv->n_feat)) {
-	E_FATAL("# of features in mixw file, %u, is inconsistent w/ prior setting, %u\n",
+	E_FATAL("Number of feature streams in mixture_weights file %u differs from the configured value %u, check the command line options\n",
 		n_feat, minv->n_feat);
     }
     else if (minv->n_feat == 0) {
-	E_WARN("Model inventory n_feat not set; setting to value in mixw file, %u.\n",
+	E_WARN("Number of feature streams in the model inventory is not set; setting to the value in mixture_weights file, %u.\n",
 	       n_feat);
 
 	minv->n_feat = n_feat;
     }
 
     if ((minv->n_density > 0) && (n_density != minv->n_density)) {
-	E_WARN("# of densities/mixture, %u in %s != prior settting, %u\n",
+	E_WARN("Number of densities per mixture, %u in %s differs from the configured value %u\n, check the command line options",
 	       n_density, fn, minv->n_density);
     }
     else if (minv->n_density == 0) {
@@ -402,7 +402,7 @@ mod_inv_read_mixw(model_inventory_t *minv,
 	}
 
 	if (n_err_norm > 0) {
-	    E_INFO("Norm failed for %d mixw:", n_err_norm);
+	    E_INFO("Failed to norm for %d mixw:", n_err_norm);
 	    for (i = 0; i < n_err_norm; i++) {
 		E_INFOCONT(" %u", err_norm[i]);
 	    }
