@@ -2102,14 +2102,22 @@ gauden_norm_wt_mmie_mean(vector_t ***in_mean,
 		    /* compute constant D, which controls the convergence speed and accuracy */
 		    d_mmi = cal_constD(in_mean[i][j][k], wt_num_mean[i][j][k], wt_den_mean[i][j][k],
 				       in_var[i][j][k], wt_num_var[i][j][k], wt_den_var[i][j][k], num_dnom[i][j][k], den_dnom[i][j][k], veclen[j], constE);
-		    if (!finite(d_mmi))
-			E_FATAL("Constant D:%f (gau:%d feat:%d density:%d) is INFINITE\n", d_mmi, i, j, k);
+		    if (!finite(d_mmi)) {
+			E_ERROR("Constant D:%f (gau:%d feat:%d density:%d) is infinite, maybe unsufficient data\n", d_mmi, i, j, k);
+    			for (l = 0; l < veclen[j]; l++) {
+			    wt_mean[i][j][k][l] = in_mean[i][j][k][l];
+    			}
+			continue;
+		    }
 		        
 		    /* update mean parameters */
 		    for (l = 0; l < veclen[j]; l++) {
 			wt_mean[i][j][k][l] = (wt_num_mean[i][j][k][l] - wt_den_mean[i][j][k][l] + d_mmi * in_mean[i][j][k][l]) / (num_dnom[i][j][k] - den_dnom[i][j][k] + d_mmi);
-			if (!finite(wt_mean[i][j][k][l]))
-			    E_FATAL("The new mean:%f (gau:%d feat:%d density:%d vec:%d) is INFINITE\n", wt_mean[i][j][k][l], i, j, k, l);
+			if (!finite(wt_mean[i][j][k][l])) {
+			    E_ERROR("The new mean:%f (gau:%d feat:%d density:%d vec:%d) is infinite, maybe unsufficient data\n", wt_mean[i][j][k][l], i, j, k, l);
+			    wt_mean[i][j][k][l] = in_mean[i][j][k][l];
+			    continue;
+			}
 		    }
 		}
 	    }
@@ -2146,8 +2154,13 @@ gauden_norm_wt_mmie_var(vector_t ***in_var,
 		    /* compute constant D, which controls the convergence speed and accuracy */
 		    d_mmi = cal_constD(in_mean[i][j][k], wt_num_mean[i][j][k], wt_den_mean[i][j][k],
 				       in_var[i][j][k], wt_num_var[i][j][k], wt_den_var[i][j][k], num_dnom[i][j][k], den_dnom[i][j][k], veclen[j], constE);
-		    if (!finite(d_mmi))
-			E_FATAL("Constant D:%f (gau:%d feat:%d density:%d) is INFINITE\n", d_mmi, i, j, k);
+		    if (!finite(d_mmi)) {
+			E_ERROR("Constant D:%f (gau:%d feat:%d density:%d) is infinite, maybe unsufficient data\n", d_mmi, i, j, k);
+    			for (l = 0; l < veclen[j]; l++) {
+			    wt_var[i][j][k][l] = in_var[i][j][k][l];
+    			}
+			continue;
+		    }
 		        
 		    /* update variance parameters */
 		    for (l = 0; l < veclen[j]; l++) {
@@ -2155,12 +2168,15 @@ gauden_norm_wt_mmie_var(vector_t ***in_var,
 					      d_mmi * (in_var[i][j][k][l] + in_mean[i][j][k][l] * in_mean[i][j][k][l])) / 
 			    (num_dnom[i][j][k] - den_dnom[i][j][k] + d_mmi)
 			    - (wt_mean[i][j][k][l] * wt_mean[i][j][k][l]);
-			if (!finite(wt_var[i][j][k][l]))
-			    E_FATAL("The new variance:%f (gau:%d feat:%d density:%d vec:%d) is INFINITE\n", wt_var[i][j][k][l], i, j, k, l);
+			if (!finite(wt_var[i][j][k][l])) {
+			    E_ERROR("The new variance:%f (gau:%d feat:%d density:%d vec:%d) is infinite, maybe unsufficient data\n", wt_var[i][j][k][l], i, j, k, l);
+			    wt_var[i][j][k][l] = in_var[i][j][k][l];
+			    continue;
+			}
 			
 			/* if the new var<0, keep it unchanged */
 			if (wt_var[i][j][k][l] < 0) {
-			    E_WARN("var (mgau= %u, feat= %u, ""density=%u, component=%u) < 0\n", i, j, k, l);
+			    E_ERROR("Variance of the senone (mgau= %u, feat= %u, ""density=%u, component=%u) < 0\n", i, j, k, l);
 			    wt_var[i][j][k][l] = in_var[i][j][k][l];
 			}
 		    }
