@@ -74,6 +74,7 @@ main(int argc, char *argv[])
     float32 ***new_mixw;
     uint32 n_mixw;
     uint32 n_mgau;
+    uint32 n_dnom;
     uint32 n_feat;
     uint32 n_density;
     uint32 n_inc;
@@ -134,7 +135,7 @@ main(int argc, char *argv[])
 
     if (s3gaudnom_read((const char *)cmd_ln_access("-dcountfn"),
 		       &dnom,
-		       &n_mgau,
+		       &n_dnom,
 		       &n_feat,
 		       &n_density) != S3_SUCCESS) {
 	return 1;
@@ -163,6 +164,7 @@ main(int argc, char *argv[])
 
 		  n_mixw,
 		  n_mgau,
+		  n_dnom,
 		  n_feat,
 		  n_density,
 		  veclen,

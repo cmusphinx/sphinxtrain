@@ -82,6 +82,7 @@ inc_densities(float32 ***new_mixw,
 	      
 	      uint32 n_mixw,
 	      uint32 n_mgau,
+	      uint32 n_dnom,
 	      uint32 n_feat,
 	      uint32 n_density,
 	      const uint32 *veclen,
@@ -95,9 +96,9 @@ inc_densities(float32 ***new_mixw,
     float32 std;
 
     assert(n_mgau <= n_mixw);
-
+    
     if (n_mgau < n_mixw) {
-	E_FATAL("Tied mixture Gaussians not yet implemented\n");
+	E_FATAL("Splitting of the tied mixture gaussians is not yet implemented\n");
     }
 
     /* copy old parameters into new arrays */
