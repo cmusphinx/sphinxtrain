@@ -63,7 +63,7 @@ if ($ST::CFG_MMIE ne "yes") {
 if ($ST::CFG_HMM_TYPE eq ".semi.") {
     Log("Skipped:  \$CFG_DIRLABEL = .semi. \n");
     Log("MMIE training only works on the continuous model\n");
-    exit 1;
+    exit(0);
 }
 
 # some global variables

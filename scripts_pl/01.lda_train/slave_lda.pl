@@ -48,6 +48,14 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
+# LDA/MLLT doesn't really have sense with multistream
+if ($ST::CFG_FEATURE eq "s2_4x") {
+    Log("Feature type is s2_4x which is 4 streams");
+    Log("LDA/MLLT only has sense for single stream features, for example 1s_c_d_dd");
+    Log("Skipping LDA training");
+    exit 0;
+}
+
 if ($ST::CFG_LDA_MLLT ne 'yes') {
     Log("MODULE: 01 Train LDA transformation\n");
     Log("Skipped (set \$CFG_LDA_MLLT = 'yes' to enable)\n");

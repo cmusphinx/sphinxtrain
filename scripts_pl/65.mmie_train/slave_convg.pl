@@ -80,6 +80,13 @@ if ($iter == 1) {
         exit(0);
     }
 
+    # mmie training doesn't work for semi-continuous model
+    if ($ST::CFG_HMM_TYPE eq ".semi.") {
+	Log("Skipped:  \$CFG_DIRLABEL = .semi. \n");
+	Log("MMIE training only works on the continuous model\n");
+	exit(0);
+    }
+
     Log("Phase 1: Cleaning up directories:");
     # Don't do this on a queue, because of NFS bugs
     unless ($ST::CFG_QUEUE_TYPE eq 'Queue::PBS') {

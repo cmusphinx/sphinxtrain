@@ -59,6 +59,13 @@ if ($ST::CFG_MMIE ne "yes") {
     exit(0);
 }
 
+# mmie training doesn't work for semi-continuous model
+if ($ST::CFG_HMM_TYPE eq ".semi.") {
+    Log("Skipped:  \$CFG_DIRLABEL = .semi. \n");
+    Log("MMIE training only works on the continuous model\n");
+    exit(0);
+}
+
 # some global variable
 my $numlatdir = defined($ST::CFG_NUMLAT_DIR)
         ? $ST::CFG_NUMLAT_DIR
