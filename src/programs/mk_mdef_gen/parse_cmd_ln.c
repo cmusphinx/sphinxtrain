@@ -112,6 +112,11 @@ mk_mdef_gen -phnlstfn rawphone -oalltphnmdef untie_mdef -dictfn dict \n\
 	  "no",
 	  "Shows example of how to use the tool"},
 
+	{ "-ignorewpos",
+	  CMD_LN_BOOLEAN,
+	  CMD_LN_NO_VALIDATION,
+	  "no",
+	  "Ignore word position in context dependency"},
 	{ "-phnlstfn",
 	  CMD_LN_STRING,
 	  CMD_LN_NO_VALIDATION,

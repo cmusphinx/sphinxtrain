@@ -68,7 +68,8 @@ int32 make_mdef_from_list(char *mdeffile,
                         char  *pgm);
 
 int32 make_dict_triphone_list (dicthashelement_t **dicthash,
-                          hashelement_t ***triphonehash);
+                          hashelement_t ***triphonehash,
+                          int ignore_wpos);
 
 int32 make_CD_heap(hashelement_t  **triphonehash,
                    int32  threshold,
@@ -80,7 +81,8 @@ int32 find_threshold(hashelement_t  **triphonehash);
 int32  count_triphones (char *transfile,
                         dicthashelement_t **dicthash,
                         hashelement_t **tphnhash,
-			phnhashelement_t ***CIhash);
+			phnhashelement_t ***CIhash,
+			int ignore_wpos);
 
 int32   print_counts(char *countfn, phnhashelement_t  **CIhash,
                      hashelement_t **CDhash);

@@ -63,7 +63,7 @@ unsigned hash(char *s0, char *s1, char *s2, char *s3)
 }
 
 
-hashelement_t *lookup(char *b, char *l, char *r, char *wp, 
+hashelement_t *lookup(const char *b, const char *l, const char *r, const char *wp, 
 			hashelement_t **hashtable)
 {
     hashelement_t  *np;
@@ -80,7 +80,7 @@ hashelement_t *lookup(char *b, char *l, char *r, char *wp,
 
 
 
-hashelement_t *install(char *b, char *l, char *r, char *wp, 
+hashelement_t *install(const char *b, const char *l, const char *r, const char *wp, 
 			hashelement_t **hashtable)
 {
     hashelement_t  *np;

@@ -66,6 +66,8 @@
 #define IS_FILLER(X)	((X[0]=='+'||strcmp(X,"SIL")==0) ? 1 : 0)
 
 
+static const char* wordpos2str(word_posn_t wordpos, int ignore_wordpos);
+
 int32 make_ci_list_frm_mdef(char  *mdeffile,
 		            char  ***CIlist, 
                             int32 *cilistsize)
@@ -318,12 +320,14 @@ int32  read_dict(char *dictfile, char *fillerdict,
 
     
 int32 make_dict_triphone_list (dicthashelement_t **dicthash,
-			  hashelement_t ***triphonehash)
+			  hashelement_t ***triphonehash,
+			  int ignore_wpos)
 {
     hashelement_t **tphnhash, *tphnptr;
     dicthashelement_t *word_el;
     phnhashelement_t *bphnptr, **bphnhash, *ephnptr, **ephnhash;
-    char *bphn, *lctx, *rctx, wpos[100];
+    char *bphn, *lctx, *rctx;
+    const char* wpos;
     char *silencephn = "SIL";
     int32 totaltphs, totwds, bwdtphs, ewdtphs, iwdtphs, swdtphs, lnphns;
     int32 i,j,k;
@@ -356,7 +360,7 @@ int32 make_dict_triphone_list (dicthashelement_t **dicthash,
 	    totwds++;
             lnphns = word_el->nphns;
             if (lnphns == 1) {
-                strcpy(wpos,"s");
+                wpos = wordpos2str(WORD_POSN_SINGLE, ignore_wpos);
                 bphn = word_el->phones[0];
 		if (IS_FILLER(bphn)) {word_el = word_el->next; continue;}
 		for (j = 0; j < PHNHASHSIZE; j++){
@@ -378,7 +382,7 @@ int32 make_dict_triphone_list (dicthashelement_t **dicthash,
 		}
             }
             else {
-                strcpy(wpos,"b");
+                wpos = wordpos2str(WORD_POSN_BEGIN, ignore_wpos);
                 bphn = word_el->phones[0];
 		if (IS_FILLER(bphn)) {word_el = word_el->next; continue;}
 		rctx = word_el->phones[1];
@@ -393,7 +397,7 @@ int32 make_dict_triphone_list (dicthashelement_t **dicthash,
 			ephnptr = ephnptr->next;
 		    }
 		}
-                strcpy(wpos,"i");
+                wpos = wordpos2str(WORD_POSN_INTERNAL, ignore_wpos);
                 for (j=1;j<lnphns-1;j++){
                     bphn = word_el->phones[j];
 		    if (IS_FILLER(bphn)) continue;
@@ -405,7 +409,7 @@ int32 make_dict_triphone_list (dicthashelement_t **dicthash,
 		    if (tphnptr->dictcount == 0) iwdtphs++;
 		    tphnptr->dictcount++;
                 }
-                strcpy(wpos,"e");
+                wpos = wordpos2str(WORD_POSN_END, ignore_wpos);
                 bphn = word_el->phones[lnphns-1];
 		if (IS_FILLER(bphn)) {word_el = word_el->next; continue;}
 		lctx = word_el->phones[lnphns-2];
@@ -442,13 +446,15 @@ int32 make_dict_triphone_list (dicthashelement_t **dicthash,
 int32  count_triphones (char *transfile,
 			dicthashelement_t **dicthash,
 			hashelement_t **tphnhash,
-			phnhashelement_t ***phnhash)
+			phnhashelement_t ***phnhash,
+			int ignore_wpos)
 {
     int32  nbwdtphns, newdtphns, niwdtphns, nswdtphns;
     int32  nwords, lnphns, n_totalwds;
     char   line[MAXLINESIZE], tline[MAXLINESIZE];
     char   *word, *basephone, *lctxt, *rctxt; 
-    char   silencephn[4], wordposn[3];
+    char   silencephn[4];
+    const char* wpos;
     int32  i, j;
     dicthashelement_t **wordarr;
     phnhashelement_t **lphnhash, *phnptr;
@@ -490,7 +496,7 @@ int32  count_triphones (char *transfile,
 
 	    lnphns = wordarr[i]->nphns;
 	    if (lnphns == 1) {
-		strcpy(wordposn,"s");
+		wpos = wordpos2str(WORD_POSN_SINGLE, ignore_wpos);
 		basephone = wordarr[i]->phones[0];
 		phnptr = phninstall(basephone,lphnhash);
 		phnptr->count++;
@@ -505,12 +511,12 @@ int32  count_triphones (char *transfile,
 		    if (IS_FILLER(rctxt)) rctxt = silencephn;
 		}
 		else rctxt = silencephn;
-		tphnptr = lookup(basephone,lctxt,rctxt,wordposn,tphnhash);
+		tphnptr = lookup(basephone,lctxt,rctxt,wpos,tphnhash);
 		(tphnptr->count)++;
 		nswdtphns++;
 	    }
 	    else {
-		strcpy(wordposn,"b");
+		wpos = wordpos2str(WORD_POSN_BEGIN, ignore_wpos);
 		basephone = wordarr[i]->phones[0];
 		phnptr = phninstall(basephone,lphnhash);
 		phnptr->count++;
@@ -523,11 +529,11 @@ int32  count_triphones (char *transfile,
 		    else lctxt = silencephn;
 		    rctxt = wordarr[i]->phones[1];
 		    if (IS_FILLER(rctxt)) rctxt = silencephn;
-		    tphnptr = lookup(basephone,lctxt,rctxt,wordposn,tphnhash);
+		    tphnptr = lookup(basephone,lctxt,rctxt,wpos,tphnhash);
 		    (tphnptr->count)++; 
                     nbwdtphns++;
 	        }
-		strcpy(wordposn,"i");
+		wpos = wordpos2str(WORD_POSN_INTERNAL, ignore_wpos);
 		for (j=1;j<lnphns-1;j++){
 		    basephone = wordarr[i]->phones[j];
 		    phnptr = phninstall(basephone,lphnhash);
@@ -537,12 +543,12 @@ int32  count_triphones (char *transfile,
 		    if (IS_FILLER(lctxt)) lctxt = silencephn;
 		    rctxt = wordarr[i]->phones[j+1];
 		    if (IS_FILLER(rctxt)) rctxt = silencephn;
-		    tphnptr = lookup(basephone,lctxt,rctxt,wordposn,tphnhash);
+		    tphnptr = lookup(basephone,lctxt,rctxt,wpos,tphnhash);
 		    (tphnptr->count)++;
 		    niwdtphns++;
 		}
 
-		strcpy(wordposn,"e");
+		wpos = wordpos2str(WORD_POSN_END, ignore_wpos);
 		basephone = wordarr[i]->phones[lnphns-1];
 		phnptr = phninstall(basephone,lphnhash);
 		phnptr->count++;
@@ -555,7 +561,7 @@ int32  count_triphones (char *transfile,
 		    if (IS_FILLER(rctxt)) rctxt = silencephn;
 		}
 		else rctxt = silencephn;
-		tphnptr = lookup(basephone,lctxt,rctxt,wordposn,tphnhash);
+		tphnptr = lookup(basephone,lctxt,rctxt,wpos,tphnhash);
 		(tphnptr->count)++;
 		newdtphns++;
 	    }
@@ -725,6 +731,36 @@ int32   print_counts(char *countfn, phnhashelement_t  **CIhash,
     }
     fclose(ofp);
     return S3_SUCCESS;
+}
+
+static const char* wordpos2str(word_posn_t wordpos, int ignore_wordpos)
+{
+    char *result;
+
+    if (ignore_wordpos) {
+	if (wordpos == WORD_POSN_UNDEFINED)
+	    return "-";
+	return "i";
+    }
+
+    switch (wordpos) {
+	case WORD_POSN_SINGLE: 
+	    result = "s";
+	    break;
+	case WORD_POSN_BEGIN: 
+	    result = "b";
+	    break;
+	case WORD_POSN_INTERNAL: 
+	    result = "i";
+	    break;
+	case WORD_POSN_END: 
+	    result = "e";
+	    break;
+	default:
+	    result = "-";
+	    break;
+    }
+    return result;
 }
 
 word_posn_t posnstr2wordpos(char *posn_str)

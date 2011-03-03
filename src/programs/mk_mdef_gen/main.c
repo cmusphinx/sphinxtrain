@@ -77,6 +77,7 @@ int main (int argc, char **argv)
     char   *phnlist, *incimdef, *triphnlist, *incdmdef;
     char   *lsnfile, *dictfn, *fillerdictfn, **CIlist=NULL;
     char   *cimdeffn, *alltphnmdeffn, *untiedmdeffn, *countfn;
+    int32 ignore_wpos;
 
     parse_cmd_ln(argc,argv);
 
@@ -85,6 +86,7 @@ int main (int argc, char **argv)
     alltphnmdeffn = (char *)cmd_ln_access("-oalltphnmdef");
     untiedmdeffn = (char *)cmd_ln_access("-ountiedmdef");
     countfn = (char *)cmd_ln_access("-ocountfn");
+    ignore_wpos = cmd_ln_int32("-ignorewpos");
 
     if (cimdeffn) E_INFO("Will write CI mdef file %s\n",cimdeffn);
     if (alltphnmdeffn) 
@@ -145,7 +147,7 @@ int main (int argc, char **argv)
     if (!tph_list_given && !cimdeffn) {
 	read_dict(dictfn, fillerdictfn, &dicthash);
 	if (CDhash) freehash(CDhash);
-	make_dict_triphone_list (dicthash, &CDhash);
+	make_dict_triphone_list (dicthash, &CDhash, ignore_wpos);
     }
 
     if (alltphnmdeffn){
@@ -155,7 +157,7 @@ int main (int argc, char **argv)
 					CDheap,cdheapsize,argv[0]);
     }
     if (countfn || untiedmdeffn) 
-        count_triphones(lsnfile, dicthash, CDhash, &CIhash);
+        count_triphones(lsnfile, dicthash, CDhash, &CIhash, ignore_wpos);
     if (countfn){
 	print_counts(countfn,CIhash,CDhash);
     }

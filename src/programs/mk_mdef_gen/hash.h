@@ -84,16 +84,16 @@ typedef struct phnhashelement_t
 } phnhashelement_t;
 
 
-hashelement_t *lookup(char *basephone,
-		      char *lctxt,
-		      char *rctxt,
-		      char *wordposn,
+hashelement_t *lookup(const char *basephone,
+		      const char *lctxt,
+		      const char *rctxt,
+		      const char *wordposn,
 		      hashelement_t **tphnhash);
 
-hashelement_t *install(char *basephone,
-		       char *lctxt,
-		       char *rctxt,
-		       char *wordposn,
+hashelement_t *install(const char *basephone,
+		       const char *lctxt,
+		       const char *rctxt,
+		       const char *wordposn,
 		       hashelement_t **tphnhash);
 
 void freehash(hashelement_t **hash);
