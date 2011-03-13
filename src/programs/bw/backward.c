@@ -428,7 +428,7 @@ backward_update(float64 **active_alpha,
 	 q_f < n_active_astate[n_obs-1] &&
 	     active_astate[n_obs-1][q_f] != (n_state-1); q_f++);
     if (q_f == n_active_astate[n_obs-1]) {
-	E_ERROR("final state not reached\n");
+	E_ERROR("Failed to align audio to trancript: final state of the search is not reached\n");
 	return S3_ERROR;
     }
 

@@ -93,7 +93,7 @@ write_phseg(const char *filename,
 	    break;
     }
     if (q == n_active_astate[n_obs-1]) {
-	E_ERROR("final state not reached\n");
+	E_ERROR("Failed to align audio to trancript: final state of the search is not reached\n");
 	return S3_ERROR;
     }
 
@@ -198,7 +198,7 @@ write_s2stseg(const char *filename,
 	    break;
     }
     if (q == n_active_astate[n_obs-1]) {
-	E_ERROR("final state not reached\n");
+	E_ERROR("Failed to align audio to trancript: final state of the search is not reached\n");
 	return S3_ERROR;
     }
 
@@ -451,7 +451,7 @@ viterbi_update(float64 *log_forw_prob,
 	    break;
     }
     if (q == n_active_astate[n_obs-1]) {
-	E_ERROR("final state not reached\n");
+	E_ERROR("Failed to align audio to trancript: final state of the search is not reached\n");
 	ret = S3_ERROR;
 	goto all_done;
     }
@@ -765,7 +765,7 @@ mmi_viterbi_run(float64 *log_forw_prob,
     if (i == n_active_astate[n_obs-1]) {
 	/* since there are so many such errors during the mmie training,
 	      it's very annoying to output this error message
-	      E_ERROR("final state not reached\n"); */
+	      E_ERROR("Failed to align audio to trancript: final state of the search is not reached\n"); */
 	ret = S3_ERROR;
 	final_state_error = 1;
 	goto all_done;
@@ -935,7 +935,7 @@ mmi_viterbi_update(vector_t **feature,
 	    break;
     }
     if (q == n_active_astate[n_obs-1]) {
-	E_ERROR("final state not reached\n");
+	E_ERROR("Failed to align audio to trancript: final state of the search is not reached\n");
 	ret = S3_ERROR;
 	goto all_done;
     }
