@@ -1,0 +1,100 @@
+SphinxTrain 1.1
+^^^^^^^^^^^^^^^
+That was two years, time to release this stuff
+
+New features:
+
+    * MLLR !!!!
+    * PTM !!!!!!!
+    * MMIE !!!!!!!!!
+
+    * Sphinxbase is now a requirement
+
+Improvements:
+
+    * Built-in align
+    * Many useful python modules
+    * Simple python module for reading/writing pronunciation dictionaries
+    * Add support for creating a single pronunciation dictionary in force alignment
+    * Lattice rescoring, with and without FSTs, which may be useful, plus a
+      little script to generate composed class language model FSTs.
+    * Add support for building and evaluating FSTs from class-based language models
+    * Save falignout files in list directory to avoid having to re-run falign in future training
+    * Dictionaries are assumed to be in utf-8
+    * Add an option to ignore word position in mk_mdef_gen
+    * Improve a lot of log messages
+
+Bug fixes:
+
+    * Protect scripts from doing dangerous things
+    * Restrict memory usage on norm on stage 30
+    * Finally get around to fixing the annoying problem where the
+    convergence criterion differs based on the dynamic range of the
+    acoustic features (yes, really). It's still a ratio, just not a ratio
+    of logarithmic values, which didn't make much sense anyway.
+    * Be tolerant about whitespaces!
+    * Simplified log_diag_eval for gcc vectorizer
+
+Thanks: David Huggins-Daines, Long Qin, Tanel Alumae, Stephan Vanni, and everyone else!
+
+SphinxTrain 1.0
+^^^^^^^^^^^^^^^
+
+This release corresponds to revision 8978.
+
+Since there has never been an official release of SphinxTrain, we felt
+it was necessary to create one to point people to and for them to
+report bugs against, instead of the confusion of having to deal with
+whatever was currently in SVN.
+
+Compared to past unofficial releases, this version is significantly
+improved.  There is support for speaker adaptation, feature space
+transforms (LDA and MLLT), and it also includes "templates" which can
+be used to train models from standard corpora from the LDC.
+
+Sphinxtrain pre-1.0
+^^^^^^^^^^^^^^^^^^^
+
+From 2000, when SphinxTrain is first opened to the public, it was
+regarded as merely an auxillary tool for the decoders (such as Sphinx
+2, Sphinx3 and later Sphinx 4). However, many users in the forum
+asked about how training could be done and most of the time they would
+touch a lot of bugs in the software.  There is a great need to
+continue the support of SphinxTrain and increase its quality. 
+
+We hope that this release will
+
+    * fix significant amount of bugs of the code and the scripts. 
+    * improve the quality of the code and scripts 
+    * extend the functionalities of SphinxTrain. 
+    * ensure SphinxTrain is fully regression tested. 
+
+New Features:
+
+    * mllr_solve, could be used to find the regression matrix
+      for MLLR (r3566, 3567, 3731)
+    * Added the option "-input_endian" so that one can specify
+      byte. It follows the the compilation definition (r498, r714)
+      order of raw data as different from the machine native byte order.
+    * Prints out links to log files in the html file generated during
+      training, and creates possibly missing directories (r580)
+
+Bugs:
+
+    * norm was requesting some parameters that it doesn't really need,
+      like feature string definition and size of input vector. Removed the
+      request.
+    * add checking for wave2feat 
+    * When transcription is empty, corpus.c wouldn't show abnormal
+      behaviour now
+    * Memory problems in wave2feat. 
+
+General Code Architecture Related:
+    
+    * Initial checkin by Prof. Alan Black.  That includes
+      basic Makefiles, RickyH's perl scripts. 
+    * Miscellaneous fixes of Ricky's perl script. 
+
+Developers:
+
+    * check for return values in read/write. 

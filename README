@@ -6,22 +6,15 @@ This distribution is free software, see COPYING for licence.
 
 For up-to-date information, please see the web site at
 
-   http://cmusphinx.org
+   http://cmusphinx.sourceforge.net
 
 Among the interesting resources there, you will find a link to
 "Resources to build a recognition system", with pointers to a
 dictionary, audio data, acoustic model etc.
 
-For the initial setup, please take a look at doc/tinydoc.txt.
+For introduction in training the acoustic model see the tutorial
 
-These scripts and programs have been tested for building Sphinx-2,
-Sphinx-3, and Sphinx-4 acoustic models.  Additional information can be
-found in the web page above, and also at:
-
-    http://www.speech.cs.cmu.edu/sphinxman/scriptman1.html
-
-Looking at doc/tinydoc.txt will only make you *think* you know what's going
-on.
+http://cmusphinx.sourceforge.net/wiki/tutorialam
 
 Installation Guide:
 ^^^^^^^^^^^^^^^^^^^
@@ -65,8 +58,15 @@ Also, check the section title "All Platforms" above.
 
 Windows Installation:
 ^^^^^^^^^^^^^^^^^^^^^
-To compile the SphinxTrain under MS Visual Studio 2008 (or newer - we test
-with Visual C++ 2008 Express):
+First, you *must* have SphinxBase, which you can download from
+http://cmusphinx.sourceforge.net/.  You should download and unpack it to
+the same parent directory as PocketSphinx, so that the configure script
+and project files can find it. On Windows, you will need to rename
+'sphinxbase-X.Y' (where X.Y is the SphinxBase version number) to simply
+'sphinxbase' for this to work.
+
+To compile the SphinxTrain under MS Visual Studio 2010 (or newer - we test
+with Visual C++ 2010 Express):
 
  1. load SphinxTrain.sln located in SphinxTrain directory
  2. compile all the projects in SphinxTrain (from SphinxTrain.sln)
@@ -87,8 +87,6 @@ people in the Sphinx Group. Some code goes back to 1986. The most
 recent work in tidying this up for release includes the following,
 listed alphabetically (at least these are the people who are most
 likely able to help you).
-
-
 
 Alan W Black (awb@cs.cmu.edu)
 Arthur Chan (archan@cs.cmu.edu)
