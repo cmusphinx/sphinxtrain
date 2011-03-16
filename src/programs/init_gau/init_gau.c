@@ -60,7 +60,7 @@
 #include <s3/vector.h>
 #include <s3/feat.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s3.h>
 
 /* ADDITION BY BHIKSHA, TO FACILITATE FEATURES OF ARBITRARY LENGTH, 7jan98 */
@@ -138,7 +138,7 @@ init_gau(lexicon_t *lex,
 	n_ts = 1;		/* Global mean/var */
     }
 
-    meanfn = (char *)cmd_ln_access("-meanfn");
+    meanfn = cmd_ln_str("-meanfn");
 
     veclen = feat_vecsize();
     
@@ -264,7 +264,7 @@ init_gau(lexicon_t *lex,
    CEPSTRA. USE, INSTEAD, THE HACKED VERSION corpus_get_generic_featurevec()
    WHICH TAKES FEATURES OF ARBITRARY LENGTH
    7 JAN 1998 */
-	ceplen = *(int32 *)cmd_ln_access("-ceplen");
+	ceplen = cmd_ln_int32("-ceplen");
         if (ceplen == S2_CEP_VECLEN) {
 	    if (corpus_get_mfcc(&mfcc, &tmp, &framelen) != S3_SUCCESS) {
 	        E_FATAL("Unable to read MFCC data for %s\n", corpus_utt_brief_name());
@@ -332,7 +332,7 @@ init_gau(lexicon_t *lex,
 	}
     }
 
-    sprintf(fn, "%s/gauden_counts", (const char *)cmd_ln_access("-accumdir"));
+    sprintf(fn, "%s/gauden_counts", cmd_ln_str("-accumdir"));
     
     if (var_is_full) {
 	if (s3gaucnt_write_full(fn, mean_acc, fullvar_acc, TRUE /* 2-pass variance */, dnom,
@@ -399,57 +399,4 @@ init_gau(lexicon_t *lex,
 
     return S3_SUCCESS;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.7  2005/11/10  19:31:14  dhdfu
- * also prevent a double free() when the utt is too short
- * 
- * Revision 1.6  2005/11/03 04:17:07  dhdfu
- * Make init_gau use the same (semi-arbitrary) lower bound on the size of
- * an utterance as bw does, with a comment that this is arbitrary.
- * Prevents segfaults.
- *
- * Revision 1.5  2005/09/27 02:02:47  arthchan2003
- * Check whether utterance is too short in init_gau, bw and agg_seg.
- *
- * Revision 1.4  2004/07/21 18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.8  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.7  1996/08/06  14:13:56  eht
- * Included missing header files to define prototypes
- *
- * Revision 1.6  1996/04/02  17:04:53  eht
- * Include mk_sseq from libcommon rather than locally
- *
- * Revision 1.5  1996/03/25  15:43:07  eht
- * Deal w/ some memory leaks
- *
- * Revision 1.4  1996/02/02  17:33:32  eht
- * Added estimation of mean/var of CI states when only CD states are present.
- *
- * Revision 1.3  1996/01/30  17:11:23  eht
- * Check return status of read routines
- *
- * Revision 1.2  1995/12/14  20:01:53  eht
- * Yet another development version.  Many changes
- *
- * Revision 1.1  1995/12/01  20:55:40  eht
- * Initial revision
- *
- *
- */
+

@@ -47,7 +47,7 @@
 #define PARSE_CMD_LN_H
 
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 
 int
 parse_cmd_ln(int argc, char *argv[]);

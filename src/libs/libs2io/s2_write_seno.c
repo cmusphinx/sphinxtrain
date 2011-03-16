@@ -180,10 +180,10 @@ s2_write_seno_3(float ***new_mixw,		/* the sphinx-3 mixture weights we are savin
 
     seno_filename_ext = ckd_calloc(S2_N_FEATURE, sizeof(char *));
 
-    seno_filename_ext[0] = cmd_ln_access("-cepsenoext");
-    seno_filename_ext[1] = cmd_ln_access("-dcepsenoext");
-    seno_filename_ext[2] = cmd_ln_access("-powsenoext");
-    seno_filename_ext[3] = cmd_ln_access("-2dcepsenoext");
+    seno_filename_ext[0] = cmd_ln_str("-cepsenoext");
+    seno_filename_ext[1] = cmd_ln_str("-dcepsenoext");
+    seno_filename_ext[2] = cmd_ln_str("-powsenoext");
+    seno_filename_ext[3] = cmd_ln_str("-2dcepsenoext");
     
     n_ci = acmod_set_n_ci(acmod_set);
     n_states = cluster_offset[n_ci];

@@ -70,7 +70,7 @@ init(model_def_t **out_mdef,
     pset_t *pset;
     uint32 n_pset;
 
-    moddeffn = cmd_ln_access("-moddeffn");
+    moddeffn = cmd_ln_str("-moddeffn");
     if (moddeffn == NULL)
 	E_FATAL("Specify -moddeffn\n");
     E_INFO("Reading: %s\n", moddeffn);
@@ -78,7 +78,7 @@ init(model_def_t **out_mdef,
 	return S3_ERROR;
     *out_mdef = mdef;
 
-    psetfn = (const char *)cmd_ln_access("-psetfn");
+    psetfn = cmd_ln_str("-psetfn");
     E_INFO("Reading: %s\n", psetfn);
     *out_pset = pset = read_pset_file(psetfn, mdef->acmod_set, &n_pset);
     *out_n_pset = n_pset;
@@ -176,13 +176,13 @@ read_phone_trees(model_def_t *mdef,
 	else {
 	    uint32 n, lt_minocc;
 
-	    lt_minocc = prune_lowcnt(&tr->node[0], *(float32 *)cmd_ln_access("-minocc"));
+	    lt_minocc = prune_lowcnt(&tr->node[0], cmd_ln_float32("-minocc"));
 	    n = 0;
 	    reindex(&tr->node[0], &n);
 	    *out_n_seno += n = cnt_leaf(&tr->node[0]);
 	    E_INFO("%s-%u\t%u [%u < %e]\n",
 		   pname, s, n, lt_minocc,
-		   *(float32 *)cmd_ln_access("-minocc"));
+		   cmd_ln_float32("-minocc"));
 	    *out_n_twig += cnt_twig(&tr->node[0]);
 	    *out_n_node += cnt_node(&tr->node[0]);
 	}
@@ -225,7 +225,7 @@ prune_tree(model_def_t *mdef,
     int allphones;
     int err;
 
-    itreedir = cmd_ln_access("-itreedir");
+    itreedir = cmd_ln_str("-itreedir");
     allphones = cmd_ln_int32("-allphones");
     n_ci = acmod_set_n_ci(mdef->acmod_set);
 
@@ -269,7 +269,7 @@ prune_tree(model_def_t *mdef,
 
     E_INFO("Prior to pruning n_seno= %u\n", n_seno);
 
-    n_seno_wanted = *(int32 *)cmd_ln_access("-nseno");
+    n_seno_wanted = cmd_ln_int32("-nseno");
     if (n_seno < n_seno_wanted) {
 	E_WARN("n_seno_wanted= %u, but only %u defined by trees\n",
 	       n_seno_wanted, n_seno);
@@ -366,7 +366,7 @@ prune_tree(model_def_t *mdef,
 	}
     }
 
-    otreedir = cmd_ln_access("-otreedir");
+    otreedir = cmd_ln_str("-otreedir");
     for (p = 0, n_node = 0; p < n_ci; p++) {
 	const char *pname;
 

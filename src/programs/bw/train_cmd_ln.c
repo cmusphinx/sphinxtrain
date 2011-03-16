@@ -45,7 +45,8 @@
 
 #include "train_cmd_ln.h"
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/feat.h>
 #include <s3/err.h>
 #include <s3/s3.h>
 
@@ -306,400 +307,297 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 .\n\
 -part N -npart N ";
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-hmmdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Default directory for acoustic model files (mdef, means, variances, transition_matrices, noisedict)" },
 
 	{ "-moddeffn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The model definition file for the model inventory to train" },
 
 	{ "-tmatfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The transition matrix parameter file name"},
 
 	{ "-mixwfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The mixture weight parameter file name"},
 
 	{ "-meanfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The mean parameter file name"},
 
 	{ "-varfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The var parameter file name"},
 
 	{ "-fullvar",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Variances are full covariance matrices"},
 
 	{ "-diagfull",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Evaluate Gaussian densities using diagonals only"},
 
 	{ "-mwfloor",
-	  CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT32,
 	  "0.00001",
 	  "Mixing weight smoothing floor" },
 
 	{ "-tpfloor",
-	  CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT32,
 	  "0.0001",
 	  "Transition probability smoothing floor" },
 
 	{ "-varfloor",
-	  CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT32,
 	  "0.00001",
 	  "The minimum variance"},
 	
 	{ "-topn",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "4",
 	  "Compute output probabilities based this number of top scoring densities."},
 
 	{ "-dictfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The content word dictionary" },
 
 	{ "-fdictfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The filler word dictionary (e.g. SIL, SILb, ++COUGH++)" },
 
 	{ "-ltsoov",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Use CMUDict letter-to-sound rules to generate pronunciations for out-of-vocabulary words" },
 
 	{ "-ctlfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The training corpus control file" },
 
 	{ "-nskip",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "The number of utterances to skip at the beginning of a control file" },
 
 	{ "-runlen",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "-1",	/* until eof */
 	  "The number of utterances to process in the (skipped) control file" },
 
 	{ "-part",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "Identifies the corpus part number (range 1..NPART)" },
 
 	{ "-npart",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "Partition the corpus into this many equal sized subsets" },
 
 	{ "-cepext",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  FEAT_DEFAULT_FEATURE_EXTENSION,
+	  ARG_STRING,
+	  ".mfc",
 	  "The cepstrum file extension" },
 
 	{ "-cepdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The cepstrum data root directory" },
 
 	{ "-phsegext",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "phseg",
 	  "Phone segmentation file extension" },
 
 	{ "-phsegdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Phone segmentation file root directory" },
 
 	{ "-outphsegdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Phone segmentation file output root directory" },
 
 	{ "-sentdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The sentence transcript file directory"},
 
 	{ "-sentext",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "sent",
 	  "The sentence transcript file extension"},
 
 	{ "-lsnfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The corpus word transcript file"},
 
 	{ "-accumdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "A path where accumulated counts are to be written." },
 
-	{ "-ceplen",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  FEAT_DEFAULT_CEP_LENGTH,
-	  "The length of the input feature (e.g. MFCC) vectors"},
-
 	{ "-cepwin",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "0",
 	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
 
-	{ "-agc",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  "none",
-	  "The type of automatic gain control to do {max|emax}"},
-
-	{ "-cmn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  "current",
-	  "The do cepstral mean normalization based on {current|prior} utterance(s)"},
-
-	{ "-varnorm",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  "no",
-	  "Variance Normalize?"},
-
 	{ "-silcomp",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "none",
 	  "Do silence compression based on {current|prior} utterance"},
 
 	/* By ARCHAN at 200, fix the long-time legacy problem of not able to delete silence*/
 	{ "-sildel",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Allow optional silence deletion in the Baum-Welch algorithm or the Viterbi algorithm."},
 	
 	{ "-siltag",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "SIL",
 	  "Specify the tag of silence, by default it is <sil>."},
 
 	{ "-abeam",
-	  CMD_LN_FLOAT64,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT64,
 	  "1e-100",
 	  "Evaluate alpha values subject to this beam"},
 
 	{ "-bbeam",
-	  CMD_LN_FLOAT64,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT64,
 	  "1e-100",
 	  "Evaluate beta values (update reestimation sums) subject to this beam"},
 
 	{ "-varreest",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "yes",
 	  "Reestimate variances"},
 
 	{ "-meanreest",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "yes",
 	  "Reestimate means"},
 
 	{ "-mixwreest",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "yes",
 	  "Reestimate mixing weights"},
 
 	{ "-tmatreest",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "yes",
 	  "Reestimate transition probability matrices"},
 
 	{ "-mllrmat",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "An MLLR transformation file to apply to the means of the model"},
 
 	{ "-cb2mllrfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  ".1cls.",
 	  "Codebook-to-MLLR-class mapping file name" },
 
 	{ "-ts2cbfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Tied-state-to-codebook mapping file name" },
 
-	{ "-feat",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  FEAT_DEFAULT_FEATURE_TYPE,
-	  "This argument selects the derived feature computation to use."},
-	{ "-svspec",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  NULL,
-	  "Split single stream features into subvectors according to this specification."},
-
-	{ "-ldafn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
-	  "File containing an LDA transformation matrix."},
-	{ "-ldadim",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  "29",
-	  "# of output dimensions for LDA"},
-	{ "-ldaaccum",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
-	  "no",
-	  "Apply LDA in accumulation of statistics only (NOTE: no dimensionality reduction will be done)."},
-
 	{ "-timing",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "yes",
 	  "Controls whether profiling information is displayed"},
 	
 	{ "-viterbi",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Controls whether Viterbi training is done"},
 	
 	{ "-2passvar",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Reestimate variances based on prior means"},
 
 	{ "-sildelfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "File which specifies frames of background 'silence' to delete" },
 
 	{ "-spthresh",
-	  CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT32,
 	  "0.0",
 	  "State posterior probability floor for reestimation.  States below this are not counted"},
 	
 	{ "-maxuttlen",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "0",
 	  "Maximum # of frames for an utt ( 0 => no fixed limit )"},
 	
 	{ "-ckptintv",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "Checkpoint the reestimation sums every -chkptintv utts" },
 	
 	{ "-outputfullpath",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Output full path of utterance to bw log output" },
 	
 	{ "-fullsuffixmatch",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Expect utterance id in transcript to be a suffix of the partial path in the control file" },
 
+	{ "-ldaaccum",
+	  ARG_BOOLEAN,
+	  "no",
+	  "Apply LDA in accumulation of statistics only (NOTE: no dimensionality reduction will be done)."},
+
 	{ "-pdumpdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Dump state/mixture posterior probabilities to files in this directory" },
 
 	/* The following parameters are used for MMIE training
 	   lqin 2010-3 */
 	{ "-latdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Directory that contains lattice files" },
 
 	{ "-mmie",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Whether to do MMIE training or not" },
 
 	{ "-mmie_type",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "rand",
 	  "how to get different context for Viterbi run on lattice, such as rand, best or ci. \n\
            \t\t\trand: randomly take the left and right context \n\
@@ -707,37 +605,25 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
            \t\t\tci:   use context-independent hmm for word boundary models" },
 
 	{ "-latext",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Denominator or Numerator lattice. Use denlat or numlat" },
 
 	{ "-lw",
-	  CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT32,
 	  "11.5",
 	  "Language model weight" },
 	/* end */
-
-	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
+	
+	cepstral_to_feature_command_line_macro(),
+	{NULL, 0, NULL, NULL}
     };
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, 1);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
 
-    cmd_ln_parse(argc, argv);
-
-    if (cmd_ln_validate() == FALSE) {
-	E_FATAL("Unable to validate command line arguments\n");
-    }
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
-
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
     if(isHelp){
       printf("%s\n\n",helpstr);
@@ -749,118 +635,9 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
-    }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
+      exit(0);
     }
 
     return 0;
 }
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.14  2006/03/27  04:08:57  dhdfu
- * Optionally use a set of phoneme segmentations to constrain Baum-Welch
- * training.
- * 
- * Revision 1.13  2006/02/23 22:21:29  eht
- * add -outputfullpath and -fullsuffixmatch arguments to bw.
- *
- * Default behavior is to keep the existing system behavior when the
- * corpus module tries to match the transcript utterance id with the
- * partial path contained in the control file.
- *
- * Using -fullsuffixmatch yes will do the following:
- * 	The corpus module will check whether the string contained
- * 	inside parentheses in the transcript for the utterances
- * 	matches the final part of the control file partial path
- * 	for the utterance.  For instance, if the control file
- * 	partial path is:
- * 		tidigits/train/man/ae/243za
- * 	the following strings will be considered to match:
- * 		243za
- * 		ae/243za
- * 		man/ae/243za
- * 		.
- * 		.
- * 		.
- * 	In any event, the utterance will be used by bw for training.
- * 	This switch just modifies when the warning message for
- * 	mismatching control file and transcripts is generated.
- *
- * Using -outputfullpath yes will output the entire subpath from the
- * control file in the log output of bw rather than just the final path
- * component.  This allows for simpler automatic processing of the output
- * of bw.
- *
- * Revision 1.12  2005/09/15 19:36:00  dhdfu
- * Add (as yet untested) support for letter-to-sound rules (from CMU
- * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only
- * rules for CMUdict exist.  Of course this is not a substitute for
- * actually checking pronunciations...
- *
- * Revision 1.11  2005/04/07 21:23:39  egouvea
- * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
- *
- * Revision 1.10  2004/11/29 01:43:44  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- *
- * Revision 1.9  2004/08/08 02:58:22  arthchan2003
- * add help and example strings for bw
- *
- * Revision 1.8  2004/07/21 18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.7  2004/07/17 08:00:23  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.5  2004/06/17 19:17:14  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.4  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.3  2001/03/01 00:47:44  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.14  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.13  1996/08/06  14:03:47  eht
- * -sildelfn argument to specify silence deletion list
- *
- * Revision 1.12  1996/07/29  16:18:48  eht
- * Make -accumdir optional so that it may be omitted for
- * debugging purposes
- * MLLR command line options
- * -veclen to -ceplen
- * -minvar to -varfloor (now named consistently w/ the other floors)
- * added -2passvar switch to allow reestimation based on prior means
- *
- * Revision 1.11  1996/03/26  14:03:24  eht
- * - Added '-timing' argument
- * - changed doc strings for some arguments
- *
- * Revision 1.10  1996/02/02  17:41:47  eht
- * Add alpha and beta beams
- *
- * Revision 1.9  1996/01/26  18:23:49  eht
- * Reformatted argument specifications
- *
- * Revision 1.8  1995/11/30  20:42:07  eht
- * Add argument for transition matrix reestimation
- * Add argument for state parameter definition file
- *
- *
- */
 

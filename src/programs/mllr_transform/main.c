@@ -347,13 +347,13 @@ main(int argc, char *argv[])
 	return 0;
     }
 
-    outmeanfn = (const char *)cmd_ln_access("-outmeanfn");
-    inmeanfn  = (const char *)cmd_ln_access("-inmeanfn");
-    outgaufn  = (const char *)cmd_ln_access("-outgaucntfn");
-    ingaufn   = (const char *)cmd_ln_access("-ingaucntfn");
-    mllrmatfn = (const char *)cmd_ln_access("-mllrmat");
-    cb2mllrfn = (const char *)cmd_ln_access("-cb2mllrfn");
-    moddeffn  = (const char *)cmd_ln_access("-moddeffn");
+    outmeanfn = cmd_ln_str("-outmeanfn");
+    inmeanfn  = cmd_ln_str("-inmeanfn");
+    outgaufn  = cmd_ln_str("-outgaucntfn");
+    ingaufn   = cmd_ln_str("-ingaucntfn");
+    mllrmatfn = cmd_ln_str("-mllrmat");
+    cb2mllrfn = cmd_ln_str("-cb2mllrfn");
+    moddeffn  = cmd_ln_str("-moddeffn");
     cdonly    = cmd_ln_int32("-cdonly");
     inverse   = cmd_ln_int32("-inverse");
 

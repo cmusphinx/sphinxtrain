@@ -55,7 +55,7 @@
 #include <s3/remap.h>
 #include <s3/corpus.h>
 #include <s3/err.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s3phseg_io.h>
 #include <s3/model_def.h>
 #include <s2/byteorder.h>

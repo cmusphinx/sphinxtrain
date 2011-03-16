@@ -352,18 +352,18 @@ int main(int argc, char *argv[])
 	E_FATAL("errors initializing.\n");
     }
 
-    out_mllr_fn         = (const char *)  cmd_ln_access("-outmllrfn");
-    accum_dir           = (const char **) cmd_ln_access("-accumdir");
-    mean_fn             = (const char *)  cmd_ln_access("-meanfn");
-    var_fn              = (const char *)  cmd_ln_access("-varfn");
+    out_mllr_fn         = cmd_ln_str("-outmllrfn");
+    accum_dir           = cmd_ln_str_list("-accumdir");
+    mean_fn             = cmd_ln_str("-meanfn");
+    var_fn              = cmd_ln_str("-varfn");
 
-    cb2mllrfn           = (const char *)  cmd_ln_access("-cb2mllrfn");
-    cdonly              = *(uint32 *)     cmd_ln_access("-cdonly");
-    moddeffn            = (const char *)  cmd_ln_access("-moddeffn");
+    cb2mllrfn           = cmd_ln_str("-cb2mllrfn");
+    cdonly              = cmd_ln_int32("-cdonly");
+    moddeffn            = cmd_ln_str("-moddeffn");
 
-    mllr_mult      = *(uint32 *)     cmd_ln_access("-mllrmult");
-    mllr_add            = *(uint32 *)     cmd_ln_access("-mllradd");
-    varfloor            = *(float32 *)    cmd_ln_access("-varfloor");
+    mllr_mult      = cmd_ln_int32("-mllrmult");
+    mllr_add            = cmd_ln_int32("-mllradd");
+    varfloor            = cmd_ln_float32("-varfloor");
 
 
     assert(accum_dir[0] != NULL);	/* must be at least one accum dir */

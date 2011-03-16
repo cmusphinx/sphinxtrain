@@ -49,7 +49,7 @@
 #include "parse_cmd_ln.h"
 
 /* SPHINX-III includes */
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/acmod_set.h>
 #include <s3/model_def_io.h>
 #include <s3/s3tmat_io.h>
@@ -188,7 +188,7 @@ smooth_mixw(float32 ****out_mixw,
     float64 norm;
     float32 prior_lambda;
     model_def_entry_t *defn;
-    float32 cilambda = *(float32 *)cmd_ln_access("-cilambda");
+    float32 cilambda = cmd_ln_float32("-cilambda");
     uint32 n_conv_state;
     uint32 **n_tied;
     acmod_set_t *acmod_set;
@@ -324,7 +324,7 @@ smooth_mixw(float32 ****out_mixw,
 	lambda[i][(int)DIST_UNIFORM] = 0.1;
     }
 
-    max_iter = *(const int *)cmd_ln_access("-maxiter");
+    max_iter = cmd_ln_int32("-maxiter");
 
     conv_flag = (unsigned char *)ckd_calloc(n_cd_state, sizeof(unsigned char));
 
@@ -508,9 +508,9 @@ wr_param(float32 ***mixw_acc,
      * Write the parameters to files
      */
 
-    E_INFO("Writing %s\n", cmd_ln_access("-mixwfn"));
+    E_INFO("Writing %s\n", cmd_ln_str("-mixwfn"));
 
-    if (s3mixw_write(cmd_ln_access("-mixwfn"),
+    if (s3mixw_write(cmd_ln_str("-mixwfn"),
 		     mixw_acc,
 		     n_mixw,
 		     n_feat,
@@ -538,12 +538,12 @@ rd_interp_wr()
     uint32 i;
 
     if (model_def_read(&mdef,
-		       cmd_ln_access("-moddeffn")) != S3_SUCCESS) {
+		       cmd_ln_str("-moddeffn")) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
     i = 0;
-    accum_dir = (const char **)cmd_ln_access("-accumdirs");
+    accum_dir = cmd_ln_str_list("-accumdirs");
     
     /* must be at least two accum dirs for interpolation */
     assert(accum_dir[i] != NULL);

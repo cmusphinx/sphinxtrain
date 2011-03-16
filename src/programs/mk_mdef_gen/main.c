@@ -60,7 +60,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <s3/s3.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/ckd_alloc.h>
 #include "parse_cmd_ln.h"
 #include "heap.h"
@@ -82,10 +82,10 @@ int main (int argc, char **argv)
     parse_cmd_ln(argc,argv);
 
     /* Test all flags before beginning */
-    cimdeffn = (char *)cmd_ln_access("-ocimdef");
-    alltphnmdeffn = (char *)cmd_ln_access("-oalltphnmdef");
-    untiedmdeffn = (char *)cmd_ln_access("-ountiedmdef");
-    countfn = (char *)cmd_ln_access("-ocountfn");
+    cimdeffn = cmd_ln_str("-ocimdef");
+    alltphnmdeffn = cmd_ln_str("-oalltphnmdef");
+    untiedmdeffn = cmd_ln_str("-ountiedmdef");
+    countfn = cmd_ln_str("-ocountfn");
     ignore_wpos = cmd_ln_int32("-ignorewpos");
 
     if (cimdeffn) E_INFO("Will write CI mdef file %s\n",cimdeffn);
@@ -97,9 +97,9 @@ int main (int argc, char **argv)
     if (!cimdeffn && !alltphnmdeffn && !untiedmdeffn && !countfn)
 	E_FATAL("No output mdef files or count files specified!\n");
 
-    dictfn = (char *)cmd_ln_access("-dictfn");
-    fillerdictfn = (char *)cmd_ln_access("-fdictfn");
-    lsnfile = (char*)cmd_ln_access("-lsnfn");
+    dictfn = cmd_ln_str("-dictfn");
+    fillerdictfn = cmd_ln_str("-fdictfn");
+    lsnfile = cmd_ln_str("-lsnfn");
     if ((untiedmdeffn || countfn) && (!lsnfile || !dictfn)) {
 	E_WARN("Either dictionary or transcript file not given!\n"); 
   	if (untiedmdeffn) E_WARN("Untied mdef will not be made\n");
@@ -107,10 +107,10 @@ int main (int argc, char **argv)
 	untiedmdeffn = countfn = NULL;
     }
 
-    phnlist = (char *)cmd_ln_access("-phnlstfn");
-    triphnlist = (char *)cmd_ln_access("-triphnlstfn");
-    incimdef = (char *)cmd_ln_access("-inCImdef");
-    incdmdef = (char *)cmd_ln_access("-inCDmdef");
+    phnlist = cmd_ln_str("-phnlstfn");
+    triphnlist = cmd_ln_str("-triphnlstfn");
+    incimdef = cmd_ln_str("-inCImdef");
+    incdmdef = cmd_ln_str("-inCDmdef");
     if (!incdmdef && !incimdef && !phnlist && !triphnlist)
 	E_FATAL("No input mdefs or phone list given\n");
     if (triphnlist) {

@@ -51,7 +51,7 @@
 #include <s3/s3ts2cb_io.h>
 #include <s3/ts2cb.h>
 #include <s3/corpus.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/lexicon.h>
 #include <s3/acmod_set.h>
 #include <s3/model_def_io.h>
@@ -79,43 +79,42 @@ initialize(lexicon_t **out_lex,
     /* define, parse and (partially) validate the command line */
     parse_cmd_ln(argc, argv);
 
-    corpus_set_seg_dir(cmd_ln_access("-segdir"));
-    corpus_set_seg_ext(cmd_ln_access("-segext"));
+    corpus_set_seg_dir(cmd_ln_str("-segdir"));
+    corpus_set_seg_ext(cmd_ln_str("-segext"));
 
-    if (cmd_ln_access("-lsnfn"))
-	corpus_set_lsn_filename(cmd_ln_access("-lsnfn"));
+    if (cmd_ln_str("-lsnfn"))
+	corpus_set_lsn_filename(cmd_ln_str("-lsnfn"));
     else {
-	corpus_set_sent_dir(cmd_ln_access("-sentdir"));
-	corpus_set_sent_ext(cmd_ln_access("-sentext"));
+	corpus_set_sent_dir(cmd_ln_str("-sentdir"));
+	corpus_set_sent_ext(cmd_ln_str("-sentext"));
     }
 
-    corpus_set_ctl_filename(cmd_ln_access("-ctlfn"));
+    corpus_set_ctl_filename(cmd_ln_str("-ctlfn"));
+
+    if (cmd_ln_int32("-nskip") && cmd_ln_int32("-runlen")) {
+        corpus_set_interval(cmd_ln_int32("-nskip"),
+			    cmd_ln_int32("-runlen"));
+    } else if (cmd_ln_int32("-part") && cmd_ln_int32("-npart")) {
+	corpus_set_partition(cmd_ln_int32("-part"),
+			     cmd_ln_int32("-npart"));
+    }
     
-    if (cmd_ln_access("-part") && cmd_ln_access("-npart")) {
-	corpus_set_partition(*(uint32 *)cmd_ln_access("-part"),
-			     *(uint32 *)cmd_ln_access("-npart"));
-    }
-    else if (cmd_ln_access("-nskip") && cmd_ln_access("-runlen")) {
-	corpus_set_interval(*(uint32 *)cmd_ln_access("-nskip"),
-			    *(uint32 *)cmd_ln_access("-runlen"));
-    }
-
     if (corpus_init() != S3_SUCCESS) {
 	return S3_ERROR;
     }
     
-    E_INFO("Reading: %s\n", cmd_ln_access("-moddeffn"));
+    E_INFO("Reading: %s\n", cmd_ln_str("-moddeffn"));
     
     /* Read in the model definitions.  Defines the set of
        CI phones and context dependent phones.  Defines the
        transition matrix tying and state level tying. */
-    if (model_def_read(&mdef, cmd_ln_access("-moddeffn")) != S3_SUCCESS) {
+    if (model_def_read(&mdef, cmd_ln_str("-moddeffn")) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
-    ts2cbfn = cmd_ln_access("-ts2cbfn");
+    ts2cbfn = cmd_ln_str("-ts2cbfn");
     if (ts2cbfn) {
-	E_INFO("Reading %s\n", cmd_ln_access("-ts2cbfn"));
+	E_INFO("Reading %s\n", cmd_ln_str("-ts2cbfn"));
 
 	       
 	if (strcmp(ts2cbfn, SEMI_LABEL) == 0) {		/* see <s3/ts2cb.h> */
@@ -133,7 +132,7 @@ initialize(lexicon_t **out_lex,
 	    n_ts = mdef->n_tied_state;
 	    mdef->n_cb = mdef->acmod_set->n_ci;
 	}
-	else if (s3ts2cb_read(cmd_ln_access("-ts2cbfn"),
+	else if (s3ts2cb_read(cmd_ln_str("-ts2cbfn"),
 			      &mdef->cb,
 			      &n_ts,
 			      &mdef->n_cb) != S3_SUCCESS) {
@@ -148,7 +147,7 @@ initialize(lexicon_t **out_lex,
 
     *out_mdef = mdef;
     
-    dictfn = cmd_ln_access("-dictfn");
+    dictfn = cmd_ln_str("-dictfn");
 
     if (dictfn == NULL) {
 	E_FATAL("You must specify a content dictionary using -dictfn\n");
@@ -162,7 +161,7 @@ initialize(lexicon_t **out_lex,
     if (lex == NULL)
 	return S3_ERROR;
     
-    fdictfn = cmd_ln_access("-fdictfn");
+    fdictfn = cmd_ln_str("-fdictfn");
 
     if (fdictfn) {
 	E_INFO("Reading: %s\n", fdictfn);
@@ -191,8 +190,8 @@ main(int argc, char *argv[])
 	return 1;
     }
 
-    type = (const char *)cmd_ln_access("-paramtype");
-    outfn = (const char *)cmd_ln_access("-outputfn");
+    type = cmd_ln_str("-paramtype");
+    outfn = cmd_ln_str("-outputfn");
     if (outfn != NULL) {
 	out_fp = fopen(outfn, "w");
 	if (out_fp == NULL) {

@@ -49,7 +49,7 @@
 #include <s3/model_def_io.h>
 #include <s3/acmod_set.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s2_read_seno.h>
 #include <s3/s3mixw_io.h>
 #include <s3/s2_param.h>
@@ -95,9 +95,9 @@ main(int argc, char *argv[])
     parse_cmd_ln(argc, argv);
     
     printf("%s(%d): Reading model definition file %s\n",
-	   __FILE__, __LINE__, (const char *)cmd_ln_access("-moddeffn"));
+	   __FILE__, __LINE__, cmd_ln_str("-moddeffn"));
     
-    if (model_def_read(&mdef, cmd_ln_access("-moddeffn")) != S3_SUCCESS) {
+    if (model_def_read(&mdef, cmd_ln_str("-moddeffn")) != S3_SUCCESS) {
 	exit(1);
     }
 
@@ -189,30 +189,30 @@ main(int argc, char *argv[])
     fflush(stderr);
 
     printf("%s(%d): Reading senone weights in %s with floor %e\n",
-	   __FILE__, __LINE__, (const char *)cmd_ln_access("-hmmdir"),
-	   *(float32 *)cmd_ln_access("-floor"));
+	   __FILE__, __LINE__, cmd_ln_str("-hmmdir"),
+	   cmd_ln_float32("-floor"));
     
     out = s2_read_seno_3(mdef->acmod_set, cluster_offset,
-			 cmd_ln_access("-hmmdir"),
-			 (*(int32 *)cmd_ln_access("-ci2cd") ? NULL : smap),
-			 *(float32 *)cmd_ln_access("-floor"),
+			 cmd_ln_str("-hmmdir"),
+			 (cmd_ln_int32("-ci2cd") ? NULL : smap),
+			 cmd_ln_float32("-floor"),
 			 state_of);
 
     t = time(NULL);
     sprintf(comment,
 	    "Generated on %s\n\tmoddeffn: %s\n\tfloor: %e\n\thmmdir: %s\n\n\n\n\n\n\n\n\n",
 	    ctime(&t),
-	    (const char *)cmd_ln_access("-moddeffn"),
-	    *(float32 *)cmd_ln_access("-floor"),
-	    (const char *)cmd_ln_access("-hmmdir"));
+	    cmd_ln_str("-moddeffn"),
+	    cmd_ln_float32("-floor"),
+	    cmd_ln_str("-hmmdir"));
 
     fflush(stdout);
     fprintf(stderr, "%s(%d): writing %s\n",
 	    __FILE__, __LINE__,
-	    (const char *)cmd_ln_access("-mixwfn"));
+	    cmd_ln_str("-mixwfn"));
     fflush(stderr);
     
-    if (s3mixw_write(cmd_ln_access("-mixwfn"),
+    if (s3mixw_write(cmd_ln_str("-mixwfn"),
 		     out,
 		     cluster_offset[n_base_phone],	/* total # states */
 		     S2_N_FEATURE,
@@ -220,7 +220,7 @@ main(int argc, char *argv[])
 	fflush(stdout);
 	fprintf(stderr, "%s(%d): couldn't write mixture weight file\n",
 		__FILE__, __LINE__);
-	perror(cmd_ln_access("-mixwfn"));
+	perror(cmd_ln_str("-mixwfn"));
 	fflush(stderr);
     }
 		     

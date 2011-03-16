@@ -61,7 +61,7 @@
 #include <s3/s2_write_seno.h>
 #include <s2/byteorder.h>
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 
 #include "s3/hash.h"
 typedef hash_t hash_table_t;
@@ -697,11 +697,11 @@ int main (int32 argc, char **argv)
 
     feattype = "s2_4x";
 
-    mdeffile = (char *)cmd_ln_access("-moddeffn");
+    mdeffile = cmd_ln_str("-moddeffn");
     mgaumap = ".semi.";
-    senfile = (char *)cmd_ln_access("-mixwfn");
-    wtflr = (float64)(*(float32 *)cmd_ln_access("-mwfloor"));
-    outfile = (char *)cmd_ln_access("-sendumpfn");
+    senfile = cmd_ln_str("-mixwfn");
+    wtflr = (float64)(cmd_ln_float32("-mwfloor"));
+    outfile = cmd_ln_str("-sendumpfn");
     
     logs3_init ((float64) 1.0001);
     feat_init (feattype);

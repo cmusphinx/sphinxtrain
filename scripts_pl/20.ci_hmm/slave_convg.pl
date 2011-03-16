@@ -294,7 +294,7 @@ sub FlatInitialize
     }
     if (-r $MLLT_FILE) {
 	push(@feat_args,
-	     -ldafn => $MLLT_FILE,
+	     -lda => $MLLT_FILE,
 	     -ldadim => $ST::CFG_LDA_DIMENSION);
     }
     $ST::CFG_FEAT_WINDOW ||= 0;

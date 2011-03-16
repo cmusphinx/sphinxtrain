@@ -44,7 +44,7 @@
 
 #include "parse_cmd_ln.h"
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/err.h>
 #include <s3/s3cb2mllr_io.h>
 #include <sphinxbase/ckd_alloc.h>
@@ -63,19 +63,19 @@ main(int argc, char *argv[])
 
     parse_cmd_ln(argc, argv);
 
-    if (cmd_ln_access("-nmap")) {
-	n_map = *(int32 *)cmd_ln_access("-nmap");
+    if (cmd_ln_str("-nmap")) {
+	n_map = cmd_ln_int32("-nmap");
     }
     else {
 	E_FATAL("Specify # of state -> MLLR class mappings using -nmap\n");
     }
-    if (cmd_ln_access("-nclass")) {
-	n_class = *(int32 *)cmd_ln_access("-nclass");
+    if (cmd_ln_str("-nclass")) {
+	n_class = cmd_ln_int32("-nclass");
     }
     else {
 	E_FATAL("Specify # of MLLR class mappings using -nclass\n");
     }
-    if (cmd_ln_access("-cb2mllrfn") == NULL) {
+    if (cmd_ln_str("-cb2mllrfn") == NULL) {
 	E_FATAL("Specify output file using -cb2mllrfn\n");
     }
 
@@ -92,7 +92,7 @@ main(int argc, char *argv[])
 	E_WARN("Expected EOF after %d mappings, but still more data\n", n_map);
     }
     
-    if (s3cb2mllr_write((const char *)cmd_ln_access("-cb2mllrfn"),
+    if (s3cb2mllr_write(cmd_ln_str("-cb2mllrfn"),
 			mllr_map,
 			n_map,
 			n_class) != S3_SUCCESS) {

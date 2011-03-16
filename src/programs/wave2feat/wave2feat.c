@@ -435,14 +435,14 @@ param_t *fe_parse_options(int32 argc, char **argv)
     fe_init_params(P);
     
     P->wavfile = cmd_ln_str("-i");
-    if (P->wavfile != CMD_LN_NO_DEFAULT) {
+    if (P->wavfile != NULL) {
         P->is_single = ON;
     }
     
     P->cepfile = cmd_ln_str("-o");
     
     P->ctlfile = cmd_ln_str("-c");
-    if (P->ctlfile != CMD_LN_NO_DEFAULT) {
+    if (P->ctlfile != NULL) {
         char *nskip;
         char *runlen;
 
@@ -450,10 +450,10 @@ param_t *fe_parse_options(int32 argc, char **argv)
 
         nskip  = cmd_ln_str("-nskip");
         runlen = cmd_ln_str("-runlen");
-        if ( nskip != CMD_LN_NO_DEFAULT ) {
+        if ( nskip != NULL ) {
             P->nskip = atoi(nskip);
         }
-        if ( runlen != CMD_LN_NO_DEFAULT ) {
+        if ( runlen != NULL ) {
             P->runlen = atoi(runlen);
         }
     }

@@ -45,7 +45,7 @@
 
 #include "parse_cmd_ln.h"
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/lexicon.h>
 #include <s3/model_def_io.h>
@@ -412,7 +412,7 @@ main_initialize(int argc,
     timing_bind_name("em", timing_new());
     timing_bind_name("all", timing_new());
 
-    if (cmd_ln_access("-feat") != NULL) {
+    if (cmd_ln_str("-feat") != NULL) {
 	feat_set(cmd_ln_str("-feat"));
 	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
 	feat_set_subvecs(cmd_ln_str("-svspec"));
@@ -420,28 +420,28 @@ main_initialize(int argc,
     else {
 	E_FATAL("You need to set a feature extraction config using -feat\n");
     }
-    if (cmd_ln_access("-ldafn") != NULL) {
-	if (feat_read_lda(cmd_ln_access("-ldafn"), cmd_ln_int32("-ldadim"))) {
+    if (cmd_ln_str("-lda") != NULL) {
+	if (feat_read_lda(cmd_ln_str("-lda"), cmd_ln_int32("-ldadim"))) {
 	    E_FATAL("Failed to read LDA matrix\n");
 	}
     }
 
-    if (cmd_ln_access("-omoddeffn")) {
-	E_INFO("Reading output model definitions: %s\n", cmd_ln_access("-omoddeffn"));
+    if (cmd_ln_str("-omoddeffn")) {
+	E_INFO("Reading output model definitions: %s\n", cmd_ln_str("-omoddeffn"));
 	
 	/* Read in the model definitions.  Defines the set of
 	   CI phones and context dependent phones.  Defines the
 	   transition matrix tying and state level tying. */
 	if (model_def_read(&omdef,
-			   cmd_ln_access("-omoddeffn")) != S3_SUCCESS) {
+			   cmd_ln_str("-omoddeffn")) != S3_SUCCESS) {
 	    return S3_ERROR;
 	}
 
-	if (cmd_ln_access("-dmoddeffn")) {
-	    E_INFO("Reading dump model definitions: %s\n", cmd_ln_access("-dmoddeffn"));
+	if (cmd_ln_str("-dmoddeffn")) {
+	    E_INFO("Reading dump model definitions: %s\n", cmd_ln_str("-dmoddeffn"));
 	
 	    if (model_def_read(&dmdef,
-			       cmd_ln_access("-dmoddeffn")) != S3_SUCCESS) {
+			       cmd_ln_str("-dmoddeffn")) != S3_SUCCESS) {
 		return S3_ERROR;
 	    }
 	    setup_d2o_map(dmdef, omdef);
@@ -450,7 +450,7 @@ main_initialize(int argc,
 	    E_INFO("Assuming dump and output model definitions are identical\n");
 	}
 
-	ts2cbfn = cmd_ln_access("-ts2cbfn");
+	ts2cbfn = cmd_ln_str("-ts2cbfn");
 	if (ts2cbfn) {
 	    if (strcmp(SEMI_LABEL, ts2cbfn) == 0) {
 		omdef->cb = semi_ts2cb(omdef->n_tied_state);
@@ -467,7 +467,7 @@ main_initialize(int argc,
 		n_ts = omdef->n_tied_state;
 		n_cb = omdef->acmod_set->n_ci;
 	    }
-	    else if (s3ts2cb_read(cmd_ln_access("-ts2cbfn"),
+	    else if (s3ts2cb_read(cmd_ln_str("-ts2cbfn"),
 				  &omdef->cb,
 				  &n_ts,
 				  &n_cb) != S3_SUCCESS) {
@@ -487,7 +487,7 @@ main_initialize(int argc,
     *out_omdef = omdef;
     *out_dmdef = dmdef;
 
-    fn = cmd_ln_access("-dictfn");
+    fn = cmd_ln_str("-dictfn");
     if (fn) {
 	E_INFO("Reading main lexicon: %s\n", fn);
 	     
@@ -499,7 +499,7 @@ main_initialize(int argc,
 	    return S3_ERROR;
     }
     
-    fn = cmd_ln_access("-fdictfn");
+    fn = cmd_ln_str("-fdictfn");
     if (fn) {
 	E_INFO("Reading filler lexicon: %s\n", fn);
 	(void)lexicon_read(lex,
@@ -509,7 +509,7 @@ main_initialize(int argc,
     
     *out_lex = lex;
     
-    stride = *(int32 *)cmd_ln_access("-stride");
+    stride = cmd_ln_int32("-stride");
 
     return S3_SUCCESS;
 }
@@ -788,18 +788,18 @@ cluster(uint32 ts,
     k_means_set_get_obs(&get_obs);
 
     for (s = 0, sum_sqerr = 0; s < n_stream; s++, sum_sqerr += sqerr) {
-	meth = (const char *)cmd_ln_access("-method");
+	meth = cmd_ln_str("-method");
 
 	n_frame = setup_obs(ts, s, n_in_frame, veclen);
 
 	if (strcmp(meth, "rkm") == 0) {
-	    sqerr = random_kmeans(*(uint32 *)cmd_ln_access("-ntrial"),
+	    sqerr = random_kmeans(cmd_ln_int32("-ntrial"),
 				  n_frame,
 				  veclen[s],
 				  mean[s],
 				  n_density,
-				  *(float32 *)cmd_ln_access("-minratio"),
-				  *(uint32 *)cmd_ln_access("-maxiter"),
+				  cmd_ln_float32("-minratio"),
+				  cmd_ln_int32("-maxiter"),
 				  out_label);
 	    if (sqerr < 0) {
 		E_ERROR("Too few observations for kmeans\n");
@@ -812,8 +812,8 @@ cluster(uint32 ts,
 					     veclen[s],
 					     mean[s],
 					     n_density,
-					     *(float32 *)cmd_ln_access("-minratio"),
-					     *(uint32 *)cmd_ln_access("-maxiter"));
+					     cmd_ln_float32("-minratio"),
+					     cmd_ln_int32("-maxiter"));
 	}
 	else {
 	    E_ERROR("I don't know how to do method '%s'.  Sorry.\n", meth);
@@ -1288,11 +1288,11 @@ init_state(const char *obsdmp,
 					  n_density,
 					  sizeof(float32));
 
-    if ((const char *)cmd_ln_access("-segidxfn")) {
+    if (cmd_ln_str("-segidxfn")) {
 	E_INFO("Multi-class dump\n");
-	if (segdmp_open_read((const char **)cmd_ln_access("-segdmpdirs"),
-			     (const char *)cmd_ln_access("-segdmpfn"),
-			     (const char *)cmd_ln_access("-segidxfn"),
+	if (segdmp_open_read(cmd_ln_str_list("-segdmpdirs"),
+			     cmd_ln_str("-segdmpfn"),
+			     cmd_ln_str("-segidxfn"),
 			     &n,
 			     &t) != S3_SUCCESS) {
 	    E_FATAL("Unable to open dumps\n");
@@ -1313,18 +1313,18 @@ init_state(const char *obsdmp,
 	
 	multiclass = FALSE;
 	
-	dmp_fp = s3open((const char *)cmd_ln_access("-segdmpfn"), "rb",
+	dmp_fp = s3open(cmd_ln_str("-segdmpfn"), "rb",
 			&dmp_swp);
 	if (dmp_fp == NULL) {
 	    E_ERROR_SYSTEM("Unable to open dump file %s for reading\n",
-			   (const char *)cmd_ln_access("-segdmpfn"));
+			   cmd_ln_str("-segdmpfn"));
 
 	    return S3_ERROR;
 	}
 
 	if (s3read(&n_frame, sizeof(uint32), 1, dmp_fp, dmp_swp, &ignore) != 1) {
 	    E_ERROR_SYSTEM("Unable to open dump file %s for reading\n",
-			   (const char *)cmd_ln_access("-segdmpfn"));
+			   cmd_ln_str("-segdmpfn"));
 
 	    return S3_ERROR;
 	}
@@ -1349,7 +1349,7 @@ init_state(const char *obsdmp,
     
 	E_INFO("Corpus %u: sz==%u frames%s\n",
 	       ts, n_frame,
-	       (n_frame > *(uint32 *)cmd_ln_access("-vartiethr") ? "" : " tied var"));
+	       (n_frame > cmd_ln_int32("-vartiethr") ? "" : " tied var"));
 
 	if (n_frame == 0) {
 	    continue;
@@ -1397,9 +1397,9 @@ init_state(const char *obsdmp,
 		/* Do iterations of EM to estimate the mixture densities */
 		reest_sum(ts, mean[i], var[i], mixw[i], n_density, n_stream,
 			  n_frame, veclen,
-			  *(uint32 *)cmd_ln_access("-niter"),
+			  cmd_ln_int32("-niter"),
 			  FALSE,
-			  *(uint32 *)cmd_ln_access("-vartiethr"));
+			  cmd_ln_int32("-vartiethr"));
 		if (em_timer)
 		    timing_stop(em_timer);
 	    }
@@ -1500,14 +1500,14 @@ main(int argc, char *argv[])
     n_stream = feat_n_stream();
     veclen = feat_vecsize();
 
-    if (strcmp((const char *)cmd_ln_access("-gthobj"), "state") == 0) {
-	ts_off = *(uint32 *)cmd_ln_access("-tsoff");
+    if (strcmp(cmd_ln_str("-gthobj"), "state") == 0) {
+	ts_off = cmd_ln_int32("-tsoff");
 
-	if (cmd_ln_access("-tscnt") == NULL) {
+	if (cmd_ln_str("-tscnt") == NULL) {
 	    ts_cnt = omdef->n_tied_state - ts_off;
  	}
 	else {
-	    ts_cnt = *(uint32 *)cmd_ln_access("-tscnt");
+	    ts_cnt = cmd_ln_int32("-tscnt");
 	}
 
 	if (ts_off + ts_cnt > omdef->n_tied_state) {
@@ -1527,15 +1527,15 @@ main(int argc, char *argv[])
 
 	if (all_timer)
 	    timing_start(all_timer);
-	if (init_state((const char *)cmd_ln_access("-segdmpfn"),
-		       (const char *)cmd_ln_access("-segidxfn"),
-		       *(int32 *)cmd_ln_access("-ndensity"),
+	if (init_state(cmd_ln_str("-segdmpfn"),
+		       cmd_ln_str("-segidxfn"),
+		       cmd_ln_int32("-ndensity"),
 		       n_stream,
 		       veclen,
-		       *(int32 *)cmd_ln_access("-reest"),
-		       (const char *)cmd_ln_access("-mixwfn"),
-		       (const char *)cmd_ln_access("-meanfn"),
-		       (const char *)cmd_ln_access("-varfn"),
+		       cmd_ln_int32("-reest"),
+		       cmd_ln_str("-mixwfn"),
+		       cmd_ln_str("-meanfn"),
+		       cmd_ln_str("-varfn"),
 		       ts_off,
 		       ts_cnt,
 		       omdef->n_tied_state,
@@ -1575,12 +1575,12 @@ main(int argc, char *argv[])
 	    E_INFOCONT("\n");
 	}
 	
-	if (cmd_ln_access("-tsrngfn") != NULL) {
-	    fp = fopen((const char *)cmd_ln_access("-tsrngfn"),
+	if (cmd_ln_str("-tsrngfn") != NULL) {
+	    fp = fopen(cmd_ln_str("-tsrngfn"),
 		       "w");
 	    if (fp == NULL) {
 		E_FATAL_SYSTEM("Unable to open %s for reading",
-			       (const char *)cmd_ln_access("-tsrngfn"));
+			       cmd_ln_str("-tsrngfn"));
 	    }
 	    
 	    fprintf(fp, "%d %d\n", ts_off, ts_cnt);
@@ -1589,7 +1589,7 @@ main(int argc, char *argv[])
 	    E_WARN("Subset of tied states specified, but no -tsrngfn arg");
 	}
     }
-    else if (strcmp((const char *)cmd_ln_access("-gthobj"), "single") == 0) {
+    else if (strcmp(cmd_ln_str("-gthobj"), "single") == 0) {
 	n_tot_frame = 0;
 
 	if (all_timer)
@@ -1603,15 +1603,15 @@ main(int argc, char *argv[])
 
 	if (all_timer)
 	    timing_start(all_timer);
-	if (init_state((const char *)cmd_ln_access("-segdmpfn"),
+	if (init_state(cmd_ln_str("-segdmpfn"),
 		       NULL,	/* No index -> single class dump file */
-		       *(int32 *)cmd_ln_access("-ndensity"),
+		       cmd_ln_int32("-ndensity"),
 		       n_stream,
 		       veclen,
-		       *(int32 *)cmd_ln_access("-reest"),
-		       (const char *)cmd_ln_access("-mixwfn"),
-		       (const char *)cmd_ln_access("-meanfn"),
-		       (const char *)cmd_ln_access("-varfn"),
+		       cmd_ln_int32("-reest"),
+		       cmd_ln_str("-mixwfn"),
+		       cmd_ln_str("-meanfn"),
+		       cmd_ln_str("-varfn"),
 		       0,
 		       1,
 		       1,

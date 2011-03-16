@@ -86,8 +86,8 @@ initialize(int argc,
     /* define, parse and (partially) validate the command line */
     parse_cmd_ln(argc, argv);
 
-    sprintf(e_fmt, "%%.%de ", *(int32 *)cmd_ln_access("-sigfig") - 1);
-    sprintf(e_fmt_ld_sp, " %%.%de", *(int32 *)cmd_ln_access("-sigfig") - 1);
+    sprintf(e_fmt, "%%.%de ", cmd_ln_int32("-sigfig") - 1);
+    sprintf(e_fmt_ld_sp, " %%.%de", cmd_ln_int32("-sigfig") - 1);
     
     return S3_SUCCESS;
 }
@@ -334,7 +334,7 @@ print_gau_cnt(const char *fn)
 	E_INFO("-2passvar yes\n");
     }
 
-    sf = *(int32 *)cmd_ln_access("-sigfig");
+    sf = cmd_ln_int32("-sigfig");
 
     sprintf(mv_fmt, "%%.%de,%%.%de ", sf-1, sf-1);
 
@@ -375,7 +375,7 @@ print_tmat(const char *fn)
     uint32 n_tmat;
     uint32 n_state_pm;
     uint32 i, j, k;
-    int32 normalize = *(int32 *)cmd_ln_access("-norm");
+    int32 normalize = cmd_ln_int32("-norm");
     float32 sum;
     
     E_INFO("Reading %s%s\n",
@@ -433,17 +433,17 @@ print_mixw(const char *fn)
     uint32 n_feat;
     uint32 n_density;
     uint32 i, p_i, j, k;
-    int32 normalize = *(int32 *)cmd_ln_access("-norm");
+    int32 normalize = cmd_ln_int32("-norm");
     float64 sum;
 
     E_INFO("Reading %s%s\n",
 	   fn, (normalize ? "and normalizing." : "."));
 
-    if (cmd_ln_access("-mixws")) {
-	mixw_s = *(uint32 *)cmd_ln_access("-mixws");
+    if (cmd_ln_str("-mixws")) {
+	mixw_s = cmd_ln_int32("-mixws");
     }
-    if (cmd_ln_access("-mixwe")) {
-	mixw_e = *(uint32 *)cmd_ln_access("-mixwe");
+    if (cmd_ln_str("-mixwe")) {
+	mixw_e = cmd_ln_int32("-mixwe");
     }
     if (mixw_s == NO_ID && mixw_e == NO_ID) {
 	if (s3mixw_read(fn,
@@ -512,61 +512,61 @@ print()
 
     ret_val = S3_SUCCESS;
 
-    fn = (const char *)cmd_ln_access("-moddeffn");
+    fn = cmd_ln_str("-moddeffn");
 
     if (fn && model_def_read(&mdef, fn) != S3_SUCCESS) {
       E_ERROR("Problems reading model definition file %s\n", fn);
     }
 
-    fn = (const char *)cmd_ln_access("-mixwfn");
+    fn = cmd_ln_str("-mixwfn");
     if (fn && (print_mixw(fn) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
     
-    fn = (const char *)cmd_ln_access("-tmatfn");
+    fn = cmd_ln_str("-tmatfn");
     if (fn && (print_tmat(fn) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
 
-    fn = (const char *)cmd_ln_access("-gaufn");
+    fn = cmd_ln_str("-gaufn");
     if (fn && (print_gau(fn) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
 
-    fn = (const char *)cmd_ln_access("-fullgaufn");
+    fn = cmd_ln_str("-fullgaufn");
     if (fn && (print_full_gau(fn) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
 
-    fn = (const char *)cmd_ln_access("-gaucntfn");
+    fn = cmd_ln_str("-gaucntfn");
     if (fn && (print_gau_cnt(fn) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
 
-    fn = (const char *)cmd_ln_access("-regmatcntfn");
+    fn = cmd_ln_str("-regmatcntfn");
     if (fn && (print_regmat_cnt(fn) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
 
-    fn = (const char *)cmd_ln_access("-lambdafn");
+    fn = cmd_ln_str("-lambdafn");
     if (fn && (print_lambda(fn,
-			    *(float32 *)cmd_ln_access("-lambdamin"),
-			    *(float32 *)cmd_ln_access("-lambdamax")) != S3_SUCCESS)) {
+			    cmd_ln_float32("-lambdamin"),
+			    cmd_ln_float32("-lambdamax")) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
 
-    fn = (const char *)cmd_ln_access("-ldafn");
+    fn = cmd_ln_str("-lda");
     if (fn && (print_lda(fn) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
 
-    fn = (const char *)cmd_ln_access("-ts2cbfn");
+    fn = cmd_ln_str("-ts2cbfn");
     if (fn && (print_ts2cb(fn) != S3_SUCCESS)) {
 	ret_val = S3_ERROR;
     }
     
     if(ret_val != S3_SUCCESS){
-      E_FATAL("Please specify input by either -tmatfn, -mixwfn, -gaufn, -gaucntfn, -regmatcntfn, -ldafn, -ts2cbfn or -lambdafn\n");
+      E_FATAL("Please specify input by either -tmatfn, -mixwfn, -gaufn, -gaucntfn, -regmatcntfn, -lda, -ts2cbfn or -lambdafn\n");
     }
     return ret_val;
 }

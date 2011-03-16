@@ -81,71 +81,50 @@ kdtree \n\
 ";
 
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-outfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Output file for trees"},
 	{ "-meanfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Gaussian density mean file to build a tree over"},
 	{ "-varfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Gaussian density variance file to build a tree over"},
 	{ "-threshold",
-	  CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT32,
 	  "0.2",
 	  "Threshold for Gaussian boxes"},
 	{ "-depth",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "6",
 	  "Depth of kd-tree to be built"},
 	{ "-absolute",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "FALSE",
 	  "Use an absolute threshold for Gaussian boxes"},
 
-	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
+	{NULL, 0, NULL, NULL}
+
     };
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, TRUE);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
-
-    cmd_ln_parse(argc, argv);
-
-    if (cmd_ln_validate() == FALSE) {
-	/* one or more command line arguments were
-	   deemed invalid */
-	exit(1);
-    }
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
-
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
     if(isHelp){
       printf("%s\n\n",helpstr);
@@ -157,57 +136,9 @@ kdtree \n\
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
+      exit(0);
     }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
-    }
+
 
     return 0;
 }
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.3  2005/10/14  21:31:23  dhdfu
- * Allow empty trees, also add absolute thresholding (but it doesn't seem to work right)
- * 
- * Revision 1.2  2005/10/13 13:00:57  dhdfu
- * Complete implementation of kd-trees including file I/O
- *
- * Revision 1.1  2005/10/13 00:35:56  dhdfu
- * Basic implementation of kd-trees and BBI with relative thresholding,
- * but without extra optimizations.  Doesn't actually read/write them to
- * files yet.
- *
- * Revision 1.7  2004/11/29 01:43:51  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- *
- * Revision 1.6  2004/08/08 04:53:40  arthchan2003
- * norm's help and example strings
- *
- * Revision 1.5  2004/07/21 19:17:25  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.4  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.3  2001/03/01 00:47:44  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.8  97/07/16  11:22:39  eht
- * Allow an inmixfn for those mixing weights that were unseen in the accumulators
- * 
- * Revision 1.7  97/03/07  08:53:11  eht
- * - added -inmeanfn and -invarfn arguments for unseen means and vars
- * 
- *
- */

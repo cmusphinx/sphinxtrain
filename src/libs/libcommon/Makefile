@@ -49,7 +49,6 @@ SRCS = \
   best_q.c \
   btree.c \
   ck_seg.c \
-  cmd_ln.c \
   cmu6_lts_rules.c \
   cvt2triphone.c \
   dtree.c \

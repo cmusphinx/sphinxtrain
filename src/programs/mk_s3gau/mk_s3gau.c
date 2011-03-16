@@ -53,7 +53,7 @@
 #include <s3/s2_read_cb.h>
 #include <s3/feat.h>
 #include <s3/err.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,20 +74,20 @@ main(int argc, char *argv[])
 
     g = gauden_alloc();
 
-    gauden_set_min_var(*(float32 *)cmd_ln_access("-varfloor"));
+    gauden_set_min_var(cmd_ln_float32("-varfloor"));
 
-    cb_basename[0] = (const char *)cmd_ln_access("-cepcb");
-    cb_basename[1] = (const char *)cmd_ln_access("-dcepcb");
-    cb_basename[2] = (const char *)cmd_ln_access("-powcb");
-    cb_basename[3] = (const char *)cmd_ln_access("-2dcepcb");
+    cb_basename[0] = cmd_ln_str("-cepcb");
+    cb_basename[1] = cmd_ln_str("-dcepcb");
+    cb_basename[2] = cmd_ln_str("-powcb");
+    cb_basename[3] = cmd_ln_str("-2dcepcb");
 
     s2_read_cb(g,
-	       cmd_ln_access("-cbdir"),
+	       cmd_ln_str("-cbdir"),
 	       cb_basename,
-	       cmd_ln_access("-meanext"),
-	       cmd_ln_access("-varext"),
+	       cmd_ln_str("-meanext"),
+	       cmd_ln_str("-varext"),
 	       TRUE,	/* floor variances */
-	       cmd_ln_access("-fixpowvar"));
+	       cmd_ln_str("-fixpowvar"));
 
     t = time(NULL);
 
@@ -95,11 +95,11 @@ main(int argc, char *argv[])
 	    "Generated on %s\nby %s.\nFrom codebooks in %s\n",
 	    ctime(&t),
 	    argv[0],
-	    (const char *)cmd_ln_access("-cbdir"));
+	    cmd_ln_str("-cbdir"));
     
-    E_INFO("writing %s\n", cmd_ln_access("-meanfn"));
+    E_INFO("writing %s\n", cmd_ln_str("-meanfn"));
 
-    if (s3gau_write((const char *)cmd_ln_access("-meanfn"),
+    if (s3gau_write(cmd_ln_str("-meanfn"),
 		    (const vector_t ***)gauden_mean(g),
 		    gauden_n_mgau(g),
 		    gauden_n_feat(g),
@@ -108,11 +108,11 @@ main(int argc, char *argv[])
 	E_FATAL_SYSTEM("could not write means file\n");
     }
     
-    if (cmd_ln_access("-varfn")) {
+    if (cmd_ln_str("-varfn")) {
 	E_INFO("Writing %s\n",
-	       cmd_ln_access("-varfn"));
+	       cmd_ln_str("-varfn"));
 
-	if (s3gau_write((const char *)cmd_ln_access("-varfn"),
+	if (s3gau_write(cmd_ln_str("-varfn"),
 			(const vector_t ***)gauden_var(g),
 			gauden_n_mgau(g),
 			gauden_n_feat(g),

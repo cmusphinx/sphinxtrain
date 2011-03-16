@@ -50,7 +50,7 @@
 #include <s3/model_def_io.h>
 #include <s3/acmod_set.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s2_read_tmat.h>
 #include <s3/s3tmat_io.h>
 #include <s3/s2_param.h>
@@ -74,9 +74,9 @@ main(int argc, char *argv[])
 
     parse_cmd_ln(argc, argv);
     
-    E_INFO("Reading %s\n", cmd_ln_access("-moddeffn"));
+    E_INFO("Reading %s\n", cmd_ln_str("-moddeffn"));
 
-    if (model_def_read(&mdef, cmd_ln_access("-moddeffn")) !=
+    if (model_def_read(&mdef, cmd_ln_str("-moddeffn")) !=
 	S3_SUCCESS) {
 	exit(1);
     }
@@ -85,21 +85,21 @@ main(int argc, char *argv[])
 
     E_INFO("%d models defined\n", n_mdef);
 
-    tmat = s2_read_tmat(cmd_ln_access("-hmmdir"),
+    tmat = s2_read_tmat(cmd_ln_str("-hmmdir"),
 			mdef->acmod_set,
-			*(float32 *)cmd_ln_access("-floor"));
+			cmd_ln_float32("-floor"));
 
     t = time(NULL);
     sprintf(comment,
 	    "Generated on %s\n\tmoddeffn: %s\n\tfloor: %e\n\thmmdir: %s\n\n\n\n\n\n\n\n\n",
 	    ctime(&t),
-	    (const char *)cmd_ln_access("-moddeffn"),
-	    *(float32 *)cmd_ln_access("-floor"),
-	    (const char *)cmd_ln_access("-hmmdir"));
+	    cmd_ln_str("-moddeffn"),
+	    cmd_ln_float32("-floor"),
+	    cmd_ln_str("-hmmdir"));
 
-    E_INFO("Writing %s\n",  cmd_ln_access("-tmatfn"));
+    E_INFO("Writing %s\n",  cmd_ln_str("-tmatfn"));
 
-    if (s3tmat_write(cmd_ln_access("-tmatfn"),
+    if (s3tmat_write(cmd_ln_str("-tmatfn"),
 		     tmat,
 		     acmod_set_n_ci(mdef->acmod_set),	/* total # transition matrices */
 		     S2_N_STATE) != S3_SUCCESS) {

@@ -50,26 +50,3 @@ int
 train_cmd_ln_parse(int argc, char *argv[]);
 
 #endif /* TRAIN_CMD_LN_H */ 
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  1996/07/29  16:22:23  eht
- * Initial revision
- *
- *
- */

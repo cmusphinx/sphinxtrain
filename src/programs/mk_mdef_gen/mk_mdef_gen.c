@@ -47,7 +47,7 @@
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/read_line.h>
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/err.h>
 #include <s3/s3.h>
 
@@ -587,8 +587,8 @@ int32 find_threshold(hashelement_t  **triphonehash)
     int32 tottph, ltottph, mincnt, maxtph, *countofcounts, *lcountofcounts;
     int32 i, cnt, unique, threshold, ceiling;
 
-    mincnt = *(int32 *)cmd_ln_access("-minocc");
-    maxtph = *(int32 *)cmd_ln_access("-maxtriphones");
+    mincnt = cmd_ln_int32("-minocc");
+    maxtph = cmd_ln_int32("-maxtriphones");
 
     ceiling = mincnt < CEILING ? CEILING : mincnt+1;
 
@@ -872,7 +872,7 @@ int32 make_mdef_from_list(char *mdeffile,
     heapelement_t *cdphone;
     FILE  *fp;
 
-    n_state_pm = *(int32*)cmd_ln_access("-n_state_pm") + 1;
+    n_state_pm = cmd_ln_int32("-n_state_pm") + 1;
     n_base = nciphones;
     n_tri = cdheapsize;
     E_INFO("%d n_base, %d n_tri\n", n_base, n_tri);

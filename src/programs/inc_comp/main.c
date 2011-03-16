@@ -57,7 +57,7 @@
 #include <s3/s3mixw_io.h>
 #include <s3/feat.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s3.h>
 
 int
@@ -84,9 +84,9 @@ main(int argc, char *argv[])
     parse_cmd_ln(argc, argv);
 
     E_INFO("Reading mixing weight file %s.\n",
-	   cmd_ln_access("-inmixwfn"));
+	   cmd_ln_str("-inmixwfn"));
 
-    if (s3mixw_read((const char *)cmd_ln_access("-inmixwfn"),
+    if (s3mixw_read(cmd_ln_str("-inmixwfn"),
 		    &mixw,
 		    &n_mixw,
 		    &n_feat,
@@ -94,7 +94,7 @@ main(int argc, char *argv[])
 	return 1;
     }
 
-    n_inc = *(int32 *)cmd_ln_access("-ninc");
+    n_inc = cmd_ln_int32("-ninc");
 
     if (n_inc > n_density) {
 	E_WARN("# of densities to split (== %u) > total # of densities/mixture (== %u); # split <- %u # den/mix\n",
@@ -102,7 +102,7 @@ main(int argc, char *argv[])
 	n_inc = n_density;
     }
     
-    if (s3gau_read((const char *)cmd_ln_access("-inmeanfn"),
+    if (s3gau_read(cmd_ln_str("-inmeanfn"),
 		   &mean,
 		   &n_mgau,
 		   &n_feat,
@@ -113,7 +113,7 @@ main(int argc, char *argv[])
 
     var_is_full = cmd_ln_int32("-fullvar");
     if (var_is_full) {
-	if (s3gau_read_full((const char *)cmd_ln_access("-invarfn"),
+	if (s3gau_read_full(cmd_ln_str("-invarfn"),
 			    &fullvar,
 			    &n_mgau,
 			    &n_feat,
@@ -123,7 +123,7 @@ main(int argc, char *argv[])
 	}
     }
     else {
-	if (s3gau_read((const char *)cmd_ln_access("-invarfn"),
+	if (s3gau_read(cmd_ln_str("-invarfn"),
 		       &var,
 		       &n_mgau,
 		       &n_feat,
@@ -133,7 +133,7 @@ main(int argc, char *argv[])
 	}
     }
 
-    if (s3gaudnom_read((const char *)cmd_ln_access("-dcountfn"),
+    if (s3gaudnom_read(cmd_ln_str("-dcountfn"),
 		       &dnom,
 		       &n_dnom,
 		       &n_feat,
@@ -171,8 +171,8 @@ main(int argc, char *argv[])
 
 		  n_inc);
 
-    if (cmd_ln_access("-outmixwfn") != NULL) {
-	if (s3mixw_write((char *)cmd_ln_access("-outmixwfn"),
+    if (cmd_ln_str("-outmixwfn") != NULL) {
+	if (s3mixw_write(cmd_ln_str("-outmixwfn"),
 			 new_mixw,
 			 n_mixw,
 			 n_feat,
@@ -184,8 +184,8 @@ main(int argc, char *argv[])
 	E_FATAL("You must use the -outmixwfn argument\n");
     }
 
-    if (cmd_ln_access("-outmeanfn") != NULL) {
-	if (s3gau_write((const char *)cmd_ln_access("-outmeanfn"),
+    if (cmd_ln_str("-outmeanfn") != NULL) {
+	if (s3gau_write(cmd_ln_str("-outmeanfn"),
 			(const vector_t ***)new_mean,
 			n_mgau,
 			n_feat,
@@ -198,9 +198,9 @@ main(int argc, char *argv[])
 	E_FATAL("You must use the -outmeanfn argument\n");
     }
 
-    if (cmd_ln_access("-outvarfn") != NULL) {
+    if (cmd_ln_str("-outvarfn") != NULL) {
 	if (var_is_full) {
-	    if (s3gau_write_full((const char *)cmd_ln_access("-outvarfn"),
+	    if (s3gau_write_full(cmd_ln_str("-outvarfn"),
 				 (const vector_t ****)new_fullvar,
 				 n_mgau,
 				 n_feat,
@@ -210,7 +210,7 @@ main(int argc, char *argv[])
 	    }
 	}
 	else {
-	    if (s3gau_write((const char *)cmd_ln_access("-outvarfn"),
+	    if (s3gau_write(cmd_ln_str("-outvarfn"),
 			    (const vector_t ***)new_var,
 			    n_mgau,
 			    n_feat,

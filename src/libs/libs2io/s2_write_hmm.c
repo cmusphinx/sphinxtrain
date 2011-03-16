@@ -46,7 +46,7 @@
 /* SPHINX-III header files */
 #include <s3/s2_write_hmm.h>
 #include <s3/s2_param.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/vector.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/err.h>
@@ -209,7 +209,7 @@ put_dhmm(float32 **tmat,
     char fn[MAXPATHLEN];
     FILE *fp;
 
-    hmm_ext = cmd_ln_access("-hmmext");
+    hmm_ext = cmd_ln_str("-hmmext");
 
     sprintf(fn, "%s/%s.%s", dir, name, hmm_ext);
     
@@ -235,7 +235,7 @@ put_sdm(float32 **tmat, const char *in_dir_name, const char *ci_name)
     char ci_hmm_filename[MAXPATHLEN];
     FILE *fp;
 
-    hmm_ext = cmd_ln_access("-hmmext");
+    hmm_ext = cmd_ln_str("-hmmext");
 
     sprintf(ci_hmm_filename, "%s/%s.%s",
 	    in_dir_name, ci_name, hmm_ext);

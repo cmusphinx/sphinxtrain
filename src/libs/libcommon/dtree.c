@@ -55,7 +55,7 @@
 #include <s3/err.h>
 
 #include <s3/s3.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 
 #include <assert.h>
 #include <stdio.h>
@@ -806,7 +806,7 @@ mk_node(dtree_node_t *node,
     uint32 continuous, sumveclen;
     char*  type;
 
-    type = (char *)cmd_ln_access("-ts2cbfn");
+    type = (char *)cmd_ln_str("-ts2cbfn");
     if (strcmp(type,".semi.")!=0 && strcmp(type,".cont.") != 0)
         E_FATAL("Type %s unsupported; trees can only be built on types .semi. or .cont.\n",type);
     if (strcmp(type,".cont.") == 0) 
@@ -815,7 +815,7 @@ mk_node(dtree_node_t *node,
         continuous = 0;
 
     if (continuous == 1) {
-        varfloor = *(float32 *)cmd_ln_access("-varfloor");
+        varfloor = cmd_ln_float32("-varfloor");
         /* Sumveclen is overallocation, but coding is simpler */
         for (j=0,sumveclen=0; j < n_stream; j++) sumveclen += veclen[j];
 
@@ -1585,7 +1585,7 @@ cluster_leaves(dtree_t *tr,
     char*  type;
     uint32 continuous, sumveclen;
 
-    type = (char *)cmd_ln_access("-ts2cbfn");
+    type = cmd_ln_str("-ts2cbfn");
     if (strcmp(type,".semi.")!=0 && strcmp(type,".cont.") != 0)
         E_FATAL("Type %s unsupported; trees can only be built on types .semi. or .cont.\n",type);
     if (strcmp(type,".cont.") == 0)

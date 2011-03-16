@@ -97,7 +97,7 @@ Log ("Normalization for iteration: $iter", 'result');
 my $return_value = RunTool
     ('norm', $logfile, 0,
      -mmie => "yes",
-     -accumdir => @bwaccumdirs,
+     -accumdir => join(",", @bwaccumdirs),
      -inmeanfn => $in_means,
      -invarfn => $in_variances,
      -constE => $constE,

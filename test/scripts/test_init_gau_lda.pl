@@ -21,7 +21,7 @@ $cmd .= "-part 1 -npart 1 ";
 $cmd .= "-cepdir $cepdir ";
 $cmd .= "-cepext mfc -accumdir ./ ";
 $cmd .= "-agc none -cmn current ";
-$cmd .= "-ldafn $lda -ldadim 29 ";
+$cmd .= "-lda $lda -ldadim 29 ";
 $cmd .= "-varnorm no -feat 1s_c_d_dd -ceplen 13 ";
 
 test_help($bindir,$exec_resdir);

@@ -91,7 +91,7 @@ if (defined($ST::CFG_SVSPEC)){
 }
 if (-r $mllt_file) {
     push(@feat_args,
-	 -ldafn => $mllt_file,
+	 -lda => $mllt_file,
 	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
 

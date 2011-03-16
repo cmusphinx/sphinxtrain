@@ -102,66 +102,46 @@ terms, and then does the division. ";
     const char examplestr[]=
 "delint -accumdirs accumdir -moddeffn mdef -mixwfn mixw -cilambda 0.9 -maxiter 4000";
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-moddeffn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The model definition file name"},
 	{ "-mixwfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The mixture weight parameter file name"},
 	{ "-accumdirs",
-	  CMD_LN_STRING_LIST,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING_LIST,
+	  NULL,
 	  "A path where accumulated counts are to be read." },
 	{ "-cilambda",
-	  CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT32,
 	  "0.9",
 	  "Weight of CI distributions with respect to uniform distribution"},
 	{ "-maxiter",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "100",
 	  "max # of iterations if no lambda convergence"},
 
-	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
+	{NULL, 0, NULL, NULL}
     };
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, 1);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
 
-    cmd_ln_parse(argc, argv);
-
-    if (cmd_ln_validate() == FALSE) {
-	/* one or more command line arguments were
-	   deemed invalid */
-	exit(1);
-    }
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
-
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
     if(isHelp){
       printf("%s\n\n",helpstr);
@@ -173,59 +153,9 @@ terms, and then does the division. ";
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
+      exit(0);
     }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
-    }
-
 
     return 0;
 }
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.7  2005/06/13  20:18:55  arthchan2003
- * Spelling "correspondance" to "correspondence"
- * 
- * Revision 1.6  2004/11/29 01:43:45  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- *
- * Revision 1.5  2004/08/08 03:49:56  arthchan2003
- * delint help and example string
- *
- * Revision 1.4  2004/07/21 18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.6  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.5  1996/03/25  15:40:25  eht
- * Added ability to set input feature vector length
- *
- * Revision 1.4  1996/01/26  18:07:00  eht
- * Add the "-feat" argument
- *
- * Revision 1.3  1995/09/07  20:01:05  eht
- * include defn of TRUE/FALSE for machines like HP's running HPUX
- *
- * Revision 1.2  1995/08/09  00:38:05  eht
- * Another development version
- *
- * Revision 1.1  1995/06/02  20:56:53  eht
- * Initial revision
- *
- *
- */

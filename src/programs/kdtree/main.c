@@ -67,8 +67,8 @@ main(int argc, char *argv[])
 
 	parse_cmd_ln(argc, argv);
 
-	meanfn = cmd_ln_access("-meanfn");
-	varfn = cmd_ln_access("-varfn");
+	meanfn = cmd_ln_str("-meanfn");
+	varfn = cmd_ln_str("-varfn");
 	if (meanfn == NULL || varfn == NULL)
 		E_FATAL("You must specify -meanfn and -varfn\n");
 
@@ -104,8 +104,8 @@ main(int argc, char *argv[])
 					cmd_ln_int32("-absolute"));
 	}
 
-	if (cmd_ln_access("-outfn"))
-		write_kd_trees(cmd_ln_access("-outfn"),
+	if (cmd_ln_str("-outfn"))
+		write_kd_trees(cmd_ln_str("-outfn"),
 			       root, n_feat);
 
 	for (i = 0; i < n_feat; ++i)

@@ -149,7 +149,7 @@ sub BuildTree
 		   -psetfn => $ST::CFG_QUESTION_SET,
 		   @phnflag,
 		   -state => $stt,
-		   -stwt => @stwt,
+		   -stwt => join(",", @stwt),
 		   @gauflag,
 		   -ssplitmin => 1,
 		   -ssplitmax => 7,

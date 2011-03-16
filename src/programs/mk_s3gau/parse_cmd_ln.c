@@ -45,7 +45,7 @@
  *********************************************************************/
 
 #include <stdlib.h>
-#include "s3/cmd_ln.h"
+#include "sphinxbase/cmd_ln.h"
 
 #include "parse_cmd_ln.h"
 
@@ -72,96 +72,75 @@ Conversion from sphinx 2 codebook to sphinx3 means and variances";
 "Example: \n\
 mk_s3gau -meanfn s3mean -varfn s3var -cbdir s2dir ";
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-meanfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "A SPHINX-III mean density parameter file name" },
 	{ "-varfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "A SPHINX-III variance density parameter file name" },
 	{ "-cbdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  ".",
 	  "A directory containing SPHINX-II 1PD codebooks" },
 	{ "-varfloor",
-	  CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT32,
 	  "0.00001",
 	  "Minimum variance value" },
 	{ "-cepcb",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "cep.256",
 	  "Basename of the cepstrum codebook" },
 	{ "-dcepcb",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "d2cep.256",
 	  "Basename of the difference cepstrum codebook" },
 	{ "-powcb",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "p3cep.256",
 	  "Basename of the power codebook" },
 	{ "-2dcepcb",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "xcep.256",
 	  "Basename of the 2nd order difference cepstrum codebook" },
 
 	{ "-meanext",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "vec",
 	  "Mean codebook extension" },
 
 	{ "-varext",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "var",
 	  "Variance codebook extension" },
 
 	{ "-fixpowvar",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "false",
 	  "Fix the power variance to the SPHINX-II standards" },
 
 	{ NULL,
-	  CMD_LN_UNDEF,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  0,
+	  NULL,
 	  NULL }
     };
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, TRUE);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
-
-    cmd_ln_parse(argc, argv);
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
     if(isHelp){
       printf("%s\n\n",helpstr);
@@ -173,46 +152,9 @@ mk_s3gau -meanfn s3mean -varfn s3var -cbdir s2dir ";
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
+      exit(0);
     }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
-    }
+
 
     return 0;
 }
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/11/29  01:43:50  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- * 
- * Revision 1.3  2004/11/29 01:11:35  egouvea
- * Fixed license terms in some new files.
- *
- * Revision 1.2  2004/08/10 08:31:55  arthchan2003
- * s2 to s3 conversion tools
- *
- * Revision 1.1  2004/06/17 19:39:50  arthchan2003
- * add back all command line information into the code
- *
- * Revision 1.4  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.3  2001/02/20 00:28:35  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/03/07  08:56:51  eht
- * Initial revision
- * 
- *
- */

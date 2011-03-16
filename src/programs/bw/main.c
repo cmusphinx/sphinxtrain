@@ -204,7 +204,7 @@ main_initialize(int argc,
     /* define, parse and (partially) validate the command line */
     train_cmd_ln_parse(argc, argv);
 
-    if (cmd_ln_access("-feat") != NULL) {
+    if (cmd_ln_str("-feat") != NULL) {
 	feat_set(cmd_ln_str("-feat"));
 	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
 	feat_set_subvecs(cmd_ln_str("-svspec"));
@@ -212,11 +212,11 @@ main_initialize(int argc,
     else {
 	E_FATAL("You need to set a feature extraction config using -feat\n");
     }
-    if (cmd_ln_access("-ceplen") == NULL) {
+    if (cmd_ln_str("-ceplen") == NULL) {
 	E_FATAL("Input vector length must be specified\n");
     }
     feat_set_in_veclen(cmd_ln_int32("-ceplen"));
-    if (cmd_ln_access("-ldafn") != NULL) {
+    if (cmd_ln_str("-lda") != NULL) {
 	if (cmd_ln_boolean("-ldaaccum")) {
 	    /* If -ldaaccum is set, we will not apply LDA until we accumulate,
 	       so read it in later. */
@@ -224,7 +224,7 @@ main_initialize(int argc,
 	else {
 	    /* Otherwise we load it into the feature computation so it
 	     * applies globally. */
-	    if (feat_read_lda(cmd_ln_access("-ldafn"), cmd_ln_int32("-ldadim"))) {
+	    if (feat_read_lda(cmd_ln_str("-lda"), cmd_ln_int32("-ldadim"))) {
 		E_FATAL("Failed to read LDA matrix\n");
 	    }
 	}
@@ -269,7 +269,7 @@ main_initialize(int argc,
 
     *out_mdef = mdef;
 
-    fn = cmd_ln_access("-ts2cbfn");
+    fn = cmd_ln_str("-ts2cbfn");
     if (fn == NULL) {
 	E_FATAL("Specify -ts2cbfn\n");
     }
@@ -299,7 +299,7 @@ main_initialize(int argc,
     inv->mdef = mdef;
 
     if (mod_inv_read_mixw(inv, mdef, mixwfn,
-			  *(float32 *)cmd_ln_access("-mwfloor")) != S3_SUCCESS)
+			  cmd_ln_float32("-mwfloor")) != S3_SUCCESS)
 	return S3_ERROR;
     
     if (n_ts != inv->n_mixw) {
@@ -308,12 +308,12 @@ main_initialize(int argc,
     }
 
     if (mod_inv_read_tmat(inv, tmatfn,
-			  *(float32 *)cmd_ln_access("-tpfloor")) != S3_SUCCESS)
+			  cmd_ln_float32("-tpfloor")) != S3_SUCCESS)
 	return S3_ERROR;
 
     if (mod_inv_read_gauden(inv, meanfn, varfn,
-			    *(float32 *)cmd_ln_access("-varfloor"),
-			    *(int32 *)cmd_ln_access("-topn"),
+			    cmd_ln_float32("-varfloor"),
+			    cmd_ln_int32("-topn"),
 			    cmd_ln_int32("-fullvar")) != S3_SUCCESS) {
 	    if (!cmd_ln_int32("-fullvar")) {
 		    return S3_ERROR;
@@ -323,8 +323,8 @@ main_initialize(int argc,
 		     * them as diagonal variances (allows us to
 		     * initialize full vars from diagonal ones) */
 		    if (mod_inv_read_gauden(inv, meanfn, varfn,
-					    *(float32 *)cmd_ln_access("-varfloor"),
-					    *(int32 *)cmd_ln_access("-topn"),
+					    cmd_ln_float32("-varfloor"),
+					    cmd_ln_int32("-topn"),
 					    FALSE) != S3_SUCCESS) {
 			    return S3_ERROR;
 		    }
@@ -365,11 +365,11 @@ main_initialize(int argc,
 	printf("# of codebooks in mean/var files, %u, inconsistent with ts2cb mapping %u\n", inv->gauden->n_mgau, n_cb);
     }
 
-    mixw_reest = *(int32 *)cmd_ln_access("-mixwreest");
-    mean_reest = *(int32 *)cmd_ln_access("-meanreest");
-    var_reest  = *(int32 *)cmd_ln_access("-varreest");
-    tmat_reest = *(int32 *)cmd_ln_access("-tmatreest");
-    sil_del    = *(int32 *)cmd_ln_access("-sildel");
+    mixw_reest = cmd_ln_int32("-mixwreest");
+    mean_reest = cmd_ln_int32("-meanreest");
+    var_reest  = cmd_ln_int32("-varreest");
+    tmat_reest = cmd_ln_int32("-tmatreest");
+    sil_del    = cmd_ln_int32("-sildel");
 
     E_INFO("Will %sreestimate mixing weights.\n",
 	   (mixw_reest ? "" : "NOT "));
@@ -380,33 +380,33 @@ main_initialize(int argc,
     E_INFO("WIll %soptionally delete silence in Baum Welch or Viterbi. \n",
 	   (sil_del ? "" : "NOT "));
 
-    if (*(int32 *)cmd_ln_access("-mixwreest")) {
+    if (cmd_ln_int32("-mixwreest")) {
         if (mod_inv_alloc_mixw_acc(inv) != S3_SUCCESS)
 	    return S3_ERROR;
     }
 
     E_INFO("Will %sreestimate transition matrices\n",
-	   (*(int32 *)cmd_ln_access("-tmatreest") ? "" : "NOT "));
-    if (*(int32 *)cmd_ln_access("-tmatreest")) {
+	   (cmd_ln_int32("-tmatreest") ? "" : "NOT "));
+    if (cmd_ln_int32("-tmatreest")) {
 	if (mod_inv_alloc_tmat_acc(inv) != S3_SUCCESS)
 	    return S3_ERROR;
     }
 
-    if (*(int32 *)cmd_ln_access("-meanreest") ||
-	*(int32 *)cmd_ln_access("-varreest")) {
+    if (cmd_ln_int32("-meanreest") ||
+	cmd_ln_int32("-varreest")) {
 	if (mod_inv_alloc_gauden_acc(inv) != S3_SUCCESS)
 	    return S3_ERROR;
     }
 
     E_INFO("Reading main lexicon: %s\n",
-	   cmd_ln_access("-dictfn"));
+	   cmd_ln_str("-dictfn"));
 
     lex = lexicon_read(NULL,
-		       cmd_ln_access("-dictfn"),
+		       cmd_ln_str("-dictfn"),
 		       mdef->acmod_set);
     if (lex == NULL)
 	return S3_ERROR;
-    if (cmd_ln_int32("-ltsoov"))
+    if (cmd_ln_boolean("-ltsoov"))
 	lex->lts_rules = (lts_t *)&cmu6_lts_rules;
     
     if (fdictfn) {
@@ -425,52 +425,52 @@ main_initialize(int argc,
      */
 
     /* set the data directory and extension for cepstrum files */
-    corpus_set_mfcc_dir(cmd_ln_access("-cepdir"));
-    corpus_set_mfcc_ext(cmd_ln_access("-cepext"));
+    corpus_set_mfcc_dir(cmd_ln_str("-cepdir"));
+    corpus_set_mfcc_ext(cmd_ln_str("-cepext"));
 
 
     /* The parameter required for re-estimation routines*/
-    silence_str = (char *)cmd_ln_access("-siltag");
+    silence_str = cmd_ln_str("-siltag");
     E_INFO("Silence Tag %s\n",silence_str);
 
-    if (cmd_ln_access("-lsnfn")) {
+    if (cmd_ln_str("-lsnfn")) {
 	/* use a LSN file which has all the transcripts */
-	corpus_set_lsn_filename(cmd_ln_access("-lsnfn"));
+	corpus_set_lsn_filename(cmd_ln_str("-lsnfn"));
     }
     else {
 	/* set the data directory and extension for word transcript
 	   files */
-	corpus_set_sent_dir(cmd_ln_access("-sentdir"));
-	corpus_set_sent_ext(cmd_ln_access("-sentext"));
+	corpus_set_sent_dir(cmd_ln_str("-sentdir"));
+	corpus_set_sent_ext(cmd_ln_str("-sentext"));
     }
 
-    if (cmd_ln_access("-ctlfn")) {
-	corpus_set_ctl_filename(cmd_ln_access("-ctlfn"));
+    if (cmd_ln_str("-ctlfn")) {
+	corpus_set_ctl_filename(cmd_ln_str("-ctlfn"));
     }
 
-    if (cmd_ln_access("-sildelfn")) {
-	corpus_set_sildel_filename((const char *)cmd_ln_access("-sildelfn"));
+    if (cmd_ln_str("-sildelfn")) {
+	corpus_set_sildel_filename(cmd_ln_str("-sildelfn"));
     }
 
-    if (cmd_ln_access("-phsegdir")) {
-	    corpus_set_phseg_dir(cmd_ln_access("-phsegdir"));
-	    corpus_set_phseg_ext(cmd_ln_access("-phsegext"));
+    if (cmd_ln_str("-phsegdir")) {
+	    corpus_set_phseg_dir(cmd_ln_str("-phsegdir"));
+	    corpus_set_phseg_ext(cmd_ln_str("-phsegext"));
     }
 
-    if (cmd_ln_access("-accumdir")) {
+    if (cmd_ln_str("-accumdir")) {
 	char fn[MAXPATHLEN+1];
 	FILE *fp;
 
-	sprintf(fn, "%s/ckpt", (const char *)cmd_ln_access("-accumdir"));
+	sprintf(fn, "%s/ckpt", cmd_ln_str("-accumdir"));
 	
 	fp = fopen(fn, "r");
 	if (fp != NULL) {
 	    fclose(fp);
 
-	    E_INFO("RESTORING CHECKPOINTED COUNTS IN %s\n", cmd_ln_access("-accumdir"));
+	    E_INFO("RESTORING CHECKPOINTED COUNTS IN %s\n", cmd_ln_str("-accumdir"));
 	    
 	    if (mod_inv_restore_acc(inv,
-				    (const char *)cmd_ln_access("-accumdir"),
+				    cmd_ln_str("-accumdir"),
 				    mixw_reest,
 				    mean_reest,
 				    var_reest,
@@ -488,13 +488,12 @@ main_initialize(int argc,
     }
 
     if (!did_restore) {
-	if (cmd_ln_access("-part") && cmd_ln_access("-npart")) {
-	    corpus_set_partition(*(uint32 *)cmd_ln_access("-part"),
-				 *(uint32 *)cmd_ln_access("-npart"));
-	}
-	else if (cmd_ln_access("-nskip") && cmd_ln_access("-runlen")) {
-	    corpus_set_interval(*(uint32 *)cmd_ln_access("-nskip"),
-				*(uint32 *)cmd_ln_access("-runlen"));
+	if (cmd_ln_int32("-nskip") && cmd_ln_int32("-runlen")) {
+    	    corpus_set_interval(cmd_ln_int32("-nskip"),
+			    cmd_ln_int32("-runlen"));
+	} else if (cmd_ln_int32("-part") && cmd_ln_int32("-npart")) {
+	    corpus_set_partition(cmd_ln_int32("-part"),
+			     cmd_ln_int32("-npart"));
 	}
     }
 
@@ -502,18 +501,18 @@ main_initialize(int argc,
        configuration */
     corpus_init();
 
-    if (cmd_ln_access("-mllrmat")) {
+    if (cmd_ln_str("-mllrmat")) {
 	const uint32 *tmp_veclen, *feat_veclen;
 	uint32 tmp_n_mllrcls;
 	uint32 tmp_n_stream;
 	uint32 j;
 
-	if (read_reg_mat(cmd_ln_access("-mllrmat"),
+	if (read_reg_mat(cmd_ln_str("-mllrmat"),
 			 &tmp_veclen,
 			 &tmp_n_mllrcls,
 			 &tmp_n_stream,
 			 &sxfrm_a, &sxfrm_b) != S3_SUCCESS) {
-	    E_FATAL("Unable to read %s\n", cmd_ln_access("-mllrmat"));
+	    E_FATAL("Unable to read %s\n", cmd_ln_str("-mllrmat"));
 	}
 
 	if (feat_n_stream() != tmp_n_stream) {
@@ -529,14 +528,14 @@ main_initialize(int argc,
 	}
 	ckd_free((void *)tmp_veclen);
 
-	fn = cmd_ln_access("-cb2mllrfn");
+	fn = cmd_ln_str("-cb2mllrfn");
 	if (fn != NULL) {
 	    if (strcmp(fn, ".1cls.") == 0) {
 		mllr_idx = ckd_calloc(inv->gauden->n_mgau, sizeof(int32));
 		n_mllr = 1;
 		n_map = inv->gauden->n_mgau;
 	    }
-	    else if (s3cb2mllr_read((const char *)cmd_ln_access("-cb2mllrfn"),
+	    else if (s3cb2mllr_read(cmd_ln_str("-cb2mllrfn"),
 				    &mllr_idx,
 				    &n_map,
 				    &n_mllr) != S3_SUCCESS) {
@@ -633,13 +632,13 @@ main_reestimate(model_inventory_t *inv,
     E_INFO("Reestimation: %s\n",
 	   (viterbi ? "Viterbi" : "Baum-Welch"));
     
-    profile = *(int32 *)cmd_ln_access("-timing");
+    profile = cmd_ln_int32("-timing");
     if (profile) {
         E_INFO("Generating profiling information consumes significant CPU resources.\n");
 	E_INFO("If you are not interested in profiling, use -timing no\n");
     }
-    outputfullpath = *(int32 *)cmd_ln_access("-outputfullpath");
-    fullsuffixmatch = *(int32 *)cmd_ln_access("-fullsuffixmatch");
+    outputfullpath = cmd_ln_int32("-outputfullpath");
+    fullsuffixmatch = cmd_ln_int32("-fullsuffixmatch");
 
     corpus_set_full_suffix_match(fullsuffixmatch);
 
@@ -663,28 +662,28 @@ main_reestimate(model_inventory_t *inv,
 	timing_bind_name("rstu", rstu_timer);
     }
 
-    mixw_reest = *(int32 *)cmd_ln_access("-mixwreest");
-    tmat_reest = *(int32 *)cmd_ln_access("-tmatreest");
-    mean_reest = *(int32 *)cmd_ln_access("-meanreest");
-    var_reest = *(int32 *)cmd_ln_access("-varreest");
-    pass2var = *(int32 *)cmd_ln_access("-2passvar");
-    var_is_full = *(int32 *)cmd_ln_access("-fullvar");
-    sil_del    = *(int32 *)cmd_ln_access("-sildel");
-    silence_str = (char *)cmd_ln_access("-siltag");
-    pdumpdir = (char *)cmd_ln_access("-pdumpdir");
+    mixw_reest = cmd_ln_int32("-mixwreest");
+    tmat_reest = cmd_ln_int32("-tmatreest");
+    mean_reest = cmd_ln_int32("-meanreest");
+    var_reest = cmd_ln_int32("-varreest");
+    pass2var = cmd_ln_int32("-2passvar");
+    var_is_full = cmd_ln_int32("-fullvar");
+    sil_del    = cmd_ln_int32("-sildel");
+    silence_str = cmd_ln_str("-siltag");
+    pdumpdir = cmd_ln_str("-pdumpdir");
     in_veclen = cmd_ln_int32("-ceplen");
 
-    if (cmd_ln_access("-ldafn") && cmd_ln_boolean("-ldaaccum")) {
+    if (cmd_ln_str("-lda") && cmd_ln_boolean("-ldaaccum")) {
 	/* Read in an LDA matrix for accumulation. */
-	lda = lda_read(cmd_ln_access("-ldafn"), &n_lda,
+	lda = lda_read(cmd_ln_str("-lda"), &n_lda,
 		       &m, &n);
     }
 
-    if (cmd_ln_access("-ckptintv")) {
-	ckpt_intv = *(int32 *)cmd_ln_access("-ckptintv");
+    if (cmd_ln_str("-ckptintv")) {
+	ckpt_intv = cmd_ln_int32("-ckptintv");
     }
 
-    if (cmd_ln_access("-accumdir") == NULL) {
+    if (cmd_ln_str("-accumdir") == NULL) {
 	E_WARN("NO ACCUMDIR SET.  No counts will be written; assuming debug\n");
     }
 
@@ -697,10 +696,10 @@ main_reestimate(model_inventory_t *inv,
     total_log_lik = 0;
     total_frames = 0;
 
-    a_beam = *(float64 *)cmd_ln_access("-abeam");
-    b_beam = *(float64 *)cmd_ln_access("-bbeam");
-    spthresh = *(float32 *)cmd_ln_access("-spthresh");
-    maxuttlen = *(int32 *)cmd_ln_access("-maxuttlen");
+    a_beam = cmd_ln_float64("-abeam");
+    b_beam = cmd_ln_float64("-bbeam");
+    spthresh = cmd_ln_float32("-spthresh");
+    maxuttlen = cmd_ln_int32("-maxuttlen");
 
     /* Begin by skipping over some (possibly zero) # of utterances.
      * Continue to process utterances until there are no more (either EOF
@@ -948,8 +947,8 @@ main_reestimate(model_inventory_t *inv,
 
 	if ((ckpt_intv > 0) &&
 	    ((n_utt % ckpt_intv) == 0) &&
-	    (cmd_ln_access("-accumdir") != NULL)) {
-	    while (accum_dump(cmd_ln_access("-accumdir"),
+	    (cmd_ln_str("-accumdir") != NULL)) {
+	    while (accum_dump(cmd_ln_str("-accumdir"),
 			      inv,
 			      mixw_reest,
 			      tmat_reest,
@@ -1004,8 +1003,8 @@ main_reestimate(model_inventory_t *inv,
 
     no_retries=0;
     /* dump the accumulators to a file system */
-    while (cmd_ln_access("-accumdir") != NULL &&
-	   accum_dump(cmd_ln_access("-accumdir"), inv,
+    while (cmd_ln_str("-accumdir") != NULL &&
+	   accum_dump(cmd_ln_str("-accumdir"), inv,
 		      mixw_reest,
 		      tmat_reest,
 		      mean_reest,
@@ -1042,8 +1041,8 @@ main_reestimate(model_inventory_t *inv,
     }
 
     /* Write a log entry on success */
-    if (cmd_ln_access("-accumdir"))
-	E_INFO("Counts saved to %s\n", cmd_ln_access("-accumdir"));
+    if (cmd_ln_str("-accumdir"))
+	E_INFO("Counts saved to %s\n", cmd_ln_str("-accumdir"));
     else
 	E_INFO("Counts NOT saved.\n");
 
@@ -1656,23 +1655,23 @@ main_mmi_reestimate(model_inventory_t *inv,
   if (cmd_ln_int32("-fullsuffixmatch")) {
     E_FATAL("current MMIE training don't support fullsuffixmatch, set -fullsuffixmatch to no\n");
   }
-  if (cmd_ln_access("-ckptintv")) {
+  if (cmd_ln_str("-ckptintv")) {
     E_FATAL("current MMIE training don't support ckptintv, remove -ckptintv\n");
   }
-  if (cmd_ln_access("-pdumpdir")) {
+  if (cmd_ln_str("-pdumpdir")) {
     E_FATAL("current MMIE training don't support pdumpdir, set -pdumpdir to no\n");
   }
 
   /* get lattice related parameters */
-  lat_dir = (char *) cmd_ln_access("-latdir");
-  lat_ext = (char *) cmd_ln_access("-latext");
+  lat_dir = cmd_ln_str("-latdir");
+  lat_ext = cmd_ln_str("-latext");
   if (strcmp(lat_ext, "denlat") != 0 && strcmp(lat_ext, "numlat") != 0) {
     E_FATAL("-latext should be either denlat or numlat\n");
   }
   else {
     printf("MMIE training for %s \n", lat_ext);
   }
-  mmi_type = (char *) cmd_ln_access("-mmie_type");
+  mmi_type = cmd_ln_str("-mmie_type");
   if (strcmp(mmi_type, "rand") == 0) {
     n_mmi_type = 1;
     printf("MMIE training: take random left and right context for Viterbi run \n");
@@ -1688,21 +1687,21 @@ main_mmi_reestimate(model_inventory_t *inv,
   else {
     E_FATAL("-mmie_type should be rand, best or ci\n");
   }
-  lm_scale = *(float32 *)cmd_ln_access("-lw");
+  lm_scale = cmd_ln_float32("-lw");
 
-  mean_reest = *(int32 *)cmd_ln_access("-meanreest");
-  var_reest = *(int32 *)cmd_ln_access("-varreest");
-  sil_del    = *(int32 *)cmd_ln_access("-sildel");
-  silence_str = (char *)cmd_ln_access("-siltag");
+  mean_reest = cmd_ln_int32("-meanreest");
+  var_reest = cmd_ln_int32("-varreest");
+  sil_del    = cmd_ln_int32("-sildel");
+  silence_str = cmd_ln_str("-siltag");
   in_veclen = cmd_ln_int32("-ceplen");
   
   /* Read in an LDA matrix for accumulation. */
-  if (cmd_ln_access("-ldafn") && cmd_ln_boolean("-ldaaccum")) {
-    lda = lda_read(cmd_ln_access("-ldafn"), &n_lda,
+  if (cmd_ln_str("-lda") && cmd_ln_boolean("-ldaaccum")) {
+    lda = lda_read(cmd_ln_str("-lda"), &n_lda,
 		   &m, &n);
   }
 
-  if (cmd_ln_access("-accumdir") == NULL) {
+  if (cmd_ln_str("-accumdir") == NULL) {
     E_WARN("NO ACCUMDIR SET.  No counts will be written; assuming debug\n");
     return;
   }
@@ -1714,10 +1713,10 @@ main_mmi_reestimate(model_inventory_t *inv,
 
   total_frames = 0;
 
-  a_beam = *(float64 *)cmd_ln_access("-abeam");
-  b_beam = *(float64 *)cmd_ln_access("-bbeam");
-  spthresh = *(float32 *)cmd_ln_access("-spthresh");
-  maxuttlen = *(int32 *)cmd_ln_access("-maxuttlen");
+  a_beam = cmd_ln_float64("-abeam");
+  b_beam = cmd_ln_float64("-bbeam");
+  spthresh = cmd_ln_float32("-spthresh");
+  maxuttlen = cmd_ln_int32("-maxuttlen");
 
   /* Begin by skipping over some (possibly zero) # of utterances.
    * Continue to process utterances until there are no more (either EOF
@@ -1877,8 +1876,8 @@ main_mmi_reestimate(model_inventory_t *inv,
 
   no_retries=0;
   /* dump the accumulators to a file system */
-  while (cmd_ln_access("-accumdir") != NULL &&
-	 accum_mmie_dump(cmd_ln_access("-accumdir"),
+  while (cmd_ln_str("-accumdir") != NULL &&
+	 accum_mmie_dump(cmd_ln_str("-accumdir"),
 			 lat_ext,
 			 inv,
 			 mean_reest,
@@ -1909,8 +1908,8 @@ main_mmi_reestimate(model_inventory_t *inv,
   }
     
   /* Write a log entry on success */
-  if (cmd_ln_access("-accumdir"))
-    E_INFO("Counts saved to %s\n", cmd_ln_access("-accumdir"));
+  if (cmd_ln_str("-accumdir"))
+    E_INFO("Counts saved to %s\n", cmd_ln_str("-accumdir"));
   else
     E_INFO("Counts NOT saved.\n");
     
@@ -1947,7 +1946,7 @@ int main(int argc, char *argv[])
       main_mmi_reestimate(inv, lex, mdef);
     }
     else {
-      main_reestimate(inv, lex, mdef, *(int32 *)cmd_ln_access("-viterbi"));
+      main_reestimate(inv, lex, mdef, cmd_ln_int32("-viterbi"));
     }
 
     return 0;

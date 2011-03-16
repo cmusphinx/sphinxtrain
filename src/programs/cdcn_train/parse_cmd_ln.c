@@ -45,7 +45,7 @@
 
 #include "parse_cmd_ln.h"
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/err.h>
 
 #include <stdio.h>
@@ -72,119 +72,90 @@ cdcn_stats -cepext mfc \n\
         -ceplen 13 \n\
         -stride 10 ";
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-ctlfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The control file name (enumerates utts in corpus)" },
 	{ "-outfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "The output distribution file name" },
 	{ "-cepdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Root directory of the cepstrum files"},
 	{ "-cepext",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "mfc",
 	  "Extension of the cepstrum files"},
 
 	{ "-maxframes",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "-1",
 	  "Maximum number of frames to read (or -1 for unlimited)"},
 
 	{ "-cbfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "A previous codebook to restart EM training from" },
 
 	{ "-nmodes",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "32",
 	  "# of Gaussians to train"},
 	{ "-noisewidth",
-	  CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT32,
 	  "1.5",
 	  "Width of noise band"},
 	{ "-ceplen",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "13",
 	  "# of coefficients per cepstrum frame"},
 	{ "-stride",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "1",
 	  "Take every -stride'th frame when computing distribution" },
 
 	{ "-vqiter",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "5",
 	  "Max # of interations of VQ to get initial codebook"},
 	{ "-vqthresh",
-	  CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT32,
 	  "1e-6",
 	  "Convergence ratio for VQ"},
 	{ "-emiter",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "10",
 	  "# of interations of EM to estimate distributions"},
 	{ "-emthresh",
-	  CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_FLOAT32,
 	  "1e-6",
 	  "Convergence ratio for EM"},
 
 	{ "-tmpfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "CDCN.DIST.TEMP",
 	  "The temporary file name" },
 
-	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
+	{NULL, 0, NULL, NULL}
     };
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, TRUE);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
-
-    cmd_ln_parse(argc, argv);
-
-    if (cmd_ln_validate() == FALSE) {
-	E_FATAL("Unable to validate command line arguments\n");
-    }
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
-
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
     if(isHelp){
       printf("%s\n\n",helpstr);
@@ -196,10 +167,7 @@ cdcn_stats -cepext mfc \n\
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
-    }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
+      exit(0);
     }
 
 

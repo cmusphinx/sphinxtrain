@@ -362,15 +362,15 @@ map_update(void)
 
     uint32 i, j, k;
 
-    accum_dir = (const char **)cmd_ln_access("-accumdir");
-    si_mean_fn = (const char *)cmd_ln_access("-meanfn");
-    si_var_fn = (const char *)cmd_ln_access("-varfn");
-    si_tmat_fn = (const char *)cmd_ln_access("-tmatfn");
-    si_mixw_fn = (const char *)cmd_ln_access("-mixwfn");
-    map_mean_fn = (const char *)cmd_ln_access("-mapmeanfn");
-    map_var_fn = (const char *)cmd_ln_access("-mapvarfn");
-    map_tmat_fn = (const char *)cmd_ln_access("-maptmatfn");
-    map_mixw_fn = (const char *)cmd_ln_access("-mapmixwfn");
+    accum_dir = cmd_ln_str_list("-accumdir");
+    si_mean_fn = cmd_ln_str("-meanfn");
+    si_var_fn = cmd_ln_str("-varfn");
+    si_tmat_fn = cmd_ln_str("-tmatfn");
+    si_mixw_fn = cmd_ln_str("-mixwfn");
+    map_mean_fn = cmd_ln_str("-mapmeanfn");
+    map_var_fn = cmd_ln_str("-mapvarfn");
+    map_tmat_fn = cmd_ln_str("-maptmatfn");
+    map_mixw_fn = cmd_ln_str("-mapmixwfn");
 
     /* Must be at least one accum dir. */
     if (accum_dir == NULL)

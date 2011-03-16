@@ -18,7 +18,7 @@
  *      Eric Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
-#ifndef CMD_LN_DEFN_H
+#ifndef ARG_DEFN_H
     const char helpstr[] =  
 "Description: \n\
 \n\
@@ -44,106 +44,74 @@ If you specific only -mllradd, then only b will be estimated. ";
   help and example:\n\
   mllr_solve -help yes -example yes ";
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-outmllrfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Output MLLR regression matrices file"},
 
 	{ "-accumdir",
-	  CMD_LN_STRING_LIST,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING_LIST,
+	  NULL,
 	  "One or more paths containing reestimation sums from bw" },
 
 	{ "-meanfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Baseline Gaussian density mean file"},
 
 	{ "-varfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "variance (baseline-var, or error-var) file"},
 
 	{ "-fullvar",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Variances are full covariance matrices"},
 
 	{ "-cb2mllrfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  ".1cls.",
 	  "Codebook to mllr class mapping index file (If it is given, ignore -cdonly)"},
 
         { "-cdonly",
-          CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+          ARG_BOOLEAN,
           "no",
           "Use only CD senones for MLLR (If yes, -moddeffn should be given.)"},
 
 	{ "-moddeffn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Model Definition file (to get CD starting point for MLLR)"},
 
         { "-mllrmult",
-          CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+          ARG_BOOLEAN,
           "yes",
           "Reestimate full multiplicative term of MLLR adatpation of means (yes/no)"},
 
         { "-mllradd",
-          CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+          ARG_BOOLEAN,
           "yes",
           "Reestimate shift term of MLLR adaptation of means (yes/no)"},
 
         { "-varfloor",
-          CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+          ARG_FLOAT32,
           "1e-3",
           "var floor value"},
 
-    { NULL, CMD_LN_UNDEF,CMD_LN_NO_VALIDATION,CMD_LN_NO_DEFAULT, NULL }
     };
-#define CMD_LN_DEFN_H
+#define ARG_DEFN_H
 
-#endif /* CMD_LN_DEFN_H */ 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2005/06/14  00:28:58  arthchan2003
- * Another typo
- * 
- * Revision 1.4  2005/06/13 20:05:39  arthchan2003
- * spelling mistakes: arguements to arguments
- *
- * Revision 1.3  2004/08/07 20:31:49  arthchan2003
- * fix small problem in command line info mllr_mult -> mllrmult
- *
- * Revision 1.1  2004/07/27 12:09:26  arthchan2003
- * Missing the whole directory of mllr_solve
- *
- *
- */
+#endif /* ARG_DEFN_H */ 
+

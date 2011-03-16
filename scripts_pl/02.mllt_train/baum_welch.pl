@@ -90,7 +90,7 @@ my $minvar  = 1e-4;
 my @extra_args;
 # Use the previously trained LDA transformation
 my $ldafile  = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.lda");
-push(@extra_args, -ldafn => $ldafile, -ldadim => $ST::CFG_LDA_DIMENSION);
+push(@extra_args, -lda => $ldafile, -ldadim => $ST::CFG_LDA_DIMENSION);
 
 # Force alignment and VTLN have not been done yet.
 my $listoffiles = $ST::CFG_LISTOFFILES;

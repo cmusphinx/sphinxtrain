@@ -73,123 +73,94 @@ of transcription, specified by -lsnfn";
 param_cnt -moddeffn mdef -ts2cbfn .cont. -ctlfn controlfile -lsnfn \n\
 transcripts -dictfn dict -fdictfn fillerdict -paramtype phone";
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-moddeffn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Model definition file for the single density HMM's to initialize"},
 
 	{ "-ts2cbfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Tied-state-to-codebook mapping file"},
 
 	{ "-ctlfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Control file of the training corpus"},
 
 	{ "-part",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "Identifies the corpus part number (range 1..NPART)" },
 
 	{ "-npart",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "Partition the corpus into this many equal sized subsets" },
 
 	{ "-nskip",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "# of lines to skip in the control file"},
 
 	{ "-runlen",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "# of lines to process in the control file (after any skip)"},
 
 	{ "-lsnfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "All word transcripts for the training corpus (consistent order w/ -ctlfn!)"},
 
 	{ "-dictfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Dictionary for the content words"},
 
 	{ "-fdictfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Dictionary for the filler words"},
 
 	{ "-segdir",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Root directory of the training corpus state segmentation files."},
 
 	{ "-segext",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "v8_seg",
 	  "Extension of the training corpus state segmentation files."},
 
 	{ "-paramtype",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "state",
 	  "Parameter type to count {'state', 'cb', 'phone'}"},
 
 	{ "-outputfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "If specified, write counts to this file"},
 
-	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
+	{NULL, 0, NULL, NULL}
     };
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, 1);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
-
-    cmd_ln_parse(argc, argv);
-
-    if (cmd_ln_validate() == FALSE) {
-	/* one or more command line arguments were
-	   deemed invalid */
-	exit(1);
-    }
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
 
     if(isHelp){
@@ -202,54 +173,9 @@ transcripts -dictfn dict -fdictfn fillerdict -paramtype phone";
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
+      exit(0);
     }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
-    }
+
 
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.8  2006/02/03  18:53:07  eht
- * Added -outputfn to the command line.
- * 
- * When -outputfn <somefile> is present on the command line, the
- * parameter counts are written to the specified file <somefile>.
- * When no -outputfn argument is present on the command line, the
- * parameter counts are written to standard output as before this
- * change.
- * 
- * Revision 1.7  2005/04/07 21:23:40  egouvea
- * Improved the documentation, making it easier to find pointers, fixed the setup script, and fixed some of the doxygen comments
- *
- * Revision 1.6  2004/11/29 01:43:51  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- *
- * Revision 1.5  2004/08/09 02:31:59  arthchan2003
- * param_cnt help and example
- *
- * Revision 1.4  2004/07/21 19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:32  awb
- * *** empty log message ***
- *
- * Revision 1.2  97/03/07  08:42:09  eht
- * Deal w/ new argument -ts2cbfn
- * 
- * Revision 1.1  1996/03/25  15:21:20  eht
- * Initial revision
- *
- *
- */

@@ -59,7 +59,7 @@
 #include <s3/gauden.h>
 
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/feat.h>
 #include <s3/err.h>
 #include <sphinxbase/matrix.h>
@@ -599,17 +599,17 @@ gauden_free_acc(gauden_t *g)
 int32
 gauden_alloc_acc(gauden_t *g)
 {
-    if (*(int32 *)cmd_ln_access("-meanreest") == TRUE) {
+    if (cmd_ln_boolean("-meanreest") == TRUE) {
 	g->macc = alloc_acc(g, g->n_mgau);
     }
-    if (*(int32 *)cmd_ln_access("-varreest") == TRUE) {
+    if (cmd_ln_boolean("-varreest") == TRUE) {
 	if (cmd_ln_int32("-fullvar") == TRUE)
 	    g->fullvacc = alloc_acc_full(g, g->n_mgau);
 	else
 	    g->vacc = alloc_acc(g, g->n_mgau);
     }
     
-    if (*(int32 *)cmd_ln_access("-meanreest") == TRUE) {
+    if (cmd_ln_boolean("-meanreest") == TRUE) {
 	g->dnom = (float32  ***) ckd_calloc_3d(g->n_mgau,
 					       g->n_feat,
 					       g->n_density,

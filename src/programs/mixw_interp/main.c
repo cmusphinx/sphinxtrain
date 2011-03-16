@@ -91,7 +91,7 @@ interp_mixw()
     const char *SIfn, *SDfn, *outfn;
     uint32 i, j, k;
 
-    SIfn = (const char *)cmd_ln_access("-SImixwfn");
+    SIfn = cmd_ln_str("-SImixwfn");
     E_INFO("Reading %s\n", SIfn);
 
     if (s3mixw_read(SIfn,
@@ -104,7 +104,7 @@ interp_mixw()
 
     printf("SImixw %u %u %u\n", n_SImixw, n_SIfeat, n_SIdensity);
 
-    SDfn = (const char *)cmd_ln_access("-SDmixwfn");
+    SDfn = cmd_ln_str("-SDmixwfn");
     E_INFO("Reading %s\n", SDfn);
 
     if (s3mixw_read(SDfn,
@@ -115,7 +115,7 @@ interp_mixw()
 	return S3_ERROR;
     }
 
-    silambda = *(float32 *) cmd_ln_access("-SIlambda");
+    silambda = cmd_ln_float32("-SIlambda");
     if (silambda < 0 || silambda > 1.0)
 	E_FATAL("silamda value outside range (0,1.0)\n");
 
@@ -155,7 +155,7 @@ interp_mixw()
 	}
     }
 
-    outfn = (const char *)cmd_ln_access("-outmixwfn");
+    outfn = cmd_ln_str("-outmixwfn");
     E_INFO("Writing %s\n", outfn);
     if (s3mixw_write(outfn,
                      SDmixw,

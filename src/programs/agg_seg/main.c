@@ -67,7 +67,7 @@
 #include <s3/s3ts2cb_io.h>
 #include <s3/s3cb2mllr_io.h>
 #include <s3/state_param_def_io.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/feat.h>
 #include <s3/corpus.h>
@@ -94,9 +94,9 @@ initialize(lexicon_t **out_lex,
     uint32 n_map;
     /*eov*/
     
-    if (cmd_ln_access("-moddeffn")) {
+    if (cmd_ln_str("-moddeffn")) {
 	if (model_def_read(&mdef,
-			   cmd_ln_access("-moddeffn")) != S3_SUCCESS) {
+			   cmd_ln_str("-moddeffn")) != S3_SUCCESS) {
 	    E_WARN_SYSTEM("Unable to open model def file");
 	    return S3_ERROR;
 	}
@@ -104,7 +104,7 @@ initialize(lexicon_t **out_lex,
 	mdef = NULL;
     }
 	
-    fn = (const char *)cmd_ln_access("-ts2cbfn");
+    fn = cmd_ln_str("-ts2cbfn");
     
     if (fn) {
 	if (strcmp(fn, SEMI_LABEL) == 0) {
@@ -136,7 +136,7 @@ initialize(lexicon_t **out_lex,
 
     /* drop the mdef structure on the floor. Forget about it. */
     
-    dictfn = (const char *)cmd_ln_access("-dictfn");
+    dictfn = cmd_ln_str("-dictfn");
     lex = NULL;
     if (dictfn) {
 	E_INFO("Reading lexicon %s.\n", dictfn);
@@ -148,7 +148,7 @@ initialize(lexicon_t **out_lex,
 	    return S3_ERROR;
     }
     
-    fdictfn = (const char *)cmd_ln_access("-fdictfn");
+    fdictfn = cmd_ln_str("-fdictfn");
     if (fdictfn) {
 	E_INFO("Reading filler lexicon %s.\n", fdictfn);
 	
@@ -159,102 +159,100 @@ initialize(lexicon_t **out_lex,
 
     *out_lex = lex;
 
-    if (cmd_ln_access("-lsnfn"))
-	corpus_set_lsn_filename(cmd_ln_access("-lsnfn"));
-    else if (cmd_ln_access("-sentdir") && cmd_ln_access("-sentext")) {
-	corpus_set_sent_dir(cmd_ln_access("-sentdir"));
-	corpus_set_sent_ext(cmd_ln_access("-sentext"));
+    if (cmd_ln_str("-lsnfn"))
+	corpus_set_lsn_filename(cmd_ln_str("-lsnfn"));
+    else if (cmd_ln_str("-sentdir") && cmd_ln_str("-sentext")) {
+	corpus_set_sent_dir(cmd_ln_str("-sentdir"));
+	corpus_set_sent_ext(cmd_ln_str("-sentext"));
     }
     else {
 	E_INFO("No lexical transcripts provided\n");
     }
 
-    if (cmd_ln_access("-segdir") != NULL) {
-	corpus_set_seg_dir(cmd_ln_access("-segdir"));
+    if (cmd_ln_str("-segdir") != NULL) {
+	corpus_set_seg_dir(cmd_ln_str("-segdir"));
     }
-    if (cmd_ln_access("-segext") != NULL) {
-	corpus_set_seg_ext(cmd_ln_access("-segext"));
+    if (cmd_ln_str("-segext") != NULL) {
+	corpus_set_seg_ext(cmd_ln_str("-segext"));
     }
 
     /* Conditionally do VQ code aggregation */
-    if (cmd_ln_access("-ccodedir") != NULL) {
-	corpus_set_ccode_dir(cmd_ln_access("-ccodedir"));
+    if (cmd_ln_str("-ccodedir") != NULL) {
+	corpus_set_ccode_dir(cmd_ln_str("-ccodedir"));
     }
-    if (cmd_ln_access("-ccodeext") != NULL) {
-	corpus_set_ccode_ext(cmd_ln_access("-ccodeext"));
-    }
-
-    if (cmd_ln_access("-dcodedir") != NULL) {
-	corpus_set_dcode_dir(cmd_ln_access("-dcodedir"));
-    }
-    if (cmd_ln_access("-dcodeext") != NULL) {
-	corpus_set_dcode_ext(cmd_ln_access("-dcodeext"));
+    if (cmd_ln_str("-ccodeext") != NULL) {
+	corpus_set_ccode_ext(cmd_ln_str("-ccodeext"));
     }
 
-    if (cmd_ln_access("-pcodedir") != NULL) {
-	corpus_set_pcode_dir(cmd_ln_access("-pcodedir"));
+    if (cmd_ln_str("-dcodedir") != NULL) {
+	corpus_set_dcode_dir(cmd_ln_str("-dcodedir"));
     }
-    if (cmd_ln_access("-pcodeext") != NULL) {
-	corpus_set_pcode_ext(cmd_ln_access("-pcodeext"));
-    }
-
-    if (cmd_ln_access("-ddcodedir") != NULL) {
-	corpus_set_ddcode_dir(cmd_ln_access("-ddcodedir"));
-    }
-    if (cmd_ln_access("-ddcodeext") != NULL) {
-	corpus_set_ddcode_ext(cmd_ln_access("-ddcodeext"));
+    if (cmd_ln_str("-dcodeext") != NULL) {
+	corpus_set_dcode_ext(cmd_ln_str("-dcodeext"));
     }
 
-    if (cmd_ln_access("-cepdir") != NULL) {
-	corpus_set_mfcc_dir(cmd_ln_access("-cepdir"));
+    if (cmd_ln_str("-pcodedir") != NULL) {
+	corpus_set_pcode_dir(cmd_ln_str("-pcodedir"));
     }
-    if (cmd_ln_access("-cepext") != NULL) {
-	corpus_set_mfcc_ext(cmd_ln_access("-cepext"));
+    if (cmd_ln_str("-pcodeext") != NULL) {
+	corpus_set_pcode_ext(cmd_ln_str("-pcodeext"));
     }
 
-    if (cmd_ln_access("-feat") != NULL) {
+    if (cmd_ln_str("-ddcodedir") != NULL) {
+	corpus_set_ddcode_dir(cmd_ln_str("-ddcodedir"));
+    }
+    if (cmd_ln_str("-ddcodeext") != NULL) {
+	corpus_set_ddcode_ext(cmd_ln_str("-ddcodeext"));
+    }
+
+    if (cmd_ln_str("-cepdir") != NULL) {
+	corpus_set_mfcc_dir(cmd_ln_str("-cepdir"));
+    }
+    if (cmd_ln_str("-cepext") != NULL) {
+	corpus_set_mfcc_ext(cmd_ln_str("-cepext"));
+    }
+
+    if (cmd_ln_str("-feat") != NULL) {
 	if (feat_set(cmd_ln_str("-feat")) != S3_SUCCESS) {
 	    E_FATAL("Unable to use feature set %s\n", cmd_ln_str("-feat"));
 	}
 	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
 	feat_set_subvecs(cmd_ln_str("-svspec"));
     }
-    if (cmd_ln_access("-ldafn") != NULL) {
-	if (feat_read_lda(cmd_ln_access("-ldafn"), cmd_ln_int32("-ldadim"))) {
+    if (cmd_ln_str("-lda") != NULL) {
+	if (feat_read_lda(cmd_ln_str("-lda"), cmd_ln_int32("-ldadim"))) {
 	    E_FATAL("Failed to read LDA matrix\n");
 	}
     }
 
-    if (cmd_ln_access("-ctlfn")) {
-	corpus_set_ctl_filename(cmd_ln_access("-ctlfn"));
-	if (cmd_ln_access("-nskip")) {
-	    corpus_set_interval(*(int32 *)cmd_ln_access("-nskip"),
-				*(int32 *)cmd_ln_access("-runlen"));
+    if (cmd_ln_str("-ctlfn")) {
+	corpus_set_ctl_filename(cmd_ln_str("-ctlfn"));
+        if (cmd_ln_int32("-nskip") && cmd_ln_int32("-runlen")) {
+	    corpus_set_interval(cmd_ln_int32("-nskip"),
+			        cmd_ln_int32("-runlen"));
+    	} else if (cmd_ln_int32("-part") && cmd_ln_int32("-npart")) {
+	    corpus_set_partition(cmd_ln_int32("-part"),
+			         cmd_ln_int32("-npart"));
 	}
     }
 
-    if (cmd_ln_access("-nskip") && cmd_ln_access("-runlen")) {
-	corpus_set_interval(*(uint32 *)cmd_ln_access("-nskip"),
-			    *(uint32 *)cmd_ln_access("-runlen"));
-    }
+    if (cmd_ln_str("-mllrctlfn")) {
+	corpus_set_mllr_filename(cmd_ln_str("-mllrctlfn"));
 
-    if (cmd_ln_access("-mllrctlfn")) {
-	corpus_set_mllr_filename(cmd_ln_access("-mllrctlfn"));
-
-	fn = (const char *)cmd_ln_access("-cb2mllrfn");
+	fn = cmd_ln_str("-cb2mllrfn");
 	if (fn == NULL) {
 	    E_FATAL("Specify -cb2mllrfn\n");
 	}
 
-	if (cmd_ln_access("-mllrdir")) {
-	    corpus_set_mllr_dir(cmd_ln_access("-mllrdir"));
+	if (cmd_ln_str("-mllrdir")) {
+	    corpus_set_mllr_dir(cmd_ln_str("-mllrdir"));
 	}
 	
 	if (strcmp(fn, ".1cls.") == 0) {
 	    *out_cb2mllr = (int32 *)ckd_calloc(n_cb, sizeof(int32));
 	    n_map = n_cb;
 	}
-	else if (s3cb2mllr_read((const char *)cmd_ln_access("-cb2mllrfn"),
+	else if (s3cb2mllr_read(cmd_ln_str("-cb2mllrfn"),
 				out_cb2mllr,
 				&n_map,			    
 				&tmp) != S3_SUCCESS) {
@@ -304,15 +302,15 @@ cnt_st(model_def_t *mdef, lexicon_t *lex)
     uint32 *cnt;
     FILE *cnt_fp;
 
-    cnt_fp = fopen((const char *)cmd_ln_access("-cntfn"), "r");
+    cnt_fp = fopen(cmd_ln_str("-cntfn"), "r");
     if (cnt_fp == NULL) {
 	E_INFO("Count file %s not found; creating.\n",
-	       (const char *)cmd_ln_access("-cntfn"));
+	       cmd_ln_str("-cntfn"));
 	cnt = cnt_st_seg(mdef, lex);
 	E_INFO("Writing %s.\n",
-	       (const char *)cmd_ln_access("-cntfn"));
+	       cmd_ln_str("-cntfn"));
 	
-	cnt_fp = fopen((const char *)cmd_ln_access("-cntfn"), "w");
+	cnt_fp = fopen(cmd_ln_str("-cntfn"), "w");
 	for (i = 0; i < mdef->n_tied_state; i++) {
 	    fprintf(cnt_fp, "%u\n", cnt[i]);
 	}
@@ -321,12 +319,12 @@ cnt_st(model_def_t *mdef, lexicon_t *lex)
     }
     else {
 	E_INFO("Reading %s\n",
-	       (const char *)cmd_ln_access("-cntfn"));
+	       cmd_ln_str("-cntfn"));
 	cnt = ckd_calloc(mdef->n_tied_state, sizeof(uint32));
 	for (i = 0; i < mdef->n_tied_state; i++) {
 	    if (fscanf(cnt_fp, "%u", &cnt[i]) != 1) {
 		E_FATAL_SYSTEM("Error reading count file %s",
-			       (const char *)cmd_ln_access("-cntfn"));
+			       cmd_ln_str("-cntfn"));
 	    }
 	}
 	if (fscanf(cnt_fp, "%u", &i) != EOF) {
@@ -350,15 +348,15 @@ cnt_phn(model_def_t *mdef, lexicon_t *lex,
     FILE *cnt_fp;
     uint32 n_acmod;
 
-    cnt_fp = fopen((const char *)cmd_ln_access("-cntfn"), "r");
+    cnt_fp = fopen(cmd_ln_str("-cntfn"), "r");
     if (cnt_fp == NULL) {
 	E_INFO("Count file %s not found; creating.\n",
-	       (const char *)cmd_ln_access("-cntfn"));
+	       cmd_ln_str("-cntfn"));
 	cnt_phn_seg(mdef, lex, &n_seg, &n_frame);
 	E_INFO("Writing %s.\n",
-	       (const char *)cmd_ln_access("-cntfn"));
+	       cmd_ln_str("-cntfn"));
 	
-	cnt_fp = fopen((const char *)cmd_ln_access("-cntfn"), "w");
+	cnt_fp = fopen(cmd_ln_str("-cntfn"), "w");
 	for (i = 0; i < acmod_set_n_acmod(mdef->acmod_set); i++) {
 	    fprintf(cnt_fp, "%u", n_seg[i]);
 	    for (j = 0; j < n_seg[i]; j++) {
@@ -371,7 +369,7 @@ cnt_phn(model_def_t *mdef, lexicon_t *lex,
     }
     else {
 	E_INFO("Reading %s\n",
-	       (const char *)cmd_ln_access("-cntfn"));
+	       cmd_ln_str("-cntfn"));
 
 	n_acmod = acmod_set_n_acmod(mdef->acmod_set);
 
@@ -381,7 +379,7 @@ cnt_phn(model_def_t *mdef, lexicon_t *lex,
 	for (i = 0; i < n_acmod; i++) {
 	    if (fscanf(cnt_fp, "%u", &n_seg[i]) != 1) {
 		E_FATAL_SYSTEM("Error reading count file %s",
-			       (const char *)cmd_ln_access("-cntfn"));
+			       cmd_ln_str("-cntfn"));
 	    }
 
 	    if (n_seg[i] != 0) {
@@ -390,7 +388,7 @@ cnt_phn(model_def_t *mdef, lexicon_t *lex,
 		for (j = 0; j < n_seg[i]; j++) {
 		    if (fscanf(cnt_fp, "%u", &(n_frame[i][j])) != 1) {
 			E_FATAL_SYSTEM("Error reading count file %s",
-				       (const char *)cmd_ln_access("-cntfn"));
+				       cmd_ln_str("-cntfn"));
 		    }
 		}
 	    }
@@ -427,23 +425,23 @@ int main(int argc, char *argv[])
 	exit(1);
     }
 
-    segtype = (const char *)cmd_ln_access("-segtype");
+    segtype = cmd_ln_str("-segtype");
 
     if (strcmp(segtype, "all") == 0) {
 	E_INFO("Writing frames to one file\n");
 
 	if (agg_all_seg(dmp_type,
-			(const char *)cmd_ln_access("-segdmpfn"),
-			*(uint32 *)cmd_ln_access("-stride")) != S3_SUCCESS) {
+			cmd_ln_str("-segdmpfn"),
+			cmd_ln_int32("-stride")) != S3_SUCCESS) {
 	    exit(1);
 	}
     }
     else if (strcmp(segtype, "st") == 0) {
-	segdmp_set_bufsz(*(uint32 *)cmd_ln_access("-cachesz"));
+	segdmp_set_bufsz(cmd_ln_int32("-cachesz"));
 	
-	if (segdmp_open_write((const char **)cmd_ln_access("-segdmpdirs"),
-			      (const char *)cmd_ln_access("-segdmpfn"),
-			      (const char *)cmd_ln_access("-segidxfn"),
+	if (segdmp_open_write(cmd_ln_str_list("-segdmpdirs"),
+			      cmd_ln_str("-segdmpfn"),
+			      cmd_ln_str("-segidxfn"),
 			      mdef->n_tied_state,
 			      cnt_st(mdef, lex),
 			      NULL,
@@ -458,13 +456,13 @@ int main(int argc, char *argv[])
 	segdmp_close();
     }
     else if (strcmp(segtype, "phn") == 0) {
-	segdmp_set_bufsz(*(uint32 *)cmd_ln_access("-cachesz"));
+	segdmp_set_bufsz(cmd_ln_int32("-cachesz"));
 	
 	cnt_phn(mdef, lex, &n_seg, &n_frame);
 
-	if (segdmp_open_write((const char **)cmd_ln_access("-segdmpdirs"),
-			      (const char *)cmd_ln_access("-segdmpfn"),
-			      (const char *)cmd_ln_access("-segidxfn"),
+	if (segdmp_open_write(cmd_ln_str_list("-segdmpdirs"),
+			      cmd_ln_str("-segdmpfn"),
+			      cmd_ln_str("-segidxfn"),
 			      acmod_set_n_acmod(mdef->acmod_set),
 			      n_seg,
 			      n_frame,

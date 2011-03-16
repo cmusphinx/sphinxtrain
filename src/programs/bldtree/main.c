@@ -221,7 +221,7 @@ init(model_def_t **out_mdef,
 
     
 
-    moddeffn = cmd_ln_access("-moddeffn");
+    moddeffn = cmd_ln_str("-moddeffn");
     if (moddeffn == NULL)
 	E_FATAL("Specify -moddeffn\n");
 
@@ -263,7 +263,7 @@ init(model_def_t **out_mdef,
 
     /*ADDITION - CHECK FOR NUMBER OF OCCURANCES OF STATE */
     cntflag = (char *)ckd_calloc(p_e-p_s+1,sizeof(char));
-    cntthreshold = *(float32 *)cmd_ln_access("-cntthresh");
+    cntthreshold = cmd_ln_float32("-cntthresh");
     /* END ADDITION - CHECK FOR NUMBER OF OCCURANCES OF STATE */
 
     /* Find first and last mixing weight used for p_s through p_e */
@@ -275,7 +275,7 @@ init(model_def_t **out_mdef,
     E_INFO("Covering states |[%u %u]| == %u\n",
 	   mixw_s, mixw_e, mixw_e - mixw_s + 1);
 
-    mixwfn = cmd_ln_access("-mixwfn");
+    mixwfn = cmd_ln_str("-mixwfn");
     if (mixwfn == NULL)
 	E_FATAL("Specify -mixwfn\n");
 
@@ -325,7 +325,7 @@ init(model_def_t **out_mdef,
     istwt = ckd_calloc(n_state, sizeof(float32));
     stwt = ckd_calloc(n_state, sizeof(float32));
     *out_stwt = stwt;
-    stwt_str = (const char **)cmd_ln_access("-stwt");
+    stwt_str = cmd_ln_str_list("-stwt");
     if (stwt_str == NULL) {
 	E_FATAL("Specify state weights using -stwt\n");
     }
@@ -378,11 +378,11 @@ init(model_def_t **out_mdef,
     /* END MODIFICATION FOR STATE COUNT CHECK */
 
     assert(j == n_model);
-    mwfloor = *(float32 *)cmd_ln_access("-mwfloor");
+    mwfloor = cmd_ln_float32("-mwfloor");
 
 /* ADDITIONS FOR CONTINUOUS_TREES 18 May 98.
    If DISCRETE HMM, GET PROBABILITIES, ELSE SIMPLY GET MEANS AND VARIANCES */
-    type = (char *)cmd_ln_access("-ts2cbfn");
+    type = cmd_ln_str("-ts2cbfn");
     if (strcmp(type,".semi.")!=0 && strcmp(type,".cont.") != 0)
         E_FATAL("Type %s unsupported; trees can only be built on types .semi. or .cont.\n",type);
     if (strcmp(type,".cont.") == 0) 
@@ -435,34 +435,34 @@ init(model_def_t **out_mdef,
     if (continuous == 1) {
 	int32 var_is_full = cmd_ln_int32("-fullvar");
         /* Read Means and Variances; perform consistency checks */
-        if (s3gau_read(cmd_ln_access("-meanfn"),
+        if (s3gau_read(cmd_ln_str("-meanfn"),
                        &fullmean,
                        &l_nstates,
                        &t_nfeat,
                        &t_ndensity,
                        &l_veclen) != S3_SUCCESS)
-            E_FATAL("Error reading mean file %s\n",cmd_ln_access("-meanfn"));
+            E_FATAL("Error reading mean file %s\n",cmd_ln_str("-meanfn"));
         *out_veclen = (uint32 *)l_veclen;
         if (t_nfeat != n_stream && t_ndensity != n_density)
             E_FATAL("Mismatch between Mean and Mixture weight files\n");
 
 	if (var_is_full) {
-	    if (s3gau_read_full(cmd_ln_access("-varfn"),
+	    if (s3gau_read_full(cmd_ln_str("-varfn"),
 				&fullvar_full,
 				&t_nstates,
 				&t_nfeat,
 				&t_ndensity,
 				&t_veclen) != S3_SUCCESS)
-		E_FATAL("Error reading var file %s\n",cmd_ln_access("-varfn"));
+		E_FATAL("Error reading var file %s\n",cmd_ln_str("-varfn"));
 	}
         else {
-	    if (s3gau_read(cmd_ln_access("-varfn"),
+	    if (s3gau_read(cmd_ln_str("-varfn"),
 			   &fullvar,
 			   &t_nstates,
 			   &t_nfeat,
 			   &t_ndensity,
 			   &t_veclen) != S3_SUCCESS)
-		E_FATAL("Error reading var file %s\n",cmd_ln_access("-varfn"));
+		E_FATAL("Error reading var file %s\n",cmd_ln_str("-varfn"));
 	}
         if (t_nfeat != n_stream && t_ndensity != n_density)
             E_FATAL("Mismatch between Variance and Mixture weight files\n");
@@ -482,7 +482,7 @@ init(model_def_t **out_mdef,
         mean = (float32 ****)ckd_calloc_4d(n_model,n_state,n_stream,sumveclen,sizeof(float32));
 	/* Use only the diagonals regardless of whether -varfn is full. */
         var = (float32 ****)ckd_calloc_4d(n_model,n_state,n_stream,sumveclen,sizeof(float32));
-        varfloor = *(float32 *)cmd_ln_access("-varfloor");
+        varfloor = cmd_ln_float32("-varfloor");
  
         /* MODIFICATION FOR STATE COUNT CHECK */
         for (i = p_s, j = 0, m = mixw_s, mm = 0; i <= p_e; i++, mm++) {
@@ -571,7 +571,7 @@ init(model_def_t **out_mdef,
     ckd_free(cntflag);
     /* END MODIFICATION FOR STATE COUNT CHECK */
 
-    psetfn = (const char *)cmd_ln_access("-psetfn");
+    psetfn = cmd_ln_str("-psetfn");
 
     E_INFO("Reading: %s\n", psetfn);
     *out_pset = pset = read_pset_file(psetfn, mdef->acmod_set, &n_pset);
@@ -743,9 +743,9 @@ int main(int argc, char *argv[])
 
     parse_cmd_ln(argc, argv);
 
-    phn = cmd_ln_access("-phone");
+    phn = cmd_ln_str("-phone");
 
-    state = *(uint32 *)cmd_ln_access("-state");
+    state = cmd_ln_int32("-state");
 
 /* MODIFICATION FOR CONTINUOUS_TREES 18 May 98: PASSING &means, &vars and &veclen */
     if (init(&mdef,
@@ -771,7 +771,7 @@ int main(int argc, char *argv[])
 	E_FATAL("Initialization failed\n");
     }
 
-    mwfloor = *(float32 *)cmd_ln_access("-mwfloor");
+    mwfloor = cmd_ln_float32("-mwfloor");
 
     id = (uint32 *)ckd_calloc(n_model, sizeof(uint32));
 
@@ -788,52 +788,23 @@ int main(int argc, char *argv[])
 		      id, n_model,
 		      all_q, n_all_q, pset, acmod_set_n_ci(mdef->acmod_set),
 		      dfeat, N_DFEAT,
-		      *(uint32 *)cmd_ln_access("-ssplitmin"),
-		      *(uint32 *)cmd_ln_access("-ssplitmax"),
-		      *(float32 *)cmd_ln_access("-ssplitthr"),
-		      *(uint32 *)cmd_ln_access("-csplitmin"),
-		      *(uint32 *)cmd_ln_access("-csplitmax"),
-		      *(float32 *)cmd_ln_access("-csplitthr"),
+		      cmd_ln_int32("-ssplitmin"),
+		      cmd_ln_int32("-ssplitmax"),
+		      cmd_ln_float32("-ssplitthr"),
+		      cmd_ln_int32("-csplitmin"),
+		      cmd_ln_int32("-csplitmax"),
+		      cmd_ln_float32("-csplitthr"),
 		      mwfloor);
 /* END MODIFICATION FOR CONTINUOUS_TREES */
 
     /* Save it to a file */
-    fp = fopen(cmd_ln_access("-treefn"), "w");
+    fp = fopen(cmd_ln_str("-treefn"), "w");
     if (fp == NULL) {
 	E_FATAL_SYSTEM("Unable to open %s for writing",
-		       cmd_ln_access("-treefn"));
+		       cmd_ln_str("-treefn"));
     }
     print_final_tree(fp, &tr->node[0], pset);
     fclose(fp);
 
     return 0;
 }
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2005/06/13  22:18:22  dhdfu
- * Add -allphones arguments to decision tree and state tying code.  Allows senones to be shared across multiple base phones (though they are currently still restricted to the same state).  This can improve implicit pronunciation modeling in some cases, such as grapheme-based models, though it usually has little effect.  Building the big trees can take a very long time.
- * 
- * Revision 1.5  2004/07/21 18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.4  2004/06/17 19:17:13  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */

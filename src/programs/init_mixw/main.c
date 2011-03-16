@@ -260,16 +260,16 @@ init_mixw()
 
     const char *ts2cbfn;
 
-    E_INFO("Reading src %s\n", (const char *)cmd_ln_access("-src_moddeffn"));
+    E_INFO("Reading src %s\n", cmd_ln_str("-src_moddeffn"));
 
     /* read in the source model definition file */
     if (model_def_read(&src_mdef,
-		       (const char *)cmd_ln_access("-src_moddeffn")) != S3_SUCCESS) {
+		       cmd_ln_str("-src_moddeffn")) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
 	   
-    ts2cbfn = cmd_ln_access("-src_ts2cbfn");
+    ts2cbfn = cmd_ln_str("-src_ts2cbfn");
     if (strcmp(SEMI_LABEL, ts2cbfn) == 0) {
 	E_INFO("Generating semi-continous ts2cb mapping\n");
 	src_mdef->cb = semi_ts2cb(src_mdef->n_tied_state);
@@ -289,7 +289,7 @@ init_mixw()
 	n_cb = src_mdef->acmod_set->n_ci;
     }
     else {
-	E_INFO("Reading src %s\n", (const char *)cmd_ln_access("-src_ts2cbfn"));
+	E_INFO("Reading src %s\n", cmd_ln_str("-src_ts2cbfn"));
 	if (s3ts2cb_read(ts2cbfn,
 		     &src_mdef->cb,
 		     &n_ts,
@@ -298,28 +298,28 @@ init_mixw()
 	}
     }
 
-    E_INFO("Reading src %s\n", (const char *)cmd_ln_access("-src_mixwfn"));
+    E_INFO("Reading src %s\n", cmd_ln_str("-src_mixwfn"));
 
     /* read in the source mixing weight parameter file */
-    if (s3mixw_read((const char *)cmd_ln_access("-src_mixwfn"),
+    if (s3mixw_read(cmd_ln_str("-src_mixwfn"),
 		    &src_mixw, &n_mixw_src, &n_feat, &n_gau) != S3_SUCCESS) {
 			
 	return S3_ERROR;
     }
 
     E_INFO("Reading src %s\n",
-	   (const char *)cmd_ln_access("-src_tmatfn"));
+	   cmd_ln_str("-src_tmatfn"));
     
-    if (s3tmat_read((const char *)cmd_ln_access("-src_tmatfn"),
+    if (s3tmat_read(cmd_ln_str("-src_tmatfn"),
 		    &src_tmat,
 		    &n_tmat_src,
 		    &n_state_pm) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
-    E_INFO("Reading src %s\n", (const char *)cmd_ln_access("-src_meanfn"));
+    E_INFO("Reading src %s\n", cmd_ln_str("-src_meanfn"));
 
-    if (s3gau_read((const char *)cmd_ln_access("-src_meanfn"),
+    if (s3gau_read(cmd_ln_str("-src_meanfn"),
 		   &src_mean,
 		   &n_cb_src,
 		   &tmp_n_feat,
@@ -341,9 +341,9 @@ init_mixw()
 		n_cb_src, n_cb);
     }
 
-    E_INFO("Reading src %s\n", (const char *)cmd_ln_access("-src_varfn"));
+    E_INFO("Reading src %s\n", cmd_ln_str("-src_varfn"));
     if (cmd_ln_int32("-fullvar")) {
-	if (s3gau_read_full((const char *)cmd_ln_access("-src_varfn"),
+	if (s3gau_read_full(cmd_ln_str("-src_varfn"),
 		       &src_fullvar,
 		       &n_cb_src,
 		       &tmp_n_feat,
@@ -353,7 +353,7 @@ init_mixw()
 	}
     }
     else {
-	if (s3gau_read((const char *)cmd_ln_access("-src_varfn"),
+	if (s3gau_read(cmd_ln_str("-src_varfn"),
 		       &src_var,
 		       &n_cb_src,
 		       &tmp_n_feat,
@@ -390,15 +390,15 @@ init_mixw()
     ckd_free((void *)tmp_veclen);
 
     E_INFO("Reading dest %s\n",
-	   (const char *)cmd_ln_access("-dest_moddeffn"));
+	   cmd_ln_str("-dest_moddeffn"));
 
     /* read in the destination model definition file */
     if (model_def_read(&dest_mdef,
-		       (const char *)cmd_ln_access("-dest_moddeffn")) < S3_SUCCESS) {
+		       cmd_ln_str("-dest_moddeffn")) < S3_SUCCESS) {
 	return S3_ERROR;
     }
 
-    ts2cbfn = cmd_ln_access("-dest_ts2cbfn");
+    ts2cbfn = cmd_ln_str("-dest_ts2cbfn");
     if (strcmp(SEMI_LABEL, ts2cbfn) == 0) {
 	E_INFO("Generating semi-continous ts2cb mapping\n");
 	dest_mdef->cb = semi_ts2cb(dest_mdef->n_tied_state);
@@ -419,7 +419,7 @@ init_mixw()
     }
     else {
 	E_INFO("Reading dest %s\n",
-	       (const char *)cmd_ln_access("-dest_ts2cbfn"));
+	       cmd_ln_str("-dest_ts2cbfn"));
 
 
 	if (s3ts2cb_read(ts2cbfn,
@@ -528,9 +528,9 @@ init_mixw()
     }
 
     E_INFO("Writing dest %s\n",
-	   (const char *)cmd_ln_access("-dest_tmatfn"));
+	   cmd_ln_str("-dest_tmatfn"));
     
-    if (s3tmat_write((const char *)cmd_ln_access("-dest_tmatfn"),
+    if (s3tmat_write(cmd_ln_str("-dest_tmatfn"),
 		     dest_tmat,
 		     n_tmat_dest,
 		     n_state_pm) != S3_SUCCESS) {
@@ -539,18 +539,18 @@ init_mixw()
 	   
 
     E_INFO("Writing dest %s\n",
-	   (const char *)cmd_ln_access("-dest_mixwfn"));
+	   cmd_ln_str("-dest_mixwfn"));
 
-    if (s3mixw_write((const char *)cmd_ln_access("-dest_mixwfn"),
+    if (s3mixw_write(cmd_ln_str("-dest_mixwfn"),
 		     dest_mixw,
 		     dest_mdef->n_tied_state, n_feat, n_gau) < S3_SUCCESS) {
 	return S3_ERROR;
     }
 
     E_INFO("Writing dest %s\n",
-	   (const char *)cmd_ln_access("-dest_meanfn"));
+	   cmd_ln_str("-dest_meanfn"));
 
-    if (s3gau_write((const char *)cmd_ln_access("-dest_meanfn"),
+    if (s3gau_write(cmd_ln_str("-dest_meanfn"),
 		    (const vector_t ***)dest_mean,
 		    n_cb_dest,
 		    n_feat,
@@ -560,9 +560,9 @@ init_mixw()
     }
 
     E_INFO("Writing dest %s\n",
-	   (const char *)cmd_ln_access("-dest_varfn"));
+	   cmd_ln_str("-dest_varfn"));
     if (cmd_ln_int32("-fullvar")) {
-	if (s3gau_write_full((const char *)cmd_ln_access("-dest_varfn"),
+	if (s3gau_write_full(cmd_ln_str("-dest_varfn"),
 			     (const vector_t ****)dest_fullvar,
 			     n_cb_dest,
 			     n_feat,
@@ -572,7 +572,7 @@ init_mixw()
 	}
     }
     else {
-	if (s3gau_write((const char *)cmd_ln_access("-dest_varfn"),
+	if (s3gau_write(cmd_ln_str("-dest_varfn"),
 			(const vector_t ***)dest_var,
 			n_cb_dest,
 			n_feat,

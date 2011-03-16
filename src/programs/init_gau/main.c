@@ -52,7 +52,7 @@
 #include "parse_cmd_ln.h"
 
 #include <s3/corpus.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/lexicon.h>
 #include <s3/acmod_set.h>
 #include <s3/model_def_io.h>
@@ -83,7 +83,7 @@ initialize(lexicon_t **out_lex,
     /* define, parse and (partially) validate the command line */
     parse_cmd_ln(argc, argv);
 
-    if (cmd_ln_access("-feat") != NULL) {
+    if (cmd_ln_str("-feat") != NULL) {
 	feat_set(cmd_ln_str("-feat"));
 	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
 	feat_set_subvecs(cmd_ln_str("-svspec"));
@@ -93,32 +93,31 @@ initialize(lexicon_t **out_lex,
 
 	return S3_ERROR;
     }
-    if (cmd_ln_access("-ldafn") != NULL) {
-	if (feat_read_lda(cmd_ln_access("-ldafn"), cmd_ln_int32("-ldadim"))) {
+    if (cmd_ln_str("-lda") != NULL) {
+	if (feat_read_lda(cmd_ln_str("-lda"), cmd_ln_int32("-ldadim"))) {
 	    E_FATAL("Failed to read LDA matrix\n");
 	}
     }
 
-    if (cmd_ln_access("-segdir"))
-	corpus_set_seg_dir(cmd_ln_access("-segdir"));
-    if (cmd_ln_access("-segext"))
-	corpus_set_seg_ext(cmd_ln_access("-segext"));
+    if (cmd_ln_str("-segdir"))
+	corpus_set_seg_dir(cmd_ln_str("-segdir"));
+    if (cmd_ln_str("-segext"))
+	corpus_set_seg_ext(cmd_ln_str("-segext"));
 
-    corpus_set_mfcc_dir(cmd_ln_access("-cepdir"));
-    corpus_set_mfcc_ext(cmd_ln_access("-cepext"));
+    corpus_set_mfcc_dir(cmd_ln_str("-cepdir"));
+    corpus_set_mfcc_ext(cmd_ln_str("-cepext"));
 
-    if (cmd_ln_access("-lsnfn"))
-	corpus_set_lsn_filename(cmd_ln_access("-lsnfn"));
+    if (cmd_ln_str("-lsnfn"))
+	corpus_set_lsn_filename(cmd_ln_str("-lsnfn"));
 
-    corpus_set_ctl_filename(cmd_ln_access("-ctlfn"));
-    
-    if ( cmd_ln_access("-nskip") && cmd_ln_access("-runlen") ) {
-	corpus_set_interval(*(int32 *)cmd_ln_access("-nskip"),
-			    *(int32 *)cmd_ln_access("-runlen"));
-    }
-    else if (cmd_ln_access("-part") && cmd_ln_access("-npart")) {
-	corpus_set_partition(*(uint32 *)cmd_ln_access("-part"),
-			     *(uint32 *)cmd_ln_access("-npart"));
+    corpus_set_ctl_filename(cmd_ln_str("-ctlfn"));
+
+    if (cmd_ln_int32("-nskip") && cmd_ln_int32("-runlen")) {
+        corpus_set_interval(cmd_ln_int32("-nskip"),
+			    cmd_ln_int32("-runlen"));
+    } else if (cmd_ln_int32("-part") && cmd_ln_int32("-npart")) {
+	corpus_set_partition(cmd_ln_int32("-part"),
+			     cmd_ln_int32("-npart"));
     }
     
 
@@ -126,18 +125,18 @@ initialize(lexicon_t **out_lex,
 	return S3_ERROR;
     }
     
-    if (cmd_ln_access("-moddeffn")) {
-	E_INFO("Reading %s\n", cmd_ln_access("-moddeffn"));
+    if (cmd_ln_str("-moddeffn")) {
+	E_INFO("Reading %s\n", cmd_ln_str("-moddeffn"));
     
 	/* Read in the model definitions.  Defines the set of
 	   CI phones and context dependent phones.  Defines the
 	   transition matrix tying and state level tying. */
 	if (model_def_read(&mdef,
-			   cmd_ln_access("-moddeffn")) != S3_SUCCESS) {
+			   cmd_ln_str("-moddeffn")) != S3_SUCCESS) {
 	    return S3_ERROR;
 	}
 	
-	ts2cbfn = (const char *)cmd_ln_access("-ts2cbfn");
+	ts2cbfn = cmd_ln_str("-ts2cbfn");
 	if (strcmp(SEMI_LABEL, ts2cbfn) == 0) {
 	    mdef->cb = semi_ts2cb(mdef->n_tied_state);
 	    n_ts = mdef->n_tied_state;
@@ -160,7 +159,7 @@ initialize(lexicon_t **out_lex,
 	    return S3_ERROR;
 	}
 
-	dictfn = cmd_ln_access("-dictfn");
+	dictfn = cmd_ln_str("-dictfn");
 
 	if (dictfn == NULL) {
 	    E_FATAL("You must specify a content dictionary using -dictfn\n");
@@ -174,7 +173,7 @@ initialize(lexicon_t **out_lex,
 	if (lex == NULL)
 	    return S3_ERROR;
     
-	fdictfn = cmd_ln_access("-fdictfn");
+	fdictfn = cmd_ln_str("-fdictfn");
 
 	if (fdictfn) {
 	    E_INFO("Reading %s\n", fdictfn);

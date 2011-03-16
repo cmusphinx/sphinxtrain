@@ -145,17 +145,17 @@ normalize()
     uint32 no_retries=0;
 
     
-    accum_dir = (const char **)cmd_ln_access("-accumdir");
-    oaccum_dir = (const char *)cmd_ln_access("-oaccumdir");
+    accum_dir = cmd_ln_str_list("-accumdir");
+    oaccum_dir = cmd_ln_str("-oaccumdir");
 
-    out_mixw_fn = (const char *)cmd_ln_access("-mixwfn");
-    out_tmat_fn = (const char *)cmd_ln_access("-tmatfn");
-    out_mean_fn = (const char *)cmd_ln_access("-meanfn");
-    out_var_fn = (const char *)cmd_ln_access("-varfn");
-    in_mixw_fn = (const char *)cmd_ln_access("-inmixwfn");
-    in_mean_fn = (const char *)cmd_ln_access("-inmeanfn");
-    in_var_fn = (const char *)cmd_ln_access("-invarfn");
-    out_dcount_fn = (const char *)cmd_ln_access("-dcountfn");
+    out_mixw_fn = cmd_ln_str("-mixwfn");
+    out_tmat_fn = cmd_ln_str("-tmatfn");
+    out_mean_fn = cmd_ln_str("-meanfn");
+    out_var_fn = cmd_ln_str("-varfn");
+    in_mixw_fn = cmd_ln_str("-inmixwfn");
+    in_mean_fn = cmd_ln_str("-inmeanfn");
+    in_var_fn = cmd_ln_str("-invarfn");
+    out_dcount_fn = cmd_ln_str("-dcountfn");
     var_is_full = cmd_ln_int32("-fullvar");
 
     /* must be at least one accum dir */
@@ -630,13 +630,13 @@ mmi_normalize()
   uint32 n_temp_density;
   const uint32 *temp_veclen = NULL;
   
-  accum_dir = (const char **)cmd_ln_access("-accumdir");
+  accum_dir = cmd_ln_str_list("-accumdir");
   
   /* the following variables are used for mmie training */
-  out_mean_fn = (const char *)cmd_ln_access("-meanfn");
-  out_var_fn = (const char *)cmd_ln_access("-varfn");
-  in_mean_fn = (const char *)cmd_ln_access("-inmeanfn");
-  in_var_fn = (const char *)cmd_ln_access("-invarfn");
+  out_mean_fn = cmd_ln_str("-meanfn");
+  out_var_fn = cmd_ln_str("-varfn");
+  in_mean_fn = cmd_ln_str("-inmeanfn");
+  in_var_fn = cmd_ln_str("-invarfn");
   constE = cmd_ln_float32("-constE");
   
   /* get rid of some unnecessary parameters */
@@ -646,16 +646,16 @@ mmi_normalize()
   if (cmd_ln_int32("-tiedvar")) {
     E_FATAL("Current MMIE training can not be done for tied variance, set -tiedvar as no\n");
   }
-  if (cmd_ln_access("-mixwfn")) {
+  if (cmd_ln_str("-mixwfn")) {
     E_FATAL("Current MMIE training does not support mixture weight update, remove -mixwfn \n");
   }
-  if (cmd_ln_access("-inmixwfn")) {
+  if (cmd_ln_str("-inmixwfn")) {
     E_FATAL("Current MMIE training does not support mixture weight update, remove -inmixwfn \n");
   }
-  if (cmd_ln_access("-tmatfn")) {
+  if (cmd_ln_str("-tmatfn")) {
     E_FATAL("Current MMIE training does not support transition matrix update, remove -tmatfn \n");
   }
-  if (cmd_ln_access("-regmatfn")) {
+  if (cmd_ln_str("-regmatfn")) {
     E_FATAL("Using norm for computing regression matrix is obsolete, please use mllr_transform \n");
   }
   

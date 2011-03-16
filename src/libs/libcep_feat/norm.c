@@ -54,7 +54,7 @@
 #include <sphinxbase/ckd_alloc.h>
 
 #include <sphinxbase/prim_type.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -67,7 +67,7 @@ void norm_mean (float32 *vec,		/* the data */
     double   temp;
     float32            *data;
     uint32               i, f; 
-    const char *normvar = cmd_ln_access("-varnorm");
+    uint32 varnorm = cmd_ln_boolean("-varnorm");
 
     if (mean == 0)
 	mean = (double *) ckd_calloc (veclen, sizeof (double));
@@ -92,7 +92,7 @@ void norm_mean (float32 *vec,		/* the data */
 	mean[i] /= (double)nvec;
     }
 
-    if (strcmp(normvar,"yes") == 0){
+    if (varnorm){
         for (data = vec, f = 0; f < nvec; f++, data += veclen) {
     	    for (i = 0; i < veclen; i++)
 	        var[i] += ((double)data[i]-mean[i])*((double)data[i]-mean[i]);
@@ -110,7 +110,7 @@ void norm_mean (float32 *vec,		/* the data */
 	for (i = 0; i < veclen; i++)
 	    data[i] -= (float)mean[i];
     }
-    if (strcmp(normvar,"yes") == 0){
+    if (varnorm){
         for (data = vec, f = 0; f < nvec; f++, data += veclen) {
     	    for (i = 0; i < veclen; i++)
 	        data[i] /= (float)var[i];

@@ -51,7 +51,7 @@
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/err.h>
 #include <s3/s3.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/div.h>
 
 #include <string.h>
@@ -94,7 +94,7 @@ two_class(float32 ****mixw_occ,
     char*  type;
     uint32 continuous,sumveclen=0;
 
-    type = (char *)cmd_ln_access("-ts2cbfn");
+    type = (char *)cmd_ln_str("-ts2cbfn");
     if (strcmp(type,".semi.")!=0 && strcmp(type,".cont.") != 0)
         E_FATAL("Type %s unsupported; trees can only be built on types .semi. or .cont.\n",type);
     if (strcmp(type,".cont.") == 0)
@@ -103,7 +103,7 @@ two_class(float32 ****mixw_occ,
         continuous = 0;
 
     if (continuous == 1) {
-        varfloor = *(float32 *)cmd_ln_access("-varfloor");
+        varfloor = cmd_ln_float32("-varfloor");
         for(i=0,sumveclen=0; i < n_stream; i++) sumveclen += veclen[i];
         m_means = (float32 ***)ckd_calloc_3d(n_state, n_stream, sumveclen, sizeof(float32));
         m_vars = (float32 ***)ckd_calloc_3d(n_state, n_stream, sumveclen, sizeof(float32));

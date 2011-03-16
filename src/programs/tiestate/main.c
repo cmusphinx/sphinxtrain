@@ -50,7 +50,7 @@
 #include <s3/dtree.h>
 #include <s3/pset_io.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/err.h>
 #include <s3/s3.h>
 
@@ -80,7 +80,7 @@ init(model_def_t **out_imdef,
     uint32 ts_id;
     int allphones;
 
-    a_fn = (const char *)cmd_ln_access("-imoddeffn");
+    a_fn = cmd_ln_str("-imoddeffn");
     if (a_fn == NULL)
 	E_FATAL("Specify -imoddeffn\n");
     if (model_def_read(&imdef, a_fn) != S3_SUCCESS) {
@@ -88,7 +88,7 @@ init(model_def_t **out_imdef,
     }
     *out_imdef = imdef;
 
-    a_fn = (const char *)cmd_ln_access("-psetfn");
+    a_fn = cmd_ln_str("-psetfn");
     E_INFO("Reading: %s\n", a_fn);
     *out_pset = pset = read_pset_file(a_fn, imdef->acmod_set, &n_pset);
     *out_n_pset = n_pset;
@@ -99,7 +99,7 @@ init(model_def_t **out_imdef,
     else
       n_ci = acmod_set_n_ci(imdef->acmod_set);
 
-    treedir = (const char *)cmd_ln_access("-treedir");
+    treedir = cmd_ln_str("-treedir");
     tree = (dtree_t ***)ckd_calloc(n_ci, sizeof(dtree_t **));
     *out_tree = tree;
 
@@ -256,7 +256,7 @@ main(int argc, char *argv[])
 	}
     }
 
-    if (model_def_write(omdef, (const char *)cmd_ln_access("-omoddeffn")) != S3_SUCCESS) {
+    if (model_def_write(omdef, cmd_ln_str("-omoddeffn")) != S3_SUCCESS) {
 	return 1;
     }
 

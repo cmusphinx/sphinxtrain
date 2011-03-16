@@ -40,13 +40,13 @@
  * Author: Rita Singh
  *********************************************************************/
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 
 #include "parse_cmd_ln.h"
 
 #include <stdlib.h>
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s3.h>
 
 #include <sys_compat/misc.h>
@@ -99,112 +99,87 @@ Create all CD model definition file given only the dictionary \n\
 mk_mdef_gen -phnlstfn rawphone -oalltphnmdef untie_mdef -dictfn dict \n\
  -fdictfn filler_dict -n_state_pm 3.";
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-ignorewpos",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Ignore word position in context dependency"},
 	{ "-phnlstfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "List of phones"},
 	{ "-inCImdef",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Input CI model definition file.\n\t\t\tIf given -phnlstfn ignored\n"},
 	{ "-triphnlstfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "A SPHINX-III triphone file name.\n\t\t\tIf given -phnlstfn, -incimdef ignored\n" },
 	{ "-inCDmdef",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Input CD model definition file.\n\t\t\tIf given -triphnfn, -phnlstfn, -incimdef ignored\n"},
 	{ "-dictfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Dictionary"},
 	{ "-fdictfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Filler dictionary"},
 	{ "-lsnfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Transcripts file"},
 	{ "-n_state_pm",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "3",
 	  "No. of states per HMM"},
 	{ "-ocountfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Output phone and triphone counts file"},
 	{ "-ocimdef",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Output CI model definition file"},
 	{ "-oalltphnmdef",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Output all triphone model definition file"},
 	{ "-ountiedmdef",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Output untied model definition file"},
 	{ "-minocc",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "1",
 	  "Min occurances of a triphone must occur for inclusion in mdef file"},
 	{ "-maxtriphones",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_INT32,
 	  "100000",
 	  "Max. number of triphones desired in mdef file"},
 	{ NULL,
-	  CMD_LN_UNDEF,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  0,
+	  NULL,
 	  NULL }
     };
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, TRUE);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
-
-    cmd_ln_parse(argc, argv);
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
     if(isHelp){
       printf("%s\n\n",helpstr);
@@ -218,9 +193,4 @@ mk_mdef_gen -phnlstfn rawphone -oalltphnmdef untie_mdef -dictfn dict \n\
       E_INFO("User asked for help or example.\n");
       exit(0);
     }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
-    }
 }
-
-

@@ -45,7 +45,7 @@
  * 	$Author$
  *********************************************************************/
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 
 #include <s3/s3.h>
 
@@ -80,68 +80,51 @@ and transition_matrices are initialized using the executable mk_flat ";
 \n\
 mk_flat -moddeffn CFS3.ci.mdef -topo CFS3.topology -mixwfn mixture_weights  \n\
 -tmatfn transition_matrices -nstream 1 -ndensity 1 ";
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-moddeffn",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_STRING,
+	      NULL,
 	      "A SPHINX-III model definition file name" },
 	{ "-mixwfn",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_STRING,
+	      NULL,
 	      "An output SPHINX-III mixing weight file name" },
 	{ "-topo",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_STRING,
+	      NULL,
 	      "A template model topology matrix file" },
 	{ "-tmatfn",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_STRING,
+	      NULL,
 	      "An output SPHINX-III transition matrix file name" },
 	{ "-nstream",
-	      CMD_LN_INT32,
-	      CMD_LN_NO_VALIDATION,
+	      ARG_INT32,
 	      "4",
 	      "Number of independent observation streams" },
 	{ "-ndensity",
-	      CMD_LN_INT32,
-	      CMD_LN_NO_VALIDATION,
+	      ARG_INT32,
 	      "256",
 	      "Number of densities per mixture density" },
 	{ NULL,
-	      CMD_LN_UNDEF,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      0,
+	      NULL,
 	      NULL }
     };
     
-    cmd_ln_define(defn);
-    
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
+    cmd_ln_parse(defn, argc, argv, 1);
 
-    cmd_ln_parse(argc, argv);
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
-
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
     if(isHelp){
       printf("%s\n\n",helpstr);
@@ -155,43 +138,7 @@ mk_flat -moddeffn CFS3.ci.mdef -topo CFS3.topology -mixwfn mixture_weights  \n\
       E_INFO("User asked for help or example.\n");
       exit(0);
     }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
-    }
+
 
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.7  2004/11/29  01:43:47  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- * 
- * Revision 1.6  2004/11/29 00:49:23  egouvea
- * Added missing include files to prevent warnings about printf not being defined
- *
- * Revision 1.5  2004/08/08 04:30:56  arthchan2003
- * mk_flat help and example
- *
- * Revision 1.4  2004/07/21 18:30:35  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.1  95/06/02  20:31:23  eht
- * Initial revision
- * 
- *
- */

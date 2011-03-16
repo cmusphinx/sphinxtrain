@@ -48,7 +48,7 @@
 
 #include <s3/segdmp.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s3io.h>
 #include <s3/fp_cache.h>
 #include <s3/vector.h>
@@ -500,7 +500,7 @@ segdmp_open_write(const char **dirs,		/* directories available for dump files */
     }
     else if (cur_type == SEGDMP_TYPE_MFCC) {
 	/* Ideally, this module shouldn't be calling cmd_ln_* functions */
-	frame_sz = *(uint32 *)cmd_ln_access("-ceplen") * sizeof(float32);
+	frame_sz = cmd_ln_int32("-ceplen") * sizeof(float32);
     }
 
     n_dmp_frame_max = (DMP_MAX / frame_sz);

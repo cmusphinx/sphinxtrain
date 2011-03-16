@@ -57,7 +57,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/vector.h>
 #include <s3/prefix_upto.h>
 #include <s3/hash.h>

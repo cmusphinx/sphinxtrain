@@ -50,7 +50,7 @@
 
 #include "parse_cmd_ln.h"
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/err.h>
 #include "fe.h"
 
@@ -63,17 +63,10 @@ parse_cmd_ln(int argc, char *argv[])
 
 #include "cmd_ln_defn.h"
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, TRUE);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
-
-    cmd_ln_parse(argc, argv);
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
 
     if(isHelp){
@@ -86,29 +79,9 @@ parse_cmd_ln(int argc, char *argv[])
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
-    }
-
-    if(!isHelp && !isExample){
-      if (cmd_ln_validate() == FALSE) {
-        E_FATAL("Unable to validate command line arguments\n");
-      }
-
-      cmd_ln_print_configuration();
+      exit(0);
     }
 
     return 0;
 }
 
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.2  2004/11/29  01:43:52  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- * 
- * Revision 1.1  2004/09/09 17:59:30  egouvea
- * Adding missing files to wave2feat
- *
- *
- */

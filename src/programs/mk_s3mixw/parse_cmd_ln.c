@@ -45,7 +45,7 @@
  * 	$Author$
  *********************************************************************/
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 
 #include "parse_cmd_ln.h"
 
@@ -75,131 +75,73 @@ Conversion from sphinx 2 hmms to sphinx3 mixture weights";
 (By Arthur: Not sure, may be obsolete) \n\
 mk_s3mixw -mixwfn s3mixw -moddeffn s3mdef -hmmdir s2hmmdir";
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-mixwfn",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_STRING,
+	      NULL,
 	      "A SPHINX-III mixture weight parameter file name" },
 	{ "-moddeffn",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_STRING,
+	      NULL,
 	      "A SPHINX-III model definition file name" },
 	{ "-floor",
-	      CMD_LN_FLOAT32,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_FLOAT32,
+	      NULL,
 	      "Floor weight value to apply before renormalization" },
 	{ "-ci2cd",
-	      CMD_LN_BOOLEAN,
-	      CMD_LN_NO_VALIDATION,
+	      ARG_BOOLEAN,
 	      "false",
 	      "CD weights initialized to CI weights (-hmmdir is to a set of CI models)" },
 	{ "-hmmdir",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_STRING,
+	      NULL,
 	      "A directory containing SPHINX-III models consistent with -moddeffn" },
 	{ "-cepsenoext",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
+	      ARG_STRING,
 	      "ccode",
 	      "Extension of cepstrum senone weight file" },
 	{ "-dcepsenoext",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
+	      ARG_STRING,
 	      "d2code",
 	      "Extension of difference cepstrum senone weight file" },
 	{ "-powsenoext",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
+	      ARG_STRING,
 	      "p3code",
 	      "Extension of power senone weight file" },
 	{ "-2dcepsenoext",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
+	      ARG_STRING,
 	      "xcode",
 	      "Extension of 2nd order difference cepstrum senone weight file" },
 	{ NULL,
-	      CMD_LN_UNDEF,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      0,
+	      NULL,
 	      NULL }
     };
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, 1);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
-
-    cmd_ln_parse(argc, argv);
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
     if(isHelp){
       printf("%s\n\n",helpstr);
     }
 
-    if(isExample){
-      printf("%s\n\n",examplestr);
-    }
-
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
-    }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
+      exit(0);
     }
 
 
     return 0;
 }
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2004/11/29  01:43:50  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- * 
- * Revision 1.5  2004/08/10 08:31:56  arthchan2003
- * s2 to s3 conversion tools
- *
- * Revision 1.4  2004/07/21 19:17:25  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.1  95/06/02  20:33:30  eht
- * Initial revision
- * 
- *
- */

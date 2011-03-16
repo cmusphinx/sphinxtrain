@@ -58,7 +58,7 @@
 #include <s3/silcomp.h>
 
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s3.h>
 
 #include <assert.h>
@@ -121,7 +121,7 @@ v4_feat_compute(vector_t *mfcc,
     vector_t **out;
     uint32 svd_n_frame;
     uint32 n_frame;
-    const char *comp_type = cmd_ln_access("-silcomp");
+    const char *comp_type = cmd_ln_str("-silcomp");
     int32 i, j;
     uint32 mfcc_len;
     void v4_mfcc_print(vector_t *mfcc, uint32 n_frame);

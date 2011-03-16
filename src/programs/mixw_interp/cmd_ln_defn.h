@@ -44,8 +44,8 @@
  * 	Eric Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
-#ifndef CMD_LN_DEFN_H
-#define CMD_LN_DEFN_H
+#ifndef ARG_DEFN_H
+#define ARG_DEFN_H
 
 
     const char helpstr[] =  
@@ -62,68 +62,38 @@
 "Example: \n\
 \n\
     mixw_interp -SImixwfn si_mixw -SDmixwfn  sd_mxiw -outmixwfn final_mixw -SIlambad 0.7";
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
         { "-SImixwfn",
-          CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-          CMD_LN_NO_DEFAULT,
+          ARG_STRING,
+          NULL,
           "The SI mixture weight parameter file name"},
 
         { "-SDmixwfn",
-          CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-          CMD_LN_NO_DEFAULT,
+          ARG_STRING,
+          NULL,
           "The SD mixture weight parameter file name"},
 
         { "-outmixwfn",
-          CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-          CMD_LN_NO_DEFAULT,
+          ARG_STRING,
+          NULL,
           "The output interpolated mixture weight parameter file name"},
 
         { "-SIlambda",
-          CMD_LN_FLOAT32,
-	  CMD_LN_NO_VALIDATION,
+          ARG_FLOAT32,
           "0.5",
           "Weight given to SI mixing weights" },
 
-	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 
 
-#endif /* CMD_LN_DEFN_H */ 
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2004/08/10  21:58:51  arthchan2003
- * Incorporate help and example for the four final tools
- * 
- * Revision 1.4  2004/07/21 18:30:35  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- *
- */
+#endif /* ARG_DEFN_H */ 

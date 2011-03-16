@@ -50,7 +50,7 @@
 #include <s3/norm.h>
 #include <s3/live_norm.h>
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s2_param.h>
 #include <s3/err.h>
 
@@ -69,7 +69,7 @@ void
 cmn(float32 *mfcc,
     uint32 n_frame)
 {
-    const char *type = cmd_ln_access("-cmn");
+    const char *type = cmd_ln_str("-cmn");
     uint32 i;
 
     if (strcmp(type, "current") == 0) {

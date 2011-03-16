@@ -58,7 +58,7 @@
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/profile.h>
 #include <s3/corpus.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 
 #include <s3/s2_param.h>
 

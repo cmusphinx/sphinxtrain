@@ -47,7 +47,7 @@
 
 #include <s3/model_def_io.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s2_read_seno.h>
 #include <s3/s3mixw_io.h>
 #include <s3/s3tmat_io.h>
@@ -82,21 +82,21 @@ main(int argc, char *argv[])
     parse_cmd_ln(argc, argv);
     
     printf("%s(%d): Reading model definition file %s\n",
-	   __FILE__, __LINE__, (const char *)cmd_ln_access("-moddeffn"));
+	   __FILE__, __LINE__, cmd_ln_str("-moddeffn"));
     
-    if (model_def_read(&mdef, cmd_ln_access("-moddeffn")) !=
+    if (model_def_read(&mdef, cmd_ln_str("-moddeffn")) !=
 	S3_SUCCESS) {
 	return 1;
     }
     printf("%s(%d): %d models defined\n",
 	   __FILE__, __LINE__, mdef->n_defn);
 
-    if (!cmd_ln_access("-tmatfn") && ! cmd_ln_access("-mixwfn")){
+    if (!cmd_ln_str("-tmatfn") && ! cmd_ln_str("-mixwfn")){
         E_FATAL("Both -tmatfn and -mixwfn were not specified, forced exit\n");
     }
 
-    if (cmd_ln_access("-tmatfn")) {
-	if (topo_read(&proto_tmat, &n_state_pm, cmd_ln_access("-topo")) != S3_SUCCESS)
+    if (cmd_ln_str("-tmatfn")) {
+	if (topo_read(&proto_tmat, &n_state_pm, cmd_ln_str("-topo")) != S3_SUCCESS)
 	    return 1;
 
 	/* proto_tmat is normalized */
@@ -115,7 +115,7 @@ main(int argc, char *argv[])
 	    }
 	}
 
-	if (s3tmat_write(cmd_ln_access("-tmatfn"),
+	if (s3tmat_write(cmd_ln_str("-tmatfn"),
 			 tmat,
 			 n_tmat,
 			 n_state_pm) != S3_SUCCESS) {
@@ -129,8 +129,8 @@ main(int argc, char *argv[])
     }
 
     n_tied_state = mdef->n_tied_state;
-    n_stream = *(int32 *)cmd_ln_access("-nstream");
-    n_density = *(int32 *)cmd_ln_access("-ndensity");
+    n_stream = cmd_ln_int32("-nstream");
+    n_density = cmd_ln_int32("-ndensity");
 
     mixw = (float32 ***)ckd_calloc_3d(n_tied_state, n_stream, n_density,
 				      sizeof(float32));
@@ -146,8 +146,8 @@ main(int argc, char *argv[])
 	}
     }
 
-    if (cmd_ln_access("-mixwfn")) {
-        if (s3mixw_write(cmd_ln_access("-mixwfn"),
+    if (cmd_ln_str("-mixwfn")) {
+        if (s3mixw_write(cmd_ln_str("-mixwfn"),
 	  	         mixw,
 		         n_tied_state,
 		         n_stream,

@@ -50,7 +50,7 @@
 #include <s3/state_seq.h>
 
 #include <s3/remap.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/s2_param.h>
 #include <s3/acmod_set.h>

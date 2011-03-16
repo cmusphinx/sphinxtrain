@@ -79,7 +79,7 @@
 #include <s3/s2_read_map.h>
 #include <s3/s2_write_seno.h>
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 
 #include "s3/hash.h"
 typedef hash_t hash_table_t;

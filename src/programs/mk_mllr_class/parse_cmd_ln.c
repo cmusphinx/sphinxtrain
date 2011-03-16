@@ -45,7 +45,7 @@
 #include <stdlib.h>
 #include "parse_cmd_ln.h"
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/err.h>
 
 int
@@ -72,56 +72,40 @@ parse_cmd_ln(int argc, char *argv[])
 "Example: \n\
 mk_mllr_class -nmap 100 -nclass 4 -cb2mllrfn out.cb2mllr.bin < in.cb2mllr.txt";
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-nmap",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "# of codebook -> MLLR class mappings" },
 
 	{ "-nclass",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "# of MLLR classes to map into" },
 
 	{ "-cb2mllrfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Codebook-to-MLLR mapping file to create" },
+
+	{NULL, 0, NULL, NULL}
 	  
-	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
     };
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, TRUE);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
-
-    cmd_ln_parse(argc, argv);
-
-    if (cmd_ln_validate() == FALSE) {
-	E_FATAL("Unable to validate command line arguments\n");
-    }
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
-
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
     if(isHelp){
       printf("%s\n\n",helpstr);
@@ -133,11 +117,9 @@ mk_mllr_class -nmap 100 -nclass 4 -cb2mllrfn out.cb2mllr.bin < in.cb2mllr.txt";
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
+      exit(0);
     }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
-    }
-    
+
+
     return 0;
 }

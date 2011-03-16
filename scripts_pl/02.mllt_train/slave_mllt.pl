@@ -223,7 +223,7 @@ sub FlatInitialize
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
 				-cepwin => $ST::CFG_FEAT_WINDOW,
-				-ldafn => $ldafile,
+				-lda => $ldafile,
 				-ldadim => $ST::CFG_LDA_DIMENSION,
 			       )) {
 	return $return_value;
@@ -259,7 +259,7 @@ sub FlatInitialize
 				-feat => $ST::CFG_FEATURE,
 				-ceplen => $ST::CFG_VECTOR_LENGTH,
 				-cepwin => $ST::CFG_FEAT_WINDOW,
-				-ldafn => $ldafile,
+				-lda => $ldafile,
 				-ldadim => $ST::CFG_LDA_DIMENSION,
 			       )) {
 	return $return_value;

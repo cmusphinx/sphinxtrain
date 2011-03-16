@@ -119,7 +119,7 @@ float32    likelhddec(float32 *meana, float32 *vara,
         continuous = 0;
 
     if (continuous) {
-        minvar = *(float32 *)cmd_ln_access("-varfloor");
+        minvar = cmd_ln_float32("-varfloor");
         cntc = cnta[0][0] + cntb[0][0];
 
         for (i=0, lc=0, lb=0, la=0;i<dim;i++){
@@ -398,7 +398,7 @@ node *make_simple_tree (float32 **means, float32 **vars, float32 ***mixw,
     newnumphones = (int32 *) ckd_calloc(nphones,sizeof(int32));
 
     if (continuous) {
-        minvar = *(float32 *)cmd_ln_access("-varfloor");
+        minvar = cmd_ln_float32("-varfloor");
         oldmeans = (float32 **) ckd_calloc_2d(nphones,ndim,sizeof(float32));
         oldvars = (float32 **) ckd_calloc_2d(nphones,ndim,sizeof(float32));
         newmeans = (float32 **) ckd_calloc_2d(nphones,ndim,sizeof(float32));
@@ -678,7 +678,7 @@ node  *make_tree (float32 **means, float32 **vars, float32 ***mixw,
         continuous = 1;
     else
         continuous = 0;
-    niter = *(int32 *) cmd_ln_access("-niter");
+    niter = cmd_ln_int32("-niter");
 
     sroot = make_simple_tree(means,vars,mixw,phnids,nphones,ndensity,nfeat,dim,npermute,depth);
     for (iter = 0; iter < niter; iter++) {
@@ -814,7 +814,7 @@ init(float32 *****out_mixw,
     else
         continuous = 0;
 
-    moddeffn = cmd_ln_access("-moddeffn");
+    moddeffn = cmd_ln_str("-moddeffn");
     if (moddeffn == NULL)
 	E_FATAL("Specify -moddeffn\n");
 
@@ -833,7 +833,7 @@ init(float32 *****out_mixw,
     mixw_s = mdef->defn[0].state[0];
     mixw_e = mdef->defn[p_e].state[mdef->defn[p_e].n_state-2];
 
-    mixwfn = cmd_ln_access("-mixwfn");
+    mixwfn = cmd_ln_str("-mixwfn");
     if (mixwfn == NULL)
 	E_FATAL("Specify -mixwfn\n");
 
@@ -881,34 +881,34 @@ init(float32 *****out_mixw,
     if (continuous) {      /* bother with means and variances only if not semi*/
 	int32 var_is_full = cmd_ln_int32("-fullvar");
         /* Read Means and Variances; perform consistency checks */
-        if (s3gau_read(cmd_ln_access("-meanfn"),
+        if (s3gau_read(cmd_ln_str("-meanfn"),
                        &fullmean,
                        &l_nstates,
                        &t_nfeat,
                        &t_ndensity,
                        &l_veclen) != S3_SUCCESS)
-            E_FATAL("Error reading mean file %s\n",cmd_ln_access("-meanfn"));
+            E_FATAL("Error reading mean file %s\n",cmd_ln_str("-meanfn"));
         *out_veclen = (uint32)l_veclen[0];
         if (t_nfeat != n_stream && t_ndensity != n_density)
             E_FATAL("Mismatch between Mean and Mixture weight files\n");
 
 	if (var_is_full) {
-	    if (s3gau_read_full(cmd_ln_access("-varfn"),
+	    if (s3gau_read_full(cmd_ln_str("-varfn"),
 				&fullvar_full,
 				&t_nstates,
 				&t_nfeat,
 				&t_ndensity,
 				&t_veclen) != S3_SUCCESS)
-		E_FATAL("Error reading var file %s\n",cmd_ln_access("-varfn"));
+		E_FATAL("Error reading var file %s\n",cmd_ln_str("-varfn"));
 	}
 	else {
-	    if (s3gau_read(cmd_ln_access("-varfn"),
+	    if (s3gau_read(cmd_ln_str("-varfn"),
 			   &fullvar,
 			   &t_nstates,
 			   &t_nfeat,
 			   &t_ndensity,
 			   &t_veclen) != S3_SUCCESS)
-		E_FATAL("Error reading var file %s\n",cmd_ln_access("-varfn"));
+		E_FATAL("Error reading var file %s\n",cmd_ln_str("-varfn"));
 	}
         if (t_nfeat != n_stream && t_ndensity != n_density)
             E_FATAL("Mismatch between Variance and Mixture weight files\n");
@@ -931,7 +931,7 @@ init(float32 *****out_mixw,
 	/* Use only the diagonals regardless of whether -varfn is full. */
         var = (float32 ***)ckd_calloc_3d(n_model,n_state,sumveclen,sizeof(float32));
         mixw = (float32 ****)ckd_calloc_4d(n_model,n_state,1,1,sizeof(float32));
-        varfloor = *(float32 *)cmd_ln_access("-varfloor");
+        varfloor = cmd_ln_float32("-varfloor");
         for (i = p_s, j = 0, m = mixw_s; i <= p_e; i++, j++) {
             for (k = 0; k < n_state; k++, m++) {
                 float32 *featmean=NULL,*featvar=NULL;
@@ -1043,7 +1043,7 @@ main(int argc, char *argv[])
 
     parse_cmd_ln(argc, argv);
 
-    type = (char *)cmd_ln_access("-type");
+    type = cmd_ln_str("-type");
 
     if(type==NULL){
       E_FATAL("-type is empty. Please specify -type correctly, either \".cont.\" or \".semi.\"\n");
@@ -1062,9 +1062,9 @@ main(int argc, char *argv[])
       E_FATAL("-type is not set correctly\n");
     }
 
-    outfile = (char *) cmd_ln_access("-questfn");
-    npermute = *(int32 *) cmd_ln_access("-npermute");
-    nquests_per_state = *(int32 *) cmd_ln_access("-qstperstt");
+    outfile = cmd_ln_str("-questfn");
+    npermute = cmd_ln_int32("-npermute");
+    nquests_per_state = cmd_ln_int32("-qstperstt");
 
     /* Test and cleanup outfile */
     if ((fp = fopen(outfile,"w")) == NULL)

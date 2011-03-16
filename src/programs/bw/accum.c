@@ -104,7 +104,7 @@
 #include <s3/model_def.h>
 
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s2_param.h>
 #include <s3/feat.h>
 #include <sphinxbase/matrix.h>

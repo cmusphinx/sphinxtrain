@@ -52,7 +52,7 @@
 #include <s3/agc_emax.h>
 #include <s3/r_agc_noise.h>
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s2_param.h>	/* for S2_CEP_VECLEN */
 #include <s3/err.h>
 
@@ -70,7 +70,7 @@ void
 agc(float32 *mfcc,
     uint32 n_frame)
 {
-    const char *agc_type = cmd_ln_access("-agc");
+    const char *agc_type = cmd_ln_str("-agc");
     uint32 i;
 
     if (strcmp(agc_type, "noise") == 0) {

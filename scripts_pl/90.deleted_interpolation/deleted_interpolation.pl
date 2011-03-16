@@ -90,7 +90,7 @@ mkdir($logdir,0777);
 Log ("Phase 2: Doing interpolation...\n");
 
 my $rv = RunTool('delint', $logfile, 0,
-	     -accumdirs => @bwaccumdirs,
+	     -accumdirs => join(",", @bwaccumdirs),
 	     -moddeffn => $moddeffn,
 	     -mixwfn => $mixwfn,
 	     -cilambda => $cilambda,

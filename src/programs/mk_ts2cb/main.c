@@ -50,7 +50,7 @@
 #include <s3/model_def_io.h>
 #include <s3/s3ts2cb_io.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/s3.h>
 
 #include <stdio.h>
@@ -69,15 +69,15 @@ main(int argc, char *argv[])
     
     parse_cmd_ln(argc, argv);
 
-    E_INFO("Reading model definition file %s\n", cmd_ln_access("-moddeffn"));
+    E_INFO("Reading model definition file %s\n", cmd_ln_str("-moddeffn"));
     
-    if (model_def_read(&mdef, cmd_ln_access("-moddeffn")) != S3_SUCCESS) {
+    if (model_def_read(&mdef, cmd_ln_str("-moddeffn")) != S3_SUCCESS) {
 	exit(1);
     }
 
     E_INFO("%d tied states defined\n", mdef->n_tied_state);
 
-    tying_type = cmd_ln_access("-tyingtype");
+    tying_type = cmd_ln_str("-tyingtype");
 
     E_INFO("Generating state parameter definitions for %s tying\n", tying_type);
     
@@ -99,13 +99,13 @@ main(int argc, char *argv[])
 	E_FATAL("Unknown tying type %s given\n", tying_type);
     }
 
-    E_INFO("Writing %s\n", cmd_ln_access("-ts2cbfn"));
+    E_INFO("Writing %s\n", cmd_ln_str("-ts2cbfn"));
 
-    if (s3ts2cb_write(cmd_ln_access("-ts2cbfn"),
+    if (s3ts2cb_write(cmd_ln_str("-ts2cbfn"),
 		      spd,
 		      mdef->n_tied_state,
 		      n_cb) != S3_SUCCESS) {
-	E_FATAL_SYSTEM("Unable to write %s\n", cmd_ln_access("-ts2cbfn"));
+	E_FATAL_SYSTEM("Unable to write %s\n", cmd_ln_str("-ts2cbfn"));
     }
 
     return 0;

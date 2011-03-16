@@ -45,7 +45,7 @@
 
 #include "parse_cmd_ln.h"
 
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 #include <s3/err.h>
 
 #include <stdio.h>
@@ -75,109 +75,85 @@ mixwfn -npermute 8 -niter 1 -qstperstt 20 -questfn \n\
 questions -type .cont.";
 
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-moddeffn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Model definition file of the ci models" },
 
 	{ "-meanfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "means file for tree building using continuous HMMs" },
 
 	{ "-varfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "variances file for tree building using continuous HMMs" },
 
 	{ "-fullvar",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "variances file contains full covariances" },
 
         { "-varfloor",
-          CMD_LN_FLOAT32,
-          CMD_LN_NO_VALIDATION,
+          ARG_FLOAT32,
           "1.0e-08",
           "The minimum variance"},
 
 	{ "-mixwfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "PDF's for tree building using semicontinuous HMMs" },
 
         { "-npermute",
-          CMD_LN_INT32,
-          CMD_LN_NO_VALIDATION,
+          ARG_INT32,
           "6",
           "The minimum variance"},
 
         { "-niter",
-          CMD_LN_INT32,
-          CMD_LN_NO_VALIDATION,
+          ARG_INT32,
           "0",
           "Number of iterations"},
 
         { "-qstperstt",
-          CMD_LN_INT32,
-          CMD_LN_NO_VALIDATION,
+          ARG_INT32,
           "8",
           "something per state"},
 
 	{ "-tempfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_STRING,
 	  "/tmp/TEMP.QUESTS",
 	  "(Obsolete) File to write temprorary results to " },
 
 	{ "-questfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "File to write questions to" },
 
 	{ "-type",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "HMM type" },
 
-	{ NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
+	{NULL, 0, NULL, NULL}
+
     };
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, 1);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
-
-    cmd_ln_parse(argc, argv);
-
-    if (cmd_ln_validate() == FALSE) {
-	E_FATAL("Unable to validate command line arguments\n");
-    }
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
     if(isHelp){
       printf("%s\n\n",helpstr);
@@ -189,54 +165,9 @@ questions -type .cont.";
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
+      exit(0);
     }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
-    }
+
 
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.7  2005/07/09  03:02:10  arthchan2003
- * 1, Remove tempfn and anything the used tempfn. It is never used in the entire SphinxTrain codebase.  2, change the example such that -tempfn is removed but -type .cont. is added. 3, Did **not** removed -tempfn because some users might just update the code but not the perl script.  This keep backward compatibility (but it is definitely stupid). 4, Change the perl script as well. People who update the code and script will then learn the correct usage. 5, Check type such that if it is not .cont. or .semi., nothing stupid will happen. (Well, in general, it is a sin for us to release this program. *sigh*)
- * 
- * Revision 1.6  2004/11/29 01:43:46  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- *
- * Revision 1.5  2004/11/29 01:11:34  egouvea
- * Fixed license terms in some new files.
- *
- * Revision 1.4  2004/11/29 00:49:22  egouvea
- * Added missing include files to prevent warnings about printf not being defined
- *
- * Revision 1.3  2004/08/10 22:32:43  arthchan2003
- * Fix the dollar problem of make_quests
- *
- * Revision 1.2  2004/08/10 21:58:51  arthchan2003
- * Incorporate help and example for the four final tools
- *
- * Revision 1.1  2004/06/17 19:39:49  arthchan2003
- * add back all command line information into the code
- *
- * Revision 1.4  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.3  2000/11/17 16:10:41  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */

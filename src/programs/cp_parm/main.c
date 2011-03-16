@@ -51,7 +51,7 @@
 #include <s3/gauden.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/feat.h>
-#include <s3/cmd_ln.h>
+#include <sphinxbase/cmd_ln.h>
 
 #include <s3/s3.h>
 
@@ -296,46 +296,46 @@ wr_gau_full(const char *fn)
 static int
 rd_parm()
 {
-    if(cmd_ln_access("-imixwfn")   ==NULL&&
-       cmd_ln_access("-igaufn")    ==NULL&&
-       cmd_ln_access("-ifullgaufn")==NULL&&
-       cmd_ln_access("-itmatfn")   ==NULL
+    if(cmd_ln_str("-imixwfn")   ==NULL&&
+       cmd_ln_str("-igaufn")    ==NULL&&
+       cmd_ln_str("-ifullgaufn")==NULL&&
+       cmd_ln_str("-itmatfn")   ==NULL
        ) {
       E_INFO("Please specify one of the following: -imixwfn, -igaufn, -ifullgaufn, -itmatfn\n");
       return S3_ERROR;
     }
 
-    if (cmd_ln_access("-imixwfn")) {
-        if(cmd_ln_access("-nmixwout")==NULL){
+    if (cmd_ln_str("-imixwfn")) {
+        if(cmd_ln_str("-nmixwout")==NULL){
 	    E_INFO("Please specify -nmixwout\n");
 	    return S3_ERROR;
         }
-	rd_mixw((const char *)cmd_ln_access("-imixwfn"),
-		*(uint32 *)cmd_ln_access("-nmixwout"));
+	rd_mixw(cmd_ln_str("-imixwfn"),
+		cmd_ln_int32("-nmixwout"));
     }
-    if (cmd_ln_access("-igaufn")) {
-        if(cmd_ln_access("-ncbout")==NULL){
+    if (cmd_ln_str("-igaufn")) {
+        if(cmd_ln_str("-ncbout")==NULL){
 	    E_INFO("Please specify -ncbout\n");
 	    return S3_ERROR;
         }
-	rd_gau((const char *)cmd_ln_access("-igaufn"),
-		*(uint32 *)cmd_ln_access("-ncbout"));
+	rd_gau(cmd_ln_str("-igaufn"),
+		cmd_ln_int32("-ncbout"));
     }
-    if (cmd_ln_access("-ifullgaufn")) {
-        if(cmd_ln_access("-ncbout")==NULL){
+    if (cmd_ln_str("-ifullgaufn")) {
+        if(cmd_ln_str("-ncbout")==NULL){
 	    E_INFO("Please specify -ncbout\n");
 	    return S3_ERROR;
         }
-	rd_gau_full((const char *)cmd_ln_access("-ifullgaufn"),
-		*(uint32 *)cmd_ln_access("-ncbout"));
+	rd_gau_full(cmd_ln_str("-ifullgaufn"),
+		cmd_ln_int32("-ncbout"));
     }
-    if (cmd_ln_access("-itmatfn")) {
-        if(cmd_ln_access("-ntmatout")==NULL){
+    if (cmd_ln_str("-itmatfn")) {
+        if(cmd_ln_str("-ntmatout")==NULL){
 	    E_INFO("Please specify -ntmatout\n");
 	    return S3_ERROR;
         }
-	rd_tmat((const char *)cmd_ln_access("-itmatfn"),
-		*(uint32 *)cmd_ln_access("-ntmatout"));
+	rd_tmat(cmd_ln_str("-itmatfn"),
+		cmd_ln_int32("-ntmatout"));
     }
     return S3_SUCCESS;
 }
@@ -351,11 +351,11 @@ cp_parm()
        match
      */
     
-    if(cmd_ln_access("-cpopsfn")==NULL) {
+    if(cmd_ln_str("-cpopsfn")==NULL) {
         E_INFO("Please specify -cpopsfn\n");
 	return S3_ERROR;
     }
-    fp = fopen((char *)cmd_ln_access("-cpopsfn"), "r");
+    fp = fopen(cmd_ln_str("-cpopsfn"), "r");
     if (fp == NULL) {
 	E_INFO("Unable to open cpops file\n");
 
@@ -397,7 +397,7 @@ cp_parm()
     
     fclose(fp);
     
-    fp = fopen((char *)cmd_ln_access("-cpopsfn"), "r");
+    fp = fopen(cmd_ln_str("-cpopsfn"), "r");
     while (fscanf(fp, "%u %u", &o, &i) == 2) {
 	if (omixw) {
 	    cp_mixw(o, i);
@@ -421,32 +421,32 @@ static int
 wr_parm()
 {
     if (omixw) {
-        if(cmd_ln_access("-omixwfn") == NULL) {
+        if(cmd_ln_str("-omixwfn") == NULL) {
 	    E_INFO("Please specify -omixwfn\n");
 	    return S3_ERROR;
         }
-	wr_mixw((const char *)cmd_ln_access("-omixwfn"));
+	wr_mixw(cmd_ln_str("-omixwfn"));
     }
     if (ogau) {
-        if(cmd_ln_access("-ogaufn") == NULL) {
+        if(cmd_ln_str("-ogaufn") == NULL) {
 	    E_INFO("Please specify -ogaufn\n");
 	    return S3_ERROR;
 	}
-	wr_gau((const char *)cmd_ln_access("-ogaufn"));
+	wr_gau(cmd_ln_str("-ogaufn"));
     }
     if (ogau_full) {
-        if(cmd_ln_access("-ofullgaufn") == NULL) {
+        if(cmd_ln_str("-ofullgaufn") == NULL) {
 	    E_INFO("Please specify -ofullgaufn\n");
 	    return S3_ERROR;
 	}
-	wr_gau_full((const char *)cmd_ln_access("-ofullgaufn"));
+	wr_gau_full(cmd_ln_str("-ofullgaufn"));
     }
     if (otmat) {
-        if(cmd_ln_access("-otmatfn") == NULL) {
+        if(cmd_ln_str("-otmatfn") == NULL) {
 	    E_INFO("Please specify -otmatfn\n");
 	    return S3_ERROR;
 	}
-	wr_tmat((const char *)cmd_ln_access("-otmatfn"));
+	wr_tmat(cmd_ln_str("-otmatfn"));
     }
     return S3_SUCCESS;
 }

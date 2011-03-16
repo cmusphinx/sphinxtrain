@@ -46,7 +46,7 @@
  *********************************************************************/
 
 #include <stdlib.h>
-#include "s3/cmd_ln.h"
+#include "sphinxbase/cmd_ln.h"
 
 #include "parse_cmd_ln.h"
 
@@ -74,62 +74,47 @@ Conversion from sphinx 2 hmms to sphinx3 transition matrices";
 (By Arthur: Not sure, may be obsolete) \n\
 mk_s3mixw -mixwfn s3mixw -moddeffn s3mdef -hmmdir s2hmmdir";
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-tmatfn",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_STRING,
+	      NULL,
 	      "A SPHINX-III transition matrix parameter file name" },
 	{ "-moddeffn",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_STRING,
+	      NULL,
 	      "A SPHINX-III model definition file name" },
 	{ "-floor",
-	      CMD_LN_FLOAT32,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_FLOAT32,
+	      NULL,
 	      "Floor weight value to apply before renormalization" },
 	{ "-hmmdir",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      ARG_STRING,
+	      NULL,
 	      "A directory containing SPHINX-III models consistent with -moddeffn" },
 	{ "-hmmext",
-	      CMD_LN_STRING,
-	      CMD_LN_NO_VALIDATION,
+	      ARG_STRING,
 	      "chmm",
 	      "Extension of a SPHINX-II model file." },
 	{ NULL,
-	      CMD_LN_UNDEF,
-	      CMD_LN_NO_VALIDATION,
-	      CMD_LN_NO_DEFAULT,
+	      0,
+	      NULL,
 	      NULL }
     };
 
-    cmd_ln_define(defn);
+    cmd_ln_parse(defn, argc, argv, TRUE);
 
-    if (argc == 1) {
-	cmd_ln_print_definitions();
-	exit(1);
-    }
-
-    cmd_ln_parse(argc, argv);
-
-    isHelp    = *(uint32 *) cmd_ln_access("-help");
-    isExample    = *(uint32 *) cmd_ln_access("-example");
+    isHelp    = cmd_ln_int32("-help");
+    isExample    = cmd_ln_int32("-example");
 
     if(isHelp){
       printf("%s\n\n",helpstr);
@@ -141,49 +126,9 @@ mk_s3mixw -mixwfn s3mixw -moddeffn s3mdef -hmmdir s2hmmdir";
 
     if(isHelp || isExample){
       E_INFO("User asked for help or example.\n");
-      exit(1);
+      exit(0);
     }
-    if(!isHelp && !isExample){
-      cmd_ln_print_configuration();
-    }
+
 
     return 0;
 }
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/11/29  01:43:50  egouvea
- * Replaced handling of help or example so that user gets an INFO message instead of a scarier FATAL_ERROR
- * 
- * Revision 1.3  2004/11/29 01:11:35  egouvea
- * Fixed license terms in some new files.
- *
- * Revision 1.2  2004/08/10 08:31:56  arthchan2003
- * s2 to s3 conversion tools
- *
- * Revision 1.1  2004/06/17 19:39:50  arthchan2003
- * add back all command line information into the code
- *
- * Revision 1.4  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.3  2001/02/20 00:28:35  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/01/21  13:04:17  eht
- * Initial revision
- * 
- * Revision 1.1  95/06/02  20:34:58  eht
- * Initial revision
- * 
- *
- */

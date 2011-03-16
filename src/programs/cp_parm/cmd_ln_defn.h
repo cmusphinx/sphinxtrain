@@ -44,8 +44,8 @@
  *      Eric Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
-#ifndef CMD_LN_DEFN_H
-#define CMD_LN_DEFN_H
+#ifndef ARG_DEFN_H
+#define ARG_DEFN_H
   const char helpstr[] =
 "Description: \n\
 Copy parameters such as means and variances from one model to another model.  \n\
@@ -78,90 +78,76 @@ cp_parm -cpopsfn  cp_op \n\
         -ogaufn   out.means \n\
         -feat    [Your feature type] ";
 
-    static arg_def_t defn[] = {
+    static arg_t defn[] = {
 	{ "-help",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows the usage of the tool"},
 
 	{ "-example",
-	  CMD_LN_BOOLEAN,
-	  CMD_LN_NO_VALIDATION,
+	  ARG_BOOLEAN,
 	  "no",
 	  "Shows example of how to use the tool"},
 
 	{ "-cpopsfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Copy operation file name" },
 
 	{ "-imixwfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Input mixing weight file" },
 	{ "-omixwfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Output mixing weight file" },
 	{ "-nmixwout",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "# of mixing weight arrays in the output file" },
 	  
 	{ "-itmatfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Input transition matrix file" },
 	{ "-otmatfn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Output transition matrix file" },
 	{ "-ntmatout",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "# of transition matrices in the output file" },
 
 	{ "-igaufn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Input Gaussian density parameter file" },
 	{ "-ogaufn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Output Gaussian density parameter file" },
 
 	{ "-ifullgaufn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Input Gaussian covariance matrix file" },
 	{ "-ofullgaufn",
-	  CMD_LN_STRING,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_STRING,
+	  NULL,
 	  "Output Gaussian covariance matrix file" },
 
 	{ "-ncbout",
-	  CMD_LN_INT32,
-	  CMD_LN_NO_VALIDATION,
-	  CMD_LN_NO_DEFAULT,
+	  ARG_INT32,
+	  NULL,
 	  "# of codebooks in the output file" },
-
-    { NULL, CMD_LN_UNDEF, CMD_LN_NO_VALIDATION, CMD_LN_NO_DEFAULT, NULL }
+	
+	{NULL, 0, NULL, NULL},
     };
-#define CMD_LN_DEFN_H
+#define ARG_DEFN_H
 
-#endif /* CMD_LN_DEFN_H */ 
+#endif /* ARG_DEFN_H */ 
 
 /*
  * Log record.  Maintained by RCS.
