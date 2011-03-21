@@ -121,6 +121,7 @@ const char examplestr[] =
           NULL,
           "The output MAP transition matrix file"},
 
+	{NULL, 0, NULL, NULL},
     };
 
 
