@@ -33,17 +33,6 @@
  * ====================================================================
  *
  */
-/*********************************************************************
- *
- * File: vector.h
- * 
- * Traceability: 
- * 
- * Description: 
- * 
- * Author: 
- * 	$Author$
- *********************************************************************/
 
 #ifndef VECTOR_H
 #define VECTOR_H
@@ -73,6 +62,8 @@ vector_nz_floor(vector_t v, uint32 dim, float32 f);
 int32
 vector_normalize(vector_t v, uint32 dim);
 
+float64 vector_sum_norm (float32 *vec, int32 len);
+
 void
 vector_add(vector_t a, const vector_t b, uint32 dim);
 
@@ -97,28 +88,3 @@ vector_print(vector_t v, uint32 dim);
 #endif
 #endif /* VECTOR_H */ 
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  17:46:10  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  1995/10/09  20:55:35  eht
- * Changes for prim_type.h
- *
- * Revision 1.1  1995/08/15  13:44:14  eht
- * Initial revision
- *
- *
- */

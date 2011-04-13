@@ -33,32 +33,16 @@
  * ====================================================================
  *
  */
-/*
- * senone.h -- Weights associated with each mixture gaussian.
- *
- * $Log$
- * Revision 1.3  2004/07/21  19:17:24  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.2  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  2001/02/20 00:23:38  awb
- * *** empty log message ***
- *
- * 
- * 19-Feb-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
- * 		Started based on original S3 implementation.
- */
-
 
 #ifndef _LIBMAIN_SENONE_H_
 #define _LIBMAIN_SENONE_H_
 
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/logmath.h>
 
-#include "s3types.h"
 
 
+typedef int16   	s3senid_t;	/** Senone id */
 typedef uint8 senprob_t;	/* Senone logprob, truncated to 8 bits */
 
 /*
@@ -83,14 +67,14 @@ typedef struct {
 
 /* The main senones data structure */
 typedef struct {
-    int32 n_sen;	/* Total #senones */
-    int32 n_feat;	/* #Features */
-    int32 n_mgau;	/* #Parent codebooks (mixture Gaussians for multiple features
+    uint32 n_sen;	/* Total #senones */
+    uint32 n_feat;	/* #Features */
+    uint32 n_mgau;	/* #Parent codebooks (mixture Gaussians for multiple features
 			   count as one codebook) */
-    int32 shift;	/* LSB bits truncated from original logs3 value */
+    uint32 shift;	/* LSB bits truncated from original logs3 value */
     mgau2sen_t *mgau2sen;	/* Set of senones for each parent codebook */
-    int32 *sen2mgau;		/* Unique parent codebook for each senone */
-    int32 *mgau2sen_idx;	/* mgau2sen_idx[s] = index into mgau2sen.sen[]
+    uint32 *sen2mgau;		/* Unique parent codebook for each senone */
+    uint32 *mgau2sen_idx;	/* mgau2sen_idx[s] = index into mgau2sen.sen[]
 				   for senone s */
 } senone_t;
 
@@ -100,62 +84,18 @@ typedef struct {
 #define senone_n_mgau(s)	((s)->n_mgau)
 #define senone_n_stream(s)	((s)->n_feat)
 
-
 /*
  * Load a set of senones (mixing weights and mixture gaussian codebook mappings) from
  * the given files.  Normalize weights for each codebook, apply the given floor, convert
  * PDF values to logs3 domain and quantize to 8-bits.
  * Return value: pointer to senone structure created.  Caller MUST NOT change its contents.
  */
-senone_t *senone_init (char *mixwfile,		/* In: mixing weights file */
-		       char *mgau_mapfile,	/* In: file specifying mapping from each
+senone_t *senone_init (logmath_t *logmath,		/* In: logmath */
+		       const char *mixwfile,		/* In: mixing weights file */
+		       const char *mgau_mapfile,	/* In: file specifying mapping from each
 						   senone to mixture gaussian codebook.
 						   If NULL all senones map to codebook 0 */
-		       float64 mixwfloor);	/* In: Floor value for senone weights */
-
-/*
- * Compute senone scores for all senones sharing the given mixture Gaussian.  The computed
- * scores are ACCUMULATED into senscr (because of the need to accumulate over multiple
- * feature streams).  (Scores are computed in logs3 domain.)
- */
-void senone_eval_all (senone_t *s,	/* In: Senone structure */
-		      int32 m,		/* In: Parent mgau for which senones evaluated */
-		      int32 f,		/* In: Feature stream for which evaluated */
-		      int32 *dist,	/* In: Gaussian density values to be weighted */
-		      int32 *valid,	/* In: Optional list of valid indexes in dist[] */
-		      int32 n_dist,	/* In: #density values in dist[] if valid is NULL,
-					   or in valid[] otherwise */
-		      int32 *senscr);	/* In/Out: Senone scores array (one entry/senone,
-					   allocated by caller).  Computed senone scores
-					   accumulated into this array */
-
-/*
- * Like senone_eval_all above, but computed only for a single given senone.  Furthermore,
- * the weighted result is not accumulated anywhere automatically.  Rather, it's the
- * return value.
- */
-int32 senone_eval (senone_t *s,		/* In: Senone structure */
-		   int32 sid,		/* In: Senone id for which score is computed */
-		   int32 f,		/* In: Feature stream under consideration */
-		   int32 *dist,		/* In: Gaussian density values to be weighted */
-		   int32 *valid,	/* In: #density values in dist[] if valid is NULL,
-					   or in valid[] otherwise */
-		   int32 n_dist);	/* In: #density values in dist above */
-
-/*
- * Mark the given array of senone-ids as active in the given bitvector.
- */
-#if 0
-void senone_set_active (bitvec_t flags,	/* In/Out: Bit-vector to be marked */
-			s3senid_t *sen,	/* In: Array of senone IDs to be activated */
-			int32 n_sen);	/* In: No. of elements in the above ID array */
-#endif
-
-/*
- * Return the cumulative scaling applied to senone scores in the given segment.
- */
-int32 senone_get_senscale (int32 *sc,	/* In: sc[f] = scaling applied in frame f */
-			   int32 sf,	/* In: Start frame of segment (inclusive) */
-			   int32 ef);	/* In: End frame of segment (inclusive) */
+		       float64 mixwfloor);		/* In: Floor value for senone weights */
 
 #endif
+

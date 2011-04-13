@@ -46,43 +46,23 @@
  *********************************************************************/
 
 #include "parse_cmd_ln.h"
+#include "senone.h"
 
-/* The SPHINX-III common library */
-#include <s3/common.h>
-
-#include <s3/model_inventory.h>
 #include <s3/model_def_io.h>
-#include <s3/s3mixw_io.h>
-#include <s3/s3tmat_io.h>
-
-/* Some SPHINX-II compatibility definitions */
-#include <s3/s2_param.h>
-#include <s3/s2_read_map.h>
-#include <s3/s2_write_seno.h>
-#include <s2/byteorder.h>
-
-#include <sphinxbase/cmd_ln.h>
-
-#include "s3/hash.h"
-typedef hash_t hash_table_t;
-#include "s3types.h"
-#include "another_s3types.h"
-#include "another_senone.h"
-#include "bio.h"
-#include "logs3.h"
-#include "feat.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
 #include <time.h>
 
-#define NO_STATE	0xffffffff
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/byteorder.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/bio.h>
+#include <sphinxbase/logmath.h>
 
-#define MIXW_PARAM_VERSION	"1.0"
-#define SPDEF_PARAM_VERSION	"1.2"
+#define NO_STATE	0xffffffff
 
 static char *fmtdesc[] = {
     "BEGIN FILE FORMAT DESCRIPTION",
@@ -100,53 +80,14 @@ static char *fmtdesc[] = {
     NULL,
 };
 
-#if 0
-#if defined(_HPUX_SOURCE)
-#define SWAPW(x)	x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )
-#define SWAPL(x)	x = ( (((x)<<24)&0xff000000) | (((x)<<8)&0x00ff0000) | \
-    			      (((x)>>8)&0x0000ff00) | (((x)>>24)&0x000000ff) )
-#else
-#define SWAPW(x)
-#define SWAPL(x)
-#endif
-#endif
-
-/* For Pocketsphinx ONLY: Allocate 0..159 for negated quantized
- * mixture weights and 0..96 for negated normalized acoustic scores,
- * so that the combination of the two (for a single mixture) can never
- * exceed 255. */
-#define MAX_NEG_MIXW 159 /**< Maximum negated mixture weight value. */
-#define MAX_NEG_ASCR 96  /**< Maximum negated acoustic score value. */
-
-
-float64 vector_sum_norm (float32 *vec, int32 len)
+static void fwrite_int32 (FILE *fp, int32 val)
 {
-    float64 sum, f;
-    int32 i;
-    
-    sum = 0.0;
-    for (i = 0; i < len; i++)
-	sum += vec[i];
-
-    if (sum != 0.0) {
-	f = 1.0 / sum;
-	for (i = 0; i < len; i++)
-	    vec[i] *= f;
-    }
-    
-    return sum;
-}
-
-static void fwrite_int32 (fp, val)
-    FILE *fp;
-    int val;
-{
-    SWAP_L(val);
+    SWAP_LE_32(val);
     fwrite (&val, sizeof(int), 1, fp);
 }
 
 
-static void senone_dump (const model_def_t *mdef, const senone_t *s, char *file)
+static void senone_dump (const model_def_t *mdef, const senone_t *s, const char *file)
 {
     int32 i, j, k, c, m, f, n, p, sb, se;
     mixw_t *fw;
@@ -257,7 +198,7 @@ static void senone_dump (const model_def_t *mdef, const senone_t *s, char *file)
 }
 
 static void pocketsphinx_senone_dump(const model_def_t *mdef,
-				     const senone_t *s, char *file)
+				     const senone_t *s, const char *file)
 {
     FILE *fpout;
     char pshdr[256];
@@ -315,387 +256,16 @@ static void pocketsphinx_senone_dump(const model_def_t *mdef,
     fclose (fpout);
 }
 
-static int32 senone_mgau_map_read (senone_t *s, char *file_name)
-{
-    FILE *fp;
-    int32 byteswap, chksum_present, n_mgau_present;
-    uint32 chksum;
-    int32 i;
-    char eofchk;
-    char **argname, **argval;
-    float32 v;
-    
-    E_INFO("Reading senone-codebook map file: %s\n", file_name);
-    
-    if ((fp = fopen(file_name, "rb")) == NULL)
-	E_FATAL_SYSTEM("fopen(%s,rb) failed\n", file_name);
-    
-    /* Read header, including argument-value info and 32-bit byteorder magic */
-    if (bio_readhdr (fp, &argname, &argval, &byteswap) < 0)
-	E_FATAL("bio_readhdr(%s) failed\n", file_name);
-    
-    /* Parse argument-value list */
-    chksum_present = 0;
-    n_mgau_present = 0;
-    for (i = 0; argname[i]; i++) {
-	if (strcmp (argname[i], "version") == 0) {
-	    if (strcmp(argval[i], SPDEF_PARAM_VERSION) != 0) {
-		E_WARN("Version mismatch(%s): %s, expecting %s\n",
-		       file_name, argval[i], SPDEF_PARAM_VERSION);
-	    }
-	    
-	    /* HACK!! Convert version# to float32 and take appropriate action */
-	    if (sscanf (argval[i], "%f", &v) != 1)
-		E_FATAL("%s: Bad version no. string: %s\n", file_name, argval[i]);
-
-	    n_mgau_present = (v > 1.1) ? 1 : 0;
-	} else if (strcmp (argname[i], "chksum0") == 0) {
-	    chksum_present = 1;	/* Ignore the associated value */
-	}
-    }
-    bio_hdrarg_free (argname, argval);
-    argname = argval = NULL;
-
-    chksum = 0;
-    
-    /* Read #gauden (if version matches) */
-    if (n_mgau_present) {
-	if (bio_fread (&(s->n_mgau), sizeof(int32), 1, fp, byteswap, &chksum) != 1)
-	    E_FATAL("fread(%s) (#gauden) failed\n", file_name);
-    }
-    
-    /* Read 1d array data; s->sen2mgau allocated by called function */
-    if (bio_fread_1d ((void **)(&s->sen2mgau), sizeof(int32), &(s->n_sen), fp,
-		      byteswap, &chksum) < 0) {
-	E_FATAL("bio_fread_1d(%s) failed\n", file_name);
-    }
-    
-    /* Infer n_mgau if not present in this version */
-    if (! n_mgau_present) {
-	s->n_mgau = 1;
-	for (i = 0; i < s->n_sen; i++) {
-	    if (s->sen2mgau[i] >= s->n_mgau)
-		s->n_mgau = s->sen2mgau[i]+1;
-	}
-    }
-    
-    if (s->n_sen >= MAX_SENID)
-	E_FATAL("%s: #senones (%d) exceeds limit (%d)\n", file_name, s->n_sen, MAX_SENID);
-    if (s->n_mgau >= MAX_MGAUID)
-	E_FATAL("%s: #gauden (%d) exceeds limit (%d)\n", file_name, s->n_mgau, MAX_MGAUID);
-
-    /* Check for validity of mappings */
-    for (i = 0; i < s->n_sen; i++) {
-	if ((s->sen2mgau[i] >= s->n_mgau) || NOT_MGAUID(s->sen2mgau[i]))
-	    E_FATAL("Bad sen2mgau[%d]= %d, out of range [0, %d)\n",
-		    i, s->sen2mgau[i], s->n_mgau);
-    }
-    
-    if (chksum_present)
-	bio_verify_chksum (fp, byteswap, chksum);
-    
-    if (fread (&eofchk, 1, 1, fp) == 1)
-	E_FATAL("More data than expected in %s\n", file_name);
-
-    fclose(fp);
-
-    E_INFO("Read %d->%d senone-codebook mappings\n", s->n_sen, s->n_mgau);
-
-    return 0;
-}
-
-
-/* In the old S3 files, all senones have the same "shape" (#codewords/senone/feat) */
-static void build_mgau2sen (senone_t *s, int32 n_cw)
-{
-    int32 i, j, m, f;
-    s3senid_t *sen;
-    mixw_t *fw;
-    
-    /* Create mgau2sen map from sen2mgau */
-    s->mgau2sen = (mgau2sen_t *) ckd_calloc (s->n_mgau, sizeof(mgau2sen_t));
-    s->mgau2sen_idx = (int32 *) ckd_calloc (s->n_sen, sizeof(int32));
-    for (i = 0; i < s->n_sen; i++) {
-	m = s->sen2mgau[i];
-	assert ((m < s->n_mgau) && (m >= 0));
-	(s->mgau2sen[m].n_sen)++;
-    }
-    
-    sen = (s3senid_t *) ckd_calloc (s->n_sen, sizeof(s3senid_t));
-    for (m = 0; m < s->n_mgau; m++) {
-	s->mgau2sen[m].sen = sen;
-	sen += s->mgau2sen[m].n_sen;
-	s->mgau2sen[m].n_sen = 0;
-    }
-
-    for (i = 0; i < s->n_sen; i++) {
-	m = s->sen2mgau[i];
-	j = s->mgau2sen[m].n_sen;
-	s->mgau2sen[m].sen[j] = i;
-	s->mgau2sen_idx[i] = j;
-	(s->mgau2sen[m].n_sen)++;
-    }
-    
-    /* Allocate space for the weights */
-    for (m = 0; m < s->n_mgau; m++) {
-	fw = (mixw_t *) ckd_calloc (s->n_feat, sizeof(mixw_t));
-	s->mgau2sen[m].feat_mixw = fw;
-
-	for (f = 0; f < s->n_feat; f++) {
-	    fw[f].n_wt = n_cw;
-	    fw[f].prob = (senprob_t **) ckd_calloc_2d (s->mgau2sen[m].n_sen, n_cw,
-						       sizeof(senprob_t));
-	}
-    }
-}
-
-
-/* In the old S3 files, all senones have the same "shape" (#codewords/senone/feat) */
-static int32 senone_mixw_read(senone_t *s, char *file_name, float64 mixwfloor)
-{
-    FILE *fp;
-    char **argname, **argval;
-    int32 byteswap, chksum_present;
-    uint32 chksum;
-    float32 *pdf;
-    int32 i, j, f, m, c, p, n_sen, n_err, n_cw, nval;
-    char eofchk;
-    mixw_t *fw;
-    int32 pocketsphinx = cmd_ln_boolean("-pocketsphinx");
-    
-    E_INFO("Reading senone mixture weights: %s\n", file_name);
-    
-    if ((fp = fopen(file_name, "rb")) == NULL)
-	E_FATAL_SYSTEM("fopen(%s,rb) failed\n", file_name);
-    
-    /* Read header, including argument-value info and 32-bit byteorder magic */
-    if (bio_readhdr (fp, &argname, &argval, &byteswap) < 0)
-	E_FATAL("bio_readhdr(%s) failed\n", file_name);
-    
-    /* Parse argument-value list */
-    chksum_present = 0;
-    for (i = 0; argname[i]; i++) {
-	if (strcmp (argname[i], "version") == 0) {
-	    if (strcmp(argval[i], MIXW_PARAM_VERSION) != 0)
-		E_WARN("Version mismatch(%s): %s, expecting %s\n",
-			file_name, argval[i], MIXW_PARAM_VERSION);
-	} else if (strcmp (argname[i], "chksum0") == 0) {
-	    chksum_present = 1;	/* Ignore the associated value */
-	}
-    }
-    bio_hdrarg_free (argname, argval);
-    argname = argval = NULL;
-
-    chksum = 0;
-
-    /* Read #senones, #features, #codewords, arraysize */
-    n_sen = s->n_sen;
-    if ((bio_fread (&(s->n_sen),  sizeof(int32), 1, fp, byteswap, &chksum) != 1) ||
-	(bio_fread (&(s->n_feat), sizeof(int32), 1, fp, byteswap, &chksum) != 1) ||
-	(bio_fread (&(n_cw),   sizeof(int32), 1, fp, byteswap, &chksum) != 1) ||
-	(bio_fread (&nval,   sizeof(int32), 1, fp, byteswap, &chksum) != 1)) {
-	E_FATAL("bio_fread(%s) (arraysize) failed\n", file_name);
-    }
-    if ((n_sen != 0) && (s->n_sen != n_sen))
-	E_FATAL("#senones(%d) conflict with mapping file(%d)\n", s->n_sen, n_sen);
-    if (s->n_sen >= MAX_SENID)
-	E_FATAL("%s: #senones (%d) exceeds limit (%d)\n", file_name, s->n_sen, MAX_SENID);
-    if (s->n_feat <= 0)
-	E_FATAL("Bad #features: %d\n", s->n_feat);
-    if (n_cw <= 0)
-	E_FATAL("Bad #mixing-wts/senone: %d\n", n_cw);
-    
-    /* Allocate sen2mgau map if not yet done so (i.e. no explicit mapping file given */
-    if (! s->sen2mgau) {
-	assert ((s->n_mgau == 0) || (s->n_mgau == 1));
-	
-	s->sen2mgau = (int32 *) ckd_calloc (s->n_sen, sizeof(int32));
-	
-	if (s->n_mgau == 1) {
-	    /* Semicontinuous mode; all senones map to single, shared gaussian: 0 */
-	    for (i = 0; i < s->n_sen; i++)
-		s->sen2mgau[i] = 0;
-	} else {
-	    /* Fully continuous mode; each senone maps to own parent gaussian */
-	    s->n_mgau = s->n_sen;
-	    for (i = 0; i < s->n_sen; i++)
-		s->sen2mgau[i] = i;
-	}
-    } else
-	assert (s->n_mgau != 0);
-    if (s->n_mgau >= MAX_MGAUID)
-	E_FATAL("%s: #gauden (%d) exceeds limit (%d)\n", file_name, s->n_mgau, MAX_MGAUID);
-    
-    if (nval != s->n_sen * s->n_feat * n_cw) {
-	E_FATAL("%s: #float32 values(%d) doesn't match dimensions: %d x %d x %d\n",
-		file_name, nval, s->n_sen, s->n_feat, n_cw);
-    }
-    
-    /*
-     * Compute #LSB bits to be dropped to represent mixwfloor with 8 bits.
-     * All PDF values will be truncated (in the LSB positions) by these many bits.
-     */
-    if ((mixwfloor <= 0.0) || (mixwfloor >= 1.0))
-	E_FATAL("mixwfloor (%e) not in range (0, 1)\n", mixwfloor);
-    p = logs3(mixwfloor);
-    for (s->shift = 0, p = -p; p >= 256; s->shift++, p >>= 1);
-    if (pocketsphinx) /* PocketSphinx uses a fixed 10-bit shift. */
-	s->shift = 10;
-    E_INFO("Truncating senone logs3(wt) values by %d bits, to 8 bits\n", s->shift);
-
-    /* Allocate memory for s->mgau2sen and senone PDF data */
-    build_mgau2sen (s, n_cw);
-    
-    /* Temporary structure to read in floats */
-    pdf = (float32 *) ckd_calloc (n_cw, sizeof(float32));
-
-    /* Read senone probs data, normalize, floor, convert to logs3, truncate to 8 bits */
-    n_err = 0;
-    for (i = 0; i < s->n_sen; i++) {
-	m = s->sen2mgau[i];	/* Parent mgau */
-	j = s->mgau2sen_idx[i];	/* Index of senone i within list of senones for mgau m */
-	fw = s->mgau2sen[m].feat_mixw;
-
-	for (f = 0; f < s->n_feat; f++) {
-	    if (bio_fread((void *)pdf, sizeof(float32), n_cw, fp, byteswap, &chksum)
-		!= n_cw) {
-		E_FATAL("bio_fread(%s) (arraydata) failed\n", file_name);
-	    }
-	    
-	    /* Normalize and floor */
-	    if (vector_sum_norm (pdf, n_cw) == 0.0)
-		n_err++;
-	    vector_floor (pdf, n_cw, mixwfloor);
-	    vector_sum_norm (pdf, n_cw);
-
-	    /* Convert to logs3, truncate to 8 bits, and store in s->pdf */
-	    for (c = 0; c < n_cw; c++) {
-		p = -(logs3(pdf[c]));
-		p += (1 << (s->shift-1)) - 1;	/* Rounding before truncation */
-		if (pocketsphinx)
-			p = (p < (MAX_NEG_MIXW << s->shift))
-				? (p >> s->shift) : MAX_NEG_MIXW; /* Trunc/shift */
-		else
-			p = (p < (255 << s->shift)) ? (p >> s->shift) : 255;	/* Trunc/shift */
-		fw[f].prob[j][c] = p;
-	    }
-	}
-    }
-    if (n_err > 0)
-	E_WARN("Weight normalization failed for %d senones\n", n_err);
-
-    ckd_free (pdf);
-
-    if (chksum_present)
-	bio_verify_chksum (fp, byteswap, chksum);
-    
-    if (fread (&eofchk, 1, 1, fp) == 1)
-	E_FATAL("More data than expected in %s\n", file_name);
-
-    fclose(fp);
-
-    E_INFO("Read mixture weights for %d senones: %d features x %d codewords\n",
-	   s->n_sen, s->n_feat, n_cw);
-    
-    return 0;
-}
-
-/* In the old S3 files, all senones have the same "shape" (#codewords/senone/feat) */
-senone_t *senone_init (char *mixwfile, char *sen2mgau_map, float64 mixwfloor)
-{
-    senone_t *s;
-    
-    s = (senone_t *) ckd_calloc (1, sizeof(senone_t));
-    s->n_sen = 0;	/* As yet unknown */
-    s->sen2mgau = NULL;
-
-    assert (sen2mgau_map);
-
-    if (strcmp (sen2mgau_map, ".semi.") == 0) {
-	/* Not a file; map all senones to a single parent mgau */
-	s->n_mgau = 1;	/* But we don't yet know the #senones */
-    } else if (strcmp (sen2mgau_map, ".cont.") == 0) {
-	/* Not a file; map each senone to its own distinct parent mgau */
-	s->n_mgau = 0;	/* We don't yet know the #senones */
-    } else {
-	/* Read mapping file */
-	senone_mgau_map_read (s, sen2mgau_map);	/* Fills in n_sen */
-    }
-    
-    assert (mixwfile);
-    senone_mixw_read (s, mixwfile, mixwfloor);
-    
-    return s;
-}
-
-#if 0
-int32 senone_eval (senone_t *s, s3senid_t sid, int32 f, int32 *dist, int32 n_dist)
-{
-    int32 i, c, scr, fscr;
-    s3mgauid_t m;
-    mixw_t *fw;
-    
-    m = s->sen2mgau[sid];
-    assert ((m >= 0) && (m < s->n_mgau));
-
-    fw = &(s->mgau2sen[m].feat_mixw[f]);
-    assert (fw->n_wt == n_dist);
-
-    i = s->mgau2sen_idx[sid];
-    
-    /* Weight first codeword */
-    scr = dist[0] - (fw->prob[i][0] << s->shift);
-    
-    /* Remaining codewords */
-    for (c = 1; c < fw->n_wt; c++) {
-	fscr = dist[c] - (fw->prob[i][c] << s->shift);
-	scr = logs3_add (scr, fscr);
-    }
-    
-    return scr;
-}
-
-
-void senone_eval_all (senone_t *s, s3mgauid_t m, int32 f, int32 *dist, int32 n_dist,
-		      int32 *senscr)
-{
-    int32 i, c, scr, fscr;
-    s3senid_t sid;
-    mixw_t *fw;
-    
-    fw = &(s->mgau2sen[m].feat_mixw[f]);
-    assert (fw->n_wt == n_dist);
-    
-    for (i = 0; i < s->mgau2sen[m].n_sen; i++) {
-	sid = s->mgau2sen[m].sen[i];
-#if 1
-	/* Weight first codeword */
-	scr = dist[0] - (fw->prob[i][0] << s->shift);
-
-	/* Remaining codewords */
-	for (c = 1; c < fw->n_wt; c++) {
-	    fscr = dist[c] - (fw->prob[i][c] << s->shift);
-	    scr = logs3_add (scr, fscr);
-	}
-
-	senscr[sid] += scr;
-#else
-	senscr[sid] += senone_eval (s, sid, f, dist, n_dist);
-#endif
-    }
-}
-#endif
-
 int main (int32 argc, char **argv)
 {
     model_def_t *m;
     float64 wtflr;
-    char *mdeffile, *senfile, *mgaumap, *feattype, *outfile;
+    const char *mdeffile, *senfile, *mgaumap, *outfile;
     senone_t *s;
+    logmath_t *logmath;
+    uint32 shift;
     
     parse_cmd_ln(argc, argv);
-
-    feattype = "s2_4x";
 
     mdeffile = cmd_ln_str("-moddeffn");
     mgaumap = ".semi.";
@@ -703,12 +273,12 @@ int main (int32 argc, char **argv)
     wtflr = (float64)(cmd_ln_float32("-mwfloor"));
     outfile = cmd_ln_str("-sendumpfn");
     
-    logs3_init ((float64) 1.0001);
-    feat_init (feattype);
+    shift = cmd_ln_boolean("-pocketsphinx") ? 10 : 0;
+    logmath = logmath_init(1.0001, shift, TRUE);
 
     model_def_read(&m, mdeffile);
-    s = senone_init (senfile, mgaumap, wtflr);
-    printf("%p\n",s);
+    s = senone_init (logmath, senfile, mgaumap, wtflr);
+
     if (m->n_tied_state != s->n_sen)
 	E_FATAL("#senones different in mdef(%d) and mixw(%d) files\n", m->n_tied_state, s->n_sen);
     

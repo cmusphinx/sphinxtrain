@@ -50,19 +50,12 @@ BUILD_DIRS =
 ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
   mk_s2sendump.c \
-  parse_cmd_ln.c \
-  bio.c \
-  logs3.c \
-  feat.c
+  senone.c       \
+  parse_cmd_ln.c
+
 H = \
-  parse_cmd_ln.h \
-  another_mdef.h \
-  another_s3types.h \
-  another_senone.h \
-  bio.h \
-  s3types.h \
-  logs3.h \
-  feat.h
+  senone.h \
+  parse_cmd_ln.h
 
 FILES = Makefile $(SRCS) $(H)
 
