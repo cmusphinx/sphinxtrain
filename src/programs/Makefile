@@ -42,7 +42,8 @@
 # ====================================================================
 TOP=../..
 DIRNAME=src/programs
-BUILD_DIRS = agg_seg \
+BUILD_DIRS = \
+	agg_seg \
 	bldtree \
 	bw \
 	cdcn_train \
@@ -61,9 +62,6 @@ BUILD_DIRS = agg_seg \
 	mk_mdef_gen \
 	mk_mllr_class \
 	mk_s2sendump \
-	mk_s3gau \
-	mk_s3mixw \
-	mk_s3tmat \
 	mk_ts2cb \
 	mllr_transform \
 	norm \
@@ -71,8 +69,7 @@ BUILD_DIRS = agg_seg \
 	param_cnt \
 	printp \
 	prunetree \
-	tiestate \
-	wave2feat
+	tiestate
 
 ALL_DIRS= $(BUILD_DIRS) 
 FILES = Makefile README

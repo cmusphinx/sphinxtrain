@@ -49,12 +49,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mk_mllr_class", "win32\msde
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mk_s2sendump", "win32\msdev\programs\mk_s2sendump\mk_s2sendump.vcxproj", "{B5CCF34A-0688-416C-82D3-123FB0B43A87}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mk_s3gau", "win32\msdev\programs\mk_s3gau\mk_s3gau.vcxproj", "{324BD855-49E6-4BC3-9337-0E6F5B4C7A41}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mk_s3mixw", "win32\msdev\programs\mk_s3mixw\mk_s3mixw.vcxproj", "{6A538AE3-1C41-4E32-BE0E-57418AF7EEBC}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mk_s3tmat", "win32\msdev\programs\mk_s3tmat\mk_s3tmat.vcxproj", "{7367861B-791C-48D7-B751-0FAB25DE877C}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mk_ts2cb", "win32\msdev\programs\mk_ts2cb\mk_ts2cb.vcxproj", "{CB87DEC0-A9B0-43B9-A4EE-D42F33C61257}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mllr_solve", "win32\msdev\programs\mllr_solve\mllr_solve.vcxproj", "{0815DD29-06A4-46DB-BB08-FB160D0CD196}"
@@ -70,8 +64,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prunetree", "win32\msdev\programs\prunetree\prunetree.vcxproj", "{63867A81-98B5-466F-9AA3-E7E7352E45DE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tiestate", "win32\msdev\programs\tiestate\tiestate.vcxproj", "{9EFE81A6-6050-4FAF-940A-4FD5D5270DF3}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wave2feat", "win32\msdev\programs\wave2feat\wave2feat.vcxproj", "{F5650A44-C37B-4AB3-95AF-5CE87253011E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
