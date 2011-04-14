@@ -110,6 +110,7 @@ need to specify a model definition using -moddeffn.";
           "1e-3",
           "Variance floor value (NOT USED!!!)"},
 
+	{NULL, 0, NULL, NULL},
     };
 #define ARG_DEFN_H
 
