@@ -72,28 +72,14 @@ segdmp_open_write(const char **dirs,		/* dump directories */
 		  uint32 n_id,		/* # of id's */
 		  uint32 *n_seg,		/* # of segments per id */
 		  uint32 **n_frame,		/* # of frames per segment */
-		  segdmp_type_t data_type);
+		  segdmp_type_t data_type,
+		  uint32 n_stream,
+		  uint32 *vecsize,
+		  uint32 blksize
+		  );
 
 int
 segdmp_close(void);
-
-/*
- * Append frames to the segment dump
- */
-
-int
-segdmp_add_vq(acmod_id_t p,
-	      unsigned char *ccode,
-	      unsigned char *dcode,
-	      unsigned char *pcode,
-	      unsigned char *ddcode,
-	      uint32 n_frame);
-
-int
-segdmp_add_mfcc(acmod_id_t p,
-		vector_t *mfcc,
-		uint32 n_frame,
-		uint32 veclen);
 
 int
 segdmp_add_feat(acmod_id_t p,
@@ -108,25 +94,11 @@ segdmp_open_read(const char **dirs,		/* dump directories */
 		 const char *dmp_fn,		/* dump file name */
 		 const char *idx_fn,		/* index file name */
 		 uint32 *n_id,			/* # of id's */
-		 segdmp_type_t *data_type);
-
-/*
- * Get data from the segment dump
- */
-
-int
-segdmp_next_vq(acmod_id_t p,
-	       unsigned char **out_ccode,
-	       unsigned char **out_dcode,
-	       unsigned char **out_pcode,
-	       unsigned char **out_ddcode,
-	       uint32 *out_len);
-
-int
-segdmp_next_mfcc(acmod_id_t p,
-		 vector_t **out_mfcc,
-		 uint32 *out_n_frame,
-		 uint32 *out_veclen);
+		 segdmp_type_t *data_type, 
+		 uint32 n_stream,
+		 uint32 *vecsize,
+		 uint32 blksize
+);
 
 int
 segdmp_next_feat(acmod_id_t p,
@@ -151,32 +123,3 @@ segdmp_set_bufsz(uint32 sz_in_meg);
 }
 #endif
 #endif /* SEGDMP_H */ 
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  17:46:10  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.3  97/07/16  11:39:10  eht
- * *** empty log message ***
- * 
- * Revision 1.2  96/07/29  16:33:40  eht
- * n_stream and vecsize determined at initialization time
- * 
- * Revision 1.1  1996/03/25  15:52:35  eht
- * Initial revision
- *
- *
- */

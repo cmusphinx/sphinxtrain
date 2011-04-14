@@ -258,7 +258,6 @@ count_next_prior_states(uint32 *n_next,
 			model_def_entry_t *defn,
 
 			float32 ***all_tmat,	       
-			int32 sil_del,
 			acmod_id_t sil_id)
 {
     uint32 tmat_id;
@@ -299,29 +298,14 @@ count_next_prior_states(uint32 *n_next,
 		    ++n_prior[l + j];
 		}
 	    }
-	    /* for last state and it is not the first phone, decide whether there is a silence*/
-	    if(sil_del && phone[i]==sil_id && j ==n_ms-1 && i >0 ) {
-	      ++tp;
-	      ++n_prior[l+j];
-	    }
 	}
 
 	/* last state of each model has either zero or
 	   one next state in the next model. */
 
-
 	if (i < n_phone-1) {
 	    ++tn;
 	    ++n_next[l + n_ms-1];
-
-	    /* ARCHAN: Also insert a skip arc if the next state is a
-	       silence This code is limited because the first phone in the
-	       sentence cannot be skipped.  */
-	    
-	    if(sil_del && phone[i+1]==sil_id){
-	      ++tn;
-	      ++n_next[l+ n_ms-1];
-	    }
 	}
 
     }
@@ -346,7 +330,6 @@ set_next_prior_state(uint32 *next_state,
 		     model_def_entry_t *defn,
 
 		     float32 ***all_tmat,
-		     int32 sil_del,
 		     acmod_id_t sil_id)
 
 {
@@ -367,12 +350,7 @@ set_next_prior_state(uint32 *next_state,
 	/* 2nd through last phone have prior states to first phone state */
 	if (i > 0) {
 
-	  /* ARCHAN: wiring for silence deletion */
-	  if(sil_del && phone[i]==sil_id){
-	    prior_tprob[p] = 0.5;
-	  }else{
-	    prior_tprob[p] = 1.0;
-	  }
+	  prior_tprob[p] = 1.0;
 	  prior_state[p++] = l-1;	/* i.e. prior state of first state
 					   is last state of prior model */
 	}
@@ -402,11 +380,6 @@ set_next_prior_state(uint32 *next_state,
 		}
 	    }
 
-	    if( sil_del && phone[i]==sil_id && i > 0 && j == n_ms-1) {
-	      prior_tprob[p] = 0.5;
-	      prior_state[p++] = l -1 ;
-	    }
-
 #if STATE_SEQ_BUILD
 	    E_INFO("n_prior[l+j] %d, p-p0 %d\n",n_prior[l+j],p-p0);
 	    assert(n_prior[l+j] == (p - p0));
@@ -415,19 +388,9 @@ set_next_prior_state(uint32 *next_state,
 
 	/* 1st through penultimate phone have next states */
 	if (i < n_phone-1) {
-	  if(sil_del && phone[i+1]==sil_id){
-	    next_tprob[n] = 0.5;
-	    next_state[n++] = l + n_ms; /* i.e. next state of last state is 
-					   first state of next model */
-	    next_tprob[n] = 0.5;
-	    next_state[n++] = l + 2* n_ms +  -1; /* i.e another next state of last state is 
-									 the last state of the next model. */
-	      
-	  }else{
 	    next_tprob[n] = 1.0;
 	    next_state[n++] = l + n_ms;	/* i.e. next state of last state is 
 					   first state of next model */
-	  }
 	}
     }
     assert( n == total_next );
@@ -477,7 +440,6 @@ state_seq_make(uint32 *n_state,
 	       uint32 n_phone,
 	       model_inventory_t *inv,
 	       model_def_t *mdef,
-	       int32 sil_del,
 	       acmod_id_t sil_id)
 {
     static state_t *state;	/* The states of the sentence HMM graph */
@@ -552,7 +514,6 @@ state_seq_make(uint32 *n_state,
 			    phone, n_phone,
 			    defn,
 			    all_tmat,
-			    sil_del,
 			    sil_id);
 
     
@@ -595,7 +556,7 @@ state_seq_make(uint32 *n_state,
     set_next_prior_state(next_state, next_tprob, n_next, total_next,
 			 prior_state, prior_tprob, n_prior, total_prior,
 			 phone, n_phone, defn,
-			 all_tmat,sil_del,sil_id);
+			 all_tmat, sil_id);
 
     /* Define the model states of the sentence HMM */
     for (i = 0, k = 0, n = 0, p = 0; i < n_phone; i++) {

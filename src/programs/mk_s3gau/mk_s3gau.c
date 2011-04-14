@@ -51,7 +51,6 @@
 #include <s3/s3gau_io.h>
 #include <s3/s2_param.h>
 #include <s3/s2_read_cb.h>
-#include <s3/feat.h>
 #include <s3/err.h>
 #include <sphinxbase/cmd_ln.h>
 

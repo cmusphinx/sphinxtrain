@@ -106,7 +106,6 @@
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/cmd_ln.h>
 #include <s3/s2_param.h>
-#include <s3/feat.h>
 #include <sphinxbase/matrix.h>
 #include <s3/lda.h>
 #include <s3/s3.h>
@@ -219,7 +218,7 @@ accum_gauden(float32 ***denacc,
 	    /* Note that we ignore -ldadim here, because it's rather
 	     * complicated to change the length of veclen for the
 	     * output only. */
-	    lda_transform(&frame, 1, lda, g->veclen[0], g->veclen[0]);
+	    feat_lda_transform(feat, &frame, 1);
     }
 
     /* for each density family found in the utterance */
@@ -1020,7 +1019,7 @@ mmi_accum_gauden(float32 ***denacc,
     /* Note that we ignore -ldadim here, because it's rather
      * complicated to change the length of veclen for the
      * output only. */
-    lda_transform(&frame, 1, lda, g->veclen[0], g->veclen[0]);
+    feat_lda_transform(feat, &frame, 1);
   }
 
   /* for each density family found in the utterance */

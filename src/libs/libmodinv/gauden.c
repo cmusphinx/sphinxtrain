@@ -60,7 +60,6 @@
 
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/cmd_ln.h>
-#include <s3/feat.h>
 #include <s3/err.h>
 #include <sphinxbase/matrix.h>
 

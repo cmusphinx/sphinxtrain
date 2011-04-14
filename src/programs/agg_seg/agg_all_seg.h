@@ -46,34 +46,15 @@
 #ifndef AGG_ALL_SEG_H
 #define AGG_ALL_SEG_H
 
-#include <sphinxbase/prim_type.h>
 #include <s3/segdmp.h>
 
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/feat.h>
+
 int
-agg_all_seg(segdmp_type_t type,
+agg_all_seg(feat_t *fcb,
+	    segdmp_type_t type,
 	    const char *dmpfn,
 	    uint32 stride);
 
 #endif /* AGG_ALL_SEG_H */ 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:38:16  eht
- * Initial revision
- * 
- *
- */

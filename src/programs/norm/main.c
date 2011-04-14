@@ -47,8 +47,6 @@
 
 #include "parse_cmd_ln.h"
 
-#include <s3/feat.h>
-
 /* The SPHINX-III common library */
 #include <s3/common.h>
 

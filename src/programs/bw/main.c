@@ -57,7 +57,6 @@
 #include <s3/common.h>
 #include <s3/prefetch.h>
 #include <s3/profile.h>
-#include <sphinxbase/ckd_alloc.h>
 #include <s3/get_host_name.h>
 #include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
@@ -65,7 +64,6 @@
 #include <s3/mk_sseq.h>
 #include <s3/mk_trans_seq.h>
 #include <s3/silcomp.h>
-
 #include <s3/model_inventory.h>
 #include <s3/model_def_io.h>
 #include <s3/s3ts2cb_io.h>
@@ -74,15 +72,12 @@
 #include <s3/ts2cb.h>
 #include <s3/lda.h>
 #include <s3/s3cb2mllr_io.h>
-
-#include <s3/feat.h>
-
-/* Some SPHINX-II compatibility definitions */
-#include <s3/s2_param.h>
-
 #include <sys_compat/misc.h>
 #include <sys_compat/time.h>
 #include <sys_compat/file.h>
+
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/feat.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,11 +87,9 @@
 
 #define DUMP_RETRY_PERIOD	3	/* If a count dump fails, retry every # of sec's */
 
-/* the following parameters are used for MMIE training 
-   lqin 2010-03 */
+/* the following parameters are used for MMIE training */
 #define LOG_ZERO	-1.0E10
 static float32 lm_scale = 11.5;
-/* end */
 
 /* FIXME: Should go in libutil */
 static char *
@@ -173,11 +166,13 @@ main_initialize(int argc,
 		char *argv[],
 		model_inventory_t **out_inv,
 		lexicon_t **out_lex,
-		model_def_t **out_mdef)
+		model_def_t **out_mdef,
+		feat_t **out_feat)
 {
     model_inventory_t *inv;	/* the model inventory */
     lexicon_t *lex;		/* the lexicon to be returned to the caller */
     model_def_t *mdef;
+    feat_t *feat;
     uint32 n_map;
     uint32 n_ts;
     uint32 n_cb;
@@ -186,54 +181,84 @@ main_initialize(int argc,
     int tmat_reest;
     int mean_reest;
     int var_reest;
-    int sil_del;
     int did_restore = FALSE;
     const char *fn;
-    char* silence_str;
-    /* dhuggins@cs, 2006-08: Note these are forward transforms for use
+    const char* silence_str;
+    int32 *mllr_idx = NULL;
+    const char *hmmdir;
+    const char *mdeffn, *meanfn, *varfn, *mixwfn, *tmatfn, *fdictfn;
+
+    /* Note these are forward transforms for use
        in training.  The inverse transform of the accumulators is now
        done externally by mllr_transform. */
     float32 ****sxfrm_a = NULL;
     float32 ***sxfrm_b = NULL;
-    int32 *mllr_idx = NULL;
-    const char *hmmdir;
-    char *mdeffn, *meanfn, *varfn, *mixwfn, *tmatfn, *fdictfn;
     
     E_INFO("Compiled on %s at %s\n", __DATE__, __TIME__);
 
     /* define, parse and (partially) validate the command line */
     train_cmd_ln_parse(argc, argv);
 
-    if (cmd_ln_str("-feat") != NULL) {
-	feat_set(cmd_ln_str("-feat"));
-	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
-	feat_set_subvecs(cmd_ln_str("-svspec"));
+    feat = 
+        feat_init(cmd_ln_str("-feat"),
+                  cmn_type_from_str(cmd_ln_str("-cmn")),
+                  cmd_ln_boolean("-varnorm"),
+                  agc_type_from_str(cmd_ln_str("-agc")),
+                  1, cmd_ln_int32("-ceplen"));
+    *out_feat = feat;
+
+
+    if (cmd_ln_str("-lda") && !cmd_ln_boolean("-ldaaccum")) {
+        E_INFO("Reading linear feature transformation from %s\n",
+               cmd_ln_str("-lda"));
+        if (feat_read_lda(feat,
+                          cmd_ln_str("-lda"),
+                          cmd_ln_int32("-ldadim")) < 0)
+            return -1;
     }
-    else {
-	E_FATAL("You need to set a feature extraction config using -feat\n");
+
+    if (cmd_ln_str("-svspec")) {
+        int32 **subvecs;
+        E_INFO("Using subvector specification %s\n", 
+               cmd_ln_str("-svspec"));
+        if ((subvecs = parse_subvecs(cmd_ln_str("-svspec"))) == NULL)
+            return -1;
+        if ((feat_set_subvecs(feat, subvecs)) < 0)
+            return -1;
     }
-    if (cmd_ln_str("-ceplen") == NULL) {
-	E_FATAL("Input vector length must be specified\n");
+
+    if (cmd_ln_exists("-agcthresh")
+        && 0 != strcmp(cmd_ln_str("-agc"), "none")) {
+        agc_set_threshold(feat->agc_struct,
+                          cmd_ln_float32("-agcthresh"));
     }
-    feat_set_in_veclen(cmd_ln_int32("-ceplen"));
-    if (cmd_ln_str("-lda") != NULL) {
-	if (cmd_ln_boolean("-ldaaccum")) {
-	    /* If -ldaaccum is set, we will not apply LDA until we accumulate,
-	       so read it in later. */
-	}
-	else {
-	    /* Otherwise we load it into the feature computation so it
-	     * applies globally. */
-	    if (feat_read_lda(cmd_ln_str("-lda"), cmd_ln_int32("-ldadim"))) {
-		E_FATAL("Failed to read LDA matrix\n");
-	    }
-	}
+
+    if (feat->cmn_struct
+        && cmd_ln_exists("-cmninit")) {
+        char *c, *cc, *vallist;
+        int32 nvals;
+
+        vallist = ckd_salloc(cmd_ln_str("-cmninit"));
+        c = vallist;
+        nvals = 0;
+        while (nvals < feat->cmn_struct->veclen
+               && (cc = strchr(c, ',')) != NULL) {
+            *cc = '\0';
+            feat->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC(atof(c));
+            c = cc + 1;
+            ++nvals;
+        }
+        if (nvals < feat->cmn_struct->veclen && *c != '\0') {
+            feat->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC(atof(c));
+        }
+        ckd_free(vallist);
     }
+
 
     /* create a new model inventory structure */
     *out_inv = inv = mod_inv_new();
 
-    mod_inv_set_n_feat(inv, feat_n_stream());
+    mod_inv_set_n_feat(inv, feat_n_stream(feat));
 
     mdeffn = cmd_ln_str("-moddeffn");
     meanfn = cmd_ln_str("-meanfn");
@@ -369,7 +394,6 @@ main_initialize(int argc,
     mean_reest = cmd_ln_int32("-meanreest");
     var_reest  = cmd_ln_int32("-varreest");
     tmat_reest = cmd_ln_int32("-tmatreest");
-    sil_del    = cmd_ln_int32("-sildel");
 
     E_INFO("Will %sreestimate mixing weights.\n",
 	   (mixw_reest ? "" : "NOT "));
@@ -377,8 +401,6 @@ main_initialize(int argc,
 	   (mean_reest ? "" : "NOT "));
     E_INFO("Will %sreestimate variances.\n",
 	   (var_reest ? "" : "NOT "));
-    E_INFO("WIll %soptionally delete silence in Baum Welch or Viterbi. \n",
-	   (sil_del ? "" : "NOT "));
 
     if (cmd_ln_int32("-mixwreest")) {
         if (mod_inv_alloc_mixw_acc(inv) != S3_SUCCESS)
@@ -448,10 +470,6 @@ main_initialize(int argc,
 	corpus_set_ctl_filename(cmd_ln_str("-ctlfn"));
     }
 
-    if (cmd_ln_str("-sildelfn")) {
-	corpus_set_sildel_filename(cmd_ln_str("-sildelfn"));
-    }
-
     if (cmd_ln_str("-phsegdir")) {
 	    corpus_set_phseg_dir(cmd_ln_str("-phsegdir"));
 	    corpus_set_phseg_ext(cmd_ln_str("-phsegext"));
@@ -465,16 +483,20 @@ main_initialize(int argc,
 	
 	fp = fopen(fn, "r");
 	if (fp != NULL) {
+	    const uint32* feat_veclen;
 	    fclose(fp);
 
 	    E_INFO("RESTORING CHECKPOINTED COUNTS IN %s\n", cmd_ln_str("-accumdir"));
 	    
+	    feat_veclen = (uint32 *)feat_stream_lengths(feat);
+	    	    
 	    if (mod_inv_restore_acc(inv,
 				    cmd_ln_str("-accumdir"),
 				    mixw_reest,
 				    mean_reest,
 				    var_reest,
-				    tmat_reest) != S3_SUCCESS) {
+				    tmat_reest,
+				    feat_veclen) != S3_SUCCESS) {
 		E_FATAL("Unable to restore checkpoint information\n");
 	    }
 
@@ -515,11 +537,12 @@ main_initialize(int argc,
 	    E_FATAL("Unable to read %s\n", cmd_ln_str("-mllrmat"));
 	}
 
-	if (feat_n_stream() != tmp_n_stream) {
+	if (feat_n_stream(feat) != tmp_n_stream) {
 	    E_FATAL("# feature streams in -mllrmat %s != # feature streams configured on cmd ln\n");
 	}
 	
-	feat_veclen = feat_vecsize();
+	feat_veclen = (uint32 *)feat_stream_lengths(feat);
+
 	for (j = 0; j < tmp_n_stream; j++) {
 	    if (feat_veclen[j] != tmp_veclen[j]) {
 		E_FATAL("# components of stream %u in -mllrmat inconsistent w/ -feat config (%u != %u)\n",
@@ -568,18 +591,17 @@ void
 main_reestimate(model_inventory_t *inv,
 		lexicon_t *lex,
 		model_def_t *mdef,
+		feat_t *feat,
 		int32 viterbi)
 {
     vector_t *mfcc;	/* utterance cepstra */	
-    uint32 n_frame;	/* # of cepstrum frames  */
+    int32 n_frame;	/* # of cepstrum frames  */
     uint32 svd_n_frame;	/* # of cepstrum frames  */
-    uint32 mfc_veclen;	/* # of MFC coefficients per frame */
     vector_t **f;		/* independent feature streams derived
 				 * from cepstra */
     state_t *state_seq;		/* sentence HMM state sequence for the
 				   utterance */
     float32 ***lda = NULL;
-    uint32 n_lda = 0, m, n;
     uint32 n_state = 0;	/* # of sentence HMM states */
     float64 total_log_lik;	/* total log liklihood over corpus */
     float64 log_lik;		/* log liklihood for an utterance */
@@ -592,10 +614,9 @@ main_reestimate(model_inventory_t *inv,
     uint32 tmat_reest;	/* if TRUE, reestimate transition probability matrices */
     uint32 mean_reest;	/* if TRUE, reestimate means */
     uint32 var_reest;	/* if TRUE, reestimate variances */
-    uint32 sil_del;    /* if TRUE optionally delete silence at the end */
     char *trans;
-    char* silence_str;
-    char *pdumpdir;
+    const char* silence_str;
+    const char *pdumpdir;
     FILE *pdumpfh;
     uint32 in_veclen;
     timing_t *utt_timer = NULL;
@@ -613,10 +634,6 @@ main_reestimate(model_inventory_t *inv,
     int32 var_is_full;
 
     uint32 n_utt;
-
-    uint32 *del_sf;
-    uint32 *del_ef;
-    uint32 n_del;
 
     s3phseg_t *phseg = NULL;
 
@@ -668,15 +685,16 @@ main_reestimate(model_inventory_t *inv,
     var_reest = cmd_ln_int32("-varreest");
     pass2var = cmd_ln_int32("-2passvar");
     var_is_full = cmd_ln_int32("-fullvar");
-    sil_del    = cmd_ln_int32("-sildel");
     silence_str = cmd_ln_str("-siltag");
     pdumpdir = cmd_ln_str("-pdumpdir");
     in_veclen = cmd_ln_int32("-ceplen");
 
     if (cmd_ln_str("-lda") && cmd_ln_boolean("-ldaaccum")) {
 	/* Read in an LDA matrix for accumulation. */
-	lda = lda_read(cmd_ln_str("-lda"), &n_lda,
-		       &m, &n);
+	feat_read_lda(feat, 
+		      cmd_ln_str("-lda"), 
+		      cmd_ln_int32("-ldadim"));
+	lda = feat->lda;
     }
 
     if (cmd_ln_str("-ckptintv")) {
@@ -759,26 +777,9 @@ main_reestimate(model_inventory_t *inv,
 	       seq_no,
 	       (outputfullpath ? corpus_utt_full_name() : corpus_utt()));
 
-	/* get the MFCC data for the utterance */
-/* CHANGE BY BHIKSHA; IF INPUT VECLEN != 13, THEN DO NOT USE THE
-   REGULAR corpus_get_mfcc() WHICH REQUIRES INPUT DATA TO BE 13 DIMENSIONAL
-   CEPSTRA. USE, INSTEAD, THE HACKED VERSION corpus_get_generic_featurevec()
-   WHICH TAKES FEATURES OF ARBITRARY LENGTH
-   7 JAN 1998 */
-        if (in_veclen == S2_CEP_VECLEN) {
-	    if (corpus_get_mfcc(&mfcc, &n_frame, &mfc_veclen) < 0) {
+        if (corpus_get_generic_featurevec(&mfcc, &n_frame, in_veclen) < 0) {
 	        E_FATAL("Can't read input features\n");
-	    }
-	    assert(mfc_veclen == in_veclen);
-        }
-        else {
-	    if (corpus_get_generic_featurevec(&mfcc, &n_frame, in_veclen) < 0) {
-	        E_FATAL("Can't read input features\n");
-	    }
-        }
-
-/* END CHANGES BY BHIKSHA */
-
+	}
 
 	printf(" %4u", n_frame);
 
@@ -802,12 +803,10 @@ main_reestimate(model_inventory_t *inv,
 	    continue;
 	}
 
-	corpus_get_sildel(&del_sf, &del_ef, &n_del);
-	silcomp_set_del_seg(del_sf, del_ef, n_del);
-
 	svd_n_frame = n_frame;
-	/* compute feature vectors from the MFCC data */
-	f = feat_compute(mfcc, &n_frame);
+	
+	f = feat_array_alloc(feat, n_frame + feat_window_size(feat));
+	feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
 
 	printf(" %4u", n_frame - svd_n_frame);
 
@@ -839,7 +838,7 @@ main_reestimate(model_inventory_t *inv,
 	if (upd_timer)
 	    timing_start(upd_timer);
 	/* create a sentence HMM */
-	state_seq = next_utt_states(&n_state, lex, inv, mdef, trans, sil_del, silence_str);
+	state_seq = next_utt_states(&n_state, lex, inv, mdef, trans, silence_str);
 	printf(" %5u", n_state);
 	if (!viterbi) {
 	    /* accumulate reestimation sums for the utterance */
@@ -898,7 +897,7 @@ main_reestimate(model_inventory_t *inv,
 		fclose(pdumpfh);
 	free(mfcc[0]);
 	ckd_free(mfcc);
-	feat_free(f);
+	feat_array_free(f);
 	free(trans);	/* alloc'ed using strdup() */
 
 	seq_no++;
@@ -1166,7 +1165,6 @@ mmi_rand_train(model_inventory_t *inv,
 	       lexicon_t *lex,
 	       vector_t **f,
 	       s3lattice_t *lat,
-	       int32 sil_del,
 	       char* silence_str,
 	       float64 a_beam,
 	       uint32 mean_reest,
@@ -1240,7 +1238,7 @@ mmi_rand_train(model_inventory_t *inv,
 	strcpy(nword, lat->arc[rand_next_id-1].word);
       rphone = mk_boundary_phone(nword, 1, lex);
 
-      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, sil_del, silence_str);
+      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, silence_str);
 
       /* viterbi compuation to get the acoustic score for a word hypothesis */
       if (mmi_viterbi_run(&log_lik,
@@ -1299,7 +1297,7 @@ mmi_rand_train(model_inventory_t *inv,
       rphone = mk_boundary_phone(nword, 1, lex);
       
       /* make state list */
-      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, sil_del, silence_str);
+      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, silence_str);
       
       /* viterbi update model parameters */
       if (mmi_viterbi_update(arc_f, n_word_obs,
@@ -1328,7 +1326,6 @@ mmi_best_train(model_inventory_t *inv,
 	       lexicon_t *lex,
 	       vector_t **f,
 	       s3lattice_t *lat,
-	       int32 sil_del,
 	       char* silence_str,
 	       float64 a_beam,
 	       uint32 mean_reest,
@@ -1403,7 +1400,7 @@ mmi_best_train(model_inventory_t *inv,
 	  if (*rphone != prev_rphone || j == 0) {
 	        
 	    /* make state list */
-	    state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, sil_del, silence_str);
+	    state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, silence_str);
 	        
 	    /* viterbi compuation to get the acoustic score for a word hypothesis */
 	    if (mmi_viterbi_run(&log_lik,
@@ -1474,7 +1471,7 @@ mmi_best_train(model_inventory_t *inv,
       rphone = mk_boundary_phone(nword, 1, lex);
       
       /* make state list */
-      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, sil_del, silence_str);
+      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, silence_str);
       
       /* viterbi update model parameters */
       if (mmi_viterbi_update(arc_f, n_word_obs,
@@ -1503,7 +1500,6 @@ mmi_ci_train(model_inventory_t *inv,
 	     lexicon_t *lex,
 	     vector_t **f,
 	     s3lattice_t *lat,
-	     int32 sil_del,
 	     char* silence_str,
 	     float64 a_beam,
 	     uint32 mean_reest,
@@ -1532,7 +1528,7 @@ mmi_ci_train(model_inventory_t *inv,
       arc_f[k] = f[k+lat->arc[n].sf-1];
     
     /* make state list */
-    state_seq = next_utt_states(&n_state, lex, inv, mdef, lat->arc[n].word, sil_del, silence_str);
+    state_seq = next_utt_states(&n_state, lex, inv, mdef, lat->arc[n].word, silence_str);
     
     /* viterbi compuation to get the acoustic score for a word hypothesis */
     if (mmi_viterbi_run(&log_lik,
@@ -1567,7 +1563,7 @@ mmi_ci_train(model_inventory_t *inv,
 	arc_f[k] = f[k+lat->arc[n].sf-1];
       
       /* make state list */
-      state_seq = next_utt_states(&n_state, lex, inv, mdef, lat->arc[n].word, sil_del, silence_str);
+      state_seq = next_utt_states(&n_state, lex, inv, mdef, lat->arc[n].word, silence_str);
       
       /* viterbi update model parameters */
       if (mmi_viterbi_update(arc_f, n_word_obs,
@@ -1592,15 +1588,14 @@ mmi_ci_train(model_inventory_t *inv,
 void
 main_mmi_reestimate(model_inventory_t *inv,
 		    lexicon_t *lex,
-		    model_def_t *mdef)
+		    model_def_t *mdef,
+		    feat_t *feat)
 {
   vector_t *mfcc;/* utterance cepstra */
-  uint32 n_frame;/* # of cepstrum frames  */
+  int32 n_frame;/* # of cepstrum frames  */
   uint32 svd_n_frame;        /* # of cepstrum frames  */
-  uint32 mfc_veclen;        /* # of MFC coefficients per frame */
   vector_t **f;/* independent feature streams derived from cepstra */
   float32 ***lda = NULL;
-  uint32 n_lda = 0, m, n;
   uint32 total_frames;        /* # of frames over the corpus */
   float64 a_beam;/* alpha pruning beam */
   float64 b_beam;/* beta pruning beam */
@@ -1608,11 +1603,10 @@ main_mmi_reestimate(model_inventory_t *inv,
   uint32 seq_no;/* sequence # of utterance in corpus */
   uint32 mean_reest;        /* if TRUE, reestimate means */
   uint32 var_reest;        /* if TRUE, reestimate variances */
-  uint32 sil_del;/* if TRUE optionally delete silence at the end */
 
-  char *lat_dir;        /* lattice directory */
-  char *lat_ext;/* denominator or numerator lattice */
-  char *mmi_type;/* different methods to get left and right context for Viterbi run on lattice */
+  const char *lat_dir;        /* lattice directory */
+  const char *lat_ext;/* denominator or numerator lattice */
+  const char *mmi_type;/* different methods to get left and right context for Viterbi run on lattice */
   uint32 n_mmi_type = 0;/* convert the mmi_type string to a int */
   s3lattice_t *lat = NULL;/* input lattice */
   float64 total_log_postprob = 0;/* total posterior probability of the correct hypotheses */
@@ -1623,10 +1617,6 @@ main_mmi_reestimate(model_inventory_t *inv,
   char* silence_str;
   uint32 in_veclen;
   uint32 n_utt;
-
-  uint32 *del_sf;
-  uint32 *del_ef;
-  uint32 n_del;
 
   uint32 no_retries=0;
 
@@ -1691,14 +1681,14 @@ main_mmi_reestimate(model_inventory_t *inv,
 
   mean_reest = cmd_ln_int32("-meanreest");
   var_reest = cmd_ln_int32("-varreest");
-  sil_del    = cmd_ln_int32("-sildel");
   silence_str = cmd_ln_str("-siltag");
   in_veclen = cmd_ln_int32("-ceplen");
   
   /* Read in an LDA matrix for accumulation. */
   if (cmd_ln_str("-lda") && cmd_ln_boolean("-ldaaccum")) {
-    lda = lda_read(cmd_ln_str("-lda"), &n_lda,
-		   &m, &n);
+	feat_read_lda(feat, cmd_ln_str("-lda"), 
+			    cmd_ln_int32("-ldadim"));
+	lda = feat->lda;
   }
 
   if (cmd_ln_str("-accumdir") == NULL) {
@@ -1737,16 +1727,8 @@ main_mmi_reestimate(model_inventory_t *inv,
   while (corpus_next_utt()) {
     printf("utt> %5u %25s",  seq_no, corpus_utt());
     
-    if (in_veclen == S2_CEP_VECLEN) {
-      if (corpus_get_mfcc(&mfcc, &n_frame, &mfc_veclen) < 0) {
+    if (corpus_get_generic_featurevec(&mfcc, &n_frame, in_veclen) < 0) {
 	E_FATAL("Can't read input features\n");
-      }
-      assert(mfc_veclen == in_veclen);
-    }
-    else {
-      if (corpus_get_generic_featurevec(&mfcc, &n_frame, in_veclen) < 0) {
-	E_FATAL("Can't read input features\n");
-      }
     }
     
     printf(" %4u", n_frame);
@@ -1770,13 +1752,11 @@ main_mmi_reestimate(model_inventory_t *inv,
       continue;
     }
       
-    corpus_get_sildel(&del_sf, &del_ef, &n_del);
-    silcomp_set_del_seg(del_sf, del_ef, n_del);
-      
+  
     svd_n_frame = n_frame;
       
-    /* compute feature vectors from the MFCC data */
-    f = feat_compute(mfcc, &n_frame);
+    f = feat_array_alloc(feat, n_frame + feat_window_size(feat));
+    feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
       
     printf(" %4u", n_frame - svd_n_frame);
       
@@ -1792,7 +1772,7 @@ main_mmi_reestimate(model_inventory_t *inv,
       case 1:
 	{
 	  if (mmi_rand_train(inv, mdef, lex, f, lat,
-			     sil_del, silence_str, a_beam, mean_reest,
+			     silence_str, a_beam, mean_reest,
 			     var_reest, lda) == S3_SUCCESS) {
 	    total_log_postprob += lat->postprob;
 	    printf("   %e", lat->postprob);
@@ -1806,7 +1786,7 @@ main_mmi_reestimate(model_inventory_t *inv,
       case 2:
 	{
 	  if (mmi_best_train(inv, mdef, lex, f, lat,
-			     sil_del, silence_str, a_beam, mean_reest,
+			     silence_str, a_beam, mean_reest,
 			     var_reest, lda) == S3_SUCCESS) {
 	    total_log_postprob += lat->postprob;
 	    printf("   %e", lat->postprob);
@@ -1820,7 +1800,7 @@ main_mmi_reestimate(model_inventory_t *inv,
       case 3:
 	{
 	  if (mmi_ci_train(inv, mdef, lex, f, lat,
-			   sil_del, silence_str, a_beam, mean_reest,
+			   silence_str, a_beam, mean_reest,
 			   var_reest, lda) == S3_SUCCESS) {
 	    total_log_postprob += lat->postprob;
 	    printf("   %e", lat->postprob);
@@ -1852,7 +1832,7 @@ main_mmi_reestimate(model_inventory_t *inv,
     
     free(mfcc[0]);
     ckd_free(mfcc);
-    feat_free(f);
+    feat_array_free(f);
     free(trans);
       
     seq_no++;
@@ -1924,227 +1904,27 @@ main_mmi_reestimate(model_inventory_t *inv,
   model_def_free(mdef);
     
 }
-/* end */
 
-
-/* the following main() function is modified for MMIE training
-   lqin 2010-03 */
 int main(int argc, char *argv[])
 {
     model_inventory_t *inv;
     lexicon_t *lex = NULL;
     model_def_t *mdef = NULL;
+    feat_t *feat = NULL;
     
     (void) prefetch_init();	/* should do this BEFORE any allocations */
 
     if (main_initialize(argc, argv,
-			&inv, &lex, &mdef) != S3_SUCCESS) {
+			&inv, &lex, &mdef, &feat) != S3_SUCCESS) {
 	E_FATAL("initialization failed\n");
     }
 
     if (cmd_ln_int32("-mmie")) {
-      main_mmi_reestimate(inv, lex, mdef);
+      main_mmi_reestimate(inv, lex, mdef, feat);
     }
     else {
-      main_reestimate(inv, lex, mdef, cmd_ln_int32("-viterbi"));
+      main_reestimate(inv, lex, mdef, feat, cmd_ln_int32("-viterbi"));
     }
 
     return 0;
 }
-/* end */
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.16  2006/03/27  04:08:57  dhdfu
- * Optionally use a set of phoneme segmentations to constrain Baum-Welch
- * training.
- * 
- * Revision 1.15  2006/03/20 19:05:46  dhdfu
- * Add missing newlines
- *
- * Revision 1.14  2006/02/24 15:50:23  eht
- * Output an informational message to the log that collecting profiling
- * information about bw consumes significant CPU resources and suggest
- * using -timing no if profiling isn't needed.
- *
- * Revision 1.13  2006/02/23 22:21:29  eht
- * add -outputfullpath and -fullsuffixmatch arguments to bw.
- *
- * Default behavior is to keep the existing system behavior when the
- * corpus module tries to match the transcript utterance id with the
- * partial path contained in the control file.
- *
- * Using -fullsuffixmatch yes will do the following:
- * 	The corpus module will check whether the string contained
- * 	inside parentheses in the transcript for the utterances
- * 	matches the final part of the control file partial path
- * 	for the utterance.  For instance, if the control file
- * 	partial path is:
- * 		tidigits/train/man/ae/243za
- * 	the following strings will be considered to match:
- * 		243za
- * 		ae/243za
- * 		man/ae/243za
- * 		.
- * 		.
- * 		.
- * 	In any event, the utterance will be used by bw for training.
- * 	This switch just modifies when the warning message for
- * 	mismatching control file and transcripts is generated.
- *
- * Using -outputfullpath yes will output the entire subpath from the
- * control file in the log output of bw rather than just the final path
- * component.  This allows for simpler automatic processing of the output
- * of bw.
- *
- * Revision 1.12  2005/09/27 02:02:47  arthchan2003
- * Check whether utterance is too short in init_gau, bw and agg_seg.
- *
- * Revision 1.11  2005/09/15 19:36:00  dhdfu
- * Add (as yet untested) support for letter-to-sound rules (from CMU
- * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only
- * rules for CMUdict exist.  Of course this is not a substitute for
- * actually checking pronunciations...
- *
- * Revision 1.10  2005/09/15 19:32:36  dhdfu
- * Another (meaningless) signedness fix
- *
- * Revision 1.9  2004/11/17 01:46:58  arthchan2003
- * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
- *
- * Revision 1.8  2004/07/22 00:08:39  egouvea
- * Fixed some compilation warnings.
- *
- * Revision 1.7  2004/07/21 18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.6  2004/07/17 08:00:23  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.4  2004/06/17 19:17:14  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.30  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.29  1996/08/06  14:04:13  eht
- * Silence deletion file implementation
- *
- * Revision 1.28  1996/07/29  16:16:44  eht
- * Wrap up more initialization functionality into mod_inv module
- * - MLLR reestimation
- * Bunch of relatively minor changes
- *
- * Revision 1.27  1996/03/26  13:54:51  eht
- * - Deal w/ case of n_top > n_density in a better way
- * - Fix bug of float32 beams
- * - Deal w/ 2d MFCC data rather than the old 1d form
- * - Add flag to control whether timing stats are printed
- * - Add feature that when '-accumdir' is not specified, no
- *   counts are written.  This allows debugging runs w/o the
- *   fear of overwriting data.  A warning is printed at initialization
- *   time that no '-accumdir' argument has been given.
- *
- * Revision 1.26  1996/03/04  15:58:36  eht
- * Added more CPU time counters
- *
- * Revision 1.25  1996/02/02  17:55:20  eht
- * *** empty log message ***
- *
- * Revision 1.24  1996/02/02  17:40:32  eht
- * Deal with alpha and beta beams.
- *
- * Revision 1.23  1996/01/26  18:23:49  eht
- * Deal w/ case when MFC file cannot be read.
- * Free comments w/ were not freed before.
- *
- * Revision 1.22  1995/12/15  18:37:07  eht
- * Added some type cases for memory alloc/free
- *
- * Revision 1.21  1995/12/14  19:47:59  eht
- * Added some sanity checks to prevent seg faults and weird behavior if
- * the user gives inconsistent input arguments.
- *
- * Revision 1.20  1995/12/01  03:58:22  eht
- * Fixed transcript core leak
- *
- * Revision 1.19  1995/11/30  20:46:44  eht
- * Added change to allow state parameter definitions to be used.
- * Added change to allow transition matrix reestimation to be turned off.
- *
- * Revision 1.18  1995/11/10  19:37:44  eht
- * Use new profile
- *
- * Revision 1.16  1995/10/18  11:18:38  eht
- * Include compatibility macros for Windows NT so that
- * sleep(x) is converted into Sleep(x * 1000)
- *
- * Revision 1.15  1995/10/17  14:02:26  eht
- * Changed so that would port to Windows NT
- *
- * Revision 1.14  1995/10/10  12:43:50  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.13  1995/10/09  14:55:33  eht
- * Change interface to new ckd_alloc routines
- *
- * Revision 1.12  1995/10/05  12:52:17  eht
- * Get rid of the U Toronto malloc package statements
- *
- * Revision 1.11  95/09/14  14:19:36  14:19:36  eht (Eric Thayer)
- * Added support for U Toronto debug malloc library
- * 
- * Revision 1.10  1995/09/08  19:11:14  eht
- * Updated to use new acmod_set module.  Prior to testing
- * on TI digits.
- *
- * Revision 1.9  1995/09/07  18:53:03  eht
- * Get the seq number of the first utterance in a subcorpus
- * from the corpus module rather than the command line.  Allows
- * the corpus module to figure this out.  May eventually need
- * to call this for each utterance, but no need now.
- *
- * Revision 1.8  1995/08/29  12:25:26  eht
- * Updates to reflect new interface to corpus
- * configuration and initialization
- *
- * Revision 1.7  1995/08/24  19:58:50  eht
- * Merged in PWP's prefetching code
- *
- *
- * Revision 1.6  1995/08/24  19:49:43  eht
- * Upgrade to allow a single LSN file for the corpus
- *
- * Revision 1.5  1995/08/09  20:18:31  eht
- * Add output when mixing weight normalization fails
- *
- * Revision 1.4  1995/07/07  12:00:29  eht
- * Include initial mixing weights and transition probabilities
- * in verbose output.  Also, got rid of the last vestiges of
- * the tying DAG.  Also, added some arguments to state_seq_print
- * so that it could produce more informative output.
- *
- * Revision 1.3  1995/06/28  14:38:32  eht
- * Removed include of tying DAG header file
- *
- * Revision 1.2  1995/06/28  14:31:55  eht
- * Removed tying DAG creation.  Now, next_utt_states() builds state seq using
- * tying structure in a model_def_t data structure (see libio/model_def_io.c
- * for details).
- *
- * Revision 1.1  1995/06/02  20:39:40  eht
- * Initial revision
- *
- *
- */

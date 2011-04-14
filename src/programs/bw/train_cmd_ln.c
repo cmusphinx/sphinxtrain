@@ -217,25 +217,7 @@ validate_cmn(char *switch_name, void *arg)
     }
     return TRUE;
 }
-
-int
-validate_silcomp(char *switch_name, void *arg)
-{
 
-    if ((strcmp(arg, "none") == 0) ||
-	(strcmp(arg, "sildelfn") == 0) ||
-	(strcmp(arg, "prior") == 0) ||
-	(strcmp(arg, "current") == 0)) {
-	return TRUE;
-    }
-    else {
-	E_ERROR("Unknown silence compression type %s %s\n", switch_name, arg);
-	
-	return FALSE;
-    }
-    
-    assert(FALSE);
-}
 
 /* defines, parses and (partially) validates the arguments
    given on the command line */
@@ -271,10 +253,7 @@ the end of the search and results in estimation error \n\
 Too many lost path may also cause training set likelihood not unable to increase \n\
 \n\
 Several options allow the user to control the behaviour of bw such \n\
-that silence or pauses can be taken care. For example. One could use \n\
--sildelfn to specify periods of time which was assume to be silence. \n\
-One could also use -sildel and -siltag to specify a silence and allow \n\
-them to be optionall deleted. \n\
+that silence or pauses can be taken care\n\
 \n\
 Finally, one can use the viterbi training mode of the code.  Notice \n\
 though, the code is not always tested by CMU's researcher \n\
@@ -472,12 +451,6 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  ARG_STRING,
 	  "none",
 	  "Do silence compression based on {current|prior} utterance"},
-
-	/* By ARCHAN at 200, fix the long-time legacy problem of not able to delete silence*/
-	{ "-sildel",
-	  ARG_BOOLEAN,
-	  "no",
-	  "Allow optional silence deletion in the Baum-Welch algorithm or the Viterbi algorithm."},
 	
 	{ "-siltag",
 	  ARG_STRING,
@@ -543,11 +516,6 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  ARG_BOOLEAN,
 	  "no",
 	  "Reestimate variances based on prior means"},
-
-	{ "-sildelfn",
-	  ARG_STRING,
-	  NULL,
-	  "File which specifies frames of background 'silence' to delete" },
 
 	{ "-spthresh",
 	  ARG_FLOAT32,

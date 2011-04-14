@@ -58,7 +58,6 @@
 #include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
 #include <s3/vector.h>
-#include <s3/feat.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/s3.h>
 

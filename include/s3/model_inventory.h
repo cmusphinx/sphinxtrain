@@ -150,7 +150,9 @@ mod_inv_restore_acc(model_inventory_t *minv,
 		    int mixw_reest,
 		    int mean_reest,
 		    int var_reest,
-		    int tmat_reest);
+		    int tmat_reest,
+		    const uint32 *veclen
+);
 
 #ifdef __cplusplus
 }
@@ -158,40 +160,3 @@ mod_inv_restore_acc(model_inventory_t *minv,
 
 #endif /* MODEL_INVENTORY_H */ 
 
-
-/*
- * Log record.  Maintained by CVS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.6  97/07/16  11:39:10  eht
- * *** empty log message ***
- * 
- * Revision 1.5  1996/07/29  16:49:12  eht
- * added read/initialization calls
- *
- * Revision 1.4  1996/03/25  15:54:13  eht
- * Commented
- *
- * Revision 1.3  1995/10/10  13:10:34  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.2  1995/09/08  19:13:52  eht
- * Updated to use acmod_set module instead of pset module
- *
- * Revision 1.1  1995/09/08  15:21:06  eht
- * Initial revision
- *
- *
- */

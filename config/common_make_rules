@@ -77,7 +77,6 @@ STLIBS = $(LIBDIR)/libcommon.a \
 	 $(LIBDIR)/libmllr.a \
 	 $(LIBDIR)/libio.a \
 	 $(LIBDIR)/libs2io.a \
-	 $(LIBDIR)/libcep_feat.a \
 	 $(LIBDIR)/libmodinv.a \
 	 $(LIBDIR)/libclust.a
 LIBS := $(STLIBS) $(LIBS)

@@ -48,7 +48,6 @@
 #include <s3/lexicon.h>
 #include <s3/corpus.h>
 #include <s3/segdmp.h>
-#include <s3/feat.h>
 #include <s3/ck_seg.h>
 #include <s3/mk_sseq.h>
 #include <s3/mk_phone_seq.h>

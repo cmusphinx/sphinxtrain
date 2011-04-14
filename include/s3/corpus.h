@@ -123,10 +123,6 @@ corpus_set_full_suffix_match(uint32 state);
 int
 corpus_set_lsn_filename(const char *fn);
 
-/* Corpus silence frame deletion */
-int
-corpus_set_sildel_filename(const char *fn);
-
 /* Per utterance MLLR transforms */
 int
 corpus_set_mllr_filename(const char *fn);
@@ -222,105 +218,13 @@ int32 corpus_provides_phseg(void);
 int corpus_get_phseg(acmod_set_t *acmod_set,
 		     s3phseg_t **out_phseg);
 
-int32
-corpus_provides_ccode(void);
-int
-corpus_get_ccode(unsigned char **ccode, uint32 *n_frame);
-int32
-corpus_provides_dcode(void);
-int
-corpus_get_dcode(unsigned char **dcode, uint32 *n_frame);
-int32
-corpus_provides_pcode(void);
-int
-corpus_get_pcode(unsigned char **pcode, uint32 *n_frame);
-int32
-corpus_provides_ddcode(void);
-int
-corpus_get_ddcode(unsigned char **ddcode, uint32 *n_frame);
-
 /* the following function is used for MMIE training
    lqin 2010-03 */
 int
-load_lattice(s3lattice_t **out_lattice, char *lat_dir, char *lat_ext);
+load_lattice(s3lattice_t **out_lattice, const char *lat_dir, const char *lat_ext);
 /* end */
 
 #ifdef __cplusplus
 }
 #endif
 #endif /* CORPUS_H */ 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2006/04/17  18:34:46  egouvea
- * Added s3phseg_io to the MS Dev .dsp file. Added missing function
- * prototypes to corpus.h.
- * 
- * Revision 1.5  2006/03/27 04:08:57  dhdfu
- * Optionally use a set of phoneme segmentations to constrain Baum-Welch
- * training.
- *
- * Revision 1.4  2004/07/21 17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.10  97/07/18  14:04:42  eht
- * Added corpus_reset() call
- * 
- * Revision 1.9  97/07/16  11:39:10  eht
- * *** empty log message ***
- * 
- * Revision 1.8  1996/03/26  15:18:39  eht
- * Fix local function definition
- *
- * Revision 1.7  1996/03/25  15:50:59  eht
- * Added VQ code functions
- *
- * Revision 1.6  1996/03/05  14:22:29  eht
- * Added include of <stdio.h> so that FILE type is resolved
- *
- * Revision 1.5  1996/03/05  14:21:26  eht
- * Added ability to check whether the corpus module is
- * configured to provide each data type.
- *
- * Revision 1.4  1995/12/01  19:54:13  eht
- * Added prototype for corpus_get_seg()
- *
- * Revision 1.3  1995/12/01  17:59:57  eht
- * - Add ability to get state segmentation data for each utterance
- * - Add ability to skip certain data types if not interested in them
- * 	(e.g. a decoder is not necessarily interested in word transcript or
- * 		state segmentation data).
- * - Added corpus_utt() function to just get the utt id
- *
- * Revision 1.2  1995/10/10  13:10:34  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.1  1995/10/09  21:04:24  eht
- * Initial revision
- *
- * Revision 1.4  1995/09/08  19:13:52  eht
- * Updated to remove references to pset module and add references
- * to acmod_set module
- *
- * Revision 1.3  1995/08/29  12:21:00  eht
- * Interface change (part 2)
- *
- * Revision 1.2  1995/08/29  12:16:43  eht
- * Interface change
- *
- * Revision 1.1  1995/08/15  13:44:14  eht
- * Initial revision
- *
- *
- */

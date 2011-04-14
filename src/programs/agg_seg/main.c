@@ -51,7 +51,6 @@
  *********************************************************************/
 
 #include "parse_cmd_ln.h"
-#include "agg_phn_seg.h"
 #include "cnt_st_seg.h"
 #include "cnt_phn_seg.h"
 #include "agg_st_seg.h"
@@ -67,18 +66,21 @@
 #include <s3/s3ts2cb_io.h>
 #include <s3/s3cb2mllr_io.h>
 #include <s3/state_param_def_io.h>
-#include <sphinxbase/cmd_ln.h>
-#include <sphinxbase/ckd_alloc.h>
-#include <s3/feat.h>
 #include <s3/corpus.h>
 #include <s3/err.h>
 #include <s3/s3.h>
 
 #include <string.h>
+
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/feat.h>
+
 
 int
 initialize(lexicon_t **out_lex,
 	   model_def_t **out_mdef,
+	   feat_t **out_feat,
 	   uint32 **out_ts2cb,
 	   int32 **out_cb2mllr,
 	   segdmp_type_t *out_dmp_type)
@@ -86,13 +88,13 @@ initialize(lexicon_t **out_lex,
     model_def_t *mdef;
     const char *dictfn;
     const char *fdictfn;
+    feat_t *feat;
     lexicon_t *lex;
     const char *fn;
     uint32 tmp;
     uint32 n_ts;
     uint32 n_cb;
     uint32 n_map;
-    /*eov*/
     
     if (cmd_ln_str("-moddeffn")) {
 	if (model_def_read(&mdef,
@@ -176,34 +178,6 @@ initialize(lexicon_t **out_lex,
 	corpus_set_seg_ext(cmd_ln_str("-segext"));
     }
 
-    /* Conditionally do VQ code aggregation */
-    if (cmd_ln_str("-ccodedir") != NULL) {
-	corpus_set_ccode_dir(cmd_ln_str("-ccodedir"));
-    }
-    if (cmd_ln_str("-ccodeext") != NULL) {
-	corpus_set_ccode_ext(cmd_ln_str("-ccodeext"));
-    }
-
-    if (cmd_ln_str("-dcodedir") != NULL) {
-	corpus_set_dcode_dir(cmd_ln_str("-dcodedir"));
-    }
-    if (cmd_ln_str("-dcodeext") != NULL) {
-	corpus_set_dcode_ext(cmd_ln_str("-dcodeext"));
-    }
-
-    if (cmd_ln_str("-pcodedir") != NULL) {
-	corpus_set_pcode_dir(cmd_ln_str("-pcodedir"));
-    }
-    if (cmd_ln_str("-pcodeext") != NULL) {
-	corpus_set_pcode_ext(cmd_ln_str("-pcodeext"));
-    }
-
-    if (cmd_ln_str("-ddcodedir") != NULL) {
-	corpus_set_ddcode_dir(cmd_ln_str("-ddcodedir"));
-    }
-    if (cmd_ln_str("-ddcodeext") != NULL) {
-	corpus_set_ddcode_ext(cmd_ln_str("-ddcodeext"));
-    }
 
     if (cmd_ln_str("-cepdir") != NULL) {
 	corpus_set_mfcc_dir(cmd_ln_str("-cepdir"));
@@ -212,18 +186,62 @@ initialize(lexicon_t **out_lex,
 	corpus_set_mfcc_ext(cmd_ln_str("-cepext"));
     }
 
-    if (cmd_ln_str("-feat") != NULL) {
-	if (feat_set(cmd_ln_str("-feat")) != S3_SUCCESS) {
-	    E_FATAL("Unable to use feature set %s\n", cmd_ln_str("-feat"));
-	}
-	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
-	feat_set_subvecs(cmd_ln_str("-svspec"));
+
+    feat = 
+        feat_init(cmd_ln_str("-feat"),
+                  cmn_type_from_str(cmd_ln_str("-cmn")),
+                  cmd_ln_boolean("-varnorm"),
+                  agc_type_from_str(cmd_ln_str("-agc")),
+                  1, cmd_ln_int32("-ceplen"));
+
+    if (cmd_ln_str("-lda")) {
+        E_INFO("Reading linear feature transformation from %s\n",
+               cmd_ln_str("-lda"));
+        if (feat_read_lda(feat,
+                          cmd_ln_str("-lda"),
+                          cmd_ln_int32("-ldadim")) < 0)
+            return -1;
     }
-    if (cmd_ln_str("-lda") != NULL) {
-	if (feat_read_lda(cmd_ln_str("-lda"), cmd_ln_int32("-ldadim"))) {
-	    E_FATAL("Failed to read LDA matrix\n");
-	}
+
+    if (cmd_ln_str("-svspec")) {
+        int32 **subvecs;
+        E_INFO("Using subvector specification %s\n", 
+               cmd_ln_str("-svspec"));
+        if ((subvecs = parse_subvecs(cmd_ln_str("-svspec"))) == NULL)
+            return -1;
+        if ((feat_set_subvecs(feat, subvecs)) < 0)
+            return -1;
     }
+
+    if (cmd_ln_exists("-agcthresh")
+        && 0 != strcmp(cmd_ln_str("-agc"), "none")) {
+        agc_set_threshold(feat->agc_struct,
+                          cmd_ln_float32("-agcthresh"));
+    }
+
+    if (feat->cmn_struct
+        && cmd_ln_exists("-cmninit")) {
+        char *c, *cc, *vallist;
+        int32 nvals;
+
+        vallist = ckd_salloc(cmd_ln_str("-cmninit"));
+        c = vallist;
+        nvals = 0;
+        while (nvals < feat->cmn_struct->veclen
+               && (cc = strchr(c, ',')) != NULL) {
+            *cc = '\0';
+            feat->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC(atof(c));
+            c = cc + 1;
+            ++nvals;
+        }
+        if (nvals < feat->cmn_struct->veclen && *c != '\0') {
+            feat->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC(atof(c));
+        }
+        ckd_free(vallist);
+    }
+    *out_feat = feat;
+
+
 
     if (cmd_ln_str("-ctlfn")) {
 	corpus_set_ctl_filename(cmd_ln_str("-ctlfn"));
@@ -269,28 +287,7 @@ initialize(lexicon_t **out_lex,
 	return S3_ERROR;
     }
 
-    
-
-    if (feat_id() != FEAT_ID_NONE) {
-	/* feature module configured so need to make a feature dump */
-	E_INFO("Will produce FEAT dump\n");
-	*out_dmp_type = SEGDMP_TYPE_FEAT;
-    }
-    else if (corpus_provides_mfcc()) {
-	/* feature module not configured and corpus is providing MFCC */
-	E_INFO("Will produce MFCC dump\n");
-	*out_dmp_type = SEGDMP_TYPE_MFCC;
-    }
-    else if (corpus_provides_ccode()) {
-	/* feature module not configured and
-	   corpus not providing MFCC but it is providing VQ */
-	E_INFO("Will produce VQ dump\n");
-	*out_dmp_type = SEGDMP_TYPE_VQ;
-    }
-    else {
-	E_FATAL("Unknown segment dump type\n");
-    }
-
+    E_INFO("Will produce feature dump\n");
 
     return S3_SUCCESS;
 }
@@ -411,6 +408,7 @@ int main(int argc, char *argv[])
 {
     lexicon_t *lex;
     model_def_t *mdef;
+    feat_t *feat;
     const char *segtype;
     segdmp_type_t dmp_type;
     uint32 *n_seg;
@@ -421,7 +419,7 @@ int main(int argc, char *argv[])
 
     parse_cmd_ln(argc, argv);
 
-    if (initialize(&lex, &mdef, &ts2cb, &cb2mllr, &dmp_type) != S3_SUCCESS) {
+    if (initialize(&lex, &mdef, &feat, &ts2cb, &cb2mllr, &dmp_type) != S3_SUCCESS) {
 	exit(1);
     }
 
@@ -430,7 +428,8 @@ int main(int argc, char *argv[])
     if (strcmp(segtype, "all") == 0) {
 	E_INFO("Writing frames to one file\n");
 
-	if (agg_all_seg(dmp_type,
+	if (agg_all_seg(feat,
+			dmp_type,
 			cmd_ln_str("-segdmpfn"),
 			cmd_ln_int32("-stride")) != S3_SUCCESS) {
 	    exit(1);
@@ -445,11 +444,14 @@ int main(int argc, char *argv[])
 			      mdef->n_tied_state,
 			      cnt_st(mdef, lex),
 			      NULL,
-			      dmp_type) != S3_SUCCESS) {
+			      dmp_type,
+			      feat_n_stream(feat),
+			      feat_stream_lengths(feat),
+			      feat_dimension(feat)) != S3_SUCCESS) {
 	    E_FATAL("Unable to initialize segment dump\n");
 	}
 	
-	if (agg_st_seg(mdef, lex, ts2cb, cb2mllr, dmp_type) != S3_SUCCESS) {
+	if (agg_st_seg(mdef, lex, feat, ts2cb, cb2mllr, dmp_type) != S3_SUCCESS) {
 	    exit(1);
 	}
 	
@@ -466,11 +468,14 @@ int main(int argc, char *argv[])
 			      acmod_set_n_acmod(mdef->acmod_set),
 			      n_seg,
 			      n_frame,
-			      dmp_type) != S3_SUCCESS) {
+			      dmp_type,
+			      feat_n_stream(feat),
+			      feat_stream_lengths(feat),
+			      feat_dimension(feat)) != S3_SUCCESS) {
 	    E_FATAL("Unable to initialize segment dump\n");
 	}
 	
-	if (agg_phn_seg(lex, mdef->acmod_set, dmp_type) != S3_SUCCESS) {
+	if (agg_phn_seg(lex, mdef->acmod_set, feat, dmp_type) != S3_SUCCESS) {
 	    exit(1);
 	}
 	
@@ -488,38 +493,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2006/03/27  03:30:14  dhdfu
- * Fix some minor signedness issues to keep the compiler happy
- * 
- * Revision 1.4  2004/07/21 18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.5  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.4  96/07/29  16:03:59  eht
- * - Implement -nskip and -runlen cmd ln args.
- * - Deal w/ new model def data structure and read routine.
- * 
- * Revision 1.3  1996/03/25  15:45:23  eht
- * Development version
- *
- * Revision 1.2  1996/03/04  16:01:06  eht
- * *** empty log message ***
- *
- *
- */

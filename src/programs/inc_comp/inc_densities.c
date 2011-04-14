@@ -47,7 +47,6 @@
 #include "inc_densities.h"
 
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/feat.h>
 #include <s3/s3.h>
 
 #include <string.h>

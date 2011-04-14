@@ -47,6 +47,9 @@
 
 #include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/feat.h>
+
 #include <s3/lexicon.h>
 #include <s3/model_def_io.h>
 #include <s3/s3ts2cb_io.h>
@@ -59,12 +62,9 @@
 #include <s3/gauden.h>
 #include <s3/corpus.h>
 #include <s3/segdmp.h>
-#include <s3/feat.h>
-#include <sphinxbase/ckd_alloc.h>
 #include <s3/err.h>
 #include <s3/profile.h>
 #include <s3/s3.h>
-#include <sphinxbase/prim_type.h>
 #include <s3/vector.h>
 
 #include <sys_compat/file.h>
@@ -210,13 +210,12 @@ setup_d2o_map(model_def_t *d_mdef,
 }
 
 static uint32
-setup_obs_1class(uint32 strm, uint32 n_frame, const uint32 *veclen)
+setup_obs_1class(uint n_stream, uint32 strm, uint32 n_frame, const uint32 *veclen)
 {
     float32 *buf;
     vector_t *frm;
     uint32 i, l, o;
     uint32 n_sv_frame;
-    uint32 n_stream;
     uint32 ignore = 0;
 
     n_sv_frame = n_frame / stride;
@@ -241,7 +240,6 @@ setup_obs_1class(uint32 strm, uint32 n_frame, const uint32 *veclen)
     obuf = ckd_calloc(n_sv_frame * veclen[strm], sizeof(float32));
 
 
-    n_stream = feat_n_stream();
 
     buf = (float32 *)ckd_calloc(blksize, sizeof(float32));
     frm = (vector_t *)ckd_calloc(n_stream, sizeof(float32 *));
@@ -373,13 +371,13 @@ setup_obs_multiclass(uint32 ts, uint32 strm, uint32 n_frame, const uint32 *vecle
 }
 
 uint32
-setup_obs(uint32 ts, uint32 strm, uint32 n_frame, const uint32 *veclen)
+setup_obs(uint32 ts, uint32 strm, uint32 n_frame, const uint32 *veclen,uint32 n_stream)
 {
     if (multiclass) {
 	return setup_obs_multiclass(ts, strm, n_frame, veclen);
     }
     else {
-	return setup_obs_1class(strm, n_frame, veclen);
+	return setup_obs_1class(n_stream, strm, n_frame, veclen);
     }
 }
 
@@ -395,11 +393,13 @@ main_initialize(int argc,
 		char *argv[],
 		lexicon_t **out_lex,
 		model_def_t **out_omdef,
-		model_def_t **out_dmdef)
+		model_def_t **out_dmdef,
+		feat_t** out_feat)
 {
     model_def_t *dmdef = NULL;
     model_def_t *omdef = NULL;
     lexicon_t *lex = NULL;
+    feat_t *feat;
     const char *fn;
     uint32 n_ts;
     uint32 n_cb;
@@ -412,19 +412,61 @@ main_initialize(int argc,
     timing_bind_name("em", timing_new());
     timing_bind_name("all", timing_new());
 
-    if (cmd_ln_str("-feat") != NULL) {
-	feat_set(cmd_ln_str("-feat"));
-	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
-	feat_set_subvecs(cmd_ln_str("-svspec"));
+    feat = 
+        feat_init(cmd_ln_str("-feat"),
+                  cmn_type_from_str(cmd_ln_str("-cmn")),
+                  cmd_ln_boolean("-varnorm"),
+                  agc_type_from_str(cmd_ln_str("-agc")),
+                  1, cmd_ln_int32("-ceplen"));
+
+
+    if (cmd_ln_str("-lda")) {
+        E_INFO("Reading linear feature transformation from %s\n",
+               cmd_ln_str("-lda"));
+        if (feat_read_lda(feat,
+                          cmd_ln_str("-lda"),
+                          cmd_ln_int32("-ldadim")) < 0)
+            return -1;
     }
-    else {
-	E_FATAL("You need to set a feature extraction config using -feat\n");
+
+    if (cmd_ln_str("-svspec")) {
+        int32 **subvecs;
+        E_INFO("Using subvector specification %s\n", 
+               cmd_ln_str("-svspec"));
+        if ((subvecs = parse_subvecs(cmd_ln_str("-svspec"))) == NULL)
+            return -1;
+        if ((feat_set_subvecs(feat, subvecs)) < 0)
+            return -1;
     }
-    if (cmd_ln_str("-lda") != NULL) {
-	if (feat_read_lda(cmd_ln_str("-lda"), cmd_ln_int32("-ldadim"))) {
-	    E_FATAL("Failed to read LDA matrix\n");
-	}
+
+    if (cmd_ln_exists("-agcthresh")
+        && 0 != strcmp(cmd_ln_str("-agc"), "none")) {
+        agc_set_threshold(feat->agc_struct,
+                          cmd_ln_float32("-agcthresh"));
     }
+
+    if (feat->cmn_struct
+        && cmd_ln_exists("-cmninit")) {
+        char *c, *cc, *vallist;
+        int32 nvals;
+
+        vallist = ckd_salloc(cmd_ln_str("-cmninit"));
+        c = vallist;
+        nvals = 0;
+        while (nvals < feat->cmn_struct->veclen
+               && (cc = strchr(c, ',')) != NULL) {
+            *cc = '\0';
+            feat->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC(atof(c));
+            c = cc + 1;
+            ++nvals;
+        }
+        if (nvals < feat->cmn_struct->veclen && *c != '\0') {
+            feat->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC(atof(c));
+        }
+        ckd_free(vallist);
+    }
+    *out_feat = feat;
+
 
     if (cmd_ln_str("-omoddeffn")) {
 	E_INFO("Reading output model definitions: %s\n", cmd_ln_str("-omoddeffn"));
@@ -770,10 +812,11 @@ furthest_neighbor_kmeans(uint32 n_obs,
 }
 
 float64
-cluster(uint32 ts,
+cluster(int32 ts,
 	uint32 n_stream,
 	uint32 n_in_frame,
 	const uint32 *veclen,
+	uint32 blksize,
 	vector_t **mean,
 	uint32 n_density,
 	codew_t **out_label)
@@ -784,13 +827,12 @@ cluster(uint32 ts,
     
     *out_label = NULL;
 
-    blksize = feat_blksize();
     k_means_set_get_obs(&get_obs);
 
     for (s = 0, sum_sqerr = 0; s < n_stream; s++, sum_sqerr += sqerr) {
 	meth = cmd_ln_str("-method");
 
-	n_frame = setup_obs(ts, s, n_in_frame, veclen);
+	n_frame = setup_obs(ts, s, n_in_frame, veclen, n_stream);
 
 	if (strcmp(meth, "rkm") == 0) {
 	    sqerr = random_kmeans(cmd_ln_int32("-ntrial"),
@@ -871,7 +913,7 @@ variances(uint32 ts,
     for (s = 0; s < n_stream; s++) {
 	n_obs = ckd_calloc(n_density, sizeof(uint32));
 
-	n_frame = setup_obs(ts, s, n_in_frame, veclen);
+	n_frame = setup_obs(ts, s, n_in_frame, veclen, n_stream);
 
 	for (i = 0; i < n_frame; i++) {
 	    k = label[i];	/* best codeword */
@@ -919,7 +961,7 @@ full_variances(uint32 ts,
     for (s = 0; s < n_stream; s++) {
 	n_obs = ckd_calloc(n_density, sizeof(uint32));
 
-	n_frame = setup_obs(ts, s, n_in_frame, veclen);
+	n_frame = setup_obs(ts, s, n_in_frame, veclen, n_stream);
 
 	for (i = 0; i < n_frame; i++) {
 	    k = label[i];	/* best codeword */
@@ -985,6 +1027,7 @@ reest_sum(uint32 ts,
 	  uint32 n_stream,
 	  uint32 n_in_obs,
 	  const uint32 *veclen,
+	  uint32 blksize,
 	  uint32 n_iter,
 	  uint32 twopassvar,
 	  uint32 vartiethr)
@@ -1021,16 +1064,16 @@ reest_sum(uint32 ts,
     mixw_acc = (float32 *)ckd_calloc(n_density, sizeof(float32));
 
     cb_acc = (float32 *)ckd_calloc(n_density, sizeof(float32));
-    mean_acc_xx = (vector_t **)alloc_gau_acc(1, n_density, veclen, feat_blksize());
+    mean_acc_xx = (vector_t **)alloc_gau_acc(1, n_density, veclen, blksize);
     mean_acc = mean_acc_xx[0];
-    var_acc_xx = (vector_t **)alloc_gau_acc(1, n_density, veclen, feat_blksize());
+    var_acc_xx = (vector_t **)alloc_gau_acc(1, n_density, veclen, blksize);
     var_acc = var_acc_xx[0];
 
     den = (float64 *)ckd_calloc(n_density, sizeof(float64));
     norm = (float64 **)ckd_calloc_2d(n_stream, n_density, sizeof(float64));
 
     for (j = 0; j < n_stream; j++) {
-	n_obs = setup_obs(ts, j, n_in_obs, veclen);
+	n_obs = setup_obs(ts, j, n_in_obs, veclen, n_stream);
 
 	if (n_obs < vartiethr) tievar = TRUE;
 
@@ -1242,6 +1285,7 @@ init_state(const char *obsdmp,
 	   uint32 n_density,
 	   uint32 n_stream,
 	   const uint32 *veclen,
+	   uint32 blksize,
 	   int reest,
 	   const char *mixwfn,
 	   const char *meanfn,
@@ -1251,7 +1295,6 @@ init_state(const char *obsdmp,
 	   uint32 n_ts,
 	   uint32 n_d_ts)
 {
-    uint32 blksz;
     vector_t ***mean;
     vector_t ***var = NULL;
     vector_t ****fullvar = NULL;
@@ -1273,8 +1316,6 @@ init_state(const char *obsdmp,
     var_timer = timing_get("var");
     em_timer = timing_get("em");
     
-    blksz = feat_blksize();
-
     full_covar = cmd_ln_int32("-fullvar");
     /* fully-continuous for now */
     mean = gauden_alloc_param(ts_cnt, n_stream, n_density, veclen);
@@ -1294,7 +1335,8 @@ init_state(const char *obsdmp,
 			     cmd_ln_str("-segdmpfn"),
 			     cmd_ln_str("-segidxfn"),
 			     &n,
-			     &t) != S3_SUCCESS) {
+			     &t, 
+			     n_stream, veclen, blksize) != S3_SUCCESS) {
 	    E_FATAL("Unable to open dumps\n");
 	}
 
@@ -1360,7 +1402,7 @@ init_state(const char *obsdmp,
 	/* Do some variety of k-means clustering */
 	if (km_timer)
 	    timing_start(km_timer);
-	sqerr = cluster(ts, n_stream, n_frame, veclen, mean[i], n_density, &label);
+	sqerr = cluster(ts, n_stream, n_frame, veclen, blksize, mean[i], n_density, &label);
 	if (km_timer)
 	    timing_stop(km_timer);
 
@@ -1396,7 +1438,7 @@ init_state(const char *obsdmp,
 		    timing_start(em_timer);
 		/* Do iterations of EM to estimate the mixture densities */
 		reest_sum(ts, mean[i], var[i], mixw[i], n_density, n_stream,
-			  n_frame, veclen,
+			  n_frame, veclen, blksize,
 			  cmd_ln_int32("-niter"),
 			  FALSE,
 			  cmd_ln_int32("-vartiethr"));
@@ -1478,7 +1520,8 @@ main(int argc, char *argv[])
     lexicon_t *lex;
     model_def_t *omdef;
     model_def_t *dmdef;
-    uint32 n_stream;
+    feat_t *feat;
+    uint32 n_stream, blksize;
     const uint32 *veclen;
     uint32 ts_off;
     uint32 ts_cnt;
@@ -1488,7 +1531,7 @@ main(int argc, char *argv[])
     timing_t *var_timer= NULL;
     timing_t *em_timer= NULL;
 
-    if (main_initialize(argc, argv, &lex, &omdef, &dmdef) != S3_SUCCESS) {
+    if (main_initialize(argc, argv, &lex, &omdef, &dmdef, &feat) != S3_SUCCESS) {
 	return -1;
     }
 
@@ -1497,8 +1540,9 @@ main(int argc, char *argv[])
     em_timer = timing_get("em");
     all_timer = timing_get("all");
 
-    n_stream = feat_n_stream();
-    veclen = feat_vecsize();
+    n_stream = feat_n_stream(feat);
+    veclen = (const uint32*)feat_stream_lengths(feat);
+    blksize = feat_dimension(feat);
 
     if (strcmp(cmd_ln_str("-gthobj"), "state") == 0) {
 	ts_off = cmd_ln_int32("-tsoff");
@@ -1532,6 +1576,7 @@ main(int argc, char *argv[])
 		       cmd_ln_int32("-ndensity"),
 		       n_stream,
 		       veclen,
+		       blksize,
 		       cmd_ln_int32("-reest"),
 		       cmd_ln_str("-mixwfn"),
 		       cmd_ln_str("-meanfn"),
@@ -1608,6 +1653,7 @@ main(int argc, char *argv[])
 		       cmd_ln_int32("-ndensity"),
 		       n_stream,
 		       veclen,
+		       blksize,
 		       cmd_ln_int32("-reest"),
 		       cmd_ln_str("-mixwfn"),
 		       cmd_ln_str("-meanfn"),

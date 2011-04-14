@@ -55,7 +55,6 @@
 #include <s3/profile.h>
 #include <s3/s2_param.h>
 #include <s3/gauden.h>
-#include <s3/feat.h>
 #include <s3/s3.h>
 
 #include "accum.h"

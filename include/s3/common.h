@@ -66,7 +66,6 @@ extern "C" {
 #include <s3/remap.h>
 #include <s3/acmod_set.h>
 #include <s3/lexicon.h>
-#include <s3/feat.h>
 #include <s3/err.h>
 
 #include <sphinxbase/ckd_alloc.h>

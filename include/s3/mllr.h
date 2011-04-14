@@ -42,7 +42,6 @@ extern "C" {
 }
 #endif
 
-#include <s3/feat.h>
 #define TINY 1.0e-20;
 
 

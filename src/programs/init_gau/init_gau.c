@@ -47,10 +47,9 @@
 
 #include "init_gau.h"
 #include "accum.h"
-#include <s3/mk_sseq.h>
 
+#include <s3/mk_sseq.h>
 #include <s3/ck_seg.h>
-#include <sphinxbase/prim_type.h>
 #include <s3/corpus.h>
 #include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
@@ -58,32 +57,30 @@
 #include <s3/gauden.h>
 #include <s3/s3gau_io.h>
 #include <s3/vector.h>
-#include <s3/feat.h>
-#include <sphinxbase/ckd_alloc.h>
-#include <sphinxbase/cmd_ln.h>
 #include <s3/s3.h>
-
-/* ADDITION BY BHIKSHA, TO FACILITATE FEATURES OF ARBITRARY LENGTH, 7jan98 */
-#include <s3/s2_param.h>
-/* END CHANGES BY BHIKSHA */
-
-#include <sys_compat/file.h>
 
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
-
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/feat.h>
+
+
 int
 init_gau(lexicon_t *lex,
-	 model_def_t *mdef)
+	 model_def_t *mdef,
+	 feat_t *feat)
 {
     char *trans = NULL;
+    char *fn;
     acmod_set_t *acmod_set;
 
     vector_t *mfcc = NULL;
     uint32 n_frame;
-    uint32 feat_n_frame;
-    uint32 framelen;
+    int32 feat_n_frame;
     uint32 tmp;
     
     uint16 *seg = NULL;
@@ -114,19 +111,11 @@ init_gau(lexicon_t *lex,
     uint32 r_n_feat;
     uint32 r_n_density;
 
-    vector_t **f = NULL;
+    mfcc_t ***f = NULL;
 
     const char *meanfn;
 
-    uint32 *del_b = NULL;
-    uint32 *del_e = NULL;
-    uint32 n_del = 0;
-
-    char fn[MAXPATHLEN+1];
-
-/* ADDITION BY BHIKSHA, TO CHECK FOR FEATURE LENGTH, 7 JAN 98 */
-    uint32 ceplen;
-/* END ADDITION BY BHIKSHA */
+    uint32 ceplen = cmd_ln_int32("-ceplen");
     int32 var_is_full = cmd_ln_int32("-fullvar");
 
     if (mdef) {
@@ -140,13 +129,13 @@ init_gau(lexicon_t *lex,
 
     meanfn = cmd_ln_str("-meanfn");
 
-    veclen = feat_vecsize();
+    veclen = (uint32 *)feat_stream_lengths(feat);
     
     if (meanfn == NULL) {
-	E_INFO("Computing %ux%ux1 mean estimates\n", n_ts, feat_n_stream());
+	E_INFO("Computing %ux%ux1 mean estimates\n", n_ts, feat_n_stream(feat));
     
 	mean_acc = gauden_alloc_param(n_ts,
-				      feat_n_stream(),
+				      feat_n_stream(feat),
 				      1,
 				      veclen);
 	var_acc = NULL;
@@ -154,7 +143,7 @@ init_gau(lexicon_t *lex,
     else {
 	assert(meanfn != NULL);
 
-	E_INFO("Computing %ux%ux1 variance estimates\n", n_ts, feat_n_stream());
+	E_INFO("Computing %ux%ux1 variance estimates\n", n_ts, feat_n_stream(feat));
 
 
 	if (s3gau_read(meanfn,
@@ -169,17 +158,17 @@ init_gau(lexicon_t *lex,
 	mean_acc = NULL;
 	if (var_is_full)
 		fullvar_acc = gauden_alloc_param_full(n_ts,
-						      feat_n_stream(),
+						      feat_n_stream(feat),
 						      1,
 						      veclen);
 	else
 		var_acc =  gauden_alloc_param(n_ts,
-					      feat_n_stream(),
+					      feat_n_stream(feat),
 					      1,
 					      veclen);
     }
 
-    dnom = (float32 ***)ckd_calloc_3d(n_ts, feat_n_stream(), 1, sizeof(float32));
+    dnom = (float32 ***)ckd_calloc_3d(n_ts, feat_n_stream(feat), 1, sizeof(float32));
 
     while (corpus_next_utt()) {
 	if (mfcc) {
@@ -216,7 +205,7 @@ init_gau(lexicon_t *lex,
 	    sseq = NULL;
 	}
 	if (f) {
-	    feat_free(f);
+	    feat_array_free(f);
 	    f = NULL;
 	}
 	
@@ -257,27 +246,9 @@ init_gau(lexicon_t *lex,
 	    sseq = mk_sseq(seg, n_frame, phone, n_phone, mdef);
 	}
 
-
-
-/* CHANGE BY BHIKSHA; IF INPUT VECLEN != 13, THEN DO NOT USE THE
-   REGULAR corpus_get_mfcc() WHICH REQUIRES INPUT DATA TO BE 13 DIMENSIONAL
-   CEPSTRA. USE, INSTEAD, THE HACKED VERSION corpus_get_generic_featurevec()
-   WHICH TAKES FEATURES OF ARBITRARY LENGTH
-   7 JAN 1998 */
-	ceplen = cmd_ln_int32("-ceplen");
-        if (ceplen == S2_CEP_VECLEN) {
-	    if (corpus_get_mfcc(&mfcc, &tmp, &framelen) != S3_SUCCESS) {
-	        E_FATAL("Unable to read MFCC data for %s\n", corpus_utt_brief_name());
-	    }
-	    assert(framelen == ceplen);
-        }
-        else {
-	    if (corpus_get_generic_featurevec(&mfcc, &tmp, ceplen) < 0) {
+        if (corpus_get_generic_featurevec(&mfcc, &tmp, ceplen) < 0) {
 	        E_FATAL("Can't read input features\n");
-	    }
-        }
-
-/* END CHANGES BY BHIKSHA */
+	}
 
 	if (mdef == NULL) n_frame = tmp;
 
@@ -298,52 +269,39 @@ init_gau(lexicon_t *lex,
 	    }
 	    continue;
 	}
-
-
-	f = feat_compute(mfcc, &feat_n_frame);
+	
+	f = feat_array_alloc(feat, feat_n_frame + feat_window_size(feat));
+	feat_s2mfc2feat_live(feat, mfcc, &feat_n_frame, TRUE, TRUE, f);
 
 	if (feat_n_frame != n_frame) {
 	    E_FATAL("# frames compute != # frames of state seg\n");
 	}
 
-	if (del_b) {
-	    ckd_free(del_b);
-	}
-	if (del_e) {
-	    ckd_free(del_e);
-	}
-
-	if (corpus_get_sildel(&del_b, &del_e, &n_del) != S3_SUCCESS) {
-	    E_ERROR("Unable to get silence deletions for %s\n",
-		    corpus_utt());
-	}
-
 	if (mean_acc) {
 	    /* accumulate mean sums since no estimate given */
-	    accum_state_mean(mean_acc, dnom, f, del_b, del_e, n_del, feat_n_stream(), veclen, sseq, ci_sseq, n_frame);
+	    accum_state_mean(mean_acc, dnom, f, feat_n_stream(feat), veclen, sseq, ci_sseq, n_frame);
 	}
 	else if (var_acc) {
 	    /* accumulate var sums since mean estimate exists */
-	    accum_state_var(var_acc, mean, dnom, f, del_b, del_e, n_del, feat_n_stream(), veclen, sseq, ci_sseq, n_frame);
+	    accum_state_var(var_acc, mean, dnom, f, feat_n_stream(feat), veclen, sseq, ci_sseq, n_frame);
 	}
 	else if (fullvar_acc) {
 	    /* accumulate var sums since mean estimate exists */
-	    accum_state_fullvar(fullvar_acc, mean, dnom, f, del_b, del_e, n_del, feat_n_stream(), veclen, sseq, ci_sseq, n_frame);
+	    accum_state_fullvar(fullvar_acc, mean, dnom, f, feat_n_stream(feat), veclen, sseq, ci_sseq, n_frame);
 	}
     }
-
+    
+    fn = ckd_calloc(strlen(cmd_ln_str("-accumdir")) + strlen("/gauden_counts") + 1, 1);
     sprintf(fn, "%s/gauden_counts", cmd_ln_str("-accumdir"));
     
     if (var_is_full) {
 	if (s3gaucnt_write_full(fn, mean_acc, fullvar_acc, TRUE /* 2-pass variance */, dnom,
-				n_ts, feat_n_stream(), 1, veclen) != 0) {
-	    exit(1);
+				n_ts, feat_n_stream(feat), 1, veclen) != 0) {
 	}
     }
     else {
 	if (s3gaucnt_write(fn, mean_acc, var_acc, TRUE /* 2-pass variance */, dnom,
-			   n_ts, feat_n_stream(), 1, veclen) != 0) {
-	    exit(1);
+			   n_ts, feat_n_stream(feat), 1, veclen) != 0) {
 	}
     }
 
@@ -382,7 +340,7 @@ init_gau(lexicon_t *lex,
 	sseq = NULL;
     }
     if (f) {
-	feat_free(f);
+	feat_array_free(f);
 	f = NULL;
     }
 
@@ -396,6 +354,7 @@ init_gau(lexicon_t *lex,
 	gauden_free_param_full(fullvar_acc);
     }
     ckd_free_3d((void ***)dnom);
+    ckd_free(fn);
 
     return S3_SUCCESS;
 }

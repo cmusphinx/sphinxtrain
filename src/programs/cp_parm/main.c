@@ -50,7 +50,6 @@
 #include <s3/s3tmat_io.h>
 #include <s3/gauden.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/feat.h>
 #include <sphinxbase/cmd_ln.h>
 
 #include <s3/s3.h>

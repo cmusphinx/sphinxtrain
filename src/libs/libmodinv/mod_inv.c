@@ -421,7 +421,8 @@ mod_inv_restore_acc(model_inventory_t *minv,
 		    int mixw_reest,
 		    int mean_reest,
 		    int var_reest,
-		    int tmat_reest)
+		    int tmat_reest,
+		    const uint32 *veclen)
 {
     char fn[MAXPATHLEN+1];
     uint32 n_mixw;
@@ -432,15 +433,13 @@ mod_inv_restore_acc(model_inventory_t *minv,
     uint32 n_state_pm;
 
     uint32 n_cb;
-    const uint32 *veclen, *rd_veclen;
+    const uint32 *rd_veclen;
 
     int ret = S3_SUCCESS;
 
     uint32 i;
     int32 pass2var;
     
-    veclen = feat_vecsize();
-
     if (mixw_reest) {
 	ckd_free_3d((void ***)minv->mixw_acc);
 	minv->mixw_acc = NULL;
@@ -535,43 +534,4 @@ mod_inv_restore_acc(model_inventory_t *minv,
 
     return ret;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:41  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.7  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.6  1996/07/29  16:46:51  eht
- * Put reading and initialization of model parameter code here
- *
- * Revision 1.5  1995/10/18  11:23:10  eht
- * Changed the commenting conventions
- *
- * Revision 1.4  1995/10/09  15:11:53  eht
- * Changed interface to ckd_alloc to remove need for __FILE__, __LINE__ arguments
- *
- * Revision 1.3  1995/07/07  17:58:47  eht
- * Get rid of tying_init() since DAG is no longer used
- *
- * Revision 1.2  1995/06/02  16:48:06  eht
- * model inventory functions
- *
- * Revision 1.1  1995/02/06  14:26:45  eht
- * Initial revision
- *
- *
- */
+

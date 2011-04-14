@@ -52,15 +52,6 @@
 int
 seg_init(uint32 n);
 
-int
-seg_add(acmod_id_t p,
-	unsigned char *ccode,
-	unsigned char *dcode,
-	unsigned char *pcode,
-	unsigned char *ddcode,
-	uint32 len);
-
-
 #endif /* ADD_SEG_H */ 
 
 

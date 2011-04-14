@@ -56,7 +56,6 @@
 #include <s3/acmod_set.h>
 #include <s3/model_def_io.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/feat.h>
 #include <s3/s3.h>
 
 #include <sys_compat/file.h>

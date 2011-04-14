@@ -47,13 +47,14 @@
 
 #include <s3/corpus.h>
 #include <s3/s3io.h>
-#include <s3/feat.h>
 #include <s3/ck_seg.h>
 #include <s3/mk_phone_seq.h>
-#include <sphinxbase/ckd_alloc.h>
 #include <s3/err.h>
 #include <s3/s3.h>
+
 #include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/feat.h>
 
 #include <sys_compat/misc.h>
 
@@ -74,7 +75,8 @@ open_dmp(const char *fn)
 }
 
 int
-agg_all_seg(segdmp_type_t type,
+agg_all_seg(feat_t *fcb,
+	    segdmp_type_t type,
 	    const char *fn,
 	    uint32 stride)
 {
@@ -97,23 +99,10 @@ agg_all_seg(segdmp_type_t type,
     long start;
     int32 no_retries=0;
     
-    if (type == SEGDMP_TYPE_FEAT) {
-	sv_feat = TRUE;
-	n_stream = feat_n_stream();
-	veclen = feat_vecsize();
-	for (i = 0, blksz = 0; i < n_stream; i++)
-	    blksz += veclen[i];
-    }
-    else if (type == SEGDMP_TYPE_MFCC) {
-	sv_mfcc = TRUE;
-    }
-    else if (type == SEGDMP_TYPE_VQ) {
-	sv_vq = TRUE;
-    }
-
-    if (sv_vq) {
-	E_FATAL("VQ aggregation of states not supported\n");
-    }
+    n_stream = feat_n_stream(fcb);
+    veclen = feat_stream_lengths(fcb);
+    for (i = 0, blksz = 0; i < n_stream; i++)
+        blksz += veclen[i];
 
     fp = open_dmp(fn);
 
@@ -147,7 +136,7 @@ agg_all_seg(segdmp_type_t type,
 
 	if (sv_feat) {
 	    if (feat) {
-		feat_free(feat);
+		feat_array_free(feat);
 		feat = NULL;
 	    }
 	    
@@ -161,7 +150,8 @@ agg_all_seg(segdmp_type_t type,
 	      continue;
 	    }
 
-	    feat = feat_compute(mfcc, &n_frame);
+	    feat = feat_array_alloc(fcb, n_frame + feat_window_size(fcb));
+	    feat_s2mfc2feat_live(fcb, mfcc, &n_frame, TRUE, TRUE, feat);
 
 	    for (t = 0; t < n_frame; t++, j++) {
 		if ((j % stride) == 0) {
@@ -207,31 +197,3 @@ agg_all_seg(segdmp_type_t type,
 
     return S3_SUCCESS;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2005/09/27  02:02:47  arthchan2003
- * Check whether utterance is too short in init_gau, bw and agg_seg.
- * 
- * Revision 1.5  2004/11/17 01:46:58  arthchan2003
- * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
- *
- * Revision 1.4  2004/07/21 18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */

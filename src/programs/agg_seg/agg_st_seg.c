@@ -49,12 +49,13 @@
 #include <s3/corpus.h>
 #include <s3/segdmp.h>
 #include <s3/mllr.h>
-#include <sphinxbase/matrix.h>
-#include <s3/feat.h>
 #include <s3/ck_seg.h>
 #include <s3/mk_sseq.h>
 #include <s3/mk_phone_seq.h>
+
+#include <sphinxbase/matrix.h>
 #include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/feat.h>
 
 static void
 xfrm_feat(float32 ***ainv,
@@ -130,6 +131,7 @@ get_sseq(model_def_t *mdef,
 int
 agg_st_seg(model_def_t *mdef,
 	   lexicon_t *lex,
+	   feat_t* fcb,
 	   uint32 *ts2cb,
 	   int32 *cb2mllr,
 	   segdmp_type_t type)
@@ -142,9 +144,6 @@ agg_st_seg(model_def_t *mdef,
     uint32 *sseq = NULL;
     uint32 i, j;
     uint32 t;
-    int32 sv_feat = FALSE;
-    int32 sv_mfcc = FALSE;
-    int32 sv_vq = FALSE;
     uint32 n_stream=0;
     uint32 n_stream_tmp;
     const uint32 *veclen = 0;
@@ -156,21 +155,9 @@ agg_st_seg(model_def_t *mdef,
     uint32 mcls;
     /*eov*/
 
-    if (type == SEGDMP_TYPE_FEAT) {
-	sv_feat = TRUE;
-	n_stream = feat_n_stream();
-	veclen = feat_vecsize();
-    }
-    else if (type == SEGDMP_TYPE_MFCC) {
-	sv_mfcc = TRUE;
-    }
-    else if (type == SEGDMP_TYPE_VQ) {
-	sv_vq = TRUE;
-    }
+    n_stream = feat_n_stream(fcb);
+    veclen = feat_stream_lengths(fcb);
 
-    if (sv_vq) {
-	E_FATAL("VQ aggregation of states not supported\n");
-    }
 
     for (seq_no = corpus_get_begin(); corpus_next_utt(); seq_no++) {
 	if (!(seq_no % 250)) {
@@ -178,7 +165,6 @@ agg_st_seg(model_def_t *mdef,
 	    fflush(stderr);
 	}
 	
-	if (sv_feat || sv_mfcc) {
 	    if (mfcc) {
 		free(mfcc[0]);
 		ckd_free(mfcc);
@@ -186,11 +172,10 @@ agg_st_seg(model_def_t *mdef,
 		mfcc = NULL;
 	    }
 
-	    /* get the MFCC data for the utterance */
-	    if (corpus_get_mfcc(&mfcc, &n_frame, &mfc_veclen) < 0) {
-		E_FATAL("Can't read input features\n");
+	    if (corpus_get_generic_featurevec(&mfcc, &n_frame, mfc_veclen) < 0) {
+	      E_FATAL("Can't read input features from %s\n", corpus_utt());
 	    }
-	}
+
 
 	if (sseq != NULL) {
 	    ckd_free((void *)sseq);
@@ -204,14 +189,13 @@ agg_st_seg(model_def_t *mdef,
 
 	    free(mfcc[0]);
 	    ckd_free((void *)mfcc);
-	    feat_free(feat);
+	    feat_array_free(feat);
 
 	    continue;
 	}
 	
-	if (sv_feat) {
 	    if (feat) {
-		feat_free(feat);
+		feat_array_free(feat);
 		feat = NULL;
 	    }
 
@@ -225,7 +209,8 @@ agg_st_seg(model_def_t *mdef,
 	      continue;
 	    }
 
-	    feat = feat_compute(mfcc, &n_frame);
+	    feat = feat_array_alloc(fcb, n_frame + feat_window_size(fcb));
+	    feat_s2mfc2feat_live(fcb, mfcc, &n_frame, TRUE, TRUE, feat);
 
 	    if (corpus_has_xfrm()) {
 		if (a) {
@@ -285,12 +270,6 @@ agg_st_seg(model_def_t *mdef,
 		}
 		segdmp_add_feat(sseq[t], &feat[t], 1);
 	    }
-	}
-	else if (sv_mfcc) {
-	    for (t = 0; t < n_frame; t++) {
-		segdmp_add_mfcc(sseq[t], &mfcc[t], 1, mfc_veclen);
-	    }
-	}	    
     }
     
     if (mfcc) {
@@ -301,7 +280,7 @@ agg_st_seg(model_def_t *mdef,
     }
 
     if (feat) {
-	feat_free(feat);
+	feat_array_free(feat);
 	feat = NULL;
     }
 
@@ -312,31 +291,3 @@ agg_st_seg(model_def_t *mdef,
 
     return S3_SUCCESS;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2006/03/27  03:30:14  dhdfu
- * Fix some minor signedness issues to keep the compiler happy
- * 
- * Revision 1.5  2005/09/27 02:02:47  arthchan2003
- * Check whether utterance is too short in init_gau, bw and agg_seg.
- *
- * Revision 1.4  2004/07/21 18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */

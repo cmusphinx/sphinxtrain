@@ -57,7 +57,6 @@ state_t *next_utt_states(uint32 *n_state,
 			 model_inventory_t *inv,
 			 model_def_t *mdef,
 			 char *transcript,
-			 int32 sil_del,
 			 char* silence_str);
 
 /* the following function is used for MMIE training
@@ -69,49 +68,8 @@ state_t *next_utt_states_mmie(uint32 *n_state,
 			      char *curr_word,
 			      acmod_id_t *l_phone,
 			      acmod_id_t *r_phone,
-			      int32 sil_del,
 			      char* silence_str);
 /* end */
 
 #endif /* NEXT_UTT_STATES_H */ 
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.7  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.6  2004/07/17 08:00:23  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.4  2004/06/17 19:17:14  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.5  1996/07/29  16:22:02  eht
- * Mixxing includes
- *
- * Revision 1.4  1995/10/12  18:22:18  eht
- * Updated comments and changed <s3/state.h> to "state.h"
- *
- * Revision 1.3  1995/10/10  12:44:06  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.2  1995/08/09  20:20:10  eht
- * Use mdef structure for tying info rather than DAG thing
- *
- * Revision 1.1  1995/06/02  20:43:56  eht
- * Initial revision
- *
- *
- */

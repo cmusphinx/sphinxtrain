@@ -64,7 +64,7 @@ if ($ARGV[0] == '--') {
 if ($help) {
   pod2usage( -exitval => "NOEXIT",
              -verbose => 1 );
-  system("bin/wave2feat");
+  system("sphinx_fe");
   exit(-1);
 }
 
@@ -144,14 +144,14 @@ if (defined $ctl) {
   }
   close CTL;
 
-  system("bin/wave2feat -verbose yes $params -c \"$ctl\" -$ST::CFG_WAVFILE_TYPE yes " .
+  system("sphinx_fe -verbose yes $params -c \"$ctl\" -$ST::CFG_WAVFILE_TYPE yes " .
 	 "-di \"$ST::CFG_WAVFILES_DIR\" -ei \"$ST::CFG_WAVFILE_EXTENSION\" ".
 	 "-do \"$ST::CFG_FEATFILES_DIR\" " .
 	 "-eo \"$ST::CFG_FEATFILE_EXTENSION\"".
 	 " @ARGV");
 
 } else {
-  system("bin/wave2feat @ARGV");
+  system("sphinx_fe @ARGV");
   open PARAM, ">$param_file" or die "Failed to open param file $param_file for writing: $!";
   while (@ARGV) {
       ($k, $v) = splice @ARGV, 0, 2;
@@ -186,7 +186,7 @@ If specifying all arguments
 
 =head1 ARGUMENTS
 
-Obtained by running "bin/wave2feat" without arguments.
+Obtained by running "sphinx_fe" without arguments.
 
 The recommended parameters for wideband (default) and narrowband (in parentheses) are:
 

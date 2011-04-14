@@ -48,7 +48,6 @@
 #include <s3/gauden.h>
 #include <s3/regmat_io.h>
 #include <sphinxbase/matrix.h>
-#include <s3/feat.h>
 
 #include <s3/mllr.h>
 #include <s3/mllr_io.h>

@@ -52,28 +52,28 @@
 #include "parse_cmd_ln.h"
 
 #include <s3/corpus.h>
-#include <sphinxbase/cmd_ln.h>
 #include <s3/lexicon.h>
 #include <s3/acmod_set.h>
 #include <s3/model_def_io.h>
 #include <s3/s3ts2cb_io.h>
 #include <s3/ts2cb.h>
-#include <sphinxbase/ckd_alloc.h>
-#include <s3/feat.h>
 #include <s3/s3.h>
 
-#include <sys_compat/file.h>
-
 #include <string.h>
-
+
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/feat.h>
+
+
+static lexicon_t *lex;
+static model_def_t *mdef;
+static feat_t *feat;
+
 static int
-initialize(lexicon_t **out_lex,
-	   model_def_t **out_mdef,
-	   int argc,
+initialize(int argc,
 	   char *argv[])
 {
-    lexicon_t *lex = NULL;
-    model_def_t *mdef = NULL;
     const char *fdictfn;
     const char *dictfn;
     const char *ts2cbfn;
@@ -83,21 +83,60 @@ initialize(lexicon_t **out_lex,
     /* define, parse and (partially) validate the command line */
     parse_cmd_ln(argc, argv);
 
-    if (cmd_ln_str("-feat") != NULL) {
-	feat_set(cmd_ln_str("-feat"));
-	feat_set_in_veclen(cmd_ln_int32("-ceplen"));
-	feat_set_subvecs(cmd_ln_str("-svspec"));
-    }
-    else {
-	E_ERROR("Specify the feature extraction algorithm using -feat\n");
+    feat = 
+        feat_init(cmd_ln_str("-feat"),
+                  cmn_type_from_str(cmd_ln_str("-cmn")),
+                  cmd_ln_boolean("-varnorm"),
+                  agc_type_from_str(cmd_ln_str("-agc")),
+                  1, cmd_ln_int32("-ceplen"));
 
-	return S3_ERROR;
+
+    if (cmd_ln_str("-lda")) {
+        E_INFO("Reading linear feature transformation from %s\n",
+               cmd_ln_str("-lda"));
+        if (feat_read_lda(feat,
+                          cmd_ln_str("-lda"),
+                          cmd_ln_int32("-ldadim")) < 0)
+            return -1;
     }
-    if (cmd_ln_str("-lda") != NULL) {
-	if (feat_read_lda(cmd_ln_str("-lda"), cmd_ln_int32("-ldadim"))) {
-	    E_FATAL("Failed to read LDA matrix\n");
-	}
+
+    if (cmd_ln_str("-svspec")) {
+        int32 **subvecs;
+        E_INFO("Using subvector specification %s\n", 
+               cmd_ln_str("-svspec"));
+        if ((subvecs = parse_subvecs(cmd_ln_str("-svspec"))) == NULL)
+            return -1;
+        if ((feat_set_subvecs(feat, subvecs)) < 0)
+            return -1;
     }
+
+    if (cmd_ln_exists("-agcthresh")
+        && 0 != strcmp(cmd_ln_str("-agc"), "none")) {
+        agc_set_threshold(feat->agc_struct,
+                          cmd_ln_float32("-agcthresh"));
+    }
+
+    if (feat->cmn_struct
+        && cmd_ln_exists("-cmninit")) {
+        char *c, *cc, *vallist;
+        int32 nvals;
+
+        vallist = ckd_salloc(cmd_ln_str("-cmninit"));
+        c = vallist;
+        nvals = 0;
+        while (nvals < feat->cmn_struct->veclen
+               && (cc = strchr(c, ',')) != NULL) {
+            *cc = '\0';
+            feat->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC(atof(c));
+            c = cc + 1;
+            ++nvals;
+        }
+        if (nvals < feat->cmn_struct->veclen && *c != '\0') {
+            feat->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC(atof(c));
+        }
+        ckd_free(vallist);
+    }
+
 
     if (cmd_ln_str("-segdir"))
 	corpus_set_seg_dir(cmd_ln_str("-segdir"));
@@ -184,75 +223,21 @@ initialize(lexicon_t **out_lex,
 	}
     }
 
-    *out_mdef = mdef;
-    *out_lex = lex;
-
     return S3_SUCCESS;
 }
-
+
 int
 main(int argc, char *argv[])
 {
-    lexicon_t *lex;
-    model_def_t *mdef;
-
-    if (initialize(&lex, &mdef,
-		   argc, argv) != S3_SUCCESS) {
-	E_ERROR("errors initializing.\n");
+    if (initialize(argc, argv) != S3_SUCCESS) {
+	E_ERROR("Errors initializing.\n");
 	return 1;
     }
     
-    if (init_gau(lex, mdef) != S3_SUCCESS) {
+    if (init_gau(lex, mdef, feat) != S3_SUCCESS) {
 	return 1;
     }
 
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.9  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.8  96/08/06  14:15:15  eht
- * Define missing prototype
- * 
- * Revision 1.7  1996/08/06  14:08:28  eht
- * Deal w/ new model definition structure which includes an acoustic model set
- * mapping structure
- *
- * Revision 1.6  1996/03/25  15:43:43  eht
- * Deal w setting the input feature vector length
- * Deal w/ -nskip and -runlen arguments
- *
- * Revision 1.5  1996/01/26  18:22:07  eht
- * Use the feat module.
- *
- * Revision 1.4  1995/12/14  20:00:17  eht
- * Added (void *) type cast for ckd_free() argument.
- *
- * Revision 1.3  1995/12/14  19:57:44  eht
- * Yet another interim development version
- *
- * Revision 1.2  1995/12/01  20:55:40  eht
- * interim development version
- *
- * Revision 1.1  1995/12/01  16:39:04  eht
- * Initial revision
- *
- *
- */
+

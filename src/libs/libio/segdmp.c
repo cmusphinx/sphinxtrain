@@ -54,7 +54,6 @@
 #include <s3/vector.h>
 #include <s3/swap.h>
 #include <s3/err.h>
-#include <s3/feat.h>
 #include <sys_compat/file.h>
 #include <sys_compat/misc.h>		/* for sleep() on WIN32 */
 
@@ -199,12 +198,6 @@ read_idx(uint32 part)
 
     if (s3read((int *)&cur_type, sizeof(int), 1, idx_fp[part], dmp_swp[part], &ignore) != 1) {
 	E_FATAL_SYSTEM("unable to read seg idx file");
-    }
-
-    if (cur_type == SEGDMP_TYPE_FEAT) {
-	vecsize = feat_vecsize();
-	n_stream = feat_n_stream();
-	blksize = feat_blksize();
     }
 
     if (s3read(&n_id, sizeof(uint32), 1, idx_fp[part], dmp_swp[part], &ignore) != 1) {
@@ -376,12 +369,19 @@ segdmp_open_read(const char **dirs,		/* directories available for dump files */
 		 const char *dfn,		/* dump file name */
 		 const char *ifn,		/* index file name */
 		 uint32 *out_n_id,		/* # of segment id's (i.e. phones, states, etc.)*/
-		 segdmp_type_t *out_data_type)	/* type of data to store in segment dump */
+		 segdmp_type_t *out_data_type, /* type of data to store in segment dump */
+		 uint32 i_n_stream,
+		 uint32* i_vecsize,
+		 uint32 i_blksize)	
 {
     char fn[MAXPATHLEN+1];
     uint32 n_dir;
     uint32 i, swp;
     uint32 *n_frame;
+    
+    n_stream = i_n_stream;
+    vecsize = i_vecsize;
+    blksize = i_blksize;
     
     n_seg = NULL;
     n_frame = NULL;
@@ -436,7 +436,10 @@ segdmp_open_write(const char **dirs,		/* directories available for dump files */
 		  uint32 n,			/* # of segment id's (i.e. phones, states, etc.)*/
 		  uint32 *in_n_seg,		/* # of segments per id */
 		  uint32 **in_n_frame,		/* length of each segment in # of frames */
-		  segdmp_type_t data_type)	/* type of data to store in segment dump */
+		  segdmp_type_t data_type,	/* type of data to store in segment dump */
+		  uint32 i_n_stream,
+		  uint32* i_vecsize,
+		  uint32 i_blksize)
 {
     uint32 n_dmp_min;
     uint32 n_dmp_frame_max;
@@ -449,6 +452,9 @@ segdmp_open_write(const char **dirs,		/* directories available for dump files */
     n_seg = in_n_seg;
     n_frame = in_n_frame;	/* NULL => 1 frame per segment */
 
+    n_stream = i_n_stream;
+    vecsize = i_vecsize;
+    blksize = i_blksize;
 
     printf("dfn is %s\n", dfn);
     printf("ifn is %s\n", ifn);
@@ -466,12 +472,6 @@ segdmp_open_write(const char **dirs,		/* directories available for dump files */
     }
     else if (cur_type == SEGDMP_TYPE_VQ) {
 	E_INFO("Producing VQ dump\n");
-    }
-
-    if (cur_type == SEGDMP_TYPE_FEAT) {
-	vecsize = feat_vecsize();
-	n_stream = feat_n_stream();
-	blksize = feat_blksize();
     }
 
     for (n_tot_frame = 0, i = 0; i < n; i++) {
@@ -657,55 +657,7 @@ segdmp_close()
 
     return S3_SUCCESS;
 }
-
-int
-segdmp_add_vq(uint32 id,
-	      unsigned char *ccode,
-	      unsigned char *dcode,
-	      unsigned char *pcode,
-	      unsigned char *ddcode,
-	      uint32 n_seg_frame)
-{
-    seg_t *s;
-    uint32 i;
 
-    if (n_seg_frame*frame_sz + nxt_frm_buf > alloc_frm_buf) {
-	dump_frm_buf();
-    }
-
-    s = ckd_calloc(1, sizeof(seg_t));
-
-    s->len = n_seg_frame;
-    s->idx = nxt_frm_buf;
-
-    if (t_seg[id]) {
-	t_seg[id]->next = s;
-    }
-
-    t_seg[id] = s;
-
-    if (h_seg[id] == NULL) {
-	h_seg[id] = t_seg[id];
-    }
-
-    for (i = 0; i < n_seg_frame; i++) {
-	frm_buf[nxt_frm_buf++] = ccode[i];
-	frm_buf[nxt_frm_buf++] = dcode[i];
-	frm_buf[nxt_frm_buf++] = pcode[i];
-	frm_buf[nxt_frm_buf++] = ddcode[i];
-    }
-
-    return S3_SUCCESS;
-}
-int
-segdmp_add_mfcc(uint32 id,
-		vector_t *mfcc,
-		uint32 n_frame,
-		uint32 veclen)
-{
-    E_FATAL("segdmp_add_mfcc() Not yet implemented\n");
-    return 0;
-}
 int
 segdmp_add_feat(uint32 id,
 		vector_t **feat,
@@ -741,89 +693,7 @@ segdmp_add_feat(uint32 id,
     return S3_SUCCESS;
 }
 
-int
-segdmp_next_vq(uint32 id,
-	       unsigned char **out_ccode,
-	       unsigned char **out_dcode,
-	       unsigned char **out_pcode,
-	       unsigned char **out_ddcode,
-	       uint32 *out_n_frame)
-{
-    uint32 s;
-    FILE *fp;
-    uint32 off;
-    uint32 n_seg_frame;
-    unsigned char *ccode;
-    unsigned char *dcode;
-    unsigned char *pcode;
-    unsigned char *ddcode;
-    uint32 i;
 
-    fp = dmp_fp[id_part[id]];
-
-    s = nxt_seg[id];
-    if (s == n_seg[id]) {
-	nxt_seg[id] = 0;
-
-	return 0;
-    }
-    else {
-	++nxt_seg[id];
-    }
-
-    off = id_nxt_off[id];
-    if (ftell(fp) != off) {
-	if (fseek(fp, off, SEEK_SET) < 0) {
-	    E_FATAL_SYSTEM("Unable to seek to position in dmp file");
-	}
-    }
-    
-    if (n_frame == NULL) {
-	n_seg_frame = 1;
-    }
-    else {
-	n_seg_frame = n_frame[id][s];
-    }
-
-    ccode = ckd_malloc(n_seg_frame);
-    dcode = ckd_malloc(n_seg_frame);
-    pcode = ckd_malloc(n_seg_frame);
-    ddcode = ckd_malloc(n_seg_frame);
-
-    for (i = 0; i < n_seg_frame; i++) {
-	if (s3read(&ccode[i], sizeof(unsigned char), 1, fp, dmp_swp[id_part[id]], &ignore) != 1) {
-	    E_FATAL_SYSTEM("Unable to read segment from dmp file");
-	}
-	if (s3read(&dcode[i], sizeof(unsigned char), 1, fp, dmp_swp[id_part[id]], &ignore) != 1) {
-	    E_FATAL_SYSTEM("Unable to read segment from dmp file");
-	}
-	if (s3read(&pcode[i], sizeof(unsigned char), 1, fp, dmp_swp[id_part[id]], &ignore) != 1) {
-	    E_FATAL_SYSTEM("Unable to read segment from dmp file");
-	}
-	if (s3read(&ddcode[i], sizeof(unsigned char), 1, fp, dmp_swp[id_part[id]], &ignore) != 1) {
-	    E_FATAL_SYSTEM("Unable to read segment from dmp file");
-	}
-    }
-
-    *out_ccode = ccode;
-    *out_dcode = dcode;
-    *out_pcode = pcode;
-    *out_ddcode = ddcode;
-    *out_n_frame = n_seg_frame;
-
-    return 1;
-}
-
-int
-segdmp_next_mfcc(uint32 id,
-		 vector_t **out_mfcc,
-		 uint32 *out_n_frame,
-		 uint32 *out_veclen)
-{
-    E_FATAL("segdmp_next_mfcc() Not yet implemented\n");
-    return 0;
-}
-
 int
 segdmp_next_feat(uint32 id,
 		 vector_t ***out_feat,
@@ -893,27 +763,3 @@ segdmp_n_seg(uint32 id)
 {
     return n_seg[id];
 }
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/11/29  01:11:17  egouvea
- * Fixed license terms in some new files.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.1  97/03/17  15:01:49  eht
- * Initial revision
- * 
- *
- */

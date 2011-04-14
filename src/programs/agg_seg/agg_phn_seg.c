@@ -52,8 +52,9 @@
 #include <s3/mk_phone_list.h>
 #include <s3/ck_seg.h>
 #include <s3/cvt2triphone.h>
+
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/feat.h>
+#include <sphinxbase/feat.h>
 
 #include <stdio.h>
 #include <assert.h>
@@ -62,13 +63,10 @@
 int
 agg_phn_seg(lexicon_t *lex,
 	    acmod_set_t *acmod_set,
+	    feat_t *fcb,
 	    segdmp_type_t type)
 {
     uint16 *seg;
-    unsigned char *ccode;
-    unsigned char *dcode;
-    unsigned char *pcode;
-    unsigned char *ddcode;
     vector_t *mfcc;
     vector_t **feat;
     uint32 n_coeff;
@@ -86,29 +84,15 @@ agg_phn_seg(lexicon_t *lex,
     char *trans;
     char **word;
     uint32 n_word;
-
-    uint32 sv_feat = FALSE;
-    uint32 sv_vq = FALSE;
-    uint32 sv_mfcc = FALSE;
+    int32 mfc_veclen = cmd_ln_int32("-ceplen");
 
     uint32 n_stream;
     const uint32 *veclen;
 
     tick_cnt = 0;
 
-    if (type == SEGDMP_TYPE_FEAT) {
-	sv_feat = TRUE;
-
-	n_stream = feat_n_stream();
-	veclen = feat_vecsize();
-    }
-    else if (type == SEGDMP_TYPE_MFCC) {
-	sv_mfcc = TRUE;
-    }
-    else if (type == SEGDMP_TYPE_VQ) {
-	sv_vq = TRUE;
-    }
-
+    n_stream = feat_n_stream(fcb);
+    veclen = feat_stream_lengths(fcb);
 
     while (corpus_next_utt()) {
 	if ((++tick_cnt % 500) == 0) {
@@ -171,36 +155,10 @@ agg_phn_seg(lexicon_t *lex,
 	    continue;
 	}
 	
-	if (corpus_provides_ccode()) {
-	    /* assume that if it provides ccode, it provides
-	       the remaining types */
-	    corpus_get_ccode(&ccode, &tmp);
-	    assert(tmp == n_frame);
-	    corpus_get_dcode(&dcode, &tmp);
-	    assert(tmp == n_frame);
-	    corpus_get_pcode(&pcode, &tmp);
-	    assert(tmp == n_frame);
-	    corpus_get_ddcode(&ddcode, &tmp);
-	    assert(tmp == n_frame);
-
-	    for (s = 0; s < n_phone; s++) {
-		segdmp_add_vq(phone[s],
-			      &ccode[start[s]],
-			      &dcode[start[s]],
-			      &pcode[start[s]],
-			      &ddcode[start[s]],
-			      len[s]);
-	    }
-
-	    free(ccode);
-	    free(dcode);
-	    free(pcode);
-	    free(ddcode);
-	}
-	else if (corpus_provides_mfcc()) {
-	    if (feat_id() != NO_ID) {
-		corpus_get_mfcc(&mfcc, &n_frame, &n_coeff);
-		feat_set_in_veclen(n_coeff);
+	if (corpus_provides_mfcc()) {
+    	        if (corpus_get_generic_featurevec(&mfcc, &n_frame, mfc_veclen) < 0) {
+		      E_FATAL("Can't read input features from %s\n", corpus_utt());
+		}
 		
 		if (n_frame < 9) {
 		  E_WARN("utt %s too short\n", corpus_utt());
@@ -212,7 +170,8 @@ agg_phn_seg(lexicon_t *lex,
 		  continue;
 		}
 
-		feat = feat_compute(mfcc, &n_frame);
+		feat = feat_array_alloc(fcb, n_frame + feat_window_size(fcb));
+	        feat_s2mfc2feat_live(fcb, mfcc, &n_frame, TRUE, TRUE, feat);
 
 		for (s = 0; s < n_phone; s++) {
 		    segdmp_add_feat(phone[s],
@@ -220,23 +179,9 @@ agg_phn_seg(lexicon_t *lex,
 				    len[s]);
 		}
 
-		feat_free(feat);
+		feat_array_free(feat);
 		free(&mfcc[0][0]);
 		ckd_free(mfcc);
-	    }
-	    else {
-		corpus_get_mfcc(&mfcc, &n_frame, &n_coeff);
-
-		for (s = 0; s < n_phone; s++) {
-		    segdmp_add_mfcc(phone[s],
-				    &mfcc[start[s]],
-				    len[s],
-				    n_coeff);
-		}
-
-		free(&mfcc[0][0]);
-		ckd_free(mfcc);
-	    }
 	}
 	else {
 	    E_FATAL("No data type specified\n");
@@ -253,36 +198,3 @@ agg_phn_seg(lexicon_t *lex,
     return 0;
 }
 
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2005/09/27  02:02:47  arthchan2003
- * Check whether utterance is too short in init_gau, bw and agg_seg.
- * 
- * Revision 1.4  2004/07/21 18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- * Revision 1.3  1996/07/29  16:02:57  eht
- * segdmp module gets n_stream and veclen parameters at initialization time.
- * No need to pass these as args.
- *
- * Revision 1.2  1996/03/25  15:45:23  eht
- * Development version
- *
- *
- */

@@ -47,7 +47,6 @@ ALL_DIRS= $(BUILD_DIRS)
 SRCS = \
   agg_all_seg.c \
   agg_phn_seg.c \
-  agg_seg.c \
   agg_st_seg.c \
   cnt_phn_seg.c \
   cnt_st_seg.c \
@@ -58,7 +57,6 @@ H = \
   add_seg.h \
   agg_all_seg.h \
   agg_phn_seg.h \
-  agg_seg.h \
   agg_st_seg.h \
   cnt_phn_seg.h \
   cnt_st_seg.h \

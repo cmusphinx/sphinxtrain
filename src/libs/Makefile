@@ -42,7 +42,7 @@
 # ====================================================================
 TOP=../..
 DIRNAME=src/libs
-BUILD_DIRS = libcep_feat libcommon libmllr \
+BUILD_DIRS = libcommon libmllr \
              libclust libio libmodinv libs2io
 ALL_DIRS= $(BUILD_DIRS)
 FILES = Makefile README
