@@ -96,7 +96,7 @@ compute_mixw_lambda(float32 **lambda,
     float32 **acc_b;
     float32 **ci_acc_b;
     float64 ci_dnom;
-    float32 uniform_prob = 1.0 / n_gau;
+    float32 uniform_prob = 1.0f / n_gau;
 
     float64 norm;
 
@@ -319,9 +319,9 @@ smooth_mixw(float32 ****out_mixw,
     for (i = 0; i < n_cd_state; i++) {
 	/* biased initialization should help generally well trained models
 	 * converge faster */
-	lambda[i][(int)DIST_CD] = 0.6;
-	lambda[i][(int)DIST_CI] = 0.3;
-	lambda[i][(int)DIST_UNIFORM] = 0.1;
+	lambda[i][(int)DIST_CD] = 0.6f;
+	lambda[i][(int)DIST_CI] = 0.3f;
+	lambda[i][(int)DIST_UNIFORM] = 0.1f;
     }
 
     max_iter = cmd_ln_int32("-maxiter");
@@ -360,7 +360,7 @@ smooth_mixw(float32 ****out_mixw,
 	    }
 
 	    if (norm > MIN_IEEE_NORM_POS_FLOAT32) {
-		norm = 1.0 / norm;
+		norm = 1.0f / norm;
 
 		for (j = 0, state_converged = TRUE; j < N_DIST_TYPE; j++) {
 		    prior_lambda = lambda[i][j];
@@ -376,7 +376,7 @@ smooth_mixw(float32 ****out_mixw,
 	    }
 	    else {
 		for (j = 0; j < N_DIST_TYPE; j++) {
-		    lambda[i][j] = 1.0 / N_DIST_TYPE;
+		    lambda[i][j] = 1.0f / N_DIST_TYPE;
 		}
 		state_converged = TRUE;
 	    }
@@ -537,9 +537,14 @@ rd_interp_wr()
     const char **accum_dir;
     uint32 i;
 
+	if (cmd_ln_str("-moddeffn") == NULL) {
+		E_ERROR("No moddeffn specified, exiting");
+		return S3_ERROR;
+	}
+
     if (model_def_read(&mdef,
 		       cmd_ln_str("-moddeffn")) != S3_SUCCESS) {
-	return S3_ERROR;
+		return S3_ERROR;
     }
 
     i = 0;
@@ -603,66 +608,3 @@ main(int argc, char *argv[])
     
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.14  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.13  1996/03/25  15:40:05  eht
- * Added ability to set input feature vector length
- *
- * Revision 1.12  1996/03/04  15:57:41  eht
- * Made some changes so that acmod_set conforms to its interface
- *
- * Revision 1.11  1996/01/26  18:07:00  eht
- * Use the feat module
- *
- * Revision 1.10  1995/12/15  18:37:07  eht
- * Added some type cases for memory alloc/free
- *
- * Revision 1.9  1995/10/10  12:53:35  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.8  1995/10/09  15:30:33  eht
- * Removed __FILE__, __LINE__ arguments to ckd_alloc routines
- *
- * Revision 1.7  1995/10/05  12:55:06  eht
- * Deal w/ untrained tied states and change in acmod_set interface
- *
- * Revision 1.6  1995/09/08  19:11:14  eht
- * Updated to use new acmod_set module.  Prior to testing
- * on TI digits.
- *
- * Revision 1.5  1995/09/07  19:10:22  eht
- * Don't consider CI states when computing the set of
- * CI states associated with CD states.
- *
- * Revision 1.4  1995/08/15  13:39:57  eht
- * Compute the number of times a seno appears with a given CI distribution.
- *
- * Revision 1.3  1995/08/10  20:29:40  eht
- * Yet another development version
- *
- * Revision 1.2  1995/08/09  00:38:05  eht
- * Another development version
- *
- * Revision 1.1  1995/06/02  20:56:53  eht
- * Initial revision
- *
- *
- */

@@ -54,7 +54,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>../../../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\..\sphinxbase\include\win32;..\..\..\..\..\sphinxbase\include;../../../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -76,6 +76,8 @@
       <ProgramDatabaseFile>.\..\..\..\..\bin\Release/mk_mdef_gen.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>sphinxbase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\..\..\..\sphinxbase\bin\Release</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -161,10 +163,6 @@
     <ClInclude Include="..\..\..\..\src\programs\mk_mdef_gen\parse_cmd_ln.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\libs\libcep_feat\libcep_feat.vcxproj">
-      <Project>{1af38439-3e6e-4814-b12e-20adcab8374a}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\..\libs\libclust\libclust.vcxproj">
       <Project>{ba86abd2-5daf-412d-84fa-41bb273c5b34}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

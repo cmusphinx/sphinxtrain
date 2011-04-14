@@ -54,7 +54,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>../../../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\..\sphinxbase\include\win32;..\..\..\..\..\sphinxbase\include;../../../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -76,6 +76,9 @@
       <ProgramDatabaseFile>.\..\..\..\..\bin\Release/agg_seg.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -135,12 +138,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\programs\agg_seg\agg_seg.c">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\programs\agg_seg\agg_st_seg.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -182,7 +179,6 @@
     <ClInclude Include="..\..\..\..\src\programs\agg_seg\add_seg.h" />
     <ClInclude Include="..\..\..\..\src\programs\agg_seg\agg_all_seg.h" />
     <ClInclude Include="..\..\..\..\src\programs\agg_seg\agg_phn_seg.h" />
-    <ClInclude Include="..\..\..\..\src\programs\agg_seg\agg_seg.h" />
     <ClInclude Include="..\..\..\..\src\programs\agg_seg\agg_st_seg.h" />
     <ClInclude Include="..\..\..\..\src\programs\agg_seg\cnt_phn_seg.h" />
     <ClInclude Include="..\..\..\..\src\programs\agg_seg\cnt_st_seg.h" />
@@ -190,10 +186,6 @@
     <ClInclude Include="..\..\..\..\src\programs\agg_seg\parse_cmd_ln.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\libs\libcep_feat\libcep_feat.vcxproj">
-      <Project>{1af38439-3e6e-4814-b12e-20adcab8374a}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\..\libs\libclust\libclust.vcxproj">
       <Project>{ba86abd2-5daf-412d-84fa-41bb273c5b34}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

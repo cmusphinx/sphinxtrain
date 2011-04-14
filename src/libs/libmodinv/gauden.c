@@ -57,10 +57,10 @@
  *********************************************************************/
 
 #include <s3/gauden.h>
+#include <s3/err.h>
 
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/cmd_ln.h>
-#include <s3/err.h>
 #include <sphinxbase/matrix.h>
 
 #include <float.h>

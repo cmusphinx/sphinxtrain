@@ -210,7 +210,7 @@ setup_d2o_map(model_def_t *d_mdef,
 }
 
 static uint32
-setup_obs_1class(uint n_stream, uint32 strm, uint32 n_frame, const uint32 *veclen)
+setup_obs_1class(uint32 n_stream, uint32 strm, uint32 n_frame, const uint32 *veclen)
 {
     float32 *buf;
     vector_t *frm;

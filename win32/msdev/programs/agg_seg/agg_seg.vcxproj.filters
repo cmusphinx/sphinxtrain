@@ -21,9 +21,6 @@
     <ClCompile Include="..\..\..\..\src\programs\agg_seg\agg_phn_seg.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\programs\agg_seg\agg_seg.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\programs\agg_seg\agg_st_seg.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -51,9 +48,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\programs\agg_seg\agg_phn_seg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\src\programs\agg_seg\agg_seg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\programs\agg_seg\agg_st_seg.h">

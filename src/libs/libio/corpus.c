@@ -90,11 +90,6 @@
 static
 int strcmp_ci(const char *a, const char *b);
 
-static int
-read_sildel(uint32 **del_sf,
-	    uint32 **del_ef,
-	    uint32 *n_del);
-
 static char *
 mk_filename(uint32 type, char *rel_path);
 
@@ -1352,19 +1347,7 @@ corpus_next_utt()
 	    /* ahem! */
 	    E_FATAL("File length mismatch at line %d in %s\n", n_proc, lsn_filename);
 	}
-    }
-
-    if (sil_fp) {
-	if (del_sf)
-	    ckd_free(del_sf);
-	if (del_ef)
-	    ckd_free(del_ef);
-
-	if (read_line(sil_line, MAXPATHLEN, NULL, sil_fp) == NULL)
-	    sil_line[0] = '\0';
-
-	read_sildel(&del_sf, &del_ef, &n_del);
-    }
+    }  
 
     if (read_line(next_ctl_line, MAXPATHLEN, NULL, ctl_fp) == NULL)
 	next_ctl_line[0] = '\0';

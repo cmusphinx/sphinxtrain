@@ -23,9 +23,6 @@
     <ClCompile Include="..\..\..\..\src\libs\libcommon\ck_seg.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libcommon\cmd_ln.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libcommon\cmu6_lts_rules.c">
       <Filter>Source Files</Filter>
     </ClCompile>
