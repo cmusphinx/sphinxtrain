@@ -1,7 +1,7 @@
 dnl Welcome to the Sphinx automated build system.
 dnl try not to hurt yourself ;)
 
-AC_INIT(SphinxTrain, 1.1)
+AC_INIT(SphinxTrain, 1.0.7)
 
 AC_CANONICAL_HOST
 AC_PROG_CC
