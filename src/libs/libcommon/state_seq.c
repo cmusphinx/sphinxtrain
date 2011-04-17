@@ -257,8 +257,7 @@ count_next_prior_states(uint32 *n_next,
 			uint32 n_phone,
 			model_def_entry_t *defn,
 
-			float32 ***all_tmat,	       
-			acmod_id_t sil_id)
+			float32 ***all_tmat)
 {
     uint32 tmat_id;
     float32 **model_tmat;
@@ -329,8 +328,7 @@ set_next_prior_state(uint32 *next_state,
 		     uint32 n_phone,
 		     model_def_entry_t *defn,
 
-		     float32 ***all_tmat,
-		     acmod_id_t sil_id)
+		     float32 ***all_tmat)
 
 {
     uint32 i;
@@ -439,8 +437,7 @@ state_seq_make(uint32 *n_state,
 	       acmod_id_t *phone,
 	       uint32 n_phone,
 	       model_inventory_t *inv,
-	       model_def_t *mdef,
-	       acmod_id_t sil_id)
+	       model_def_t *mdef)
 {
     static state_t *state;	/* The states of the sentence HMM graph */
     static uint32 *n_prior;	/* The in-degree of node i in the sent. HMM */
@@ -513,8 +510,7 @@ state_seq_make(uint32 *n_state,
 			    n_prior, &total_prior,
 			    phone, n_phone,
 			    defn,
-			    all_tmat,
-			    sil_id);
+			    all_tmat);
 
     
     if (total_next > max_total_next) {
@@ -556,7 +552,7 @@ state_seq_make(uint32 *n_state,
     set_next_prior_state(next_state, next_tprob, n_next, total_next,
 			 prior_state, prior_tprob, n_prior, total_prior,
 			 phone, n_phone, defn,
-			 all_tmat, sil_id);
+			 all_tmat);
 
     /* Define the model states of the sentence HMM */
     for (i = 0, k = 0, n = 0, p = 0; i < n_phone; i++) {

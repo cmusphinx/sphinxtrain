@@ -150,7 +150,6 @@ until (-f $mixwfn) {
     sleep 1;
 }
 
-$ST::CFG_FEAT_WINDOW ||= 0;
 my $return_value = RunTool
     ('bw', $logfile, $ctl_counter,
      -moddeffn => $moddeffn,
@@ -185,7 +184,6 @@ my $return_value = RunTool
      -diagfull => $ST::CFG_DIAGFULL,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
-     -cepwin => $ST::CFG_FEAT_WINDOW,
      @feat_args,
      -timing => "no");
 

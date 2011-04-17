@@ -69,9 +69,7 @@ agg_phn_seg(lexicon_t *lex,
     uint16 *seg;
     vector_t *mfcc;
     vector_t **feat;
-    uint32 n_coeff;
     uint32 n_frame;
-    uint32 tmp;
     uint32 tick_cnt;
 
     acmod_id_t *phone;

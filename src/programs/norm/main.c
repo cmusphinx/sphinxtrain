@@ -138,8 +138,6 @@ normalize()
     uint32 mllr_add;
     float32 *****regl = NULL;
     float32 ****regr = NULL;
-    float32 ****A;
-    float32 ***B; 
     uint32 no_retries=0;
 
     

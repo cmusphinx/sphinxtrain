@@ -94,23 +94,21 @@
 #include "accum.h"
 
 #include <s3/gauden.h>
-
 #include <s3/s3gau_io.h>
 #include <s3/s3mixw_io.h>
 #include <s3/s3tmat_io.h>
 #include <s3/corpus.h>
-
 #include <s3/model_inventory.h>
 #include <s3/model_def.h>
+#include <s3/s2_param.h>
+#include <s3/lda.h>
+#include <s3/s3.h>
+#include <s3/state_seq.h>
 
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/cmd_ln.h>
-#include <s3/s2_param.h>
 #include <sphinxbase/matrix.h>
-#include <s3/lda.h>
-#include <s3/s3.h>
-
-#include <s3/state_seq.h>
+#include <sphinxbase/feat.h>
 
 #include <stdio.h>
 #include <math.h>

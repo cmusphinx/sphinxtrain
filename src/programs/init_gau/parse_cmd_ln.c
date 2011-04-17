@@ -168,15 +168,6 @@ init_gau -accumdir accumdir -ctlfn controlfn -part 1 -npart 1 -cepdir cepdir -fe
 	  ARG_STRING,
 	  ".mfc",
 	  "Extension of the training corpus cepstrum files."},
-	{ "-silcomp",
-	  ARG_STRING,
-	  "none",
-	  "Controls silence compression."},
-
-	{ "-cepwin",
-	  ARG_INT32,
-	  "0",
-	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
 
 	cepstral_to_feature_command_line_macro(),
 	{NULL, 0, NULL, NULL}

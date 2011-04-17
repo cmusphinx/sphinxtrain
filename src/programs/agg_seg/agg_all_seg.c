@@ -89,9 +89,6 @@ agg_all_seg(feat_t *fcb,
     vector_t **feat = NULL;
     uint32 i, j;
     uint32 t;
-    int32 sv_feat = FALSE;
-    int32 sv_mfcc = FALSE;
-    int32 sv_vq = FALSE;
     uint32 n_stream;
     const uint32 *veclen;
     FILE *fp;
@@ -116,7 +113,6 @@ agg_all_seg(feat_t *fcb,
 
     for (seq_no = corpus_get_begin(), j = 0, n_out_frame = 0;
 	 corpus_next_utt(); seq_no++) {
-	if (sv_feat || sv_mfcc) {
 	    if (mfcc) {
 		free(mfcc[0]);
 		ckd_free(mfcc);
@@ -128,13 +124,11 @@ agg_all_seg(feat_t *fcb,
 	    if (corpus_get_generic_featurevec(&mfcc, &n_frame, mfc_veclen) < 0) {
 	      E_FATAL("Can't read input features from %s\n", corpus_utt());
 	    }
-	}
 
 	if ((seq_no % 1000) == 0) {
 	    E_INFO("[%u]\n", seq_no);
 	}
 
-	if (sv_feat) {
 	    if (feat) {
 		feat_array_free(feat);
 		feat = NULL;
@@ -175,10 +169,6 @@ agg_all_seg(feat_t *fcb,
 		    ++n_out_frame;
 		}
 	    }
-	}
-	else if (sv_mfcc) {
-	    E_FATAL("Dumping MFCC not yet supported\n");
-	}	    
     }
 
     if (fseek(fp, start, SEEK_SET) < 0) {

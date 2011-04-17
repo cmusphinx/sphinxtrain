@@ -65,8 +65,7 @@ state_seq_make(uint32 *n_state,
 	       acmod_id_t *phone,
 	       uint32 n_phone,
 	       model_inventory_t *inv,
-	       model_def_t *mdef,
-	       acmod_id_t sil_id);
+	       model_def_t *mdef);
 
 
 void

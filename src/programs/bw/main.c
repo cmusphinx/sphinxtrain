@@ -63,7 +63,6 @@
 #include <s3/cvt2triphone.h>
 #include <s3/mk_sseq.h>
 #include <s3/mk_trans_seq.h>
-#include <s3/silcomp.h>
 #include <s3/model_inventory.h>
 #include <s3/model_def_io.h>
 #include <s3/s3ts2cb_io.h>
@@ -183,7 +182,6 @@ main_initialize(int argc,
     int var_reest;
     int did_restore = FALSE;
     const char *fn;
-    const char* silence_str;
     int32 *mllr_idx = NULL;
     const char *hmmdir;
     const char *mdeffn, *meanfn, *varfn, *mixwfn, *tmatfn, *fdictfn;
@@ -450,11 +448,6 @@ main_initialize(int argc,
     corpus_set_mfcc_dir(cmd_ln_str("-cepdir"));
     corpus_set_mfcc_ext(cmd_ln_str("-cepext"));
 
-
-    /* The parameter required for re-estimation routines*/
-    silence_str = cmd_ln_str("-siltag");
-    E_INFO("Silence Tag %s\n",silence_str);
-
     if (cmd_ln_str("-lsnfn")) {
 	/* use a LSN file which has all the transcripts */
 	corpus_set_lsn_filename(cmd_ln_str("-lsnfn"));
@@ -615,7 +608,6 @@ main_reestimate(model_inventory_t *inv,
     uint32 mean_reest;	/* if TRUE, reestimate means */
     uint32 var_reest;	/* if TRUE, reestimate variances */
     char *trans;
-    const char* silence_str;
     const char *pdumpdir;
     FILE *pdumpfh;
     uint32 in_veclen;
@@ -685,7 +677,6 @@ main_reestimate(model_inventory_t *inv,
     var_reest = cmd_ln_int32("-varreest");
     pass2var = cmd_ln_int32("-2passvar");
     var_is_full = cmd_ln_int32("-fullvar");
-    silence_str = cmd_ln_str("-siltag");
     pdumpdir = cmd_ln_str("-pdumpdir");
     in_veclen = cmd_ln_int32("-ceplen");
 
@@ -838,7 +829,7 @@ main_reestimate(model_inventory_t *inv,
 	if (upd_timer)
 	    timing_start(upd_timer);
 	/* create a sentence HMM */
-	state_seq = next_utt_states(&n_state, lex, inv, mdef, trans, silence_str);
+	state_seq = next_utt_states(&n_state, lex, inv, mdef, trans);
 	printf(" %5u", n_state);
 	if (!viterbi) {
 	    /* accumulate reestimation sums for the utterance */
@@ -1165,7 +1156,6 @@ mmi_rand_train(model_inventory_t *inv,
 	       lexicon_t *lex,
 	       vector_t **f,
 	       s3lattice_t *lat,
-	       char* silence_str,
 	       float64 a_beam,
 	       uint32 mean_reest,
 	       uint32 var_reest,
@@ -1238,7 +1228,7 @@ mmi_rand_train(model_inventory_t *inv,
 	strcpy(nword, lat->arc[rand_next_id-1].word);
       rphone = mk_boundary_phone(nword, 1, lex);
 
-      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, silence_str);
+      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone);
 
       /* viterbi compuation to get the acoustic score for a word hypothesis */
       if (mmi_viterbi_run(&log_lik,
@@ -1297,7 +1287,7 @@ mmi_rand_train(model_inventory_t *inv,
       rphone = mk_boundary_phone(nword, 1, lex);
       
       /* make state list */
-      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, silence_str);
+      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone);
       
       /* viterbi update model parameters */
       if (mmi_viterbi_update(arc_f, n_word_obs,
@@ -1326,7 +1316,6 @@ mmi_best_train(model_inventory_t *inv,
 	       lexicon_t *lex,
 	       vector_t **f,
 	       s3lattice_t *lat,
-	       char* silence_str,
 	       float64 a_beam,
 	       uint32 mean_reest,
 	       uint32 var_reest,
@@ -1400,7 +1389,7 @@ mmi_best_train(model_inventory_t *inv,
 	  if (*rphone != prev_rphone || j == 0) {
 	        
 	    /* make state list */
-	    state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, silence_str);
+	    state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone);
 	        
 	    /* viterbi compuation to get the acoustic score for a word hypothesis */
 	    if (mmi_viterbi_run(&log_lik,
@@ -1471,7 +1460,7 @@ mmi_best_train(model_inventory_t *inv,
       rphone = mk_boundary_phone(nword, 1, lex);
       
       /* make state list */
-      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone, silence_str);
+      state_seq = next_utt_states_mmie(&n_state, lex, inv, mdef, cword, lphone, rphone);
       
       /* viterbi update model parameters */
       if (mmi_viterbi_update(arc_f, n_word_obs,
@@ -1500,7 +1489,6 @@ mmi_ci_train(model_inventory_t *inv,
 	     lexicon_t *lex,
 	     vector_t **f,
 	     s3lattice_t *lat,
-	     char* silence_str,
 	     float64 a_beam,
 	     uint32 mean_reest,
 	     uint32 var_reest,
@@ -1528,7 +1516,7 @@ mmi_ci_train(model_inventory_t *inv,
       arc_f[k] = f[k+lat->arc[n].sf-1];
     
     /* make state list */
-    state_seq = next_utt_states(&n_state, lex, inv, mdef, lat->arc[n].word, silence_str);
+    state_seq = next_utt_states(&n_state, lex, inv, mdef, lat->arc[n].word);
     
     /* viterbi compuation to get the acoustic score for a word hypothesis */
     if (mmi_viterbi_run(&log_lik,
@@ -1563,7 +1551,7 @@ mmi_ci_train(model_inventory_t *inv,
 	arc_f[k] = f[k+lat->arc[n].sf-1];
       
       /* make state list */
-      state_seq = next_utt_states(&n_state, lex, inv, mdef, lat->arc[n].word, silence_str);
+      state_seq = next_utt_states(&n_state, lex, inv, mdef, lat->arc[n].word);
       
       /* viterbi update model parameters */
       if (mmi_viterbi_update(arc_f, n_word_obs,
@@ -1614,7 +1602,6 @@ main_mmi_reestimate(model_inventory_t *inv,
   uint32 i;
 
   char *trans;
-  char* silence_str;
   uint32 in_veclen;
   uint32 n_utt;
 
@@ -1681,7 +1668,6 @@ main_mmi_reestimate(model_inventory_t *inv,
 
   mean_reest = cmd_ln_int32("-meanreest");
   var_reest = cmd_ln_int32("-varreest");
-  silence_str = cmd_ln_str("-siltag");
   in_veclen = cmd_ln_int32("-ceplen");
   
   /* Read in an LDA matrix for accumulation. */
@@ -1772,7 +1758,7 @@ main_mmi_reestimate(model_inventory_t *inv,
       case 1:
 	{
 	  if (mmi_rand_train(inv, mdef, lex, f, lat,
-			     silence_str, a_beam, mean_reest,
+			     a_beam, mean_reest,
 			     var_reest, lda) == S3_SUCCESS) {
 	    total_log_postprob += lat->postprob;
 	    printf("   %e", lat->postprob);
@@ -1786,7 +1772,7 @@ main_mmi_reestimate(model_inventory_t *inv,
       case 2:
 	{
 	  if (mmi_best_train(inv, mdef, lex, f, lat,
-			     silence_str, a_beam, mean_reest,
+			      a_beam, mean_reest,
 			     var_reest, lda) == S3_SUCCESS) {
 	    total_log_postprob += lat->postprob;
 	    printf("   %e", lat->postprob);
@@ -1800,7 +1786,7 @@ main_mmi_reestimate(model_inventory_t *inv,
       case 3:
 	{
 	  if (mmi_ci_train(inv, mdef, lex, f, lat,
-			   silence_str, a_beam, mean_reest,
+			   a_beam, mean_reest,
 			   var_reest, lda) == S3_SUCCESS) {
 	    total_log_postprob += lat->postprob;
 	    printf("   %e", lat->postprob);

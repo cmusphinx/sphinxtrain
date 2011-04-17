@@ -101,22 +101,14 @@ typedef struct node_str {int32  nphones;
                      struct node_str *left;
                      struct node_str *right;
                     } node;
-int compare();
-char *type;
-
 
 float32    likelhddec(float32 *meana, float32 *vara,
                       float32 *meanb, float32 *varb,
                       float32 **cnta, float32 **cntb,
-                      int32 ndensity, int32 nfeat, int32 dim)
+                      int32 ndensity, int32 nfeat, int32 dim, int32 continuous)
 {
-    int32   i, continuous;
+    int32   i;
     float32 cntc, la, lb, lc, nm, nv, lkdec, minvar;
-
-    if (strcmp(type,".cont.") == 0) 
-        continuous = 1;
-    else
-        continuous = 0;
 
     if (continuous) {
         minvar = cmd_ln_float32("-varfloor");
@@ -171,16 +163,10 @@ float32    likelhddec(float32 *meana, float32 *vara,
 
 int32  findclosestpair(float32 **pmeans, float32 **pvars,
                        float32 ***pmixw, int32 nsets, int32 ndensity,
-                       int32 nfeat, int32 dim, int32 *a, int32 *b)
+                       int32 nfeat, int32 dim, int32 *a, int32 *b, int32 continuous)
 {
     float32    reduction, minreduction;
-    int32      i, j, la=0, lb=0, continuous;
-
-
-    if (strcmp(type,".cont.") == 0) 
-        continuous = 1;
-    else
-        continuous = 0;
+    int32      i, j, la=0, lb=0;
 
     minreduction = 1.0e+32;
     for (i=0; i<nsets; i++){
@@ -190,13 +176,13 @@ int32  findclosestpair(float32 **pmeans, float32 **pvars,
                     reduction = likelhddec(pmeans[i],pvars[i],
                                            pmeans[j],pvars[j],
                                            pmixw[i],pmixw[j],
-                                           ndensity,nfeat,dim);
+                                           ndensity,nfeat,dim, continuous);
                 }
                 else {
                     reduction = likelhddec(NULL,NULL,
                                            NULL,NULL,
                                            pmixw[i],pmixw[j],
-                                           ndensity,nfeat,dim);
+                                           ndensity,nfeat,dim, continuous);
                 }
                 if (reduction < minreduction){
                     minreduction = reduction;
@@ -217,18 +203,13 @@ float32  permute(float32 **means, float32 **vars, float32 ***mixw,
                  int32 ndensity, int32 nfeat, int32 dim,
                  int32 **lists, int32 *llists,
                  int32 npermute, int32 **lclass, int32 **rclass, 
-                 int32 *nlclass, int32 *nrclass)
+                 int32 *nlclass, int32 *nrclass, int32 continuous)
 {
     float32  **tmean=NULL, **tvar=NULL, ***tmixw=NULL;
     float32  bestdec,reduction,cnt;
-    int32 i,j,k,l,m,n,ncombinations,bestclust=0,continuous;
+    int32 i,j,k,l,m,n,ncombinations,bestclust=0;
     char  **identifier, *tmpid;
     int32  *llclass,*lrclass,lnlclass,lnrclass,ntot; 
-
-    if (strcmp(type,".cont.") == 0) 
-        continuous = 1;
-    else
-        continuous = 0;
 
     /* First gather and compute means and variances for the npermute groups */
     tmixw = (float32 ***)ckd_calloc_3d(npermute,nfeat,ndensity,sizeof(float32));
@@ -327,7 +308,7 @@ float32  permute(float32 **means, float32 **vars, float32 ***mixw,
             }
         }
         reduction = likelhddec(meana,vara, meanb,varb,counta,countb,
-                                                      ndensity,nfeat,dim);
+                                                      ndensity,nfeat,dim, continuous);
         if (reduction > bestdec) {
             bestdec = reduction;
             bestclust = i;
@@ -367,20 +348,15 @@ float32  permute(float32 **means, float32 **vars, float32 ***mixw,
     
 node *make_simple_tree (float32 **means, float32 **vars, float32 ***mixw,
            int32 *nodephoneids, int32 nphones, int32 ndensity, 
-           int32 nfeat, int32 ndim, int32 npermute, int32 depth)
+           int32 nfeat, int32 ndim, int32 npermute, int32 depth, int32 continuous)
 {
     float32  **oldmeans=NULL, **oldvars=NULL, **newmeans=NULL, **newvars=NULL;
     float32  ***oldmixw, ***newmixw, **tmp2d, ***tmp3d;
     float32  minvar=0, bestdec;
     int32    **phoneid, **newphoneid, *numphones, *newnumphones, **it2d, *it1d;
     int32    i,j,k,l,a,b,set,nsets;
-    int32    *lphoneids,*rphoneids,lnphones,rnphones,continuous;
+    int32    *lphoneids,*rphoneids,lnphones,rnphones;
     node     *root;
-
-    if (strcmp(type,".cont.") == 0) 
-        continuous = 1;
-    else
-        continuous = 0;
 
     /* Allocate and set basic root parameters */
     root = (node *) ckd_calloc(1,sizeof(node));
@@ -423,7 +399,7 @@ node *make_simple_tree (float32 **means, float32 **vars, float32 ***mixw,
         for (nsets = nphones; nsets > npermute; nsets--) {
             /* Find the closest distributions */
             findclosestpair(oldmeans,oldvars,oldmixw,nsets,ndensity,
-                                                         nfeat,ndim,&a,&b);
+                                                         nfeat,ndim,&a,&b, continuous);
 
             /* Copy and Merge distributions... */
             /* Copy unmerged distributions first */
@@ -491,7 +467,7 @@ node *make_simple_tree (float32 **means, float32 **vars, float32 ***mixw,
     }
 
     bestdec = permute(means,vars,mixw,ndensity,nfeat,ndim,phoneid,numphones,
-                      npermute,&lphoneids,&rphoneids,&lnphones,&rnphones);
+                      npermute,&lphoneids,&rphoneids,&lnphones,&rnphones, continuous);
 
     root->lkhd_dec = bestdec;
 
@@ -504,9 +480,9 @@ node *make_simple_tree (float32 **means, float32 **vars, float32 ***mixw,
 
     /* Recurse */
     root->left = make_simple_tree(means,vars,mixw,lphoneids,lnphones,
-              ndensity,nfeat,ndim,npermute,root->depth+1);
+              ndensity,nfeat,ndim,npermute,root->depth+1, continuous);
     root->right = make_simple_tree(means,vars,mixw,rphoneids,rnphones,
-              ndensity,nfeat,ndim,npermute,root->depth+1);
+              ndensity,nfeat,ndim,npermute,root->depth+1, continuous);
 
     return(root);
 }
@@ -667,20 +643,16 @@ int32 prune_quests(node *sroot, int32 ndesirdnodes)
 
 node  *make_tree (float32 **means, float32 **vars, float32 ***mixw,
            int32 *phnids, int32 nphones, int32 ndensity, int32 nfeat,
-           int32 dim, int32 npermute, int32 depth)
+           int32 dim, int32 npermute, int32 depth, int32 continuous)
 {
     float32 lkhddec;
     int32 niter,iter,jpermute, **lists, *llists;
-    int32 *lclass, nlclass, *rclass, nrclass,continuous;
+    int32 *lclass, nlclass, *rclass, nrclass;
     node *sroot;
 
-    if (strcmp(type,".cont.") == 0) 
-        continuous = 1;
-    else
-        continuous = 0;
     niter = cmd_ln_int32("-niter");
 
-    sroot = make_simple_tree(means,vars,mixw,phnids,nphones,ndensity,nfeat,dim,npermute,depth);
+    sroot = make_simple_tree(means,vars,mixw,phnids,nphones,ndensity,nfeat,dim,npermute,depth, continuous);
     for (iter = 0; iter < niter; iter++) {
         /* overallocate lists of lists */
         lists = (int32 **) ckd_calloc_2d(npermute,nphones,sizeof(int32));
@@ -689,15 +661,15 @@ node  *make_tree (float32 **means, float32 **vars, float32 ***mixw,
         jpermute = pare_tree(sroot,npermute,lists,llists);
         if (jpermute > 1){
             lkhddec = permute(means,vars,mixw,ndensity,nfeat,dim,lists,llists,
-                                   jpermute,&lclass,&rclass,&nlclass,&nrclass);
+                                   jpermute,&lclass,&rclass,&nlclass,&nrclass, continuous);
             free_tree(sroot->left); free_tree(sroot->right);
             sroot->lkhd_dec = lkhddec;
             sroot->left = 
                 make_tree(means,vars,mixw,lclass,nlclass,ndensity,nfeat,
-                          dim,npermute,depth+1);
+                          dim,npermute,depth+1, continuous);
             sroot->right = 
                 make_tree(means,vars,mixw,rclass,nrclass,ndensity,nfeat,
-                          dim,npermute,depth+1);
+                          dim,npermute,depth+1, continuous);
         }
         else { sroot->left = sroot->right = NULL; }
         ckd_free_2d((void **)lists); ckd_free(llists);
@@ -705,6 +677,15 @@ node  *make_tree (float32 **means, float32 **vars, float32 ***mixw,
     return(sroot);
 }
 
+
+int compare(const void *a, const void *b)
+{
+    const int *i = (int*)a;
+    const int *j = (int*)b;
+    if (*i > *j) return 1;
+    if (*j > *i) return -1;
+    return 0;
+}
 
 int32 get_quests(node *root,int32 **qarr,int32 *nph,int32 nquests,int32 depth)
 {
@@ -727,13 +708,6 @@ int32 get_quests(node *root,int32 **qarr,int32 *nph,int32 nquests,int32 depth)
         nquests = get_quests(root->right,qarr,nph,nquests,depth+1);
 
     return nquests;
-}
-
-int compare(int *i, int *j)
-{
-    if (*i > *j) return 1;
-    if (*j > *i) return -1;
-    return 0;
 }
 
 
@@ -784,7 +758,8 @@ init(float32 *****out_mixw,
      uint32 *out_n_state,
      uint32 *out_n_feat,
      uint32 *out_n_density,
-     char   ***out_phone)
+     char   ***out_phone,
+     int continuous)
 {
     const char *moddeffn;
     const char *mixwfn;
@@ -806,14 +781,9 @@ init(float32 *****out_mixw,
     float32   ***mean=NULL;
     float32   ***var=NULL;
     float32   varfloor;
-    uint32    ll=0,n,nn,sumveclen,continuous;
+    uint32    ll=0,n,nn,sumveclen;
     char      **phone;
     
-    if (strcmp(type,".cont.") == 0) 
-        continuous = 1;
-    else
-        continuous = 0;
-
     moddeffn = cmd_ln_str("-moddeffn");
     if (moddeffn == NULL)
 	E_FATAL("Specify -moddeffn\n");
@@ -1024,27 +994,28 @@ init(float32 *****out_mixw,
 int
 main(int argc, char *argv[])
 {
-    float32 ****mixw,***lmixw;
-    float32 ***means=NULL, **lmeans=NULL;
-    float32 ***vars=NULL, **lvars=NULL;
-    uint32  veclen;
-    uint32 n_model;
-    uint32 n_state;
-    uint32 n_feat;
-    uint32 n_density;
+    float32 ****mixw = NULL,***lmixw = NULL;
+    float32 ***means = NULL, **lmeans = NULL;
+    float32 ***vars = NULL, **lvars = NULL;
+    uint32 veclen = 0;
+    uint32 n_model = 0;
+    uint32 n_state = 0;
+    uint32 n_feat = 0;
+    uint32 n_density = 0;
     uint32 state;
     uint32 npermute, nquests_per_state;
-    int32 i,j,k,continuous, **questarr, *nquestphone, nquests=0;
+    int32 i, j, k, continuous, **questarr, *nquestphone, nquests=0;
     int32  *phoneids,nphones;
-    char   **phone_list;
-    char   *outfile;
+    char   **phone_list = NULL;
+    const char   *outfile;
     node   *root;
     FILE   *fp;
+    const char* type;
 
     parse_cmd_ln(argc, argv);
 
     type = cmd_ln_str("-type");
-
+    
     if(type==NULL){
       E_FATAL("-type is empty. Please specify -type correctly, either \".cont.\" or \".semi.\"\n");
     }
@@ -1080,7 +1051,8 @@ main(int argc, char *argv[])
 	     &n_state,
 	     &n_feat,
              &n_density,
-	     &phone_list) != S3_SUCCESS) {
+	     &phone_list,
+	     continuous) != S3_SUCCESS) {
 	E_FATAL("Initialization failed\n");
     }
 
@@ -1109,7 +1081,7 @@ main(int argc, char *argv[])
                         lmixw[i][j][k] = mixw[i][state][j][k];
             }
         }
-        root = make_tree(lmeans,lvars,lmixw,phoneids,nphones,n_density,n_feat,veclen,npermute,0);
+        root = make_tree(lmeans,lvars,lmixw,phoneids,nphones,n_density,n_feat,veclen,npermute,0, continuous);
         if (continuous) {
             ckd_free_2d((void **)lmeans); ckd_free_2d((void **)lvars); 
         }
@@ -1140,15 +1112,5 @@ main(int argc, char *argv[])
         ckd_free((void *)nquestphone);
     }
     E_INFO ("Stored questions in %s\n",outfile);
-/*
-    sort_quests(questarr,nquestphone,n_model,&nquests);
-
-    for (i=0;i<nquests;i++){
-        for (j=0;j<nquestphone[i];j++) 
-            fprintf(fp," %s",phone_list[questarr[i][j]]);
-        fprintf(fp,"\n");
-    }
-    fclose(fp);
-*/
     return 0;
 }

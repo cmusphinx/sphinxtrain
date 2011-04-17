@@ -133,7 +133,7 @@ read_mdef(const char *moddeffn,
     }
 
     if (cb2mllr == NULL)
-	cb2mllr = (char *)ckd_calloc((*out_mdef)->n_total_state,sizeof(char));
+	cb2mllr = (int32 *)ckd_calloc((*out_mdef)->n_total_state,sizeof(char));
 	
     *out_gau_begin = (*out_mdef)->n_tied_ci_state;
     for (i = 0; i < *out_gau_begin; i++) {

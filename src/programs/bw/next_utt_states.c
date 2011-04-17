@@ -60,8 +60,7 @@ state_t *next_utt_states(uint32 *n_state,
 			 lexicon_t *lex,
 			 model_inventory_t *inv,
 			 model_def_t *mdef,
-			 char *trans,
-			 char* silence_str
+			 char *trans
 			 )
 {
     char **word;
@@ -70,7 +69,6 @@ state_t *next_utt_states(uint32 *n_state,
     char *btw_mark;
     acmod_set_t *acmod_set;
     acmod_id_t *phone;
-    acmod_id_t optSil;
 
     state_t *state_seq;
 
@@ -95,12 +93,7 @@ state_t *next_utt_states(uint32 *n_state,
     print_phone_list(phone, n_phone, btw_mark, acmod_set);
 #endif
     
-    optSil= acmod_set_name2id(acmod_set, silence_str);
-/*
- * Debug?
- *   E_INFO("Silence id %d\n",optSil);
- */
-    state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef, (acmod_id_t)optSil);
+    state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef);
 
 #ifdef NEXT_UTT_STATES_VERBOSE
     state_seq_print(state_seq, *n_state, mdef);
@@ -121,15 +114,13 @@ state_t *next_utt_states_mmie(uint32 *n_state,
 			      model_def_t *mdef,
 			      char *curr_word,
 			      acmod_id_t *l_phone,
-			      acmod_id_t *r_phone,
-		              char* silence_str
+			      acmod_id_t *r_phone
 			      )
 {
   uint32 n_phone;
   char *btw_mark;
   acmod_set_t *acmod_set;
   acmod_id_t *phone;
-  acmod_id_t optSil;
   
   state_t *state_seq;
   
@@ -144,9 +135,7 @@ state_t *next_utt_states_mmie(uint32 *n_state,
   
   cvt2triphone_mmie(acmod_set, phone, l_phone, r_phone, btw_mark, n_phone);
   
-  optSil= acmod_set_name2id(acmod_set, silence_str);
-  
-  state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef, (acmod_id_t)optSil);
+  state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef);
   
   /* state_seq_print(state_seq, *n_state, mdef); */
   

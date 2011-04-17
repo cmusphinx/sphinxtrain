@@ -160,11 +160,6 @@ kmeans_init -gthobj single -stride 1 -ntrial 1 -minratio 0.001 \n\
 	  NULL,
 	  "The cepstrum data root directory" },
 
-	{ "-silcomp",
-	  ARG_STRING,
-	  "none",
-	  "Do silence compression based on {current|prior} utterance"},
-
 	{ "-segdmpdirs",
 	  ARG_STRING_LIST,
 	  NULL,

@@ -130,7 +130,6 @@ if (-r $MLLT_FILE) {
 	 -lda => $MLLT_FILE,
 	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
-$ST::CFG_FEAT_WINDOW ||= 0;
 
 my $return_value = RunTool
     ('bw', $logfile, $ctl_counter,
@@ -167,7 +166,6 @@ my $return_value = RunTool
      -diagfull => $ST::CFG_DIAGFULL,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
-     -cepwin => $ST::CFG_FEAT_WINDOW,
      @extra_args,
      -timing => "no",
      -mmie => "yes",

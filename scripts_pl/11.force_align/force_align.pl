@@ -107,7 +107,6 @@ if (defined($ST::CFG_STSEG_DIR)) {
 		     -s2cdsen => 'yes');
 }
 
-$ST::CFG_FEAT_WINDOW ||= 0;
 my $return_value = RunTool
     ('sphinx3_align', $logfile, $ctl_counter,
      -hmm => $hmm_dir,

@@ -138,7 +138,6 @@ agg_st_seg(model_def_t *mdef,
 {
     uint32 seq_no;
     vector_t *mfcc = NULL;
-    uint32 mfc_veclen;
     uint32 n_frame;
     vector_t **feat = NULL;
     uint32 *sseq = NULL;
@@ -153,7 +152,7 @@ agg_st_seg(model_def_t *mdef,
     float32 ****ainv = NULL;
     float32 ***b = NULL;
     uint32 mcls;
-    /*eov*/
+    int32 mfc_veclen = cmd_ln_int32("-ceplen");
 
     n_stream = feat_n_stream(fcb);
     veclen = feat_stream_lengths(fcb);

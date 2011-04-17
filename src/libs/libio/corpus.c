@@ -143,9 +143,6 @@ static char mllr_line[MAXPATHLEN];
 /* Standard I/O file pointer for the silence deletion file */
 static FILE *sil_fp = NULL;
 
-/* next line of the sildence file file */
-static char sil_line[MAXPATHLEN];
-
 static uint32 *del_sf = NULL;
 static uint32 *del_ef = NULL;
 static uint32 n_del = 0;
@@ -1797,7 +1794,6 @@ int
 load_lattice(s3lattice_t **out_lattice, const char *lat_dir, const char *lat_ext)
 {
     char *rel_path;
-    char *s;
     char fn[1024];
 
     /* If control file specifies an utt ID, use it.  O/W use the path */

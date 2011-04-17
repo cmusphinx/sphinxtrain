@@ -442,21 +442,6 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  NULL,
 	  "A path where accumulated counts are to be written." },
 
-	{ "-cepwin",
-	  ARG_INT32,
-	  "0",
-	  "sliding window of features to concatenate (for -feat 1s_c ONLY)"},
-
-	{ "-silcomp",
-	  ARG_STRING,
-	  "none",
-	  "Do silence compression based on {current|prior} utterance"},
-	
-	{ "-siltag",
-	  ARG_STRING,
-	  "SIL",
-	  "Specify the tag of silence, by default it is <sil>."},
-
 	{ "-abeam",
 	  ARG_FLOAT64,
 	  "1e-100",
