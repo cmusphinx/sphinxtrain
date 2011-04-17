@@ -47,6 +47,8 @@
 #define BACKWARD_H
 
 #include <sphinxbase/prim_type.h>
+#include <sphinxbase/feat.h>
+
 #include <s3/vector.h>
 #include <s3/state.h>
 #include <s3/model_inventory.h>
@@ -71,7 +73,7 @@ backward_update(float64 **active_alpha,
 		int32 pass2var,
 		int32 var_is_full,
 		FILE *pdumpfn,
-		float32 ***lda);
+		feat_t *fcb);
 
 void
 partial_op(float64 *p_op,

@@ -847,7 +847,7 @@ main_reestimate(model_inventory_t *inv,
 				  pass2var,
 				  var_is_full,
 				  pdumpfh,
-				  lda) == S3_SUCCESS) {
+				  feat) == S3_SUCCESS) {
 		total_frames += n_frame;
 		total_log_lik += log_lik;
 		
