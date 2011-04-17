@@ -101,7 +101,6 @@
 #include <s3/model_inventory.h>
 #include <s3/model_def.h>
 #include <s3/s2_param.h>
-#include <s3/lda.h>
 #include <s3/s3.h>
 #include <s3/state_seq.h>
 
@@ -188,7 +187,7 @@ accum_gauden(float32 ***denacc,
 	     float32 ***wacc,
 	     int32 var_is_full,
 	     FILE *pdumpfh,
-	     float32 ***lda)
+	     feat_t* fcb)
 {
     uint32 g_i, i, j, k, kk, l;
 
@@ -209,14 +208,10 @@ accum_gauden(float32 ***denacc,
 
     float32 diff;
     float32 obs_cnt;
-    vector_t feat = NULL;
 
     /* Apply LDA if desired. */
-    if (lda) {
-	    /* Note that we ignore -ldadim here, because it's rather
-	     * complicated to change the length of veclen for the
-	     * output only. */
-	    feat_lda_transform(feat, &frame, 1);
+    if (fcb->lda) {
+        feat_lda_transform(fcb, &frame, 1);
     }
 
     /* for each density family found in the utterance */
@@ -226,8 +221,7 @@ accum_gauden(float32 ***denacc,
 
 	/* for each feature */
 	for (j = 0; j < gauden_n_feat(g); j++) {
-
-	    feat = frame[j];
+	    vector_t feat = frame[j];
 
 	    if (var_is_full) {
 		ckd_free_2d((void **)cov);
@@ -997,7 +991,7 @@ mmi_accum_gauden(float32 ***denacc,
 		 int32 mean_reest,
 		 int32 var_reest,
 		 float64 arc_gamma,
-		 float32 ***lda)
+		 feat_t *fcb)
 {
   uint32 g_i, i, j, k, kk, l;
   
@@ -1010,14 +1004,13 @@ mmi_accum_gauden(float32 ***denacc,
   float32 ***dnom = g->l_dnom;
   
   float32 obs_cnt;
-  vector_t feat = NULL;
   
   /* Apply LDA if desired. */
-  if (lda) {
+  if (fcb->lda) {
     /* Note that we ignore -ldadim here, because it's rather
      * complicated to change the length of veclen for the
      * output only. */
-    feat_lda_transform(feat, &frame, 1);
+    feat_lda_transform(fcb, &frame, 1);
   }
 
   /* for each density family found in the utterance */
@@ -1027,8 +1020,7 @@ mmi_accum_gauden(float32 ***denacc,
     
     /* for each feature */
     for (j = 0; j < gauden_n_feat(g); j++) {
-      
-      feat = frame[j];
+      vector_t feat = frame[j];
       
       /* for each density in the mixture density */
       for (kk = 0; kk < gauden_n_top(g); kk++) {

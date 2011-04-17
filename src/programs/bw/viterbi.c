@@ -256,7 +256,7 @@ viterbi_update(float64 *log_forw_prob,
 	       int32 pass2var,
 	       int32 var_is_full,
 	       FILE *pdumpfh,
-	       float32 ***lda)
+	       feat_t *fcb)
 {
     float64 *scale = NULL;
     float64 **dscale = NULL;
@@ -624,7 +624,7 @@ viterbi_update(float64 *log_forw_prob,
 			 inv->l_mixw_acc,
 			 var_is_full,
 			 pdumpfh,
-			 lda);
+			 fcb);
 	    memset(&denacc[0][0][0], 0, denacc_size);
 	}
 	if (rstf_timer)
@@ -812,7 +812,7 @@ mmi_viterbi_update(vector_t **feature,
 		   int32 mean_reest,
 		   int32 var_reest,
 		   float64 arc_gamma,
-		   float32 ***lda)
+		   feat_t *fcb)
 {
     float64 *scale = NULL;
     float64 **dscale = NULL;
@@ -1061,7 +1061,7 @@ mmi_viterbi_update(vector_t **feature,
 			     mean_reest,
 			     var_reest,
 			     arc_gamma,
-			     lda);
+			     fcb);
 	    memset(&denacc[0][0][0], 0, denacc_size);
 	}
 	

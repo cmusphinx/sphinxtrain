@@ -323,7 +323,7 @@ backward_update(float64 **active_alpha,
 		int32 pass2var,
 		int32 var_is_full,
 		FILE *pdumpfh,
-                float32 ***lda)
+                feat_t *fcb)
 {
     void *tt;			/* temp variable used to do
 				   pointer swapping */
@@ -1116,7 +1116,7 @@ backward_update(float64 **active_alpha,
 			 pass2var,
 			 inv->l_mixw_acc,
 			 var_is_full,
-			 pdumpfh, lda);
+			 pdumpfh, fcb);
 	}
 
 	if (mean_reest || var_reest)
@@ -1269,7 +1269,7 @@ backward_update(float64 **active_alpha,
 			 pass2var,
 			 wacc,
 			 var_is_full,
-			 pdumpfh, lda);
+			 pdumpfh, fcb);
 	}
 
 	if (rstf_timer)

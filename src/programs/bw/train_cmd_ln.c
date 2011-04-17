@@ -537,8 +537,6 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  NULL,
 	  "Dump state/mixture posterior probabilities to files in this directory" },
 
-	/* The following parameters are used for MMIE training
-	   lqin 2010-3 */
 	{ "-latdir",
 	  ARG_STRING,
 	  NULL,

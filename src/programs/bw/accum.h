@@ -48,11 +48,13 @@
 
 #include <stdio.h>
 
-#include <sphinxbase/prim_type.h>
 #include <s3/vector.h>
 #include <s3/gauden.h>
 #include <s3/model_inventory.h>
 #include <s3/state.h>
+
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/feat.h>
 
 void
 accum_den_terms(float32 **acc,
@@ -74,7 +76,7 @@ accum_gauden(float32 ***cbacc,
 	     float32 ***wacc,
 	     int32 var_is_full,
 	     FILE *pdumpfh,
-	     float32 ***lda);
+	     feat_t *fcb);
 
 int32
 accum_global(model_inventory_t *inv,
@@ -138,8 +140,6 @@ accum_global_tmat(model_inventory_t *inv,
 		  state_t *state,
 		  uint32 n_state);
 
-/* the following functions are used for MMIE training
-   lqin 2010-03 */
 int32
 accum_mmie_dump(const char *out_dir,
 		const char *lat_ext,
@@ -157,56 +157,6 @@ mmi_accum_gauden(float32 ***cbacc,
 		 int32 mean_reest,
 		 int32 var_reest,
 		 float64 arc_gamma,
-		 float32 ***lda);
-/* end */
+		 feat_t *fcb);
 
 #endif /* ACCUM_H */ 
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.9  97/07/16  11:38:16  eht
- * *** empty log message ***
- * 
- * Revision 1.8  1996/07/29  16:21:12  eht
- * Got rid of accum_trans() and accum_non_emit_trans() and added
- * accum_den_terms()
- *
- * Revision 1.7  1996/03/26  15:17:51  eht
- * Fix beam definition bug
- *
- * Revision 1.6  1996/01/30  17:12:27  eht
- * Include a CI codebook (mixture Gaussian) weighted vector accumulators
- *
- * Revision 1.5  1995/11/30  20:52:00  eht
- * Allow tmat_reest to be passed as an argument
- *
- * Revision 1.4  1995/10/12  18:22:18  eht
- * Updated comments and changed <s3/state.h> to "state.h"
- *
- * Revision 1.3  1995/10/10  12:44:06  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.2  1995/08/09  20:19:19  eht
- * Add mixing weight id argument so that error output count
- * be more informative
- *
- * Revision 1.1  1995/06/02  20:41:22  eht
- * Initial revision
- *
- *
- */

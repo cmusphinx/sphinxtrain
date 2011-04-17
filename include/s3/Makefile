@@ -45,13 +45,13 @@ DIRNAME=include/s3
 BUILD_DIRS = 
 ALL_DIRS= 
 H=  \
-  acmod_set.h acmod_set_ds.h agc.h agc_emax.h agc_max.h array_io.h \
+  acmod_set.h acmod_set_ds.h array_io.h \
   bcomment_io.h best_q.h bo_magic.h bquest_io.h btree.h cep_manip.h \
-  ck_seg.h cmd_ln.h cmn.h common.h corpus.h \
+  ck_seg.h cmd_ln.h common.h corpus.h \
   cvt2triphone.h div.h dtree.h enum_subset.h err.h \
   floatbuf_io.h fp_cache.h fread_retry.h gauden.h gauden_io.h \
   get_cpu_time.h get_host_name.h get_time.h hash.h heap.h int32_io.h \
-  intbuf_io.h itree.h kmeans.h lambda_io.h lda.h lexicon.h* \
+  intbuf_io.h itree.h kmeans.h lambda_io.h lexicon.h* \
   live_norm.h merge_den.h metric.h mixw_param_io.h mk_phone_list.h \
   mk_phone_seq.h mk_sseq.h mk_trans_seq.h mk_ts2ci.h mk_wordlist.h mllr.h \
   mllr_class_io.h mllr_io.h model_def.h model_def_io.h model_inventory.h \

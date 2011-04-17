@@ -69,7 +69,6 @@
 #include <s3/mllr.h>
 #include <s3/mllr_io.h>
 #include <s3/ts2cb.h>
-#include <s3/lda.h>
 #include <s3/s3cb2mllr_io.h>
 #include <sys_compat/misc.h>
 #include <sys_compat/time.h>
@@ -873,7 +872,7 @@ main_reestimate(model_inventory_t *inv,
 			       var_reest,
 			       pass2var,
 			       var_is_full,
-			       pdumpfh, lda) == S3_SUCCESS) {
+			       pdumpfh, feat) == S3_SUCCESS) {
 		total_frames += n_frame;
 		total_log_lik += log_lik;
 		printf(" %e %e",
@@ -1159,7 +1158,7 @@ mmi_rand_train(model_inventory_t *inv,
 	       float64 a_beam,
 	       uint32 mean_reest,
 	       uint32 var_reest,
-	       float32 ***lda)
+	       feat_t *fcb)
 {
   uint32 k, n;
   uint32 n_rand;/* random number */
@@ -1297,7 +1296,7 @@ mmi_rand_train(model_inventory_t *inv,
 			     mean_reest,
 			     var_reest,
 			     lat->arc[n].gamma,
-			     lda) != S3_SUCCESS) {
+			     fcb) != S3_SUCCESS) {
 	E_ERROR("arc_%d is ignored (viterbi update failed)\n", n+1);
       }
       ckd_free(arc_f);
@@ -1319,7 +1318,7 @@ mmi_best_train(model_inventory_t *inv,
 	       float64 a_beam,
 	       uint32 mean_reest,
 	       uint32 var_reest,
-	       float32 ***lda)
+	       feat_t *fcb)
 {
   uint32 i, j, k, n;
   char pword[128], cword[128], nword[128];      /* previous, current and next word hypothesis */
@@ -1470,7 +1469,7 @@ mmi_best_train(model_inventory_t *inv,
 			     mean_reest,
 			     var_reest,
 			     lat->arc[n].gamma,
-			     lda) != S3_SUCCESS) {
+			     fcb) != S3_SUCCESS) {
 	E_ERROR("arc_%d is ignored (viterbi update failed)\n", n+1);
       }
       ckd_free(arc_f);
@@ -1492,7 +1491,7 @@ mmi_ci_train(model_inventory_t *inv,
 	     float64 a_beam,
 	     uint32 mean_reest,
 	     uint32 var_reest,
-	     float32 ***lda)
+	     feat_t *fcb)
 {
   uint32 k, n;
   vector_t **arc_f = NULL;/* feature vector for a word arc */
@@ -1561,7 +1560,7 @@ mmi_ci_train(model_inventory_t *inv,
 			     mean_reest,
 			     var_reest,
 			     lat->arc[n].gamma,
-			     lda) != S3_SUCCESS) {
+			     fcb) != S3_SUCCESS) {
 	E_ERROR("arc_%d is ignored (viterbi update failed)\n", n+1);
       }
       
@@ -1759,7 +1758,7 @@ main_mmi_reestimate(model_inventory_t *inv,
 	{
 	  if (mmi_rand_train(inv, mdef, lex, f, lat,
 			     a_beam, mean_reest,
-			     var_reest, lda) == S3_SUCCESS) {
+			     var_reest, feat) == S3_SUCCESS) {
 	    total_log_postprob += lat->postprob;
 	    printf("   %e", lat->postprob);
 	  }
@@ -1773,7 +1772,7 @@ main_mmi_reestimate(model_inventory_t *inv,
 	{
 	  if (mmi_best_train(inv, mdef, lex, f, lat,
 			      a_beam, mean_reest,
-			     var_reest, lda) == S3_SUCCESS) {
+			     var_reest, feat) == S3_SUCCESS) {
 	    total_log_postprob += lat->postprob;
 	    printf("   %e", lat->postprob);
 	  }
@@ -1787,7 +1786,7 @@ main_mmi_reestimate(model_inventory_t *inv,
 	{
 	  if (mmi_ci_train(inv, mdef, lex, f, lat,
 			   a_beam, mean_reest,
-			   var_reest, lda) == S3_SUCCESS) {
+			   var_reest, feat) == S3_SUCCESS) {
 	    total_log_postprob += lat->postprob;
 	    printf("   %e", lat->postprob);
 	  }

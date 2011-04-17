@@ -47,6 +47,8 @@
 #define VITERBI_H
 
 #include <sphinxbase/prim_type.h>
+#include <sphinxbase/feat.h>
+
 #include <s3/vector.h>
 #include <s3/state.h>
 #include <s3/model_inventory.h>
@@ -90,10 +92,8 @@ viterbi_update(float64 *log_forw_prob,
 	       int32 pass2var,
 	       int32 var_is_full,
 	       FILE *pdumpfh,
-	       float32 ***lda);
+	       feat_t *fcb);
 
-/* the following functions are used for MMIE training
-   lqin 2010-03 */
 int32
 mmi_viterbi_run(float64 *log_forw_prob,
 		vector_t **feature,
@@ -113,33 +113,7 @@ mmi_viterbi_update(vector_t **feature,
 		   int32 mean_reest,
 		   int32 var_reest,
 		   float64 arc_gamma,
-		   float32 ***lda);
-/* end */
+		   feat_t *fcb);
 
 #endif /* VITERBI_H */ 
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  97/07/16  11:38:16  eht
- * *** empty log message ***
- * 
- * Revision 1.1  1996/07/29  16:22:23  eht
- * Initial revision
- *
- *
- */
