@@ -169,8 +169,6 @@ ctl -cepdir cepdir -cepext .mfc -ceplen 13 -stride 10 ";
 	  ARG_STRING,
 	  ".mfc",
 	  "Extension of the cepstrum files"},
-
-
 	{ "-cachesz",
 	  ARG_INT32,
 	  "200",
@@ -180,6 +178,17 @@ ctl -cepdir cepdir -cepext .mfc -ceplen 13 -stride 10 ";
 	  ARG_INT32,
 	  "1",
 	  "Take every -stride'th frame when producing dmp" },
+
+	{ "-part",
+	  ARG_INT32,
+	  NULL,
+	  "Identifies the corpus part number (range 1..NPART)" },
+
+	{ "-npart",
+	  ARG_INT32,
+	  NULL,
+	  "Partition the corpus into this many equal sized subsets" },
+
 
 	cepstral_to_feature_command_line_macro(),
 	{NULL, 0, NULL, NULL}

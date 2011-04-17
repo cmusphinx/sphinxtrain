@@ -79,8 +79,6 @@
 static uint32 stride = 1;
 static uint32 l_ts = -1;
 static uint32 l_strm = -1;
-static long blksize;
-static long vlen = 0;
 static float32 *obuf = NULL;
 
 static uint32 multiclass;
@@ -210,7 +208,7 @@ setup_d2o_map(model_def_t *d_mdef,
 }
 
 static uint32
-setup_obs_1class(uint32 n_stream, uint32 strm, uint32 n_frame, const uint32 *veclen)
+setup_obs_1class(uint32 strm, uint32 n_frame, uint32 n_stream, const uint32 *veclen, uint32 blksize)
 {
     float32 *buf;
     vector_t *frm;
@@ -239,8 +237,6 @@ setup_obs_1class(uint32 n_stream, uint32 strm, uint32 n_frame, const uint32 *vec
     }
     obuf = ckd_calloc(n_sv_frame * veclen[strm], sizeof(float32));
 
-
-
     buf = (float32 *)ckd_calloc(blksize, sizeof(float32));
     frm = (vector_t *)ckd_calloc(n_stream, sizeof(float32 *));
     for (i = 0, l = 0; i < n_stream; i++) {
@@ -249,9 +245,6 @@ setup_obs_1class(uint32 n_stream, uint32 strm, uint32 n_frame, const uint32 *vec
     }
 
     assert(l == blksize);
-
-    vlen = veclen[strm];
-
     assert(dmp_fp != NULL);
 
     if (fseek(dmp_fp, data_offset, SEEK_SET) < 0) {
@@ -270,8 +263,8 @@ setup_obs_1class(uint32 n_stream, uint32 strm, uint32 n_frame, const uint32 *vec
 	if ((i % stride) == 0) {
 	    memcpy(&obuf[o],
 		   (void *)&frm[strm][0],
-		   sizeof(float32) * vlen);
-	    o += vlen;
+		   sizeof(float32) * veclen[strm]);
+	    o += veclen[strm];
 	}
     }
     
@@ -282,7 +275,7 @@ setup_obs_1class(uint32 n_stream, uint32 strm, uint32 n_frame, const uint32 *vec
 }
 
 static uint32
-setup_obs_multiclass(uint32 ts, uint32 strm, uint32 n_frame, const uint32 *veclen)
+setup_obs_multiclass(uint32 ts, uint32 strm, uint32 n_frame, uint32 veclen)
 {
     uint32 i, o, k;
     uint32 n_i_frame;
@@ -303,15 +296,13 @@ setup_obs_multiclass(uint32 ts, uint32 strm, uint32 n_frame, const uint32 *vecle
     l_ts = ts;
     l_strm = strm;
 
-    E_INFO("alloc'ing %uMb obs buf\n", n_sv_frame*veclen[strm]*sizeof(float32) / (1024 * 1024));
+    E_INFO("alloc'ing %uMb obs buf\n", n_sv_frame*veclen*sizeof(float32) / (1024 * 1024));
 
     if (obuf) {
 	ckd_free(obuf);
 	obuf = NULL;
     }
-    obuf = ckd_calloc(n_sv_frame * veclen[strm], sizeof(float32));
-
-    vlen = veclen[strm];
+    obuf = ckd_calloc(n_sv_frame * veclen, sizeof(float32));
 
     if (stride == 1) {
 	E_INFO("Reading all frames\n");
@@ -336,8 +327,8 @@ setup_obs_multiclass(uint32 ts, uint32 strm, uint32 n_frame, const uint32 *vecle
 		if ((i % stride) == 0) {
 		    memcpy(&obuf[o],
 			   (void *)&feat[0][strm][0],
-			   sizeof(float32) * vlen);
-		    o += vlen;
+			   sizeof(float32) * veclen);
+		    o += veclen;
 		}
 		ckd_free((void *)&feat[0][0][0]);
 		ckd_free_2d((void **)feat);
@@ -352,17 +343,17 @@ setup_obs_multiclass(uint32 ts, uint32 strm, uint32 n_frame, const uint32 *vecle
 	    if ((i % stride) == 0) {
 		memcpy(&obuf[o],
 		       (void *)&feat[0][strm][0],
-		       sizeof(float32) * vlen);
-		o += vlen;
+		       sizeof(float32) * veclen);
+		o += veclen;
 	    }
 	    ckd_free((void *)&feat[0][0][0]);
 	    ckd_free_2d((void **)feat);
 	}
     }	
 
-    if ((o / vlen) != n_sv_frame) {
+    if ((o / veclen) != n_sv_frame) {
 	E_WARN("Expected %u frames, but read %u\n",
-	       n_sv_frame, o / vlen);
+	       n_sv_frame, o / veclen);
     }
 
     E_INFO("done reading %u frames\n", n_sv_frame);
@@ -370,14 +361,17 @@ setup_obs_multiclass(uint32 ts, uint32 strm, uint32 n_frame, const uint32 *vecle
     return n_sv_frame;
 }
 
+static uint32 vlen;
+
 uint32
-setup_obs(uint32 ts, uint32 strm, uint32 n_frame, const uint32 *veclen,uint32 n_stream)
+setup_obs(uint32 ts, uint32 strm, uint32 n_frame, uint32 n_stream, const uint32 *veclen, uint32 blksize)
 {
+    vlen = veclen[strm];
     if (multiclass) {
-	return setup_obs_multiclass(ts, strm, n_frame, veclen);
+	return setup_obs_multiclass(ts, strm, n_frame, veclen[strm]);
     }
     else {
-	return setup_obs_1class(n_stream, strm, n_frame, veclen);
+	return setup_obs_1class(strm, n_frame, n_stream, veclen, blksize);
     }
 }
 
@@ -832,7 +826,7 @@ cluster(int32 ts,
     for (s = 0, sum_sqerr = 0; s < n_stream; s++, sum_sqerr += sqerr) {
 	meth = cmd_ln_str("-method");
 
-	n_frame = setup_obs(ts, s, n_in_frame, veclen, n_stream);
+	n_frame = setup_obs(ts, s, n_in_frame, n_stream, veclen, blksize);
 
 	if (strcmp(meth, "rkm") == 0) {
 	    sqerr = random_kmeans(cmd_ln_int32("-ntrial"),
@@ -897,10 +891,12 @@ variances(uint32 ts,
 	  vector_t **mean,
 	  vector_t **var,
 	  uint32 n_density,
+
+	  uint32 n_stream,
 	  const uint32 *veclen,
+	  uint32 blksize,
 	  
 	  uint32 n_in_frame,
-	  uint32 n_stream,
 
 	  codew_t *label)
 {
@@ -913,7 +909,7 @@ variances(uint32 ts,
     for (s = 0; s < n_stream; s++) {
 	n_obs = ckd_calloc(n_density, sizeof(uint32));
 
-	n_frame = setup_obs(ts, s, n_in_frame, veclen, n_stream);
+	n_frame = setup_obs(ts, s, n_in_frame, n_stream, veclen, blksize);
 
 	for (i = 0; i < n_frame; i++) {
 	    k = label[i];	/* best codeword */
@@ -945,10 +941,12 @@ full_variances(uint32 ts,
 	  vector_t **mean,
 	  vector_t ***var,
 	  uint32 n_density,
+
+	  uint32 n_stream,
 	  const uint32 *veclen,
+	  uint32 blksize,
 	  
 	  uint32 n_in_frame,
-	  uint32 n_stream,
 
 	  codew_t *label)
 {
@@ -961,7 +959,7 @@ full_variances(uint32 ts,
     for (s = 0; s < n_stream; s++) {
 	n_obs = ckd_calloc(n_density, sizeof(uint32));
 
-	n_frame = setup_obs(ts, s, n_in_frame, veclen, n_stream);
+	n_frame = setup_obs(ts, s, n_in_frame, n_stream, veclen, blksize);
 
 	for (i = 0; i < n_frame; i++) {
 	    k = label[i];	/* best codeword */
@@ -1073,7 +1071,7 @@ reest_sum(uint32 ts,
     norm = (float64 **)ckd_calloc_2d(n_stream, n_density, sizeof(float64));
 
     for (j = 0; j < n_stream; j++) {
-	n_obs = setup_obs(ts, j, n_in_obs, veclen, n_stream);
+	n_obs = setup_obs(ts, j, n_in_obs, n_stream, veclen, blksize);
 
 	if (n_obs < vartiethr) tievar = TRUE;
 
@@ -1417,10 +1415,10 @@ init_state(const char *obsdmp,
 	if (var_timer)
 	    timing_start(var_timer);
 	if (full_covar)
-		full_variances(ts, mean[i], fullvar[i], n_density, veclen,
-			       n_frame, n_stream, label);
+		full_variances(ts, mean[i], fullvar[i], n_density, n_stream, veclen, blksize,
+			       n_frame, label);
 	else
-		variances(ts, mean[i], var[i], n_density, veclen, n_frame, n_stream, label);
+		variances(ts, mean[i], var[i], n_density, n_stream, veclen, blksize, n_frame, label);
 	if (var_timer)
 	    timing_stop(var_timer);
 
