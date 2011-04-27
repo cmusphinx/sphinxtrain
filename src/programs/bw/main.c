@@ -205,7 +205,7 @@ main_initialize(int argc,
     *out_feat = feat;
 
 
-    if (cmd_ln_str("-lda") && !cmd_ln_boolean("-ldaaccum")) {
+    if (cmd_ln_str("-lda")) {
         E_INFO("Reading linear feature transformation from %s\n",
                cmd_ln_str("-lda"));
         if (feat_read_lda(feat,
@@ -593,7 +593,6 @@ main_reestimate(model_inventory_t *inv,
 				 * from cepstra */
     state_t *state_seq;		/* sentence HMM state sequence for the
 				   utterance */
-    float32 ***lda = NULL;
     uint32 n_state = 0;	/* # of sentence HMM states */
     float64 total_log_lik;	/* total log liklihood over corpus */
     float64 log_lik;		/* log liklihood for an utterance */
@@ -679,14 +678,6 @@ main_reestimate(model_inventory_t *inv,
     pdumpdir = cmd_ln_str("-pdumpdir");
     in_veclen = cmd_ln_int32("-ceplen");
 
-    if (cmd_ln_str("-lda") && cmd_ln_boolean("-ldaaccum")) {
-	/* Read in an LDA matrix for accumulation. */
-	feat_read_lda(feat, 
-		      cmd_ln_str("-lda"), 
-		      cmd_ln_int32("-ldadim"));
-	lda = feat->lda;
-    }
-
     if (cmd_ln_str("-ckptintv")) {
 	ckpt_intv = cmd_ln_int32("-ckptintv");
     }
@@ -732,6 +723,7 @@ main_reestimate(model_inventory_t *inv,
     printf("\t... timing info ... \n");
 
     n_utt = 0;
+
     while (corpus_next_utt()) {
 	/* Zero timers before utt processing begins */
 	if (utt_timer) {
@@ -794,9 +786,20 @@ main_reestimate(model_inventory_t *inv,
 	}
 
 	svd_n_frame = n_frame;
-	
-	f = feat_array_alloc(feat, n_frame + feat_window_size(feat));
-	feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
+
+	/* Hack to not apply the LDA, it will be applied later during accum_dir
+	 * Pretty useless thing to be honest, what to do with CMN after that for example?
+	 */
+        if (cmd_ln_boolean("-ldaaccum")) {
+    	    float32 ***lda = feat->lda;
+	    feat->lda = NULL;
+	    f = feat_array_alloc(feat, n_frame + feat_window_size(feat));
+    	    feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
+	    feat->lda = lda;
+	} else {
+	    f = feat_array_alloc(feat, n_frame + feat_window_size(feat));
+    	    feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
+	}
 
 	printf(" %4u", n_frame - svd_n_frame);
 
@@ -1036,8 +1039,6 @@ main_reestimate(model_inventory_t *inv,
 	E_INFO("Counts NOT saved.\n");
 
     mod_inv_free(inv);
-    if (lda)
-	ckd_free_3d((void ***)lda);
 }
 
 /* the following functions are used for MMIE training
@@ -1670,7 +1671,7 @@ main_mmi_reestimate(model_inventory_t *inv,
   in_veclen = cmd_ln_int32("-ceplen");
   
   /* Read in an LDA matrix for accumulation. */
-  if (cmd_ln_str("-lda") && cmd_ln_boolean("-ldaaccum")) {
+  if (cmd_ln_str("-lda")) {
 	feat_read_lda(feat, cmd_ln_str("-lda"), 
 			    cmd_ln_int32("-ldadim"));
 	lda = feat->lda;

@@ -210,7 +210,7 @@ accum_gauden(float32 ***denacc,
     float32 obs_cnt;
 
     /* Apply LDA if desired. */
-    if (fcb->lda) {
+    if (fcb->lda && cmd_ln_boolean("-ldaaccum")) {
         feat_lda_transform(fcb, &frame, 1);
     }
 
@@ -1002,14 +1002,6 @@ mmi_accum_gauden(float32 ***denacc,
   float32 ***dnom = g->l_dnom;
   
   float32 obs_cnt;
-  
-  /* Apply LDA if desired. */
-  if (fcb->lda) {
-    /* Note that we ignore -ldadim here, because it's rather
-     * complicated to change the length of veclen for the
-     * output only. */
-    feat_lda_transform(fcb, &frame, 1);
-  }
 
   /* for each density family found in the utterance */
   for (i = 0; i < n_lcl2gbl; i++) {
