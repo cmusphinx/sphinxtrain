@@ -254,11 +254,14 @@ mod_inv_read_gauden(model_inventory_t *minv,
     gauden_floor_variance(g);
 
     if (n_top > n_density) {
-	E_WARN("n_top %u > n_density %u.  n_top <- %u\n",
-	       n_top, n_density, n_density);
+	E_WARN("topn %u is greater than n_density %u, using the latter\n",
+	       n_top, n_density);
 	gauden_set_n_top(g, n_density);
-    }
-    else {
+    } else if (var_is_full && n_top != n_density) {
+	E_WARN("topn %u is not supported for full covariance using the n_density %u\n",
+	       n_top, n_density);
+	gauden_set_n_top(g, n_density);
+    } else {
 	gauden_set_n_top(g, n_top);
     }
 

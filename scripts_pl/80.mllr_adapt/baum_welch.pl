@@ -83,6 +83,9 @@ my $meanfn  = "$hmm_dir/means";
 my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 
+my $topn = $ST::CFG_FINAL_NUM_DENSITIES;
+$topn = $ST::CFG_CD_TOPN if (defined($ST::CFG_CD_TOPN) and ($ST::CFG_FULLVAR eq 'no') and ($ST::CFG_CD_TOPN < $n_gau));
+
 # Add the MLLT transform if it exists
 my @extra_args;
 if (defined($ST::CFG_SVSPEC)){
@@ -98,7 +101,6 @@ if ($ST::CFG_CD_VITERBI eq 'yes') {
     push(@extra_args, -viterbi => 'yes');
 }
 
-my $topn = 8;
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.${speaker}.bw.log";
 mkdir ($logdir,0777);

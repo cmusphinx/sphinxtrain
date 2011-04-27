@@ -119,43 +119,3 @@ den_terms(float64 **d_term,
 
 #endif /* BACKWARD_H */ 
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.7  97/07/16  11:38:16  eht
- * *** empty log message ***
- * 
- * Revision 1.6  1996/07/29  16:21:12  eht
- * float32 -> float64
- *
- * Revision 1.5  1996/03/26  15:17:51  eht
- * Fix beam definition bug
- *
- * Revision 1.4  1995/11/30  20:52:00  eht
- * Allow tmat_reest to be passed as an argument
- *
- * Revision 1.3  1995/10/12  18:22:18  eht
- * Updated comments and changed <s3/state.h> to "state.h"
- *
- * Revision 1.2  1995/10/10  12:44:06  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.1  1995/06/02  20:43:56  eht
- * Initial revision
- *
- *
- */

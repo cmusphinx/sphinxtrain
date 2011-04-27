@@ -97,6 +97,7 @@ my $listoffiles = $ST::CFG_LISTOFFILES;
 my $transcriptfile = $ST::CFG_TRANSCRIPTFILE;
 
 my $topn = 1;
+
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$part.bw.log";
 mkdir ($logdir,0777);

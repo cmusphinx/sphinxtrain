@@ -91,12 +91,8 @@ my $minvar  = 1e-4;
 my $listoffiles = $ST::CFG_LISTOFFILES;
 my $transcriptfile = $ST::CFG_TRANSCRIPTFILE;
 
-my $topn;
-if ($ST::CFG_HMM_TYPE eq '.cont') {
-    $topn = 1
-} else {
-    $topn = $ST::CFG_FINAL_NUM_DENSITIES;
-}
+my $topn = 1;
+
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$iter-$part.bw.log";
 mkdir ($logdir,0777);

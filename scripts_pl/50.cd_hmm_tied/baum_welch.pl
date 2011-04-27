@@ -123,21 +123,12 @@ if (defined($ST::CFG_PHSEG_DIR)) {
 # of (03.) forced alignment or (04.) VTLN
 my ($listoffiles, $transcriptfile) = GetLists();
 
-my $topn;
-if ($iter == 1) {
-    if ($ST::CFG_HMM_TYPE eq '.cont') {
-	$topn = $n_gau;
-    }
-    else {
-	$topn = $ST::CFG_FINAL_NUM_DENSITIES;
-    }
-}
-else {
-    $topn = 16;
-    if ($ST::CFG_HMM_TYPE eq '.cont.' and $n_gau < 16) {
-	$topn = $n_gau;
-    }
-}
+my $topn = $n_gau;
+$topn = $ST::CFG_CD_TOPN if (defined($ST::CFG_CD_TOPN) and 
+			     ($iter > 1) and 
+			     ($ST::CFG_FULLVAR eq 'no') and 
+			     ($ST::CFG_CD_TOPN < $n_gau));
+
 my $logdir   = "$ST::CFG_LOG_DIR/$processname";
 my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.${n_gau}.$iter-$part.bw.log";
 mkdir ($logdir,0777);

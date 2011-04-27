@@ -960,7 +960,7 @@ log_full_densities(float64 *den,
 	den_idx[i] = i;
     }
 }
-
+
 static void
 log_full_densities_full(float64 *den,
 			uint32  *den_idx,
@@ -978,7 +978,7 @@ log_full_densities_full(float64 *den,
 	den_idx[i] = i;
     }
 }
-
+
 static void
 log_topn_densities(float64 *den,
 		   uint32 *den_idx,
@@ -1061,7 +1061,7 @@ log_topn_densities(float64 *den,
     }
     worst = den[n_top-1];
 }
-
+
 static void
 euclidean_dist(float64 *out,
 	       uint32 *w_idx,
@@ -1118,33 +1118,7 @@ euclidean_dist(float64 *out,
 	}
     }
 }
-
-/*********************************************************************
- *
- * Function: 
- * 
- * Description: 
- * 
- * Function Inputs: 
- * 
- * Global Inputs: 
- * 
- * Return Values: 
- * 
- * Global Outputs: 
- * 
- * Errors: 
- * 
- * Pre-Conditions: 
- * 
- * Post-Conditions: 
- * 
- * Design: 
- * 
- * Notes: 
- * 
- *********************************************************************/
-
+
 int
 gauden_compute(float64 **den,		/* density array for a mixture Gaussian */
 	       uint32 **den_idx,	/* density index array for n_top < n_density eval */
@@ -1313,9 +1287,7 @@ gauden_scale_densities_fwd(float64 ***den,		/* density array for a mixture Gauss
     for (i = 0; i < n_cb; i++) {
 	c = cb[i];
 	for (j = 0; j < g->n_feat; j++) {
-/* BHIKSHA: converted g->n_density to g->n_top; possible bugfix 6 Apr 98 */
 	    for (k = 0; k < g->n_top; k++) {
-/* BHIKSHA: converted g->n_density to g->n_top; possible bugfix ENDS */
 		if (max_den[j] < den[c][j][k]) {
 		    max_den[j] = den[c][j][k];
 		}
@@ -1331,9 +1303,7 @@ gauden_scale_densities_fwd(float64 ***den,		/* density array for a mixture Gauss
     for (i = 0; i < n_cb; i++) {
 	c = cb[i];
 	for (j = 0; j < g->n_feat; j++) {
-/* BHIKSHA: converted g->n_density to g->n_top; possible bugfix 6 Apr 98 */
 	    for (k = 0; k < g->n_top; k++) {
-/* BHIKSHA: converted g->n_density to g->n_top; possible bugfix ENDS */
 		den[c][j][k] = EXPF(den[c][j][k] - max_den[j]);
 	    }
 	}
@@ -1369,9 +1339,7 @@ gauden_scale_densities_bwd(float64 ***den,		/* density array for a mixture Gauss
 		E_WARN("Scaling factor too small: %f\n", scl[j]);
 		scl[j] = MINUS_LOG_INFINITY + MAX_LOG_DEN;
 	    }
-/* BHIKSHA converged g->n_density to g->n_top; possible bugfix, APR 6  98 */
 	    for (k = 0; k < g->n_top; k++) {
-/* BHIKSHA converged g->n_density to g->n_top; possible bugfix, END */
 		den[c][j][k] = EXPF(den[c][j][k] - scl[j]);
 		assert(finite(den[c][j][k]));
 	    }
@@ -2005,8 +1973,6 @@ gauden_massage_var(vector_t ***var,
     return S3_SUCCESS;
 }
 
-/* the following functions are used for MMIE training
-   lqin 2010-03 */
 uint32
 solve_quadratic(float64 x, float64 y, float64 z, float64 *root1, float64 *root2)
 {
@@ -2184,80 +2150,3 @@ gauden_norm_wt_mmie_var(vector_t ***in_var,
 	}
     }
 }
-/* end */
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:41  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.15  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.14  1996/07/29  16:46:51  eht
- * - made call to gauden_compute consistent w/ gauden_mixture
- * - made density values float64
- * - use ckd_calloc_{2d,3d}() etc. calls
- * - deal w/ unobserved means and variances by copying from another set of "good" ones
- *
- * Revision 1.13  1996/03/25  15:26:21  eht
- * Deal w/ case when there are many more densities total than
- * referenced in any given utterance.
- *
- * Revision 1.12  1996/02/02  17:30:42  eht
- * Added code to only evaluate the Gaussians in the current utterance.
- *
- * Revision 1.11  1996/01/26  17:51:34  eht
- * Define a allocation function for mean and variance parameter matrices
- * Fix the determinant calculation for diagonal Gaussians
- * Add a function for the case of evaluating full mixture Gaussians rather than
- * 	topn.
- * Add a Euclidean distance function
- *
- * Revision 1.10  1995/12/15  18:37:07  eht
- * Added some type cases for memory alloc/free
- *
- * Revision 1.9  1995/12/14  20:14:49  eht
- * Fixed some inconsistencies between mathematical definition
- * and code.  Shouldn't affect results, but now is consistent
- * w/ the definitions.
- *
- * Revision 1.8  1995/11/10  19:18:43  eht
- * Get rid of timer calls
- *
- * Revision 1.7  1995/10/18  11:23:58  eht
- * Changed MAXFLOAT to MAX_IEEE_NORM_POS_FLOAT32 because MAXFLOAT
- * does not seem to be defined always in math.h on all machines.
- *
- * Revision 1.6  1995/10/10  13:09:40  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.5  1995/10/09  15:11:53  eht
- * Changed interface to ckd_alloc to remove need for __FILE__, __LINE__ arguments
- *
- * Revision 1.4  1995/08/09  20:34:01  eht
- * Fix determinant calculation and add some normalization functions
- *
- * Revision 1.3  1995/07/07  12:03:08  eht
- * Made determinant calculation consistent with SPHINX-II.
- * Changed verbose output format and content.
- *
- * Revision 1.2  1995/06/02  16:49:44  eht
- * Fixed goof while including PWP's error stuff
- *
- * Revision 1.1  1995/06/02  16:47:48  eht
- * Initial revision
- *
- *
- */

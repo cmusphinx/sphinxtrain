@@ -465,7 +465,7 @@ int32  count_triphones (char *transfile,
     if ((fp = fopen(transfile,"r")) == NULL)
 	E_FATAL("Unable to open transcript file %s for reading!\n",transfile);
 
-    E_WARN("Out of vocabulary words in transcript will be mapped to SIL!\n");
+    E_INFO("Out of vocabulary words in transcript will be mapped to SIL!\n");
 
     lphnhash = (phnhashelement_t**)calloc(PHNHASHSIZE,sizeof(phnhashelement_t));
 

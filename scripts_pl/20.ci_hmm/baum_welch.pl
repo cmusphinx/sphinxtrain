@@ -127,10 +127,8 @@ if (defined($ST::CFG_PHSEG_DIR)) {
 # of (03.) forced alignment or (04.) VTLN
 my ($listoffiles, $transcriptfile) = GetLists();
 
-my $topn     = 4;
-if ($ST::CFG_HMM_TYPE eq '.cont.' and $n_gau < 4) {
-    $topn = $n_gau;
-}
+my $topn = $n_gau;
+$topn = $ST::CFG_CI_TOPN if (defined($ST::CFG_CI_TOPN) and ($ST::CFG_FULLVAR eq 'no') and ($ST::CFG_CI_TOPN < $n_gau));
 
 my $ctl_counter = 0;
 open INPUT,"<$listoffiles" or die "Failed to open $listoffiles: $!";
