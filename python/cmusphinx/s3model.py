@@ -51,9 +51,9 @@ class S3Model(object):
         for m,mgau in enumerate(self.var):
             for f,feat in enumerate(mgau):
                 fvar = feat.clip(self.varfloor, numpy.inf)
-                # log of 1/sqrt(2*pi**N * det(var))
+                # log of 1/sqrt((2*pi)^N * det(var))
                 det = numpy.log(fvar).sum(1)
-                lrd = -0.5 * (det + 2 * numpy.pi * feat.shape[1])
+                lrd = -0.5 * (det + numpy.log(2 * numpy.pi) * feat.shape[1])
                 self.norm[m,f] = lrd
                 # "Invert" variances
                 feat[:] = (1 / (fvar * 2))
