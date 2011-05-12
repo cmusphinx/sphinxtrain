@@ -166,6 +166,7 @@ for (my $warp = $ST::CFG_VTLN_START;
     Log("Phase 4: Running VTLN alignment for warp factor $warp");    
     # Build state segmentation directories
     my $wdsegdir = catdir($outdir, $warp);
+    mkpath($wdsegdir, 0, 0777);
     open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
     my $have_feats = 1;
     my %dirs;
