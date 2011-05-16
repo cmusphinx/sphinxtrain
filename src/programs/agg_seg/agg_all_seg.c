@@ -96,7 +96,7 @@ agg_all_seg(feat_t *fcb,
     long start;
     int32 no_retries=0;
     
-    n_stream = feat_n_stream(fcb);
+    n_stream = feat_dimension1(fcb);
     veclen = feat_stream_lengths(fcb);
     for (i = 0, blksz = 0; i < n_stream; i++)
         blksz += veclen[i];

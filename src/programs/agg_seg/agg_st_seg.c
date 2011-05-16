@@ -154,7 +154,7 @@ agg_st_seg(model_def_t *mdef,
     uint32 mcls;
     int32 mfc_veclen = cmd_ln_int32("-ceplen");
 
-    n_stream = feat_n_stream(fcb);
+    n_stream = feat_dimension1(fcb);
     veclen = feat_stream_lengths(fcb);
 
 

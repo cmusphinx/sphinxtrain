@@ -445,7 +445,7 @@ int main(int argc, char *argv[])
 			      cnt_st(mdef, lex),
 			      NULL,
 			      dmp_type,
-			      feat_n_stream(feat),
+			      feat_dimension1(feat),
 			      feat_stream_lengths(feat),
 			      feat_dimension(feat)) != S3_SUCCESS) {
 	    E_FATAL("Unable to initialize segment dump\n");
@@ -469,7 +469,7 @@ int main(int argc, char *argv[])
 			      n_seg,
 			      n_frame,
 			      dmp_type,
-			      feat_n_stream(feat),
+			      feat_dimension1(feat),
 			      feat_stream_lengths(feat),
 			      feat_dimension(feat)) != S3_SUCCESS) {
 	    E_FATAL("Unable to initialize segment dump\n");

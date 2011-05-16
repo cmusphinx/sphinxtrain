@@ -255,7 +255,7 @@ main_initialize(int argc,
     /* create a new model inventory structure */
     *out_inv = inv = mod_inv_new();
 
-    mod_inv_set_n_feat(inv, feat_n_stream(feat));
+    mod_inv_set_n_feat(inv, feat_dimension1(feat));
 
     mdeffn = cmd_ln_str("-moddeffn");
     meanfn = cmd_ln_str("-meanfn");
@@ -529,7 +529,7 @@ main_initialize(int argc,
 	    E_FATAL("Unable to read %s\n", cmd_ln_str("-mllrmat"));
 	}
 
-	if (feat_n_stream(feat) != tmp_n_stream) {
+	if (feat_dimension1(feat) != tmp_n_stream) {
 	    E_FATAL("# feature streams in -mllrmat %s != # feature streams configured on cmd ln\n");
 	}
 	

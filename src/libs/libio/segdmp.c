@@ -425,7 +425,7 @@ segdmp_open_read(const char **dirs,		/* directories available for dump files */
 
     return S3_SUCCESS;
 }
-/* Need to do feat_n_stream() for VQ case rather than 4! */
+/* Need to do feat_dimension1() for VQ case rather than 4! */
 /* Need to test for single ID len > DMP_MAX for all id, not just 1st */
 
 

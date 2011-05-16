@@ -132,10 +132,10 @@ init_gau(lexicon_t *lex,
     veclen = (uint32 *)feat_stream_lengths(feat);
     
     if (meanfn == NULL) {
-	E_INFO("Computing %ux%ux1 mean estimates\n", n_ts, feat_n_stream(feat));
+	E_INFO("Computing %ux%ux1 mean estimates\n", n_ts, feat_dimension1(feat));
     
 	mean_acc = gauden_alloc_param(n_ts,
-				      feat_n_stream(feat),
+				      feat_dimension1(feat),
 				      1,
 				      veclen);
 	var_acc = NULL;
@@ -143,7 +143,7 @@ init_gau(lexicon_t *lex,
     else {
 	assert(meanfn != NULL);
 
-	E_INFO("Computing %ux%ux1 variance estimates\n", n_ts, feat_n_stream(feat));
+	E_INFO("Computing %ux%ux1 variance estimates\n", n_ts, feat_dimension1(feat));
 
 
 	if (s3gau_read(meanfn,
@@ -158,17 +158,17 @@ init_gau(lexicon_t *lex,
 	mean_acc = NULL;
 	if (var_is_full)
 		fullvar_acc = gauden_alloc_param_full(n_ts,
-						      feat_n_stream(feat),
+						      feat_dimension1(feat),
 						      1,
 						      veclen);
 	else
 		var_acc =  gauden_alloc_param(n_ts,
-					      feat_n_stream(feat),
+					      feat_dimension1(feat),
 					      1,
 					      veclen);
     }
 
-    dnom = (float32 ***)ckd_calloc_3d(n_ts, feat_n_stream(feat), 1, sizeof(float32));
+    dnom = (float32 ***)ckd_calloc_3d(n_ts, feat_dimension1(feat), 1, sizeof(float32));
 
     while (corpus_next_utt()) {
 	if (mfcc) {
@@ -279,15 +279,15 @@ init_gau(lexicon_t *lex,
 
 	if (mean_acc) {
 	    /* accumulate mean sums since no estimate given */
-	    accum_state_mean(mean_acc, dnom, f, feat_n_stream(feat), veclen, sseq, ci_sseq, n_frame);
+	    accum_state_mean(mean_acc, dnom, f, feat_dimension1(feat), veclen, sseq, ci_sseq, n_frame);
 	}
 	else if (var_acc) {
 	    /* accumulate var sums since mean estimate exists */
-	    accum_state_var(var_acc, mean, dnom, f, feat_n_stream(feat), veclen, sseq, ci_sseq, n_frame);
+	    accum_state_var(var_acc, mean, dnom, f, feat_dimension1(feat), veclen, sseq, ci_sseq, n_frame);
 	}
 	else if (fullvar_acc) {
 	    /* accumulate var sums since mean estimate exists */
-	    accum_state_fullvar(fullvar_acc, mean, dnom, f, feat_n_stream(feat), veclen, sseq, ci_sseq, n_frame);
+	    accum_state_fullvar(fullvar_acc, mean, dnom, f, feat_dimension1(feat), veclen, sseq, ci_sseq, n_frame);
 	}
     }
     
@@ -296,12 +296,12 @@ init_gau(lexicon_t *lex,
     
     if (var_is_full) {
 	if (s3gaucnt_write_full(fn, mean_acc, fullvar_acc, TRUE /* 2-pass variance */, dnom,
-				n_ts, feat_n_stream(feat), 1, veclen) != 0) {
+				n_ts, feat_dimension1(feat), 1, veclen) != 0) {
 	}
     }
     else {
 	if (s3gaucnt_write(fn, mean_acc, var_acc, TRUE /* 2-pass variance */, dnom,
-			   n_ts, feat_n_stream(feat), 1, veclen) != 0) {
+			   n_ts, feat_dimension1(feat), 1, veclen) != 0) {
 	}
     }
 

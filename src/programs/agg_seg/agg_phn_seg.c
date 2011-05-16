@@ -89,7 +89,7 @@ agg_phn_seg(lexicon_t *lex,
 
     tick_cnt = 0;
 
-    n_stream = feat_n_stream(fcb);
+    n_stream = feat_dimension1(fcb);
     veclen = feat_stream_lengths(fcb);
 
     while (corpus_next_utt()) {

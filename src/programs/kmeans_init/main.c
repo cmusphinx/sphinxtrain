@@ -1538,7 +1538,7 @@ main(int argc, char *argv[])
     em_timer = timing_get("em");
     all_timer = timing_get("all");
 
-    n_stream = feat_n_stream(feat);
+    n_stream = feat_dimension1(feat);
     veclen = (const uint32*)feat_stream_lengths(feat);
     blksize = feat_dimension(feat);
 
