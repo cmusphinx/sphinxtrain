@@ -16,7 +16,7 @@ my $out="mean.out";
 test_help($bindir,$exec_resdir);
 test_example($bindir,$exec_resdir);
 
-test_this("$bin $cpop -igaufn ./norm/globalmean.1 -ogaufn means.1 -ncbout 134",$exec_resdir," wrong ncb_out Expected Fail", 65280);
+test_this("$bin $cpop -igaufn ./norm/globalmean.1 -ogaufn means.1 -ncbout 134",$exec_resdir," wrong ncb_out expected", 65280);
 
 my @params=(1,3,6,12,25,50,100) ;
 foreach my $i (@params)
