@@ -399,7 +399,7 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 
 	{ "-cepext",
 	  ARG_STRING,
-	  ".mfc",
+	  "mfc",
 	  "The cepstrum file extension" },
 
 	{ "-cepdir",

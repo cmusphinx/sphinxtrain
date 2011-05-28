@@ -166,7 +166,7 @@ init_gau -accumdir accumdir -ctlfn controlfn -part 1 -npart 1 -cepdir cepdir -fe
 
 	{ "-cepext",
 	  ARG_STRING,
-	  ".mfc",
+	  "mfc",
 	  "Extension of the training corpus cepstrum files."},
 
 	cepstral_to_feature_command_line_macro(),

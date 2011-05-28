@@ -63,7 +63,7 @@ Please type -example yes to get an example argument list.";
 "Example: \n\
 \n\
 agg_seg -segdmpdirs segdmpdir -segdmpfn dumpfile -segtype all -ctlfn \n\
-ctl -cepdir cepdir -cepext .mfc -ceplen 13 -stride 10 ";
+ctl -cepdir cepdir -cepext mfc -ceplen 13 -stride 10 ";
 
 
     static arg_t defn[] = {
@@ -167,7 +167,7 @@ ctl -cepdir cepdir -cepext .mfc -ceplen 13 -stride 10 ";
 	  "Root directory of the cepstrum files"},
 	{ "-cepext",
 	  ARG_STRING,
-	  ".mfc",
+	  "mfc",
 	  "Extension of the cepstrum files"},
 	{ "-cachesz",
 	  ARG_INT32,

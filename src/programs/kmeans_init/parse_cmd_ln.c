@@ -153,7 +153,7 @@ kmeans_init -gthobj single -stride 1 -ntrial 1 -minratio 0.001 \n\
 	/* Cepstrum file location and extension */
 	{ "-cepext",
 	  ARG_STRING,
-	  ".mfc",
+	  "mfc",
 	  "The cepstrum file extension" },
 	{ "-cepdir",
 	  ARG_STRING,
