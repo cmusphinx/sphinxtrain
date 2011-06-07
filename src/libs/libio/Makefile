@@ -48,10 +48,8 @@ OTHER_SRCS =   corpus.bhiksha.c
 SRCS = \
   corpus.c \
   fp_cache.c \
-  fread_retry.c \
   model_def_io.c \
   read_line.c \
-  s3_open.c \
   s3cb2mllr_io.c \
   s3gau_io.c \
   s3gau_full_io.c \

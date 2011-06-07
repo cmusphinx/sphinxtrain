@@ -49,7 +49,7 @@ H=  \
   bcomment_io.h best_q.h bo_magic.h bquest_io.h btree.h cep_manip.h \
   ck_seg.h cmd_ln.h common.h corpus.h \
   cvt2triphone.h div.h dtree.h enum_subset.h err.h \
-  floatbuf_io.h fp_cache.h fread_retry.h gauden.h gauden_io.h \
+  floatbuf_io.h fp_cache.h gauden.h gauden_io.h \
   get_cpu_time.h get_host_name.h get_time.h hash.h heap.h int32_io.h \
   intbuf_io.h itree.h kmeans.h lambda_io.h lexicon.h* \
   live_norm.h merge_den.h metric.h mixw_param_io.h mk_phone_list.h \
@@ -59,7 +59,7 @@ H=  \
   quest.h r_agc_noise.h read_line.h read_seno_dtree.h regmat_io.h remap.h \
   s2_mixing_weights.h s2_param.h s2_read_cb.h s2_read_map.h s2_read_seno.h \
   s2_read_tmat.h s2_write_cb.h s2_write_hmm.h s2_write_seno.h s2io.h s3.h \
-  s3_open.h s3cb2mllr_io.h s3acc_io.h s3gau_io.h s3io.h s3lamb_io.h s3map_io.h \
+  s3cb2mllr_io.h s3acc_io.h s3gau_io.h s3io.h s3lamb_io.h s3map_io.h \
   s3mixw_io.h s3regmat_io.h s3tmat_io.h s3ts2cb_io.h segdmp.h \
   state.h state_param_def_io.h state_seq.h swap.h tmat_param_io.h topo_read.h \
   ts2cb.h two_class.h uttfile.h vector.h was_added.h \
