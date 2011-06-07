@@ -52,13 +52,7 @@ extern "C" {
 }
 #endif
 
-#define SWAP_INT16(x)	*(x) = ((0xff & (*(x))>>8) | (0xff00 & (*(x))<<8))
-
-#define SWAP_INT32(x)	*(x) = ((0xff & (*(x))>>24) | (0xff00 & (*(x))>>8) |\
-				(0xff0000 & (*(x))<<8) | (0xff000000 & (*(x))<<24))
-
-#define SWAP_FLOAT32(x)	SWAP_INT32((int32 *) x)
-
+#include <sphinxbase/byteorder.h>
 #include <sphinxbase/prim_type.h>
 
 #include <s3/s3.h>

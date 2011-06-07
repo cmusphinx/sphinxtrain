@@ -48,7 +48,7 @@
 
 #include <s3/bo_magic.h>
 #include <s3/swap.h>
-#include <sphinxbase/bio.h>
+#include <sphinxbase/pio.h>
 
 #include <assert.h>
 #include <string.h>
