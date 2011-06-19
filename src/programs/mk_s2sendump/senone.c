@@ -310,7 +310,6 @@ static int32 senone_mixw_read(logmath_t * logmath, senone_t *s, const char *file
 	    /* Convert to logs3, truncate to 8 bits, and store in s->pdf */
 	    for (c = 0; c < n_cw; c++) {
 		p = -logmath_log(logmath, pdf[c]);
-		printf ("%f %d\n", pdf[c], p);
 		fw[f].prob[j][c] = p;
 	    }
 	}
