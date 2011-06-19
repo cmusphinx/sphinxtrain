@@ -110,7 +110,7 @@ EOP
   my @params;
   while(<PARAM>) {
      chomp;
-     push @params, $_ unless ($_ =~ /_CFG_/ or $_ =~ /transform/);
+     push @params, $_ unless ($_ =~ /_CFG_/);
   }
 
   $params = join (" ", @params);
