@@ -1,6 +1,6 @@
 -nfilt __CFG_NUM_FILT__
 -lowerf __CFG_LO_FILT__
--upperf __CFG_LO_FILT__
+-upperf __CFG_HI_FILT__
 -feat __CFG_FEATURE__
 -svspec __CFG_SVSPEC__
 -agc __CFG_AGC__
