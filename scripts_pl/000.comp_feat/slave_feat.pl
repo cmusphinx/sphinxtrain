@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ## ====================================================================
 ##
-## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
+## Copyright (c) 1996-201 Carnegie Mellon University.  All rights 
 ## reserved.
 ##
 ## Redistribution and use in source and binary forms, with or without
@@ -34,51 +34,36 @@
 ##
 ## ====================================================================
 ##
-## Author: Ricky Houghton
-##
+## Author: Jidong Tao <vjdtao@hotmail.com>
+#
+# ====================================================================
+#
+#  Script that launches the feature exaction script
+#
+# ====================================================================
 
-use strict;
 use File::Copy;
 use File::Basename;
 use File::Spec::Functions;
-use File::Path;
 
-use lib catdir(dirname($0), 'lib');
+use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-# Start and end numbers, useful if things get interrupted
-my ($start, $end) = @ARGV;
-$start = 0 unless defined($start);
-$end = 100 unless defined($end);
+#************************************************************************
+# this script launches the feature exaction script
+#************************************************************************
+$n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
 
-# What pieces would you like to compute.
-my @steps =
-    ("$ST::CFG_SCRIPT_DIR/000.comp_feat/slave_feat.pl",
-     "$ST::CFG_SCRIPT_DIR/00.verify/verify_all.pl",
-     "$ST::CFG_SCRIPT_DIR/01.lda_train/slave_lda.pl",
-     "$ST::CFG_SCRIPT_DIR/02.mllt_train/slave_mllt.pl",
-     "$ST::CFG_SCRIPT_DIR/05.vector_quantize/slave.VQ.pl",
-     "$ST::CFG_SCRIPT_DIR/10.falign_ci_hmm/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/11.force_align/slave_align.pl",
-     "$ST::CFG_SCRIPT_DIR/12.vtln_align/slave_align.pl",
-     "$ST::CFG_SCRIPT_DIR/20.ci_hmm/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/30.cd_hmm_untied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/40.buildtrees/slave.treebuilder.pl",
-     "$ST::CFG_SCRIPT_DIR/45.prunetree/slave.state-tying.pl",
-     "$ST::CFG_SCRIPT_DIR/50.cd_hmm_tied/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/60.lattice_generation/slave_genlat.pl",
-     "$ST::CFG_SCRIPT_DIR/61.lattice_pruning/slave_prune.pl",
-     "$ST::CFG_SCRIPT_DIR/62.lattice_conversion/slave_conv.pl",
-     "$ST::CFG_SCRIPT_DIR/65.mmie_train/slave_convg.pl",
-     "$ST::CFG_SCRIPT_DIR/90.deleted_interpolation/deleted_interpolation.pl",
-    );
+$| = 1; # Turn on autoflushing
 
-# Do the common initialization and state tying steps
-foreach my $step (@steps) {
-    my ($index) = ($step =~ m,.*/(\d\d)\.,);
-    next if $index < $start;
-    last if $index > $end;
-    my $ret_value = RunScript($step);
-    die "Something failed: ($step)\n" if $ret_value;
+Log ("MODULE: 000 Computing feature from audio files\n");
+my @jobs;
+for (my $i = 1; $i <= $n_parts; $i++) {
+  push @jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts]);
 }
+foreach my $job (@jobs) {
+  WaitForScript($job);
+}
+
+Log ("Feature extraction is done\n");

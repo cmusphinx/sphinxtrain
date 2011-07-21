@@ -1,12 +1,6 @@
--alpha 0.97
--doublebw no
--nfilt 40
--ncep 13
--lowerf 133.33334
--upperf 6855.4976
--nfft 512
--wlen 0.0256
--transform legacy
+-nfilt __CFG_NUM_FILT__
+-lowerf __CFG_LO_FILT__
+-upperf __CFG_LO_FILT__
 -feat __CFG_FEATURE__
 -svspec __CFG_SVSPEC__
 -agc __CFG_AGC__
