@@ -76,24 +76,19 @@ $log_dir = "$ST::CFG_LOG_DIR/$processname";
 mkdir ($log_dir,0777) unless -d $log_dir;
 $logfile = "$log_dir/${exptid}-${part}-${npart}.log";
 
-$nlines = 0;
 open CTL, "<$ctlfile" or die "Failed to open control file $ctlfile: $!";
 while (<CTL>) {
     chomp;
-    $nlines++;
     my $dir = dirname($_);
     mkpath(catdir($ST::CFG_FEATFILES_DIR, $dir));
 }
 close CTL;
 
-$ctloffset = int ( ( $nlines * ( $part - 1 ) ) / $npart );
-$ctlcount = int ( ( $nlines * $part ) / $npart ) - $ctloffset;
-
 Log("Extracting $ctlcount segments starting at $ctloffset (part $part of $npart) ", 'audio files');
 my $rv = RunTool('sphinx_fe', $logfile, $ctlcount,
 		  -c => $ctlfile,
-		  -nskip => $ctloffset,
-		  -runlen => $ctlcount,
+		  -part => $part,
+		  -npart => $npart,
 		  -di => $ST::CFG_WAVFILES_DIR,
 		  -ei => $ST::CFG_WAVFILE_EXTENSION,
 		  -do => $ST::CFG_FEATFILES_DIR,
@@ -107,6 +102,6 @@ my $rv = RunTool('sphinx_fe', $logfile, $ctlcount,
 		  -upperf => $ST::CFG_HI_FILT);
 
 if ($rv) {
-    LogError("Failed to start ${ST::CFG_BIN_DIR}/wave2feat");
+    LogError("Failed to start ${ST::CFG_BIN_DIR}/sphinx_fe");
 }
 exit ($rv);
