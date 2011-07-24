@@ -147,7 +147,7 @@ agg_all_seg(feat_t *fcb,
 	    feat = feat_array_alloc(fcb, n_frame + feat_window_size(fcb));
 	    feat_s2mfc2feat_live(fcb, mfcc, &n_frame, TRUE, TRUE, feat);
 
-	    for (t = 0; t < n_frame; t++, j++) {
+	    for (t = feat_window_size(fcb); t < n_frame - feat_window_size(fcb); t++, j++) {
 		if ((j % stride) == 0) {
 		    while (s3write(&feat[t][0][0],
 				   sizeof(float32),
