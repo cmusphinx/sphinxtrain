@@ -59,7 +59,7 @@ use SphinxTrain::Util;
 my ($iter, $n_parts, $n_gau) = @ARGV;
 $iter = 1 unless defined $iter;
 $n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
-$n_gau = 1 unless defined $n_gau;
+$n_gau = $ST::CFG_INITIAL_NUM_DENSITIES unless defined $n_gau;
 
 my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777);
@@ -72,7 +72,7 @@ use vars qw($MLLT_FILE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
 
 # We have to clean up and run flat initialize if it is the first iteration
-if ($iter == 1 and $n_gau == 1) {
+if ($iter == 1 and $n_gau == $ST::CFG_INITIAL_NUM_DENSITIES) {
     Log("MODULE: 10 Training Context Independent models for forced alignment and VTLN\n");
     if ($ST::CFG_VTLN ne 'yes' and $ST::CFG_FORCEDALIGN ne 'yes') {
         Log("Skipped:  \$ST::CFG_FORCEDALIGN set to \'$ST::CFG_FORCEDALIGN\' in sphinx_train.cfg\n");
@@ -112,7 +112,7 @@ for (my $i=1; $i<=$n_parts; $i++)
 LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts, $n_gau], \@deps);
 # For the first iteration (i.e. the one that was called from the
 # command line or a parent script), wait until completion or error
-if ($iter == 1 && $n_gau == 1) {
+if ($iter == 1 && $n_gau == $ST::CFG_INITIAL_NUM_DENSITIES) {
     if ($ST::CFG_FALIGN_CI_MGAU eq 'yes') {
 	$return_value = TiedWaitForConvergence($logdir);
     }

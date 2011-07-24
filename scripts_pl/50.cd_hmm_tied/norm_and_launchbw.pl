@@ -200,7 +200,7 @@ sub Launch_BW {
     my $newiter = $iter + 1;
     Log("Current Overall Likelihood Per Frame = $lkhd_per_frame", 'result');
     Log("Convergence Ratio = $convg_ratio", 'result') if defined $convg_ratio;
-    RunScript('slave_convg.pl', $n_gau, $newiter, $n_parts);
+    RunScript('slave_convg.pl', $newiter, $n_parts, $n_gau);
 }
 
 sub Launch_SplitGaussian {

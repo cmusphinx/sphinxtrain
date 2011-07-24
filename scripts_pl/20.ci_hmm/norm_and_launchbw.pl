@@ -56,7 +56,7 @@ die "USAGE: $0 <iter> <n_parts> [<ngau>]" if (@ARGV < 2);
 
 my ($iter, $n_parts, $n_gau) = @ARGV;
 
-$n_gau = 1 unless defined $n_gau;
+$n_gau = $ST::CFG_INITIAL_NUM_DENSITIES unless defined $n_gau;
 
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");

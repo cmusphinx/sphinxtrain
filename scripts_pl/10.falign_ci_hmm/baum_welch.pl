@@ -58,14 +58,14 @@ $| = 1; # Turn on autoflushing
 
 die "USAGE: $0 <iter> <part> <npart> [<ngau>]" if @ARGV < 3;
 my ($iter, $part, $npart, $n_gau) = @ARGV;
-$n_gau = 1 unless defined($n_gau);
+$n_gau = $ST::CFG_INITIAL_NUM_DENSITIES unless defined($n_gau);
 
 use vars qw($MLLT_FILE $MODEL_TYPE);
 $MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
 $MODEL_TYPE = 'ci';
 
 my $modelinitialname;
-if ($n_gau == 1) {
+if ($n_gau == $ST::CFG_INITIAL_NUM_DENSITIES) {
     $modelinitialname = "${ST::CFG_EXPTNAME}.ci_${ST::CFG_DIRLABEL}_flatinitial";
 }
 else {

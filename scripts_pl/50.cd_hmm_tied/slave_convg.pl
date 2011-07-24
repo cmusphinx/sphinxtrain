@@ -49,23 +49,13 @@ use SphinxTrain::Config;
 use SphinxTrain::Util;
 
 # For the first iteration, we initialize the number of gaussian
-# components to 1. That's how we start with continuous models, and
+# components to $ST::CFG_INITIAL_NUM_DENSITIES. That's how we start with continuous models, and
 # it is irrelevant for semi continuous
-my $n_gau = 1;
-if (@ARGV) {
-    $n_gau = shift;
-}
-my $iter = 1;
-if (@ARGV) {
-    $iter = shift;
-}
+my ($iter, $n_parts, $n_gau) = @ARGV;
+$iter = 1 unless defined $iter;
+$n_parts = (defined($ST::CFG_NPART) ? $ST::CFG_NPART : 1) unless defined $n_parts;
+$n_gau = $ST::CFG_INITIAL_NUM_DENSITIES unless defined $n_gau;
 
-my $n_parts = ($ST::CFG_NPART) ? $ST::CFG_NPART : 1;
-# If the number of parts is given as command line argument, overwrite
-# the number coming from the config file
-if (@ARGV) {
-   $n_parts = shift;
-}
 # as the next stage (deleted interpolation) requires at least 2 parts
 # we set the default number of parts to be 2, but only if we're using
 # semi continuous or tied mixture models
@@ -85,7 +75,7 @@ my $modeldir  = "$ST::CFG_BASE_DIR/model_parameters";
 mkdir ($modeldir,0777);
 
 # We have to clean up and run flat initialize if it is the first iteration
-if (($iter == 1) && (($n_gau == 1) || ($ST::CFG_HMM_TYPE ne ".cont."))) {
+if (($iter == 1) && (($n_gau == $ST::CFG_INITIAL_NUM_DENSITIES) || ($ST::CFG_HMM_TYPE ne ".cont."))) {
     Log ("MODULE: 50 Training Context dependent models\n");
     Log("Phase 1: Cleaning up directories:");
     # Don't do this on a queue, because of NFS bugs
@@ -117,7 +107,7 @@ LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $n_gau, $iter, $n_parts], \@
 # For the first iteration (i.e. the one that was called from the
 # command line or a parent script), wait until completion or error
 my $return_value = 0;
-if ($iter == 1 and $n_gau == 1) {
+if ($iter == 1 and $n_gau == $ST::CFG_INITIAL_NUM_DENSITIES) {
     $return_value = TiedWaitForConvergence($logdir);
 }
 exit $return_value;
