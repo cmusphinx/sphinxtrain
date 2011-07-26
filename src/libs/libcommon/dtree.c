@@ -49,7 +49,7 @@
 #include <s3/two_class.h>
 
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/read_line.h>
+#include <sphinxbase/pio.h>
 #include <s3/quest.h>
 #include <s3/div.h>
 #include <s3/err.h>
@@ -262,8 +262,9 @@ read_final_tree(FILE *fp,
     dtree_t *out;
     dtree_node_t *node;
     uint32  n_node;
-    char ln[4096], *s, str[128];
-    uint32 n_read, n_scan;
+    char *s, str[128];
+    lineiter_t *ln = NULL;
+    uint32 n_scan;
     uint32 i, node_id, node_id_y, node_id_n;
     comp_quest_t *q;
     float64 ent;
@@ -272,10 +273,9 @@ read_final_tree(FILE *fp,
 
     out = ckd_calloc(1, sizeof(dtree_t));
 
-    n_read = 0;
-    read_line(ln, 4096, &n_read, fp);
-
-    s = ln;
+    ln = lineiter_start_clean(fp);
+    
+    s = ln->buf;
     sscanf(s, "%s%n", str, &n_scan);
     if (strcmp(str, "n_node") == 0) {
 	s += n_scan;
@@ -293,8 +293,8 @@ read_final_tree(FILE *fp,
     
     err = FALSE;
     
-    while (read_line(ln, 4096, &n_read, fp)) {
-	s = ln;
+    while ((ln = lineiter_next(ln))) {
+	s = ln->buf;
 
 	sscanf(s, "%u%n", &node_id, &n_scan);
 	s += n_scan;
@@ -354,6 +354,7 @@ read_final_tree(FILE *fp,
 	out = NULL;
     }
 
+    lineiter_free(ln);
     return out;
 }
 
@@ -1579,10 +1580,9 @@ cluster_leaves(dtree_t *tr,
     uint32 *node_id;
     dtree_node_t *root;
     uint32 i;
-/* ADDITION FOR CONTINUOUS_TREES */
     float32 ****means=0;
     float32 ****vars=0;
-    char*  type;
+    const char*  type;
     uint32 continuous, sumveclen;
 
     type = cmd_ln_str("-ts2cbfn");
@@ -1593,20 +1593,16 @@ cluster_leaves(dtree_t *tr,
     else
         continuous = 0;
 
-/* END ADDITIONS FOR CONTINUOUS_TREES */
-
     root = &tr->node[0];
 
     /* determine the # of leaf nodes in the simple tree */
     n_leaf = cnt_leaf(root);
 
-/* ADDITION FOR CONTINUOUS_TREES */
     if (continuous == 1) {
         for (i=0,sumveclen=0; i < n_stream; i++) sumveclen += veclen[i];
         means = (float32 ****)ckd_calloc_4d(n_leaf, n_state, n_stream, sumveclen, sizeof(float32));
         vars = (float32 ****)ckd_calloc_4d(n_leaf, n_state, n_stream, sumveclen, sizeof(float32));
     }
-/* END ADDITIONS FOR CONTINUOUS_TREES */
 
     /* Alloc space for:
      *  - leaf node distribution array

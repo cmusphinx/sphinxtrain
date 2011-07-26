@@ -46,7 +46,7 @@
 #include <s3/lexicon.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/n_words.h>
-#include <s3/read_line.h>
+#include <sphinxbase/pio.h>
 
 #include <s3/s3.h>
 
@@ -151,7 +151,7 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 			acmod_set_t *acmod_set)
 {
     FILE *lex_fp;
-    char line[1024];
+    lineiter_t *line = NULL;
     char *lex_line;
     lexicon_t *lex;
     lex_entry_t *next_entry = NULL;
@@ -173,11 +173,11 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 	lex = lexicon_new();
     if (lex->phone_set == NULL)
 	lex->phone_set = acmod_set;
-    
-    for (start_wid = wid = lex->entry_cnt;
-	 read_line(line, 1023, &lineno, lex_fp) != NULL;
-	 /* wid incremented in body of loop */ ) {
-	if (line[0] == 0) {
+
+    start_wid = wid = lex->entry_cnt;
+    for (line = lineiter_start_clean(lex_fp); line; line = lineiter_next(line)) {
+
+	if (line->buf[0] == 0) {
 	    E_WARN("Lexicon %s has a blank line at line %d\n",
 		   filename, lineno);
 	    continue;
@@ -192,7 +192,7 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 
 	/* allocate space for string.  It will be parsed
 	 * by strtok() */
-	lex_line = strdup(line);
+	lex_line = strdup(line->buf);
 
 	/* get the word and make a hash table entry for
 	   this lexicon entry */
@@ -211,10 +211,10 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 	}
 
 	/* n_words() counts the # of space separated "words" on a line */
-	n_phone = n_words(line)-1;
+	n_phone = n_words(line->buf)-1;
 
 #ifdef LEXICON_VERBOSE
-	E_INFO("%s %d phones\n", line, n_phone);
+	E_INFO("%s %d phones\n", line->buf, n_phone);
 #endif
 
 	/* read the phones, convert to ids and add them
@@ -233,6 +233,7 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
     E_INFO("%d entries added from %s\n",
 	   wid - start_wid, filename);
 			  
+    lineiter_free(line);
     fclose(lex_fp);
     
     return lex;

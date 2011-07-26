@@ -83,8 +83,7 @@ accum_state_mean(vector_t ***mean,
 	    }
 	    for (c = 0; c < veclen[f]; c++) {
 		/* only one Gaussian per state */
-
-		mean[s][f][0][c] += feat[t][f][c];
+    		mean[s][f][0][c] += feat[t][f][c];
 
 		if (s != ci_s) {
 		    mean[ci_s][f][0][c] += feat[t][f][c];

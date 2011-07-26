@@ -56,13 +56,13 @@ H=  \
   mk_phone_seq.h mk_sseq.h mk_trans_seq.h mk_ts2ci.h mk_wordlist.h mllr.h \
   mllr_class_io.h mllr_io.h model_def.h model_def_io.h model_inventory.h \
   n_words.h norm.h prefetch.h prefix_upto.h profile.h pset_io.h \
-  quest.h r_agc_noise.h read_line.h read_seno_dtree.h regmat_io.h remap.h \
+  quest.h read_seno_dtree.h regmat_io.h remap.h \
   s2_mixing_weights.h s2_param.h s2_read_cb.h s2_read_map.h s2_read_seno.h \
   s2_read_tmat.h s2_write_cb.h s2_write_hmm.h s2_write_seno.h s2io.h s3.h \
   s3cb2mllr_io.h s3acc_io.h s3gau_io.h s3io.h s3lamb_io.h s3map_io.h \
   s3mixw_io.h s3regmat_io.h s3tmat_io.h s3ts2cb_io.h segdmp.h \
   state.h state_param_def_io.h state_seq.h swap.h tmat_param_io.h topo_read.h \
-  ts2cb.h two_class.h uttfile.h vector.h was_added.h \
+  ts2cb.h two_class.h vector.h was_added.h \
   array_alloc.h timer.h s3phseg_io.h
 
 FILES = Makefile $(H)

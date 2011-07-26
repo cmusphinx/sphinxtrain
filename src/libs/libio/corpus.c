@@ -62,21 +62,21 @@
  * Author: 
  * 	Eric H. Thayer (eht@cs.cmu.edu)
  *********************************************************************/
-
 
 #include <s3/corpus.h>
 
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/read_line.h>
-#include <s3/prefetch.h>
-#include <s3/mllr_io.h>
+#include <sphinxbase/pio.h>
+
 #include <sys_compat/file.h>
 #include <sys_compat/misc.h>
+
+#include <s3/prefetch.h>
+#include <s3/mllr_io.h>
 #include <s3/acmod_set.h>
 #include <s3/s2io.h>
 #include <s3/s3.h>
 
-/* System level includes */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -100,21 +100,20 @@ static int
 corpus_read_next_sent_file(char **trans);
 
 static int
-corpus_read_next_lsn_line(char **trans);
+corpus_read_next_transcription_line(char **trans);
 
-#define	DATA_TYPE_SENT	0
-#define DATA_TYPE_MFCC	1
-#define DATA_TYPE_SEG	2
-#define DATA_TYPE_CCODE	3
-#define DATA_TYPE_DCODE	4
-#define DATA_TYPE_PCODE	5
-#define DATA_TYPE_DDCODE 6
-#define DATA_TYPE_MLLR  7
-#define DATA_TYPE_PHSEG 8
+/*
+ * Data folders
+ */
 
-#define N_DATA_TYPE	9
-
-#define MAX_LSN_LINE	8192
+enum {
+    DATA_TYPE_SENT,
+    DATA_TYPE_MFCC,
+    DATA_TYPE_SEG,
+    DATA_TYPE_MLLR,
+    DATA_TYPE_PHSEG,
+    N_DATA_TYPE
+};
 
 /* The root directory for the speech corpus.  Each line of the control
  * file is appended to this directory */
@@ -128,27 +127,23 @@ static const char *extension[N_DATA_TYPE];
 static int is_flat[N_DATA_TYPE];
 
 /* The name of an LSN file containing all transcripts for the corpus */
-static const char *lsn_filename = NULL;
+static const char *transcription_filename = NULL;
 
-/* Standard I/O file pointer for the LSN file */
-static FILE *lsn_fp = NULL;
-
-/* The current LSN transcript */
-static char lsn_line[MAX_LSN_LINE];
-
-
-/* The current mllr tranform */
-static char mllr_line[MAXPATHLEN];
-
-/* Standard I/O file pointer for the silence deletion file */
-static FILE *sil_fp = NULL;
-
-static uint32 *del_sf = NULL;
-static uint32 *del_ef = NULL;
-static uint32 n_del = 0;
+/* Match flag for the utterance id */
+static uint32 fullsuffixmatch = 0;
 
 /* Standard I/O file pointer for the control file */
 static FILE *ctl_fp = NULL;
+
+/* Standard I/O file pointer for the LSN file */
+static FILE *transcription_fp = NULL;
+
+/* The current transcript */
+static char* transcription_line;
+
+/* The current mllr tranform */
+static char* mllr_line;
+
 
 /* Control file lines may be of the following form:
  *
@@ -156,13 +151,7 @@ static FILE *ctl_fp = NULL;
  *
  */
 
-static char ctl_line_a[8192] = "";
-static char ctl_line_b[8192] = "";
-
 #define NO_FRAME	0xffffffff
-
-/* The current line from a control file */
-static char *cur_ctl_line = ctl_line_a;
 
 /* The current path from a control file */
 static char *cur_ctl_path = NULL;
@@ -175,8 +164,6 @@ static uint32 cur_ctl_ef = NO_FRAME;
 
 /* The current utt id (NULL indicates NONE) from a control file */
 static char *cur_ctl_utt_id = NULL;
-
-static char *next_ctl_line = ctl_line_b;
 
 static char *next_ctl_path = NULL;
 
@@ -194,11 +181,6 @@ static int32 requires_seg = FALSE;
 /* Flag to indicate whether the application requires phone
  * segmentations */
 static int32 requires_phseg = FALSE;
-
-static int32 requires_ccode = FALSE;
-static int32 requires_dcode = FALSE;
-static int32 requires_pcode = FALSE;
-static int32 requires_ddcode = FALSE;
 
 #define UNTIL_EOF	0xffffffff
 
@@ -339,30 +321,31 @@ parse_ctl_line(char *line,
  * Post-Conditions: 
  * 
  *********************************************************************/
-
 int
 corpus_set_ctl_filename(const char *ctl_filename)
 {
-    ctl_fp = fopen(ctl_filename, "r");
+    lineiter_t *li;
+    ctl_fp = fopen(ctl_filename, "rb");
+
     if (ctl_fp == NULL) {
-	E_WARN_SYSTEM("Unable to open %s for reading\n",
-		      ctl_filename);
-
+	E_ERROR_SYSTEM("Unable to open %s for reading",  ctl_filename);
 	return S3_ERROR;
     }
+    
+    li = lineiter_start_clean(ctl_fp);
 
-    if (read_line(next_ctl_line, MAXPATHLEN, NULL, ctl_fp) == NULL) {
+    if (li == NULL) {
 	E_ERROR("Must be at least one line in the control file\n");
-
 	return S3_ERROR;
     }
 
-    parse_ctl_line(next_ctl_line,
+    parse_ctl_line(li->buf,
 		   &next_ctl_path,
 		   NULL,
 		   NULL,
 		   NULL);
-
+    lineiter_free (li);
+    
     return S3_SUCCESS;
 }
 
@@ -447,41 +430,39 @@ corpus_set_interval(uint32 n_skip,
     
     return S3_SUCCESS;
 }
-
+
 int
 corpus_reset()
 {
+    lineiter_t* li;
     n_run = UNTIL_EOF;
 
     assert(ctl_fp);
     rewind(ctl_fp);
 
-    if (lsn_fp)
-	rewind(lsn_fp);
-    if (sil_fp)
-	rewind(sil_fp);
+    if (transcription_fp)
+	rewind(transcription_fp);
 
-    cur_ctl_line[0] = '\0';
-    if (read_line(next_ctl_line, MAXPATHLEN, NULL, ctl_fp) == NULL) {
+    li = lineiter_start_clean(ctl_fp);
+
+    if (li == NULL) {
 	E_ERROR("Must be at least one line in the control file\n");
-
 	return S3_ERROR;
     }
 
-    parse_ctl_line(next_ctl_line,
+    parse_ctl_line(li->buf,
 		   &next_ctl_path,
 		   NULL,
 		   NULL,
 		   NULL);
+    lineiter_free (li);
 
-    /* Position the control file to the
-     * saved values
-     */
+
     corpus_set_interval(sv_n_skip, sv_run_len);
 
     return S3_SUCCESS;
 }
-
+
 /*
  * This must be done after the processing of the utterance
  */
@@ -494,7 +475,6 @@ corpus_ckpt(const char *fn)
     fp = fopen(fn, "w");
     if (fp == NULL) {
 	E_ERROR_SYSTEM("Unable to open chkpt file %s\n", fn);
-
 	return S3_ERROR;
     }
     
@@ -562,15 +542,14 @@ corpus_ckpt_set_interval(const char *fn)
  *    None
  * 
  *********************************************************************/
-
 int
-corpus_set_partition(uint32 r,
-		     uint32 of_s)
+corpus_set_partition(uint32 part,
+		     uint32 parts)
 {
-    uint32 lineno;
-    char ignore[MAXPATHLEN+1];
     uint32 run_len;
     uint32 n_skip;
+    int lineno = 0;
+    lineiter_t* li;
 
     if (ctl_fp == NULL) {
 	E_ERROR("Control file has not been set\n");
@@ -578,17 +557,20 @@ corpus_set_partition(uint32 r,
 	return S3_ERROR;
     }
 
-    for (lineno = 0; read_line(ignore, MAXPATHLEN + 1, &lineno, ctl_fp););
+    for (li = lineiter_start(ctl_fp); li; li = lineiter_next(li)) {
+	lineno++;
+    }
 
     rewind(ctl_fp);
+    
+    li = lineiter_start(ctl_fp);
+    lineiter_free(li);
+    
+    run_len = lineno / parts;
 
-    read_line(next_ctl_line, MAXPATHLEN, NULL, ctl_fp);
+    n_skip = (part - 1) * run_len;
 
-    run_len = lineno / of_s;
-
-    n_skip = (r-1) * run_len;
-
-    if (r == of_s)
+    if (part == parts)
 	run_len = UNTIL_EOF;
 
     return corpus_set_interval(n_skip, run_len);
@@ -680,7 +662,6 @@ corpus_set_mllr_dir(const char *dir)
  *    None
  * 
  *********************************************************************/
-
 int
 corpus_set_mfcc_ext(const char *ext)
 {
@@ -688,7 +669,7 @@ corpus_set_mfcc_ext(const char *ext)
 
     return S3_SUCCESS;
 }
-
+
 /*********************************************************************
  *
  * Function: corpus_set_seg_dir
@@ -710,7 +691,6 @@ corpus_set_mfcc_ext(const char *ext)
  *    None
  * 
  *********************************************************************/
-
 int
 corpus_set_seg_dir(const char *dir)
 {
@@ -742,7 +722,7 @@ corpus_set_seg_dir(const char *dir)
 
     return S3_SUCCESS;
 }
-
+
 /*********************************************************************
  *
  * Function: corpus_set_seg_ext
@@ -764,7 +744,6 @@ corpus_set_seg_dir(const char *dir)
  *    None
  * 
  *********************************************************************/
-
 int
 corpus_set_seg_ext(const char *ext)
 {
@@ -772,7 +751,7 @@ corpus_set_seg_ext(const char *ext)
 
     return S3_SUCCESS;
 }
-
+
 /*********************************************************************
  *
  * Function: corpus_set_phseg_dir
@@ -794,7 +773,6 @@ corpus_set_seg_ext(const char *ext)
  *    None
  * 
  *********************************************************************/
-
 int
 corpus_set_phseg_dir(const char *dir)
 {
@@ -826,7 +804,7 @@ corpus_set_phseg_dir(const char *dir)
 
     return S3_SUCCESS;
 }
-
+
 /*********************************************************************
  *
  * Function: corpus_set_phseg_ext
@@ -848,7 +826,6 @@ corpus_set_phseg_dir(const char *dir)
  *    None
  * 
  *********************************************************************/
-
 int
 corpus_set_phseg_ext(const char *ext)
 {
@@ -856,7 +833,7 @@ corpus_set_phseg_ext(const char *ext)
 
     return S3_SUCCESS;
 }
-
+
 /*********************************************************************
  *
  * Function: corpus_set_sent_dir
@@ -885,7 +862,7 @@ corpus_set_sent_dir(const char *dir)
 {
     char *tt;
 
-    assert(lsn_filename == NULL);
+    assert(transcription_filename == NULL);
 
     requires_sent = TRUE;
 
@@ -943,159 +920,7 @@ corpus_set_sent_ext(const char *ext)
 
     return S3_SUCCESS;
 }
-int
-corpus_set_ccode_dir(const char *dir)
-{
-    char *tt;
 
-    requires_ccode = TRUE;
-
-    data_dir[DATA_TYPE_CCODE] = dir;
-
-    tt = strrchr(dir, ',');
-    if (tt != NULL) {
-	if (strcmp(tt+1, "FLAT") == 0) {
-	    is_flat[DATA_TYPE_CCODE] = TRUE;
-	    *tt = '\0';
-	}
-	else if (strcmp(tt+1, "CTL") == 0) {
-	    is_flat[DATA_TYPE_CCODE] = FALSE;
-	    *tt = '\0';
-	}
-	else {
-	    E_INFO("Assuming ',' in ccode dir is part of a pathname\n");
-	    
-	    is_flat[DATA_TYPE_CCODE] = FALSE;
-	}
-    }
-    else {
-	is_flat[DATA_TYPE_CCODE] = FALSE;
-    }
-
-    return S3_SUCCESS;
-}
-int
-corpus_set_ccode_ext(const char *ext)
-{
-    extension[DATA_TYPE_CCODE] = ext;
-
-    return S3_SUCCESS;
-}
-int
-corpus_set_dcode_dir(const char *dir)
-{
-    char *tt;
-
-    requires_dcode = TRUE;
-
-    tt = strrchr(dir, ',');
-    if (tt != NULL) {
-	if (strcmp(tt+1, "FLAT") == 0) {
-	    is_flat[DATA_TYPE_DCODE] = TRUE;
-	    *tt = '\0';
-	}
-	else if (strcmp(tt+1, "CTL") == 0) {
-	    is_flat[DATA_TYPE_DCODE] = FALSE;
-	    *tt = '\0';
-	}
-	else {
-	    E_INFO("Assuming ',' in dcode dir is part of a pathname\n");
-	    
-	    is_flat[DATA_TYPE_DCODE] = FALSE;
-	}
-    }
-    else {
-	is_flat[DATA_TYPE_DCODE] = FALSE;
-    }
-
-    data_dir[DATA_TYPE_DCODE] = dir;
-
-    return S3_SUCCESS;
-}
-int
-corpus_set_dcode_ext(const char *ext)
-{
-    extension[DATA_TYPE_DCODE] = ext;
-
-    return S3_SUCCESS;
-}
-int
-corpus_set_pcode_dir(const char *dir)
-{
-    char *tt;
-
-    requires_pcode = TRUE;
-
-    tt = strrchr(dir, ',');
-    if (tt != NULL) {
-	if (strcmp(tt+1, "FLAT") == 0) {
-	    is_flat[DATA_TYPE_PCODE] = TRUE;
-	    *tt = '\0';
-	}
-	else if (strcmp(tt+1, "CTL") == 0) {
-	    is_flat[DATA_TYPE_PCODE] = FALSE;
-	    *tt = '\0';
-	}
-	else {
-	    E_INFO("Assuming ',' in pcode dir is part of a pathname\n");
-	    
-	    is_flat[DATA_TYPE_PCODE] = FALSE;
-	}
-    }
-    else {
-	is_flat[DATA_TYPE_PCODE] = FALSE;
-    }
-
-    data_dir[DATA_TYPE_PCODE] = dir;
-
-    return S3_SUCCESS;
-}
-int
-corpus_set_pcode_ext(const char *ext)
-{
-    extension[DATA_TYPE_PCODE] = ext;
-
-    return S3_SUCCESS;
-}
-int
-corpus_set_ddcode_dir(const char *dir)
-{
-    char *tt;
-
-    requires_ddcode = TRUE;
-
-    tt = strrchr(dir, ',');
-    if (tt != NULL) {
-	if (strcmp(tt+1, "FLAT") == 0) {
-	    is_flat[DATA_TYPE_PCODE] = TRUE;
-	    *tt = '\0';
-	}
-	else if (strcmp(tt+1, "CTL") == 0) {
-	    is_flat[DATA_TYPE_PCODE] = FALSE;
-	    *tt = '\0';
-	}
-	else {
-	    E_INFO("Assuming ',' in pcode dir is part of a pathname\n");
-	    
-	    is_flat[DATA_TYPE_PCODE] = FALSE;
-	}
-    }
-    else {
-	is_flat[DATA_TYPE_PCODE] = FALSE;
-    }
-
-    data_dir[DATA_TYPE_DDCODE] = dir;
-
-    return S3_SUCCESS;
-}
-int
-corpus_set_ddcode_ext(const char *ext)
-{
-    extension[DATA_TYPE_DDCODE] = ext;
-
-    return S3_SUCCESS;
-}
-
 /*********************************************************************
  *
  * Function: corpus_set_lsn_filename
@@ -1127,13 +952,13 @@ corpus_set_lsn_filename(const char *fn)
 {
     assert(data_dir[DATA_TYPE_SENT] == NULL);
 
-    lsn_filename = fn;
+    transcription_filename = fn;
 
     requires_sent = TRUE;
 
-    lsn_fp = fopen(lsn_filename, "r");
-    if (lsn_fp == NULL) {
-	E_FATAL_SYSTEM("Cannot open LSN filename %s", lsn_filename);
+    transcription_fp = fopen(transcription_filename, "r");
+    if (transcription_fp == NULL) {
+	E_FATAL_SYSTEM("Cannot open LSN filename %s", transcription_filename);
     }
 
     return S3_SUCCESS;
@@ -1220,7 +1045,7 @@ corpus_init()
     }
 
     if (requires_sent &&
-	(lsn_fp == NULL) &&
+	(transcription_fp == NULL) &&
 	(extension[DATA_TYPE_SENT] == NULL)) {
 
 	E_ERROR("No lexical entry transcripts given\n");
@@ -1249,34 +1074,6 @@ corpus_init()
 	return S3_ERROR;
     }
 
-    if (requires_ccode &&
-	extension[DATA_TYPE_CCODE] == NULL) {
-	E_ERROR("No ccode extension given\n");
-
-	return S3_ERROR;
-    }
-
-    if (requires_dcode &&
-	extension[DATA_TYPE_DCODE] == NULL) {
-	E_ERROR("No dcode extension given\n");
-
-	return S3_ERROR;
-    }
-
-    if (requires_pcode &&
-	extension[DATA_TYPE_PCODE] == NULL) {
-	E_ERROR("No pcode extension given\n");
-
-	return S3_ERROR;
-    }
-
-    if (requires_ddcode &&
-	extension[DATA_TYPE_DDCODE] == NULL) {
-	E_ERROR("No ddcode extension given\n");
-
-	return S3_ERROR;
-    }
-
     if (n_run == UNTIL_EOF) {
 	E_INFO("Will process all remaining utts starting at %d\n", begin);
     }
@@ -1290,36 +1087,18 @@ corpus_init()
 int
 corpus_next_utt()
 {
-    char *tt;
-
-    tt = cur_ctl_line;
-    cur_ctl_line = next_ctl_line;
-    next_ctl_line = tt;
-
+    lineiter_t *li;
+    
     if (cur_ctl_path) {
 	free(cur_ctl_path);
-	cur_ctl_path = NULL;
     }
+    cur_ctl_path = next_ctl_path;
+
     if (cur_ctl_utt_id) {
 	free(cur_ctl_utt_id);
 	cur_ctl_utt_id = NULL;
     }
-    parse_ctl_line(cur_ctl_line,
-		   &cur_ctl_path,
-		   &cur_ctl_sf,
-		   &cur_ctl_ef,
-		   &cur_ctl_utt_id);
 
-    if (next_ctl_path) {
-	free(next_ctl_path);
-	next_ctl_path = NULL;
-    }
-    parse_ctl_line(next_ctl_line,
-		   &next_ctl_path,
-		   NULL,
-		   NULL,
-		   NULL);
-    
     if (n_run != UNTIL_EOF) {
 	if (n_run == 0) return FALSE;
 
@@ -1328,30 +1107,42 @@ corpus_next_utt()
 
     ++n_proc;
 
-    if (strlen(cur_ctl_line) == 0)
-	/* this means that the prior call reached the ctl file EOF */
+    if (cur_ctl_path == NULL || strlen(cur_ctl_path) == 0)
 	return FALSE;
 
-
-    /* if a big LSN file exists, position it to the correct line */
-
-    /* NOTE: corpus_set_ctl_filename() reads the first line of
-     *       the control file, so that lsn_fp is one line
-     *       behind ctl_fp. */
-
-    if (lsn_fp) {
-	if (read_line(lsn_line, MAX_LSN_LINE, NULL, lsn_fp) == NULL) {
-	    /* ahem! */
-	    E_FATAL("File length mismatch at line %d in %s\n", n_proc, lsn_filename);
+    /* if a big LSN file exists, position it to the correct line
+     * corpus_set_ctl_filename() reads the first line of
+     * the control file, so that transcription_fp is one line
+     * behind ctl_fp. */
+    if (transcription_fp) {
+	lineiter_t *trans_li;
+	trans_li = lineiter_start_clean(transcription_fp);
+	if (trans_li == NULL) {
+	    E_FATAL("File length mismatch at line %d in %s\n", n_proc, transcription_filename);
 	}
+	if (transcription_line)
+	    free(transcription_line);
+	transcription_line = strdup(trans_li->buf);
+	printf("Transcriptin is %s", transcription_line);
+	lineiter_free(trans_li);
     }  
 
-    if (read_line(next_ctl_line, MAXPATHLEN, NULL, ctl_fp) == NULL)
-	next_ctl_line[0] = '\0';
+    li = lineiter_start_clean(ctl_fp);
+
+    if (li != NULL) {
+        parse_ctl_line(li->buf,
+		       &next_ctl_path,
+		       NULL,
+		       NULL,
+		       NULL);
+        lineiter_free (li);
+    } else {
+	next_ctl_path = NULL;
+    }
 
     return TRUE;
 }
-
+
 char *corpus_utt()
 {
     int need_slash = 1;
@@ -1377,7 +1168,7 @@ char *corpus_utt()
 	}
     }
 }
-
+
 char *corpus_utt_brief_name()
 {
     int need_slash = 2;
@@ -1398,7 +1189,7 @@ char *corpus_utt_brief_name()
     else
 	return "N/A";
 }
-
+
 char *corpus_utt_full_name()
 {
     if (cur_ctl_path && strlen(cur_ctl_path) > 0) {
@@ -1408,7 +1199,7 @@ char *corpus_utt_full_name()
 	return "N/A";
     }
 }
-
+
 static char *
 mk_filename(uint32 type, char *rel_path)
 {
@@ -1462,7 +1253,7 @@ mk_filename(uint32 type, char *rel_path)
 
     return fn;
 }
-
+
 static FILE *
 open_file_for_reading(uint32 type)
 {
@@ -1478,30 +1269,30 @@ open_file_for_reading(uint32 type)
     
     return out;
 }
-
+
 static int
 corpus_read_next_sent_file(char **trans)
 {
     FILE *fp;
-    char big_str[8192];
+    lineiter_t *li;
 
     /* start prefetching the next file, if one. */
-    if (strlen(next_ctl_path) > 0)
+    if (next_ctl_path != NULL)
 	(void) prefetch_hint(mk_filename(DATA_TYPE_SENT, next_ctl_path));
 
     /* open the current file */
     fp = open_file_for_reading(DATA_TYPE_SENT);
 
-    if (read_line(big_str, 8192, NULL, fp) == NULL) {
+    li = lineiter_start_clean(fp);
+    if (li == NULL) {
 	E_ERROR("Unable to read data in sent file %s\n",
-		mk_filename(DATA_TYPE_SENT, cur_ctl_path));
-	
+		mk_filename(DATA_TYPE_SENT, cur_ctl_path));		
 	return S3_ERROR;
     }
 
+    *trans = strdup(li->buf);
+    lineiter_free(li);
     fclose(fp);
-
-    *trans = strdup(big_str);
 
     return S3_SUCCESS;
 }
@@ -1533,7 +1324,7 @@ corpus_get_generic_featurevec(vector_t **mfc,
     }
 
     /* start prefetching the next file, if one. */
-    if (strlen(next_ctl_path) > 0)
+    if (next_ctl_path != NULL)
 	(void) prefetch_hint(mk_filename(DATA_TYPE_MFCC, next_ctl_path));
 
     do {
@@ -1624,7 +1415,7 @@ corpus_get_seg(uint16 **seg,
     
     return S3_SUCCESS;
 }
-
+
 int
 corpus_get_phseg(acmod_set_t *acmod_set,
 		 s3phseg_t **out_phseg)
@@ -1649,35 +1440,21 @@ corpus_get_phseg(acmod_set_t *acmod_set,
     
     return S3_SUCCESS;
 }
-
-int
-corpus_get_sildel(uint32 **sf,
-		  uint32 **ef,
-		  uint32 *n_seg)
-{
-    *sf = del_sf;
-    *ef = del_ef;
-    *n_seg = n_del;
-
-    return S3_SUCCESS;
-}
-
-static uint32 fullsuffixmatch = 0;
 
 void
 corpus_set_full_suffix_match(uint32 state)
 {
     fullsuffixmatch = state;
 }
-
+
 static int
-corpus_read_next_lsn_line(char **trans)
+corpus_read_next_transcription_line(char **trans)
 {
     char utt_id[512];
     char *s;
 
     /* look for a close paren in the line */
-    s = strrchr(lsn_line, ')');
+    s = strrchr(transcription_line, ')');
 
     if (s != NULL) {
 	int nspace;
@@ -1689,7 +1466,7 @@ corpus_read_next_lsn_line(char **trans)
 	    *s = '\0';		/* terminate the string at the paren */
 
 	    /* search for a matching open paren */
-	    for (s--; (s >= lsn_line) && (*s != '('); s--);
+	    for (s--; (s >= transcription_line) && (*s != '('); s--);
 
 	    if (*s == '(') {
 		/* found a matching open paren */
@@ -1717,16 +1494,16 @@ corpus_read_next_lsn_line(char **trans)
 
 		/* look for the first non-whitespace character before
 		   the open paren */
-		for (--s; (s >= lsn_line) && isspace((int)*s); s--);
-		if (s < lsn_line) {
-		  E_FATAL("Utterance transcription is empty: %s\n", lsn_line);
+		for (--s; (s >= transcription_line) && isspace((int)*s); s--);
+		if (s < transcription_line) {
+		  E_FATAL("Utterance transcription is empty: %s\n", transcription_line);
 		}
 		++s;
 		*s = '\0';	/* terminate the string at the first whitespace character
 				   following the first non-whitespace character found above */
 	    }
 	    else {
-		E_ERROR("Expected open paren after ending close paren in line:\n%s", lsn_line);
+		E_ERROR("Expected open paren after ending close paren in line:\n%s", transcription_line);
 		return S3_ERROR;
 	    }
 	}
@@ -1742,27 +1519,26 @@ corpus_read_next_lsn_line(char **trans)
 	   for the ordering of the LSN file */
     }
 
-    *trans = strdup(lsn_line);
+    *trans = strdup(transcription_line);
     
     return S3_SUCCESS;
 }
-
+
 int
 corpus_get_sent(char **trans)
 {
-  if (lsn_fp == NULL)
+  if (transcription_fp == NULL)
     return corpus_read_next_sent_file(trans);
   else
-    return corpus_read_next_lsn_line(trans);
+    return corpus_read_next_transcription_line(trans);
 }
 
 int
 corpus_has_xfrm()
 {
-/*    return mllr_fp != NULL; */
     return 0;
 }
-
+
 int
 corpus_get_xfrm(float32 *****out_a,
 		float32 ****out_b,

@@ -109,7 +109,7 @@ typedef struct acmod_s {
 
 /* ci_acmod record (represents base phones and filler words) */
 typedef struct ci_acmod_s {
-    const char *name;		/* A C string representation for the acoustic model */
+    char *name;		/* A C string representation for the acoustic model */
 
     const char **attrib;	/* A NULL terminated list of C strings which
 				 * represent various attributes of the acoustic model.

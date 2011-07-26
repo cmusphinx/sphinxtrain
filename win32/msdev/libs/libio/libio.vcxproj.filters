@@ -20,9 +20,6 @@
     <ClCompile Include="..\..\..\..\src\libs\libio\model_def_io.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libio\read_line.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libio\s3acc_io.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,9 +63,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libio\topo_read.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libio\uttfile.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

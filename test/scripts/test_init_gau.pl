@@ -40,7 +40,7 @@ foreach my $i (@params)
 	compare_these_two($gd_out,$gd_match,$exec_resdir,"Gau count generation for 100 utterance. Check duplicates with printp");
     }
     compare_these_two($gd_out,$matchfn,$exec_resdir,"Gau count generation for $i utterances");
-    #copy($gd_cnt,"./$exec_resdir/$gd_cnt.$i");
+    copy($gd_out,"./$exec_resdir/$gd_cnt.$i.out11");
 }
 
 unlink($gd_cnt,$gd_out);

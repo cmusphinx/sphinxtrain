@@ -55,7 +55,7 @@
    try to flush out hidden dependencies */
 #include <s3/topo_read.h>
 
-#include <s3/read_line.h>
+#include <sphinxbase/pio.h>
 #include <s3/common.h>
 #include <s3/s3.h>
 
@@ -63,7 +63,6 @@
 #include <assert.h>
 #include <string.h>
 
-#define BIG_STR_LEN	4096
 #define TOPO_FILE_VERSION	"0.1"
 
 /*********************************************************************
@@ -107,10 +106,9 @@ topo_read(float32 ***tmat,
 {
     float32 **out;
     FILE *fp;
-    char buf[BIG_STR_LEN];
+    lineiter_t *li = NULL;
     uint32 n_state;
     uint32 i, j;
-    uint32 n_read;
     float32 row_sum;
 
     assert(topo_file_name != NULL);
@@ -122,26 +120,29 @@ topo_read(float32 ***tmat,
 	goto error;
     }
     
-    if (read_line(buf, BIG_STR_LEN, &n_read, fp) == NULL) {
+    li = lineiter_start_clean(fp);
+    
+    if (li == NULL) {
 	E_ERROR("EOF encounted while reading version number in %s!?\n", topo_file_name);
 
 	goto error;
     }
 
-    if (strcmp(buf, TOPO_FILE_VERSION) != 0) {
+    if (strcmp(li->buf, TOPO_FILE_VERSION) != 0) {
 	E_ERROR("Topo file version in %s is %s.  Expected %s\n",
-		topo_file_name, buf, TOPO_FILE_VERSION);
+		topo_file_name, li->buf, TOPO_FILE_VERSION);
 
 	goto error;
     }
 
-    if (read_line(buf, BIG_STR_LEN, &n_read, fp) == NULL) {
+    li = lineiter_next(li);
+    if (li == NULL) {
 	E_ERROR("EOF encountered while reading n_state in %s!?\n", topo_file_name);
 
 	goto error;
     }
 
-    sscanf(buf, "%d\n", &n_state);
+    sscanf(li->buf, "%d\n", &n_state);
 
     /* Support Request 1504066: robust reading of topo file in
        SphinxTrain
@@ -187,10 +188,12 @@ topo_read(float32 ***tmat,
     *n_state_pm = n_state;
 
     fclose(fp);
+    lineiter_free(li);
     return S3_SUCCESS;
 
 error:    
     if (fp) fclose(fp);
+    lineiter_free(li);
     return S3_ERROR;
 }
 
