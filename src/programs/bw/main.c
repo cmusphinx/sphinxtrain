@@ -480,7 +480,7 @@ main_initialize(int argc,
 
 	    E_INFO("RESTORING CHECKPOINTED COUNTS IN %s\n", cmd_ln_str("-accumdir"));
 	    
-	    feat_veclen = (uint32 *)feat_stream_lengths(feat);
+    	    feat_veclen = (uint32 *)feat_stream_lengths(feat);
 	    	    
 	    if (mod_inv_restore_acc(inv,
 				    cmd_ln_str("-accumdir"),
@@ -1037,8 +1037,6 @@ main_reestimate(model_inventory_t *inv,
 	E_INFO("Counts saved to %s\n", cmd_ln_str("-accumdir"));
     else
 	E_INFO("Counts NOT saved.\n");
-
-    mod_inv_free(inv);
 }
 
 /* the following functions are used for MMIE training
@@ -1878,17 +1876,10 @@ main_mmi_reestimate(model_inventory_t *inv,
     E_INFO("Counts saved to %s\n", cmd_ln_str("-accumdir"));
   else
     E_INFO("Counts NOT saved.\n");
-    
-  /* free model parameters memory */
-  mod_inv_free(inv);
-    
+
   /* free lda memory */
   if (lda)
     ckd_free_3d((void ***)lda);
-    
-  /* free model definition memory */
-  model_def_free(mdef);
-    
 }
 
 int main(int argc, char *argv[])
@@ -1911,6 +1902,15 @@ int main(int argc, char *argv[])
     else {
       main_reestimate(inv, lex, mdef, feat, cmd_ln_int32("-viterbi"));
     }
+    
+    if (feat)
+	feat_free(feat);
+    if (mdef)
+	model_def_free(mdef);    
+    if (inv)
+	mod_inv_free(inv);
+    if (lex)
+	lexicon_free(lex);
 
     return 0;
 }

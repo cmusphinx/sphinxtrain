@@ -134,6 +134,10 @@ gauden_free(gauden_t *g)
     if (g->norm)
 	ckd_free_3d((void ***)g->norm);
     g->norm = NULL;
+    
+    if (g->veclen)
+	ckd_free(g->veclen);
+    g->veclen = NULL;
 
     /* finally free the gauden structure itself */
     ckd_free(g);

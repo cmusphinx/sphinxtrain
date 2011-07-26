@@ -47,9 +47,6 @@
     <ClCompile Include="..\..\..\..\src\libs\libcommon\get_time.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libcommon\hash.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libcommon\heap.c">
       <Filter>Source Files</Filter>
     </ClCompile>

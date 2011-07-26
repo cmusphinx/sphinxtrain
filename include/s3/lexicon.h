@@ -55,9 +55,10 @@ extern "C" {
 #endif
 
 #include <s3/acmod_set.h>
-#include <s3/hash.h>
-#include <sphinxbase/prim_type.h>
 #include <s3/lts.h>
+
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/hash_table.h>
 
 typedef uint32 word_id_t;
 #define WORD_NO_ID	(0xffffffff)
@@ -68,18 +69,11 @@ typedef struct lex_entry_str {
     char **phone;
     acmod_id_t *ci_acmod_id;
     uint32  phone_cnt;
-
-    struct lex_entry_str *next;
 } lex_entry_t;
 
 typedef struct lexicon_s {
-/*    lex_entry_t *entry; */
-
-    lex_entry_t *head;
-    lex_entry_t *tail;
-
     uint32 entry_cnt;
-    hash_t ht;
+    hash_table_t *ht;
     lts_t *lts_rules;
     acmod_set_t *phone_set;
 } lexicon_t;
@@ -95,46 +89,9 @@ lex_entry_t *
 lexicon_lookup(lexicon_t *lexicon,
 	       char *word);
 
+void lexicon_free(lexicon_t *lexicon);
+
 #ifdef __cplusplus
 }
 #endif
 #endif /* LEXICON_H */ 
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2005/09/15  19:36:01  dhdfu
- * Add (as yet untested) support for letter-to-sound rules (from CMU
- * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only
- * rules for CMUdict exist.  Of course this is not a substitute for
- * actually checking pronunciations...
- * 
- * Revision 1.4  2004/07/21 17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.4  1996/07/29  16:40:50  eht
- * make a name more consise
- *
- * Revision 1.3  1995/10/09  20:55:35  eht
- * Changes needed for prim_type.h
- *
- * Revision 1.2  1995/09/08  19:13:52  eht
- * Updated to remove references to pset module and add references
- * to acmod_set module
- *
- * Revision 1.1  1995/08/15  13:44:14  eht
- * Initial revision
- *
- *
- */

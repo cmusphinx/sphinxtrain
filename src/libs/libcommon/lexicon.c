@@ -44,8 +44,9 @@
  *********************************************************************/
 
 #include <s3/lexicon.h>
-#include <sphinxbase/ckd_alloc.h>
 #include <s3/n_words.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/hash_table.h>
 #include <sphinxbase/pio.h>
 
 #include <s3/s3.h>
@@ -54,7 +55,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-
+
 static int
 add_word(char *ortho,
 	 uint32 wid,
@@ -64,15 +65,11 @@ add_word(char *ortho,
     e->ortho = ortho;
     e->word_id = wid;
 
-    if (hash_enter(l->ht,
-		   e->ortho,
-		   (void *)e) != 0) {
-	E_FATAL("hash add failed\n");
-    }
+    hash_table_enter(l->ht, e->ortho, (void *)e);
     
     return S3_SUCCESS;
 }
-
+
 static int
 add_phones(uint32 n_phone,
 	   lex_entry_t *e,
@@ -117,30 +114,18 @@ lexicon_t *lexicon_new()
     
     new = ckd_calloc(1, sizeof(lexicon_t));
 
-    new->head = new->tail = NULL;
-
     new->entry_cnt = 0;
 
-    new->ht = hash_new("lex", 64000);
+    new->ht = hash_table_new(64000, HASH_CASE_YES);
 
     return new;
 }
-
+
 lex_entry_t *lexicon_append_entry(lexicon_t *lex)
 {
     lex_entry_t *new;
 
     new = ckd_calloc(1, sizeof(lex_entry_t));
-
-    if (lex->head == NULL) {
-	lex->head = lex->tail = new;
-    }
-    else {
-	lex->tail->next = new;
-
-	lex->tail = new;
-    }
-
     lex->entry_cnt++;
 
     return new;
@@ -238,12 +223,12 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
     
     return lex;
 }
-
+
 lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
 {
     lex_entry_t *cur;
     
-    if (hash_lookup(lex->ht, ortho, (void **)&cur) == 0) {
+    if (hash_table_lookup(lex->ht, ortho, (void **)&cur) == 0) {
 	return cur;
     }
     else if (lex->lts_rules) {
@@ -282,68 +267,20 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
     else
 	return NULL;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.8  2005/09/16  20:08:40  dhdfu
- * fix a memory problem - hash_enter does not copy keys
- * 
- * Revision 1.7  2005/09/15 20:05:55  dhdfu
- * fix handling of wids, add a FIXME because for some reason the hashing is not working (though otherwise things are fine)
- *
- * Revision 1.6  2005/09/15 19:56:42  dhdfu
- * fix small bugs, LTS support works now
- *
- * Revision 1.5  2005/09/15 19:36:01  dhdfu
- * Add (as yet untested) support for letter-to-sound rules (from CMU
- * Flite) when constructing sentence HMMs in Baum-Welch.  Currently only
- * rules for CMUdict exist.  Of course this is not a substitute for
- * actually checking pronunciations...
- *
- * Revision 1.4  2004/07/21 18:05:39  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.11  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.10  1996/07/29  16:36:56  eht
- * Incorporate Ravi's new hashing module
- *
- * Revision 1.9  1995/11/10  19:27:23  eht
- * Fix the case when a word has a zero length pronunciation
- *
- * Revision 1.7  1995/10/10  18:35:40  eht
- * Included <s3/n_words.h> for n_words() prototype
- *
- * Revision 1.6  1995/10/10  17:50:43  eht
- * *** empty log message ***
- *
- * Revision 1.5  1995/10/09  20:56:36  eht
- * Changes needed for prim_type.h
- *
- * Revision 1.4  1995/10/09  15:02:03  eht
- * Changed ckd_alloc interface to get rid of __FILE__, __LINE__ arguments
- *
- * Revision 1.3  1995/09/08  19:11:14  eht
- * Updated to use new acmod_set module.  Prior to testing
- * on TI digits.
- *
- * Revision 1.2  1995/09/07  19:02:14  eht
- * Added ability to ignore (with a warning message) blank lines
- *
- * Revision 1.1  1995/06/02  14:52:54  eht
- * Initial revision
- *
- *
- */
+
+
+void lexicon_free(lexicon_t *lexicon)
+{
+    hash_iter_t *itor;
+    
+    for (itor = hash_table_iter(lexicon->ht);
+             itor; itor = hash_table_iter_next(itor)) {
+        lex_entry_t *entry = hash_entry_val(itor->ent);
+        ckd_free(entry->ortho);
+        ckd_free(entry->ci_acmod_id);
+        ckd_free(entry->phone);
+        ckd_free(entry);
+    }
+    hash_table_free(lexicon->ht);
+    ckd_free(lexicon);
+}
