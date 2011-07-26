@@ -1123,7 +1123,6 @@ corpus_next_utt()
 	if (transcription_line)
 	    free(transcription_line);
 	transcription_line = strdup(trans_li->buf);
-	printf("Transcriptin is %s", transcription_line);
 	lineiter_free(trans_li);
     }  
 

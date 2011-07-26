@@ -308,6 +308,7 @@ baum_welch_update(float64 *log_forw_prob,
     ckd_free((void *)active_alpha);
     ckd_free((void *)active_astate);
     ckd_free((void **)dscale);
+    ckd_free(bp);
 
     return S3_SUCCESS;
 
@@ -327,92 +328,9 @@ error:
     }
     ckd_free((void *)active_alpha);
     ckd_free((void *)active_astate);
+    ckd_free(bp);
 
     E_ERROR("%s ignored\n", corpus_utt_brief_name());
 
     return S3_ERROR;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.9  2006/03/27  04:08:57  dhdfu
- * Optionally use a set of phoneme segmentations to constrain Baum-Welch
- * training.
- * 
- * Revision 1.8  2005/03/30 16:43:46  egouvea
- * Commented E_INFO calls that seemed to be there for debug/trace purpose only, not for a user
- *
- * Revision 1.7  2004/07/21 18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.6  2004/07/17 08:00:23  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.4  2004/06/17 19:17:14  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.14  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.13  1996/07/29  16:13:03  eht
- * - MLLR reestimation
- * - float64 rep for alpha, outprob, scale
- * - Got rid of 4D den and den_idx arrays as that they were using up
- *   too much memory.
- *
- * Revision 1.12  1996/03/26  13:49:54  eht
- * - Fixed beam bug where defined as float32 rather than float64
- * - Deal w/ case when # of densities referenced per utterances is much less than
- *   the total # of densities to train
- *
- * Revision 1.11  1996/03/05  12:47:45  eht
- * Fixed forward timer bug
- *
- * Revision 1.10  1996/03/04  17:32:07  eht
- * Add cpu usage counters
- *
- * Revision 1.9  1996/02/02  17:38:17  eht
- * Added alpha and beta beams.
- *
- * Revision 1.8  1996/01/26  18:23:49  eht
- * Local accumulators are now freed and reeallocated after each utterance.
- * No longer a need to clear them.
- *
- * Revision 1.7  1995/12/14  19:46:38  eht
- * - Added type casts for pointer types so that ANSI-hyper compilers desist about
- * generating warning messages.
- * - Added a clr of the Gaussian density accumulators when an error condition
- * happens.  Before the next utterance would get (possible) garbage from the
- * prior utterance.
- *
- * Revision 1.6  1995/11/30  20:47:43  eht
- * Allow a tmat_reest flag to be given and passed to lower level functions
- *
- * Revision 1.5  1995/10/10  12:43:50  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.4  1995/10/09  14:55:33  eht
- * Change interface to new ckd_alloc routines
- *
- * Revision 1.3  1995/09/14  15:05:41  eht
- * Update comments
- *
- * Revision 1.2  1995/08/09  20:16:50  eht
- * Fix where Gaussian density reestimation accumulators were not cleared
- *
- * Revision 1.1  1995/06/02  20:41:22  eht
- * Initial revision
- *
- *
- */

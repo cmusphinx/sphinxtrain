@@ -57,7 +57,6 @@ SRCS = \
   get_cpu_time.c \
   get_host_name.c \
   get_time.c \
-  hash.c \
   heap.c \
   itree.c \
   lexicon.c \

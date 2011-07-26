@@ -100,10 +100,10 @@ typedef struct acmod_s {
 
     /* The name is generatable from the information above */
 
-    const char **attrib;	/* A NULL terminated list of C strings which
-				 * represent various attributes of the acoustic model.
-				 * For instance, "ci", "non_speech", "triphone"
-				 * model. */
+    char **attrib;	/* A NULL terminated list of C strings which
+			 * represent various attributes of the acoustic model.
+			 * For instance, "ci", "non_speech", "triphone"
+			 * model. */
 
 } acmod_t;
 
@@ -111,10 +111,10 @@ typedef struct acmod_s {
 typedef struct ci_acmod_s {
     char *name;		/* A C string representation for the acoustic model */
 
-    const char **attrib;	/* A NULL terminated list of C strings which
-				 * represent various attributes of the acoustic model.
-				 * For instance, "ci", "non_speech", "triphone"
-				 * model. */
+    char **attrib;	/* A NULL terminated list of C strings which
+			 * represent various attributes of the acoustic model.
+			 * For instance, "ci", "non_speech", "triphone"
+			 * model. */
     
     ci_acmod_id_t id;		/* The ID of this acoustic model */
 } ci_acmod_t;

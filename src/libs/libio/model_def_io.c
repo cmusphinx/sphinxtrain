@@ -88,22 +88,18 @@ const char **
 mk_attrib_list(char *comma_sep_attrib)
 {
     static char *attrib_list[MAX_N_ATTRIB+1];
+    static char buf[1024];
     uint32 i;
     char *attr;
-    char *s;
 
-    /* comma_set_attrib is a pointer into stack, so
-     * allocate permanent storage */
+    strncpy (buf, comma_sep_attrib, 1024);
 
-    s = strdup(comma_sep_attrib);
-
-    attr = comma_whacker(s);
+    attr = comma_whacker(buf);
     i = 0;
 
     do {
 	attrib_list[i++] = attr;
     } while ((attr = comma_whacker(NULL)) && (i < MAX_N_ATTRIB));
-
     attrib_list[i] = NULL;
 
     if (i == MAX_N_ATTRIB+1) {
@@ -592,7 +588,7 @@ model_def_read(model_def_t **out_model_def,
 int32
 model_def_free(model_def_t *mdef)
 {
-  uint32 i, j;
+  uint32 i;
   uint32 len;
 
   if (mdef->acmod_set) {
@@ -601,9 +597,7 @@ model_def_free(model_def_t *mdef)
 	ckd_free(mdef->acmod_set->ci[i].name);
 	if (mdef->acmod_set->ci[i].attrib) {
 	  for (len = 0; mdef->acmod_set->ci[i].attrib[len]; len++)
-
-	    for (j = 0; j < len; j++)
-	      ckd_free(mdef->acmod_set->ci[i].attrib[j]);
+    	     ckd_free(mdef->acmod_set->ci[i].attrib[len]);
 	  ckd_free(mdef->acmod_set->ci[i].attrib);
 	}
       }
@@ -615,9 +609,7 @@ model_def_free(model_def_t *mdef)
       for (i = 0; i < mdef->acmod_set->n_multi; i ++) {
 	if (mdef->acmod_set->multi[i].attrib) {
 	  for (len = 0; mdef->acmod_set->multi[i].attrib[len]; len++)
-
-	    for (j = 0; j < len; j++)
-	      ckd_free(mdef->acmod_set->multi[i].attrib[j]);
+	     ckd_free(mdef->acmod_set->multi[i].attrib[len]);
 	  ckd_free(mdef->acmod_set->multi[i].attrib);
 	}
       }
@@ -636,9 +628,7 @@ model_def_free(model_def_t *mdef)
 
     if (mdef->acmod_set->attrib) {
       for (len = 0; mdef->acmod_set->attrib[len]; len++)
-
-	for (j = 0; j < len; j++)
-	  ckd_free(mdef->acmod_set->attrib[j]);
+	  ckd_free(mdef->acmod_set->attrib[len]);
       ckd_free(mdef->acmod_set->attrib);
     }
     mdef->acmod_set->attrib = NULL;
@@ -655,9 +645,7 @@ model_def_free(model_def_t *mdef)
     for (i = 0; i < mdef->n_defn; i++) {
       if (mdef->defn[i].attrib) {
 	for (len = 0; mdef->defn[i].attrib[len]; len++)
-
-	  for (j = 0; j < len; j++)
-	    ckd_free(mdef->defn[i].attrib[j]);
+	    ckd_free(mdef->defn[i].attrib[len]);
 	ckd_free(mdef->defn[i].attrib);
       }
     }
