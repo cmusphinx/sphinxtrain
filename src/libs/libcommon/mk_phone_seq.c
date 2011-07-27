@@ -43,15 +43,14 @@
  * 
  *********************************************************************/
 
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/err.h>
 
 #include <s3/mk_phone_seq.h>
-
 #include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
 #include <s3/cvt2triphone.h>
 #include <s3/corpus.h>
-#include <sphinxbase/ckd_alloc.h>
-#include <s3/err.h>
 #include <s3/s3.h>
 
 #include <stdio.h>

@@ -48,10 +48,10 @@
  * 
  *********************************************************************/
 
-#include <s3/get_time.h>
-#include <s3/err.h>
-#include <s3/s3.h>
+#include <sphinxbase/err.h>
 
+#include <s3/get_time.h>
+#include <s3/s3.h>
 #include <sys_compat/time.h>
 
 #include <stddef.h>	/* define NULL, etc. */

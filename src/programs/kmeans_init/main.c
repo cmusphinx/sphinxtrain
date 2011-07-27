@@ -49,6 +49,7 @@
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/prim_type.h>
 #include <sphinxbase/feat.h>
+#include <sphinxbase/err.h>
 
 #include <s3/lexicon.h>
 #include <s3/model_def_io.h>
@@ -62,7 +63,6 @@
 #include <s3/gauden.h>
 #include <s3/corpus.h>
 #include <s3/segdmp.h>
-#include <s3/err.h>
 #include <s3/profile.h>
 #include <s3/s3.h>
 #include <s3/vector.h>

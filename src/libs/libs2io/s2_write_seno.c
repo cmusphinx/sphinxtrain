@@ -47,8 +47,9 @@
 
 #include <s3/s2_param.h>
 #include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/err.h>
+
 #include <s3/s2io.h>
-#include <s3/err.h>
 #include <s3/s3.h>
 #include <s3/model_inventory.h>
 #include <s3/common.h>

@@ -50,7 +50,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sphinxbase/cmd_ln.h>
-#include <s3/err.h>
+#include <sphinxbase/err.h>
 
 int
 parse_cmd_ln(int argc, char *argv[])

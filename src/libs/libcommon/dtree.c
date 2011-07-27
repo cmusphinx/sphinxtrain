@@ -44,18 +44,18 @@
  *     Eric Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
-#include <s3/dtree.h>
-#include <s3/best_q.h>
-#include <s3/two_class.h>
 
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/pio.h>
+#include <sphinxbase/err.h>
+#include <sphinxbase/cmd_ln.h>
+
+#include <s3/dtree.h>
+#include <s3/best_q.h>
+#include <s3/two_class.h>
 #include <s3/quest.h>
 #include <s3/div.h>
-#include <s3/err.h>
-
 #include <s3/s3.h>
-#include <sphinxbase/cmd_ln.h>
 
 #include <assert.h>
 #include <stdio.h>

@@ -43,12 +43,11 @@
  * 
  *********************************************************************/
 
-#include <s3/s3cb2mllr_io.h>
-
-#include <s3/s3map_io.h>
-
+#include <sphinxbase/err.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/err.h>
+
+#include <s3/s3cb2mllr_io.h>
+#include <s3/s3map_io.h>
 #include <s3/s3.h>
 
 #define IS_MAPPED	1

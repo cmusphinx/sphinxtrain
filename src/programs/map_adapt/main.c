@@ -24,10 +24,7 @@
  *
  *********************************************************************/
 
-/* The SPHINX-III common library */
-#include <stdio.h>
 #include <s3/common.h>
-
 #include <sys_compat/file.h>
 #include <s3/model_inventory.h>
 #include <s3/model_def_io.h>
@@ -35,12 +32,11 @@
 #include <s3/s3mixw_io.h>
 #include <s3/s3tmat_io.h>
 #include <s3/s3acc_io.h>
-#include <sphinxbase/matrix.h>
-
-/* Some SPHINX-II compatibility definitions */
 #include <s3/s2_param.h>
 #include <s3/s3.h>
-#include <s3/err.h>
+
+#include <sphinxbase/matrix.h>
+#include <sphinxbase/err.h>
 
 #include <stdio.h>
 #include <math.h>

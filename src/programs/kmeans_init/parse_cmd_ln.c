@@ -47,7 +47,7 @@
 
 #include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/feat.h>
-#include <s3/err.h>
+#include <sphinxbase/err.h>
 
 #include <stdio.h>
 #include <sys_compat/misc.h>

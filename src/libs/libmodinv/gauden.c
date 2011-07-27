@@ -57,8 +57,8 @@
  *********************************************************************/
 
 #include <s3/gauden.h>
-#include <s3/err.h>
 
+#include <sphinxbase/err.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/matrix.h>

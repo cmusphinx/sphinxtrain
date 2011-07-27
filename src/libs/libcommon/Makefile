@@ -53,7 +53,6 @@ SRCS = \
   cvt2triphone.c \
   dtree.c \
   enum_subset.c \
-  err.c \
   get_cpu_time.c \
   get_host_name.c \
   get_time.c \

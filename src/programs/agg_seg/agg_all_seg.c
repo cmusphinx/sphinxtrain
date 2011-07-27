@@ -49,9 +49,9 @@
 #include <s3/s3io.h>
 #include <s3/ck_seg.h>
 #include <s3/mk_phone_seq.h>
-#include <s3/err.h>
 #include <s3/s3.h>
 
+#include <sphinxbase/err.h>
 #include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/feat.h>

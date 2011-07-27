@@ -19,7 +19,7 @@
  *********************************************************************/
 
 #include <sphinxbase/cmd_ln.h>
-#include <s3/err.h>
+#include <sphinxbase/err.h>
 
 #ifndef ARG_DEFN_H
     const char helpstr[] =  

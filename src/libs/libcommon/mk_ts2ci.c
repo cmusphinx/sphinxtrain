@@ -43,9 +43,10 @@
  * 	Eric H. Thayer
  *********************************************************************/
 
-#include <s3/mk_ts2ci.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/err.h>
+#include <sphinxbase/err.h>
+
+#include <s3/mk_ts2ci.h>
 #include <s3/s3.h>
 
 #include <assert.h>

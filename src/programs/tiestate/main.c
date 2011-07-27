@@ -46,14 +46,14 @@
 
 #include "parse_cmd_ln.h"
 
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/err.h>
+
 #include <s3/model_def_io.h>
 #include <s3/dtree.h>
 #include <s3/pset_io.h>
-#include <sphinxbase/ckd_alloc.h>
-#include <sphinxbase/cmd_ln.h>
-#include <s3/err.h>
 #include <s3/s3.h>
-
 #include <sys_compat/file.h>
 
 #include <assert.h>
@@ -262,31 +262,3 @@ main(int argc, char *argv[])
 
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2005/06/13  22:18:23  dhdfu
- * Add -allphones arguments to decision tree and state tying code.  Allows senones to be shared across multiple base phones (though they are currently still restricted to the same state).  This can improve implicit pronunciation modeling in some cases, such as grapheme-based models, though it usually has little effect.  Building the big trees can take a very long time.
- * 
- * Revision 1.5  2004/07/21 19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.4  2004/06/17 19:17:24  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:32  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */

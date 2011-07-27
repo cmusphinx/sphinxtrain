@@ -46,14 +46,15 @@
  * 	Eric H. Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
-#include <s3/segdmp.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/err.h>
+
+#include <s3/segdmp.h>
 #include <s3/s3io.h>
 #include <s3/fp_cache.h>
 #include <s3/vector.h>
 #include <s3/swap.h>
-#include <s3/err.h>
 #include <sys_compat/file.h>
 #include <sys_compat/misc.h>		/* for sleep() on WIN32 */
 

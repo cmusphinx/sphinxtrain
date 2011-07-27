@@ -54,7 +54,7 @@ extern "C" {
 }
 #endif
 
-#include <s3/err.h>
+#include <sphinxbase/err.h>
 #include <sphinxbase/prim_type.h>
 
 #define	S3_SUCCESS	0

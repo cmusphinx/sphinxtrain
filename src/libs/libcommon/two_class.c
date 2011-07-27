@@ -46,23 +46,22 @@
 #include <s3/two_class.h>
 
 #include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/err.h>
+
 #include <s3/enum_subset.h>
 #include <s3/metric.h>
-#include <sphinxbase/ckd_alloc.h>
-#include <s3/err.h>
 #include <s3/s3.h>
-#include <sphinxbase/cmd_ln.h>
 #include <s3/div.h>
 
 #include <string.h>
 
 float64
 two_class(float32 ****mixw_occ,
-/* ADDITION FOR CONTINUOUS_TREES */
           float32 ****means,
           float32 ****vars,
           uint32 *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 	  uint32 n_dist,
 	  uint32 n_state,
 	  uint32 n_stream,

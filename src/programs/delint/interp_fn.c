@@ -47,8 +47,9 @@
 
 #include <sphinxbase/matrix.h>
 #include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/err.h>
+
 #include <s3/s3.h>	/* define TYING_NO_ID */
-#include <s3/err.h>	/* define E_ERROR, E_INFO, etc */
 
 #include <assert.h>
 /*********************************************************************

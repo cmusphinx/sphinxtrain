@@ -43,11 +43,11 @@
  * 
  *********************************************************************/
 
+#include <sphinxbase/err.h>
+#include <sphinxbase/ckd_alloc.h>
+
 #include <s3/s3regmat_io.h>
 #include <s3/s3io.h>
-
-#include <s3/err.h>
-#include <sphinxbase/ckd_alloc.h>
 #include <s3/s3.h>
 
 #include <stdio.h>

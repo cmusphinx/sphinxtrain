@@ -43,15 +43,13 @@
  * 	Eric H. Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
-#include <s3/s2_write_cb.h>
+#include <sphinxbase/err.h>
 
+#include <s3/s2_write_cb.h>
 #include <s3/s2_param.h>
 #include <s3/s2io.h>
-#include <s3/err.h>
 #include <s3/s3.h>
-
 #include <s3/common.h>
-
 #include <sys_compat/file.h>
 
 #include <stdio.h>

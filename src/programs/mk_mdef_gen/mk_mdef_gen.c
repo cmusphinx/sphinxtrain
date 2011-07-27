@@ -44,19 +44,19 @@
 #include <s3/s3.h>
 #include <s3/acmod_set.h>
 #include <s3/model_def_io.h>
+#include <s3/s3.h>
+
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/pio.h>
-
 #include <sphinxbase/cmd_ln.h>
-#include <s3/err.h>
-#include <s3/s3.h>
+#include <sphinxbase/err.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
 #include <time.h>
+
 #include "parse_cmd_ln.h"
 #include "heap.h"
 #include "hash.h"

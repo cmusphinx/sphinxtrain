@@ -45,9 +45,10 @@
 #include "parse_cmd_ln.h"
 
 #include <sphinxbase/cmd_ln.h>
-#include <s3/err.h>
-#include <s3/s3cb2mllr_io.h>
+#include <sphinxbase/err.h>
 #include <sphinxbase/ckd_alloc.h>
+
+#include <s3/s3cb2mllr_io.h>
 #include <s3/s3.h>
 
 #include <stdio.h>

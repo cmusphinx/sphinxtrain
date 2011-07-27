@@ -43,13 +43,13 @@
  * 
  *********************************************************************/
 
-#include <s3/best_q.h>
-
-#include <s3/metric.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/err.h>
-#include <s3/s3.h>
+#include <sphinxbase/err.h>
 #include <sphinxbase/cmd_ln.h>
+
+#include <s3/best_q.h>
+#include <s3/metric.h>
+#include <s3/s3.h>
 #include <s3/div.h>
 
 #include <stdio.h>

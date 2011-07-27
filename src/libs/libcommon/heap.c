@@ -45,8 +45,9 @@
  * 	Pirated from Algorithms book.
  *********************************************************************/
 
+#include <sphinxbase/err.h>
+
 #include <s3/heap.h>
-#include <s3/err.h>
 #include <s3/s3.h>
 
 #define LEFT(i)   ((i<<1) + 1)

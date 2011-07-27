@@ -58,12 +58,13 @@
 #include <s3/dtree.h>
 #include <s3/metric.h>
 #include <s3/div.h>
-#include <sphinxbase/ckd_alloc.h>
-#include <s3/err.h>
 #include <s3/s3.h>
 #include <s3/vector.h>
 #include <s3/s3gau_io.h>
 #include <s3/gauden.h>
+
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/err.h>
 
 #include <stdio.h>
 #include <string.h>

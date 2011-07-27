@@ -43,24 +43,19 @@
  * 	Eric H. Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
-/* SPHINX-III header files */
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/err.h>
+
 #include <s3/s2_write_hmm.h>
 #include <s3/s2_param.h>
 #include <sphinxbase/cmd_ln.h>
 #include <s3/vector.h>
-#include <sphinxbase/ckd_alloc.h>
-#include <s3/err.h>
 #include <s3/s3.h>
-
-/* Header files imported from SPHINX-II */
 #include <s2/log.h>
 #include <s2/magic.h>
 #include <s2/byteorder.h>
-
-/* SPHINX-III system portability */
 #include <sys_compat/file.h>
 
-/* System-wide header files */
 #include <assert.h>
 #include <stdio.h>
 

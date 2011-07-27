@@ -58,9 +58,9 @@
 #include <s3/gauden_io.h>
 #include <s3/gauden.h>
 #include <sphinxbase/matrix.h>
-#include <sphinxbase/prim_type.h>	/* define int32, etc. */
-#include <sphinxbase/ckd_alloc.h>	/* memory allocation */
-#include <s3/err.h>		/* define E_ERROR, E_INFO, etc */
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/err.h>
 
 #include <sys_compat/file.h>
 

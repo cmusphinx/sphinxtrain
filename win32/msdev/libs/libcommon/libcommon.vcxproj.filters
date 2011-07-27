@@ -35,9 +35,6 @@
     <ClCompile Include="..\..\..\..\src\libs\libcommon\enum_subset.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libcommon\err.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libcommon\get_cpu_time.c">
       <Filter>Source Files</Filter>
     </ClCompile>

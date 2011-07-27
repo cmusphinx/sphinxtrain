@@ -49,6 +49,8 @@
  * 		Created from Sphinx-II version.
  */
 
+#include <sphinxbase/err.h>
+#include <sphinxbase/ckd_alloc.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,9 +65,6 @@
 #endif
 
 #include <s3/profile.h>
-#include <s3/err.h>
-#include <sphinxbase/ckd_alloc.h>
-
 
 typedef struct {
     char *name;

@@ -50,12 +50,13 @@
 #include "viterbi.h"
 #include "accum.h"
 
+#include <sphinxbase/err.h>
+#include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/ckd_alloc.h>
+
 #include <s3/profile.h>
 #include <s3/remap.h>
 #include <s3/corpus.h>
-#include <s3/err.h>
-#include <sphinxbase/cmd_ln.h>
 #include <s3/s3phseg_io.h>
 #include <s3/model_def.h>
 #include <s2/byteorder.h>

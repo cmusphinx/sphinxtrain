@@ -33,7 +33,7 @@
 /* Some SPHINX-II compatibility definitions */
 #include <s3/s2_param.h>
 #include <s3/s3.h>
-#include <s3/err.h>
+#include <sphinxbase/err.h>
 
 #include <sys_compat/file.h>
 #include <sys_compat/misc.h>

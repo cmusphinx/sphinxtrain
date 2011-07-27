@@ -73,12 +73,13 @@
 #include <math.h>
 #include "parse_cmd_ln.h"
 
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/err.h>
+
 #include <s3/model_def_io.h>
 #include <s3/s3mixw_io.h>
 #include <s3/metric.h>
 #include <s3/div.h>
-#include <sphinxbase/ckd_alloc.h>
-#include <s3/err.h>
 #include <s3/s3.h>
 #include <s3/vector.h>
 #include <s3/s3gau_io.h>

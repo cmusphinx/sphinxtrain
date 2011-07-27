@@ -45,7 +45,7 @@
 #include "parse_cmd_ln.h"
 
 #include <sphinxbase/cmd_ln.h>
-#include <s3/err.h>
+#include <sphinxbase/err.h>
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -47,9 +47,9 @@
 
 #include "parse_cmd_ln.h"
 
-/* The SPHINX-III common library */
-#include <s3/common.h>
+#include <sphinxbase/err.h>
 
+#include <s3/common.h>
 #include <s3/model_inventory.h>
 #include <s3/model_def_io.h>
 #include <s3/s3gau_io.h>
@@ -59,19 +59,13 @@
 #include <s3/s3regmat_io.h>
 #include <s3/s3ts2cb_io.h>
 #include <s3/s3io.h>
-
 #include <sys_compat/file.h>
-
-/* Some SPHINX-II compatibility definitions */
 #include <s3/s2_param.h>
-
 #include <s3/s3.h>
-#include <s3/err.h>
 
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
-#
 
 static int print(void);
 
