@@ -47,7 +47,7 @@ use File::Basename;
 use File::Spec::Functions;
 
 use lib catdir(dirname($0), updir(), 'lib');
-use SphinxTrain::Config;
+use SphinxTrain::Config cfg => 'etc/sphinx_decode.cfg';
 use SphinxTrain::Util;
 
 #************************************************************************
@@ -60,7 +60,10 @@ $| = 1; # Turn on autoflushing
 Log ("MODULE: 000 Computing feature from audio files\n");
 my @jobs;
 for (my $i = 1; $i <= $n_parts; $i++) {
-  push @jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts]);
+  push @jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.train", $ST::CFG_LISTOFFILES]);
+}
+for (my $i = 1; $i <= $n_parts; $i++) {
+  push @jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.test", $ST::DEC_CFG_LISTOFFILES]);
 }
 foreach my $job (@jobs) {
   WaitForScript($job);
