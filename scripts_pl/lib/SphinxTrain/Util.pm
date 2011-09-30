@@ -285,18 +285,17 @@ sub RunTool {
 
   unless ($cmd =~ / / or File::Spec->file_name_is_absolute($cmd)) {
       # TODO: Handle architecture-specific directories here
-      $cmd = File::Spec->catfile($ST::CFG_BIN_DIR, $cmd);
+      my $fcmd = File::Spec->catfile($ST::CFG_BIN_DIR, $cmd);
 
       # Windows needs the .exe suffix, but all OSes need to verify if
       # the file exists. The right test here would be "-x", but this
       # doesn't work in Windows. We use the next best thing, "-e"
       foreach ("", ".exe") {
-	  if (-e "$cmd$_") {
-	      $cmd .= $_;
+	  if (-e "$fcmd$_") {
+	      $cmd = "$fcmd$_";
 	      last;
 	  }
       }
-      die "Could not find executable for $cmd" unless -e $cmd;
   }
   local (*LOG, $_);
   open LOG,">$logfile";

@@ -1,17 +1,14 @@
-dnl Welcome to the Sphinx automated build system.
-dnl try not to hurt yourself ;)
+# Automake-based build system
 
-AC_INIT(SphinxTrain, 1.0.7)
+AC_INIT(SphinxTrain, 1.0.99)
+AM_INIT_AUTOMAKE([no-define])
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_CANONICAL_HOST
-AC_PROG_CC
-if test "x$GCC" = "xyes"; then
-	CFLAGS="$CFLAGS -Wall"
-fi
-AC_PROG_CXX
-AC_PROG_RANLIB
-AC_CHECK_TOOL(AR, ar)
 
+AC_PROG_CC
+AC_PROG_CXX
+AM_PROG_LIBTOOL
 AC_C_BIGENDIAN
 
 AC_CHECK_LIB(m, log)
@@ -160,4 +157,50 @@ fi
 AC_SUBST(sphinxbase)
 AC_SUBST(sphinxbasebuild)
 
-AC_OUTPUT([config/config config/system.mak scripts_pl/sphinxDocGen.sh])
+AC_CONFIG_FILES([
+Makefile
+etc/Makefile
+doc/Makefile
+include/Makefile
+python/Makefile
+scripts_pl/Makefile
+src/Makefile
+src/programs/Makefile
+src/libs/Makefile
+src/libs/libclust/Makefile
+src/libs/libcommon/Makefile
+src/libs/libio/Makefile
+src/libs/libmllr/Makefile
+src/libs/libmodinv/Makefile
+src/programs/agg_seg/Makefile
+src/programs/bldtree/Makefile
+src/programs/bw/Makefile
+src/programs/cdcn_norm/Makefile
+src/programs/cdcn_train/Makefile
+src/programs/cp_parm/Makefile
+src/programs/delint/Makefile
+src/programs/inc_comp/Makefile
+src/programs/init_gau/Makefile
+src/programs/init_mixw/Makefile
+src/programs/kdtree/Makefile
+src/programs/kmeans_init/Makefile
+src/programs/make_quests/Makefile
+src/programs/map_adapt/Makefile
+src/programs/mixw_interp/Makefile
+src/programs/mk_flat/Makefile
+src/programs/mk_mdef_gen/Makefile
+src/programs/mk_mllr_class/Makefile
+src/programs/mk_s2sendump/Makefile
+src/programs/mk_ts2cb/Makefile
+src/programs/mllr_solve/Makefile
+src/programs/mllr_transform/Makefile
+src/programs/norm/Makefile
+src/programs/param_cnt/Makefile
+src/programs/printp/Makefile
+src/programs/prunetree/Makefile
+src/programs/tiestate/Makefile
+src/programs/sphinxtrain
+test/Makefile
+])
+
+AC_OUTPUT

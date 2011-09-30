@@ -64,8 +64,6 @@ my $replace_mode = $LEAVE_MODE;
 
 $SPHINXTRAINDIR = $0;
 
-$SPHINXTRAINDIR =~ s/^(.*)[\/\\]scripts_pl[\\\/].*$/$1/i;
-
 my $result = GetOptions('help|h' => \$help,
 			'force' => \$force,
 			'update' => \$update,
@@ -106,76 +104,14 @@ if ($TEMPLATE) {
 
 # Start building the directory structure
 print "Making basic directory structure\n";
-mkdir "bin" unless -d bin;
 mkdir "etc" unless -d etc;
 mkdir "feat" unless -e feat;
 mkdir "wav" unless -e wav;
-
 mkdir "logdir" unless -d logdir;
 mkdir "bwaccumdir" unless -d bwaccumdir;
 mkdir "model_parameters" unless -d model_parameters;
 mkdir "model_architecture" unless -d model_architecture;
 
-# Figure out the platform string definition
-my $PLATFORM = "";
-if (open (SYSDESC, "$SPHINXTRAINDIR/config/system.mak")) {
-  while (<SYSDESC>) {
-    next unless m/PLATFORM/;
-    chomp;
-    my @words = split;
-    $PLATFORM = "." . $words[$#words];
-  }
-  close(SYSDESC);
-}
-
-# Copy all executables to the local bin directory. We verify which
-# directory from a list has the most recent file, and assume this is
-# the last time the user compiled something. Therefore, this must be
-# the directory the user cares about. We add bin/Release and bin/Debug
-# to the list (that's where MS Visual C compiles files to), as well as
-# any existing bin.platform
-
-my @dir_candidates = ();
-push @dir_candidates, "$SPHINXTRAINDIR/bin/Release";
-push @dir_candidates, "$SPHINXTRAINDIR/bin/Debug";
-push @dir_candidates, "$SPHINXTRAINDIR/bin$PLATFORM" if ($PLATFORM ne "");
-
-my $execdir = executable_dir(@dir_candidates);
-
-die "Couldn't find executables. Did you compile SphinxTrain?\n" if ($execdir eq "");
-
-print "Copying executables from $execdir\n";
-
-opendir(DIR, "$execdir") or die "Can't open $execdir\n";
-if ($^O eq 'MSWin32' or $^O eq 'msys' or $^O eq 'cygwin') {
-    @dirlist = grep /^[^.].*\.(dll|exe)$/i, readdir DIR;
-}
-else {
-    @dirlist = grep /^[^.].*/, readdir DIR;
-}
-closedir(DIR);
-foreach my $executable (@dirlist) {
- replace_file("$execdir/$executable",
-	      "bin/$executable",
-	      $replace_mode);
-}
-
-print "Copying scripts from $SPHINXTRAINDIR/scripts_pl\n";
-
-# Copy the scripts from the scripts_pl directory
-replace_tree("$SPHINXTRAINDIR/scripts_pl",
-	     "scripts_pl", $replace_mode, qr/\.p[lm]$/);
-
-# Copy additional files
-replace_file("$SPHINXTRAINDIR/scripts_pl/maketopology.pl",
-	     "bin/maketopology.pl",
-	     $replace_mode);
-replace_file("$SPHINXTRAINDIR/scripts_pl/make_feats.pl",
-	     "bin/make_feats.pl",
-	     $replace_mode);
-replace_file("$SPHINXTRAINDIR/scripts_pl/make_dict",
-	     "bin/make_dict",
-	     $replace_mode);
 replace_file("$SPHINXTRAINDIR/etc/feat.params",
 	     "etc/feat.params",
 	     $replace_mode);
@@ -183,13 +119,6 @@ replace_file("$SPHINXTRAINDIR/etc/feat.params",
 # Copy the Python modules
 replace_tree("$SPHINXTRAINDIR/python/build/lib",
 	     "python", $replace_mode);
-
-# Set the permissions to executable;
-opendir(DIR, "bin") or die "Can't open bin directory\n";
-@dirlist = grep !/^\./, readdir DIR;
-closedir(DIR);
-@dirlist = map { "bin/$_" } @dirlist;
-chmod 0755, @dirlist;
 
 # Finally, we generate the config file for this specific task, backing
 # up any existing one, unless we are in leave-alone mode and it exists
@@ -221,36 +150,6 @@ unless (-e "etc/sphinx_train.cfg" and $replace_mode == $LEAVE_MODE) {
 }
 
 print "Set up for acoustic training for $DBNAME complete\n";
-
-sub executable_dir {
-  my @dirs = @_;
-  my $return_dir = "";
-  my $most_recent = 0;
-  for my $dir (@dirs) {
-    my $this_date = get_most_recent_date($dir);
-    if ($this_date > $most_recent) {
-      $most_recent = $this_date;
-      $return_dir = $dir;
-    }
-  }
-  return $return_dir;
-}
-
-sub get_most_recent_date {
-  my $dir = shift;
-  my $return_date = 0;
-  if (opendir(DIR, "$dir")) {
-    @dirlist = grep !/^\./, readdir DIR;
-    closedir(DIR);
-    for my $file (@dirlist) {
-      my $this_date = stat("$dir/$file");
-      if (($this_date->mtime) > ($return_date)) {
-	$return_date = $this_date->mtime;
-      }
-    }
-  }
-  return $return_date;
-}
 
 sub replace_file {
   my $source = shift;
