@@ -96,7 +96,7 @@ get_sseq(model_def_t *mdef,
 {
     char *trans;
     uint16 *seg;
-    uint32 n_frame;
+    int32 n_frame;
     acmod_id_t *phone;
     uint32 n_phone;
     uint32 *sseq;
@@ -138,15 +138,15 @@ agg_st_seg(model_def_t *mdef,
 {
     uint32 seq_no;
     vector_t *mfcc = NULL;
-    uint32 n_frame;
+    int32 n_frame;
     vector_t **feat = NULL;
     uint32 *sseq = NULL;
     uint32 i, j;
     uint32 t;
     uint32 n_stream=0;
     uint32 n_stream_tmp;
-    const uint32 *veclen = 0;
-    const uint32 *veclen_tmp;
+    uint32 *veclen = NULL;
+    uint32 *veclen_tmp;
     uint32 n_mllr_cls;
     float32 ****a = NULL;
     float32 ****ainv = NULL;

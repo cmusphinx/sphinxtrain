@@ -773,7 +773,7 @@ init(float32 *****out_mixw,
     uint32 n_state, n_model, n_in_mixw, n_stream, n_density;
     uint32 i, j, k;
     float64 dnom;
-    const uint32  *l_veclen, *t_veclen;
+    uint32  *l_veclen, *t_veclen;
     uint32  l_nstates, t_nstates;
     uint32  t_nfeat, t_ndensity;
     vector_t  ***fullmean=NULL;

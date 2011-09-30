@@ -188,7 +188,7 @@ corpus_has_xfrm(void);
 int
 corpus_get_xfrm(float32 *****out_a,
 		float32 ****out_b,
-		const uint32 **out_veclen,
+		uint32 **out_veclen,
 		uint32 *out_n_mllrcls,
 		uint32 *out_n_stream);
 
@@ -201,7 +201,7 @@ corpus_get_mfcc(vector_t **mfc,
 
 int
 corpus_get_generic_featurevec(vector_t **mfc,
-                              uint32 *n_frame,
+                              int32 *n_frame,
                               uint32 veclen);
 
 int
@@ -212,7 +212,7 @@ corpus_get_sildel(uint32 **sf,
 int32
 corpus_provides_seg(void);
 int
-corpus_get_seg(uint16 **seg, uint32 *n_frame);
+corpus_get_seg(uint16 **seg, int32 *n_frame);
 
 int32 corpus_provides_phseg(void);
 int corpus_get_phseg(acmod_set_t *acmod_set,

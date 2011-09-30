@@ -137,7 +137,7 @@ void estimate_multi_modals(float **x,	/* The observation vectors */
 			   float **var,	/* The variances of all the modes */
 			   float *c,	/* A-priori probabilities of each of the
 					   modes, or mixing proportion */
-			   char *tempfile,	/* File to store temporary distributions */
+			   const char *tempfile,	/* File to store temporary distributions */
 			   int numiters,	/* Number of iterations of EM to run */
 			   float Threshold      /* Convergence ratio */
     )

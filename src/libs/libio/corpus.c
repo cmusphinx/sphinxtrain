@@ -1298,7 +1298,7 @@ corpus_read_next_sent_file(char **trans)
 
 int
 corpus_get_generic_featurevec(vector_t **mfc,
-			      uint32 *n_frame,
+			      int32 *n_frame,
 			      uint32 veclen)
 {
     vector_t *out;
@@ -1342,12 +1342,12 @@ corpus_get_generic_featurevec(vector_t **mfc,
 	}
 
 	if (ret == S3_ERROR) {
-	    E_ERROR("MFCC read of %s failed.  Retrying after sleep...\n",
+	    E_ERROR_SYSTEM("Failed to read MFC file '%s'. Retrying after sleep...\n",
 		    mk_filename(DATA_TYPE_MFCC, cur_ctl_path));
 	    no_retries++;
 	    sleep(3);
 	    if(no_retries>100){ 
-	      E_FATAL("Failed to get the files after 100 retries (about 300 seconds)\n ");
+	      E_FATAL("Failed to get the files after 100 retries (about 300 seconds)\n");
 	    }
 	}
     } while (ret == S3_ERROR);
@@ -1387,7 +1387,7 @@ corpus_get_generic_featurevec(vector_t **mfc,
 
 int
 corpus_get_seg(uint16 **seg,
-	       uint32 *n_seg)
+	       int32 *n_seg)
 {
     char *rel_path;
 
@@ -1395,12 +1395,6 @@ corpus_get_seg(uint16 **seg,
 	/* asked for seg data, but not set up to send it */
 	return S3_ERROR;
     }
-#if 0
-    if ((cur_ctl_sf != NO_FRAME) ||
-	(cur_ctl_ef != NO_FRAME)) {
-	E_WARN("Start and end frames not yet implemented for seg data\n");
-    }
-#endif
 
     /* If control file specifies an utt ID, use it.  O/W use the path */
     if (cur_ctl_utt_id != NULL)
@@ -1408,8 +1402,7 @@ corpus_get_seg(uint16 **seg,
     else
 	rel_path = cur_ctl_path;
 
-    if (areadshort(mk_filename(DATA_TYPE_SEG, rel_path),
-		   (int16 **)seg, (int32 *)n_seg) < 0)
+    if (areadshort(mk_filename(DATA_TYPE_SEG, rel_path), (int16**)seg, n_seg) < 0)
 	return S3_ERROR;
     
     return S3_SUCCESS;
@@ -1541,7 +1534,7 @@ corpus_has_xfrm()
 int
 corpus_get_xfrm(float32 *****out_a,
 		float32 ****out_b,
-		const uint32 **out_veclen,
+		uint32 **out_veclen,
 		uint32 *out_n_mllrcls,
 		uint32 *out_n_stream)
 {

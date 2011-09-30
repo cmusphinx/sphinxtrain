@@ -69,7 +69,7 @@ agg_phn_seg(lexicon_t *lex,
     uint16 *seg;
     vector_t *mfcc;
     vector_t **feat;
-    uint32 n_frame;
+    int32 n_frame;
     uint32 tick_cnt;
 
     acmod_id_t *phone;
@@ -85,7 +85,7 @@ agg_phn_seg(lexicon_t *lex,
     int32 mfc_veclen = cmd_ln_int32("-ceplen");
 
     uint32 n_stream;
-    const uint32 *veclen;
+    uint32 *veclen;
 
     tick_cnt = 0;
 

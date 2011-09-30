@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 	vector_t ***means, ***variances;
 	uint32 n_mgau, n_feat, n_density;
 	uint32 r_n_mgau, r_n_feat, r_n_density;
-	const uint32 *veclen, *r_veclen;
+	uint32 *veclen, *r_veclen;
 	uint32 i;
 	kd_tree_node_t **root;
 

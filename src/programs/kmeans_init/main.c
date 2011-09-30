@@ -208,7 +208,7 @@ setup_d2o_map(model_def_t *d_mdef,
 }
 
 static uint32
-setup_obs_1class(uint32 strm, uint32 n_frame, uint32 n_stream, const uint32 *veclen, uint32 blksize)
+setup_obs_1class(uint32 strm, uint32 n_frame, uint32 n_stream, uint32 *veclen, uint32 blksize)
 {
     float32 *buf;
     vector_t *frm;
@@ -364,7 +364,7 @@ setup_obs_multiclass(uint32 ts, uint32 strm, uint32 n_frame, uint32 veclen)
 static uint32 vlen;
 
 uint32
-setup_obs(uint32 ts, uint32 strm, uint32 n_frame, uint32 n_stream, const uint32 *veclen, uint32 blksize)
+setup_obs(uint32 ts, uint32 strm, uint32 n_frame, uint32 n_stream, uint32 *veclen, uint32 blksize)
 {
     vlen = veclen[strm];
     if (multiclass) {
@@ -809,7 +809,7 @@ float64
 cluster(int32 ts,
 	uint32 n_stream,
 	uint32 n_in_frame,
-	const uint32 *veclen,
+	uint32 *veclen,
 	uint32 blksize,
 	vector_t **mean,
 	uint32 n_density,
@@ -893,7 +893,7 @@ variances(uint32 ts,
 	  uint32 n_density,
 
 	  uint32 n_stream,
-	  const uint32 *veclen,
+	  uint32 *veclen,
 	  uint32 blksize,
 	  
 	  uint32 n_in_frame,
@@ -943,7 +943,7 @@ full_variances(uint32 ts,
 	  uint32 n_density,
 
 	  uint32 n_stream,
-	  const uint32 *veclen,
+	  uint32 *veclen,
 	  uint32 blksize,
 	  
 	  uint32 n_in_frame,
@@ -1024,7 +1024,7 @@ reest_sum(uint32 ts,
 	  uint32 n_density,
 	  uint32 n_stream,
 	  uint32 n_in_obs,
-	  const uint32 *veclen,
+	  uint32 *veclen,
 	  uint32 blksize,
 	  uint32 n_iter,
 	  uint32 twopassvar,
@@ -1282,7 +1282,7 @@ init_state(const char *obsdmp,
 	   const char *obsidx,
 	   uint32 n_density,
 	   uint32 n_stream,
-	   const uint32 *veclen,
+	   uint32 *veclen,
 	   uint32 blksize,
 	   int reest,
 	   const char *mixwfn,
@@ -1520,7 +1520,7 @@ main(int argc, char *argv[])
     model_def_t *dmdef;
     feat_t *feat;
     uint32 n_stream, blksize;
-    const uint32 *veclen;
+    uint32 *veclen;
     uint32 ts_off;
     uint32 ts_cnt;
     FILE *fp;
@@ -1539,7 +1539,7 @@ main(int argc, char *argv[])
     all_timer = timing_get("all");
 
     n_stream = feat_dimension1(feat);
-    veclen = (const uint32*)feat_stream_lengths(feat);
+    veclen = feat_stream_lengths(feat);
     blksize = feat_dimension(feat);
 
     if (strcmp(cmd_ln_str("-gthobj"), "state") == 0) {
@@ -1697,33 +1697,4 @@ main(int argc, char *argv[])
 
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2004/07/21  22:32:26  egouvea
- * Fixed some compatibility issues between platforms: make sure we open
- * files with "wb" or "rb", move some #include not defined for all
- * platforms to the proper #if defined() etc.
- * 
- * Revision 1.5  2004/07/21 22:00:43  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.4  2004/06/17 19:17:22  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */
+

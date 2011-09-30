@@ -53,12 +53,12 @@ void vector_quantize(float **codes, int Ncodes,
 		     int Ndim, int *bin,
 		     int niter, float threshold);
 
-int read_backup_distribution(char *filen,
+int read_backup_distribution(const char *filen,
 			     float ***mean,
 			     float ***variance,
 			     float **pi, int *Nmodes, int Ndim);
 
-int store_distribution(char *file,
+int store_distribution(const char *file,
 		       int Nmodes,
 		       int Ndim,
 		       float noisec,
@@ -68,7 +68,7 @@ int store_distribution(char *file,
 
 void estimate_multi_modals(float **x, int N, int Ndim, int K, 
 			   float **mean, float **var, float *c, 
-			   char *tempfile, int numiters,
+			   const char *tempfile, int numiters,
 			   float Threshold);
 
 

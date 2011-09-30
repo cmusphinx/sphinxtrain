@@ -61,7 +61,7 @@ get_next_sseq(model_def_t *mdef,
 {
     char *trans;
     uint16 *seg;
-    uint32 n_frame;
+    int32 n_frame;
     acmod_id_t *phone;
     uint32 n_phone;
     uint32 *sseq;

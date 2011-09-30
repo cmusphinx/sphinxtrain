@@ -199,7 +199,7 @@ acmod_set_set_n_tri_hint(acmod_set_t *acmod_set,
     return S3_SUCCESS;
 }
 
-const char **new_attrib(const char **in)
+char **new_attrib(const char **in)
 {
     char **out;
     uint32 len, i;
@@ -214,7 +214,7 @@ const char **new_attrib(const char **in)
 
     out[i] = NULL;
 
-    return (const char **)out;
+    return out;
 }
 
 /*********************************************************************
@@ -812,7 +812,7 @@ acmod_set_has_attrib(acmod_set_t *acmod_set,
 		     acmod_id_t id,
 		     const char *attrib)
 {
-    const char **attrib_list;
+    char **attrib_list;
     uint32 addr;
     uint32 i;
 
@@ -847,7 +847,7 @@ const char **
 acmod_set_attrib(acmod_set_t *acmod_set,
 		 acmod_id_t id)
 {
-    const char **attrib_list;
+    char **attrib_list;
     uint32 addr;
 
     if (id < acmod_set->n_ci) {
@@ -866,7 +866,7 @@ acmod_set_attrib(acmod_set_t *acmod_set,
 
     assert(attrib_list);
     
-    return attrib_list;
+    return (const char **)attrib_list;
 }
 
 int

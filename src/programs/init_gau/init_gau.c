@@ -79,9 +79,9 @@ init_gau(lexicon_t *lex,
     acmod_set_t *acmod_set;
 
     vector_t *mfcc = NULL;
-    uint32 n_frame;
+    int32 n_frame;
     int32 feat_n_frame;
-    uint32 tmp;
+    int32 tmp;
     
     uint16 *seg = NULL;
     uint32 *sseq = NULL;

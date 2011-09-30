@@ -83,14 +83,14 @@ agg_all_seg(feat_t *fcb,
     uint32 seq_no;
     vector_t *mfcc = NULL;
     uint32 mfc_veclen = cmd_ln_int32("-ceplen");
-    uint32 n_frame;
+    int32 n_frame;
     uint32 n_out_frame;
     uint32 blksz=0;
     vector_t **feat = NULL;
     uint32 i, j;
     uint32 t;
     uint32 n_stream;
-    const uint32 *veclen;
+    uint32 *veclen;
     FILE *fp;
     uint32 ignore = 0;
     long start;

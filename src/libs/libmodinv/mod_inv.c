@@ -438,7 +438,7 @@ mod_inv_restore_acc(model_inventory_t *minv,
     uint32 n_state_pm;
 
     uint32 n_cb;
-    const uint32 *rd_veclen;
+    uint32 *rd_veclen;
 
     int ret = S3_SUCCESS;
 
@@ -534,7 +534,7 @@ mod_inv_restore_acc(model_inventory_t *minv,
 		ret = S3_ERROR;
 	    }
 	}
-	ckd_free((void *)rd_veclen);
+	ckd_free(rd_veclen);
     }
 
     return ret;

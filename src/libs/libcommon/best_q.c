@@ -57,11 +57,9 @@
 
 float64
 best_q(float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES 21 May 98 */
        float32 ****means,
        float32 ****vars,
        uint32  *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
        uint32 n_model,
        uint32 n_state,
        uint32 n_stream,
@@ -75,26 +73,20 @@ best_q(float32 ****mixw,
        uint32 *id,
        uint32 n_id,
        float32 ***dist,
-/* ADDITION FOR CONTINUOUS_TREES 21 May 98 */
        float64 node_wt_ent,  /* Weighted entropy of node */
-/* END ADDITION FOR CONTINUOUS_TREES */
        quest_t **out_best_q)
 {
     float32 ***yes_dist;
-/* ADDITION FOR CONTINUOUS_TREES */
     float32 ***yes_means=0;
     float32 ***yes_vars=0;
     float32 varfloor=0;
     float64 y_ent;
-/* END ADDITION FOR CONTINUOUS_TREES */
     float64 yes_dnom, yes_norm;
     uint32 *yes_id;
     float32 ***no_dist;
-/* ADDITION FOR CONTINUOUS_TREES */
     float32 ***no_means=0;
     float32 ***no_vars=0;
     float64 n_ent;
-/* END ADDITION FOR CONTINUOUS_TREES */
     float64 no_dnom, no_norm;
     uint32 *no_id;
     uint32 n_yes, n_b_yes = 0;
@@ -103,8 +95,7 @@ best_q(float32 ****mixw,
     uint32 ii;
     float64 einc, b_einc = -1.0e+50;
 
-/* ADDITION FOR CONTINUOUS_TREES; 20 May 98 */
-    char*  type;
+    const char*  type;
     uint32 continuous, sumveclen=0;
 
     type = cmd_ln_str("-ts2cbfn");
@@ -124,7 +115,6 @@ best_q(float32 ****mixw,
         no_means = (float32 ***)ckd_calloc_3d(n_state,n_stream,sumveclen,sizeof(float32));
         no_vars = (float32 ***)ckd_calloc_3d(n_state,n_stream,sumveclen,sizeof(float32));
     }
-/* END ADDITIONS FOR CONTINUOUS_TREES */
 
     n_yes = n_no = 0;
 
@@ -135,14 +125,12 @@ best_q(float32 ****mixw,
 	memset(&yes_dist[0][0][0], 0, sizeof(float32) * n_state * n_stream * n_density);
 	memset(&no_dist[0][0][0], 0, sizeof(float32) * n_state * n_stream * n_density);
 
-/* ADDITION FOR CONTINUOUS_TREES; If continuous hmm initialize means and vars to zero */
         if (continuous == 1) {
 	    memset(&yes_means[0][0][0], 0, sizeof(float32) * n_state * n_stream * sumveclen);
 	    memset(&yes_vars[0][0][0], 0, sizeof(float32) * n_state * n_stream * sumveclen);
 	    memset(&no_means[0][0][0], 0, sizeof(float32) * n_state * n_stream * sumveclen);
 	    memset(&no_vars[0][0][0], 0, sizeof(float32) * n_state * n_stream * sumveclen);
         }
-/* END ADDITION FOR CONTINUOUS_TREES */
 
 	n_yes = n_no = 0;
 
@@ -156,7 +144,6 @@ best_q(float32 ****mixw,
 			}
 		    }
 		}
- /* MODIFICATION FOR CONTINUOUS_TREES: ADDITIONS FOR CONTINUOUS CASE */
                 if (continuous == 1) {
 	            for (s = 0; s < n_state; s++) {
 		        for (j = 0; j < n_stream; j++) {
@@ -167,7 +154,6 @@ best_q(float32 ****mixw,
 		        }
 		    }
 		}
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 		++n_yes;
 	    }
 	    else {
@@ -178,7 +164,6 @@ best_q(float32 ****mixw,
 			}
 		    }
 		}
- /* MODIFICATION FOR CONTINUOUS_TREES: ADDITIONS FOR CONTINUOUS CASE */
                 if (continuous == 1) {
 	            for (s = 0; s < n_state; s++) {
 		        for (j = 0; j < n_stream; j++) {
@@ -189,7 +174,6 @@ best_q(float32 ****mixw,
 		        }
 		    }
 		}
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 		++n_no;
 	    }
 	}
@@ -231,8 +215,6 @@ best_q(float32 ****mixw,
 		}
 	    }
 
-/* MODIFICATION FOR CONTINUOUS_TREES: Do appropriate operations for discrete and
-   continuous */
             if (continuous == 1) {
                 y_ent = 0;
                 n_ent = 0;
@@ -264,13 +246,10 @@ best_q(float32 ****mixw,
 					     dist[s], n_stream, n_density);
             }
 	}
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 
-/* ADDITION FOR CONTINUOUS_TREES; In current code this is true only for continous HMM */
         if (continuous == 1) {
             einc -=  node_wt_ent;
         }
-/* END ADDITION FOR CONTINUOUS_TREES */
 
 	if (s < n_state) {
 	  /* Ended iteration over states prematurely; assume 'bad' question */
@@ -330,62 +309,14 @@ best_q(float32 ****mixw,
     ckd_free_3d((void ***)no_dist);
     ckd_free((void *)no_id);
 
-/* ADDITION FOR CONTINUOUS_TREES */
     if (continuous == 1) {
         ckd_free_3d((void ***)yes_means);
         ckd_free_3d((void ***)yes_vars);
         ckd_free_3d((void ***)no_means);
         ckd_free_3d((void ***)no_vars);
     }
-/* END ADDITION FOR CONTINUOUS_TREES */
 
     *out_best_q = &all_q[b_q];
 
     return b_einc;
 }
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:39  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:39  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */

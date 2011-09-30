@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 	int maxframes, vector_alloc;
 	int i, j, k, *nbin, *bin;
 	int superiter, stride;
-	uint32 length, x;
+	int32 length, x;
 
 	parse_cmd_ln(argc, argv);
 	Ndim = cmd_ln_int32("-ceplen");

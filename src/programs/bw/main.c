@@ -516,7 +516,7 @@ main_initialize(int argc,
     corpus_init();
 
     if (cmd_ln_str("-mllrmat")) {
-	const uint32 *tmp_veclen, *feat_veclen;
+	uint32 *tmp_veclen, *feat_veclen;
 	uint32 tmp_n_mllrcls;
 	uint32 tmp_n_stream;
 	uint32 j;

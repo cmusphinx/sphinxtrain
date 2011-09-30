@@ -37,7 +37,7 @@
 #include "header.h"
 
 
-int store_distribution(char *file,
+int store_distribution(const char *file,
 		       int Nmodes,
 		       int Ndim,
 		       float noisec,

@@ -74,9 +74,10 @@ int main (int argc, char **argv)
     phnhashelement_t **CIhash=NULL;
     dicthashelement_t **dicthash=NULL;
     int32  cilistsize=0, cdheapsize=0, threshold, tph_list_given, ncd;
-    char   *phnlist, *incimdef, *triphnlist, *incdmdef;
-    char   *lsnfile, *dictfn, *fillerdictfn, **CIlist=NULL;
-    char   *cimdeffn, *alltphnmdeffn, *untiedmdeffn, *countfn;
+    const char   *phnlist, *incimdef, *triphnlist, *incdmdef;
+    const char   *lsnfile, *dictfn, *fillerdictfn;
+    char **CIlist=NULL;
+    const char   *cimdeffn, *alltphnmdeffn, *untiedmdeffn, *countfn;
     int32 ignore_wpos;
 
     parse_cmd_ln(argc,argv);

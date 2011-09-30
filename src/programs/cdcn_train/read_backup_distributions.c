@@ -37,7 +37,7 @@
 #include <stdlib.h>
 #include "header.h"
 
-int read_backup_distribution(char *filen,
+int read_backup_distribution(const char *filen,
 			     float ***mean,
 			     float ***variance,
 			     float **pi, int *Nmodes, int Ndim)

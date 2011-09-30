@@ -90,7 +90,7 @@ cnt_phn_seg(model_def_t *mdef,
 {
     uint32 seq_no = 0;
     uint16 *seg;
-    uint32 n_frame;
+    int32 n_frame;
     uint32 i, j;
     uint32 n_acmod;
     uint32 *phone;

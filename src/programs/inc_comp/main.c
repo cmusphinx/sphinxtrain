@@ -77,7 +77,7 @@ main(int argc, char *argv[])
     uint32 n_feat;
     uint32 n_density;
     uint32 n_inc;
-    const uint32 *veclen;
+    uint32 *veclen;
     int32 var_is_full;
 
     parse_cmd_ln(argc, argv);

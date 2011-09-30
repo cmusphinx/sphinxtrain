@@ -58,7 +58,7 @@ s3regmatcnt_read(const char *fn,
 		 float32 ******out_regl,
 		 uint32 *out_n_class,
 		 uint32 *out_n_feat,
-		 const uint32 **out_veclen,
+		 uint32 **out_veclen,
 		 uint32 *out_mllr_mult,
 		 uint32 *out_mllr_add)
 {
@@ -69,7 +69,7 @@ s3regmatcnt_read(const char *fn,
     char *do_chk;
     FILE *fp;
     uint32 n_feat, n_class;
-    const uint32 *veclen;
+    uint32 *veclen;
     float32 ****l_regr;
     float32 *****l_regl;
     uint32 d1, d2, d3, m, f;

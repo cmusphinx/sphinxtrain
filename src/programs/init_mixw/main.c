@@ -243,8 +243,8 @@ init_mixw()
     uint32 n_state_pm;
     uint32 n_tmat_src;
     uint32 n_tmat_dest;
-    const uint32 *veclen;
-    const uint32 *tmp_veclen;
+    uint32 *veclen;
+    uint32 *tmp_veclen;
 
     uint32 m;
     uint32 dest_m;
@@ -581,7 +581,7 @@ init_mixw()
 	    return S3_ERROR;
 	}
     }
-    ckd_free((void *)veclen);    
+    ckd_free(veclen);    
     return S3_SUCCESS;
 }
 

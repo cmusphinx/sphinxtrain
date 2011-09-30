@@ -65,7 +65,7 @@ read_mllr_files(const char *mllrmatfn,
 		uint32 *out_n_mllr_class,
 		uint32 *out_n_mgau,
 		uint32 *out_n_feat,
-		const uint32 **out_veclen,
+		uint32 **out_veclen,
 		uint32 inverse)
 {
     uint32 n_mllr_class_rd, m, j;
@@ -159,11 +159,11 @@ mllr_adapt_mean(const char *outmeanfn,
     uint32 	 n_mgau;
     uint32 	 n_feat;
     uint32 	 n_density;
-    const uint32 *veclen = NULL;
+    uint32 	 *veclen = NULL;
 
     uint32 	 n_mgau_rd;
     uint32 	 n_feat_rd;
-    uint32 	*veclen_rd = NULL;
+    uint32 	 *veclen_rd = NULL;
 
     uint32  	 n_mllr_class;
 
@@ -252,11 +252,11 @@ mllr_adapt_gaucnt(const char *outgaufn,
     uint32 	 n_mgau;
     uint32 	 n_feat;
     uint32 	 n_density;
-    const uint32 *veclen = NULL;
+    uint32 	 *veclen = NULL;
 
     uint32 	 n_mgau_rd;
     uint32 	 n_feat_rd;
-    const uint32 *veclen_rd = NULL;
+    uint32 	 *veclen_rd = NULL;
 
     uint32  	 n_mllr_class;
     uint32	 gau_begin;

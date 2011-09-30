@@ -41,26 +41,26 @@
 #include "heap.h"
 #include "hash.h"
 
-int32 make_ci_list_frm_mdef(char  *mdeffile,
+int32 make_ci_list_frm_mdef(const char  *mdeffile,
                             char  ***CIlist,
                             int32 *cilistsize);
 
-int32 make_ci_list_cd_hash_frm_phnlist(char  *phnlist,
+int32 make_ci_list_cd_hash_frm_phnlist(const char  *phnlist,
                                     char  ***CIlist,
                                     int32 *cilistsize,
                                     hashelement_t ***CDhash,
                                     int32 *NCDphones);
 
-int32 make_ci_list_cd_hash_frm_mdef(char  *mdeffile,
+int32 make_ci_list_cd_hash_frm_mdef(const char  *mdeffile,
                                     char  ***CIlist,
                                     int32 *cilistsize,
                                     hashelement_t ***CDhash,
                                     int32 *NCDphones);
 
-int32  read_dict(char *dictfile, char *fillerdictfile,
+int32  read_dict(const char *dictfile, const char *fillerdictfile,
 		 dicthashelement_t ***dicthash);
 
-int32 make_mdef_from_list(char *mdeffile,
+int32 make_mdef_from_list(const char *mdeffile,
 			char **CIlist, 
                         int32 cilistsize,
                         heapelement_t **CDheap,
@@ -78,12 +78,12 @@ int32 make_CD_heap(hashelement_t  **triphonehash,
 
 int32 find_threshold(hashelement_t  **triphonehash);
 
-int32  count_triphones (char *transfile,
+int32  count_triphones (const char *transfile,
                         dicthashelement_t **dicthash,
                         hashelement_t **tphnhash,
 			phnhashelement_t ***CIhash,
 			int ignore_wpos);
 
-int32   print_counts(char *countfn, phnhashelement_t  **CIhash,
+int32   print_counts(const char *countfn, phnhashelement_t  **CIhash,
                      hashelement_t **CDhash);
 #endif

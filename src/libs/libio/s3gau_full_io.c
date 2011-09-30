@@ -262,7 +262,7 @@ s3gaucnt_read_full(const char *fn,
 		   uint32 *out_n_cb,
 		   uint32 *out_n_feat,
 		   uint32 *out_n_density,
-		   const uint32 **out_veclen)
+		   uint32 **out_veclen)
 {
     uint32 rd_chksum = 0;
     uint32 sv_chksum;

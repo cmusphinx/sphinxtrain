@@ -97,8 +97,7 @@ segdmp_open_read(const char **dirs,		/* dump directories */
 		 segdmp_type_t *data_type, 
 		 uint32 n_stream,
 		 uint32 *vecsize,
-		 uint32 blksize
-);
+		 uint32 blksize);
 
 int
 segdmp_next_feat(acmod_id_t p,

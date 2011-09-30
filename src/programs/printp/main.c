@@ -162,7 +162,7 @@ print_gau(const char *fn)
     vector_t ***mean;
     uint32 n_mgau;
     uint32 n_feat;
-    const uint32 *veclen;
+    uint32 *veclen;
     uint32 n_density;
     uint32 i, j, k, l;
 
@@ -201,7 +201,7 @@ print_full_gau(const char *fn)
     vector_t ****var;
     uint32 n_mgau;
     uint32 n_feat;
-    const uint32 *veclen;
+    uint32 *veclen;
     uint32 n_density;
     uint32 i, j, k, l, m;
 
@@ -232,6 +232,7 @@ print_full_gau(const char *fn)
 	    }
 	}
     }
+    ckd_free(veclen);
     return S3_SUCCESS;
 }
 
@@ -242,7 +243,7 @@ print_regmat_cnt(const char *fn)
     float32 *****regl;
     uint32 n_mllr_class;
     uint32 n_feat;
-    const uint32 *veclen;
+    uint32 *veclen;
     uint32 mllr_mult;
     uint32 mllr_add;
     uint32 c;
@@ -277,7 +278,7 @@ print_regmat_cnt(const char *fn)
 	    }
 	}
     }
-    ckd_free((void *)veclen);
+    ckd_free(veclen);
 
     for (c = 0; c < n_mllr_class; c++) {
 	for (f = 0; f < n_feat; f++) {
@@ -301,7 +302,7 @@ print_gau_cnt(const char *fn)
     uint32 n_mgau;
     uint32 n_feat;
     uint32 n_density;
-    const uint32 *veclen;
+    uint32 *veclen;
     uint32 i, j, k, l;
     int32 pass2var;
     char mv_fmt[64];
@@ -360,6 +361,7 @@ print_gau_cnt(const char *fn)
 	ckd_free(wt_var[0][0][0]);
 	ckd_free_3d((void ***)wt_var);
     }
+    ckd_free(veclen);
     return S3_SUCCESS;
 }
 

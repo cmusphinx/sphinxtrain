@@ -46,7 +46,7 @@
 #include "hash.h"
 
 
-unsigned hash(char *s0, char *s1, char *s2, char *s3)
+unsigned hash(const char *s0, const char *s1, const char *s2, const char *s3)
 {
     unsigned   hashval;
 

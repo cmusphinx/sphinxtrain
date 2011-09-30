@@ -67,7 +67,7 @@
 
 static const char* wordpos2str(word_posn_t wordpos, int ignore_wordpos);
 
-int32 make_ci_list_frm_mdef(char  *mdeffile,
+int32 make_ci_list_frm_mdef(const char  *mdeffile,
 		            char  ***CIlist, 
                             int32 *cilistsize)
 {
@@ -95,7 +95,7 @@ int32 make_ci_list_frm_mdef(char  *mdeffile,
 }
 
 
-int32 make_ci_list_cd_hash_frm_phnlist(char  *phnlist,
+int32 make_ci_list_cd_hash_frm_phnlist(const char  *phnlist,
 		           	    char  ***CIlist, 
                            	    int32 *cilistsize,
 			   	    hashelement_t ***CDhash,
@@ -198,7 +198,7 @@ int32 make_ci_list_cd_hash_frm_phnlist(char  *phnlist,
 }
 
 
-int32 make_ci_list_cd_hash_frm_mdef(char  *mdeffile,
+int32 make_ci_list_cd_hash_frm_mdef(const char  *mdeffile,
 		           	    char  ***CIlist, 
                            	    int32 *cilistsize,
 			   	    hashelement_t ***CDhash,
@@ -255,10 +255,11 @@ int32 make_ci_list_cd_hash_frm_mdef(char  *mdeffile,
 }
 
 
-int32  read_dict(char *dictfile, char *fillerdict, 
+int32  read_dict(const char *dictfile, const char *fillerdict, 
 		 dicthashelement_t ***dicthash)
 {
-    char *dictsent, *dictfn[2];
+    char *dictsent;
+    const char *dictfn[2];
     lineiter_t *liter = NULL;
     char  *dictword, *word, *phone, *tphn;
     dicthashelement_t   **lhash, *sptr;
@@ -452,7 +453,7 @@ int32 make_dict_triphone_list (dicthashelement_t **dicthash,
 }
 
 
-int32  count_triphones (char *transfile,
+int32  count_triphones (const char *transfile,
 			dicthashelement_t **dicthash,
 			hashelement_t **tphnhash,
 			phnhashelement_t ***phnhash,
@@ -682,7 +683,7 @@ int32 make_CD_heap(hashelement_t  **triphonehash,
 }
 
 
-int32   print_counts(char *countfn, phnhashelement_t  **CIhash,
+int32   print_counts(const char *countfn, phnhashelement_t  **CIhash,
 		     hashelement_t **CDhash)
 {
     heapelement_t **CDheap=NULL, **CIheap=NULL, *addphone, *addtriphone;
@@ -868,7 +869,7 @@ output_model_def(FILE *fp,
 }
 
 
-int32 make_mdef_from_list(char *mdeffile,
+int32 make_mdef_from_list(const char *mdeffile,
 			char **CIlist, 
 			int32  nciphones,
 			heapelement_t **CDheap,

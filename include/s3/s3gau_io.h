@@ -108,7 +108,7 @@ s3gaucnt_read(const char *fn,
 	      uint32 *out_n_mgau,
 	      uint32 *out_n_feat,
 	      uint32 *out_n_density,
-	      const uint32 **out_veclen);
+	      uint32 **out_veclen);
 
 int
 s3gaucnt_write(const char *fn,
@@ -137,7 +137,7 @@ s3gaucnt_read_full(const char *fn,
 		   uint32 *out_n_cb,
 		   uint32 *out_n_feat,
 		   uint32 *out_n_density,
-		   const uint32 **out_veclen);
+		   uint32 **out_veclen);
 
 int
 s3gaucnt_write_full(const char *fn,

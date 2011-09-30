@@ -75,7 +75,7 @@ static uint32 n_cb_i;
 static vector_t ***ogau;
 static vector_t ****ogau_full;
 static uint32 n_cb_o;
-static const uint32 *veclen;
+static uint32 *veclen;
 
 static float32 ***itmat;
 static uint32 n_tmat_i;
@@ -201,7 +201,6 @@ rd_gau(const char *fn, uint32 n_o)
 					    n_stream,
 					    n_density,
 					    veclen);
-    ckd_free(veclen);
     return S3_SUCCESS;
 }
 int
@@ -466,31 +465,8 @@ main(int argc, char *argv[])
     if(wr_parm()==S3_ERROR) {
 	E_FATAL("Problem in writing output parameters.\n");
     }
+    ckd_free(veclen);
 
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2004/07/21  18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.4  2004/06/17 19:17:17  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */
+

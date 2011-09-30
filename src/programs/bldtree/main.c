@@ -198,7 +198,7 @@ init(model_def_t **out_mdef,
     float32 mwfloor;
     float64 wt_ent;
     float64 s_wt_ent=0;
-    char*   type;
+    const char*   type;
     uint32  continuous;
     uint32  *l_veclen, *t_veclen;
     uint32  l_nstates, t_nstates;

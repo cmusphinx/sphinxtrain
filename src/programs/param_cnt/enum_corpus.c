@@ -69,7 +69,7 @@ enum_corpus(lexicon_t *lex,
     uint32 tick_cnt = 0;
     char *trans = NULL;
     uint16 *seg = NULL;
-    uint32 n_frame;
+    int32 n_frame;
     char **word = NULL;
     uint32 n_word;
     acmod_id_t *phone = NULL;
