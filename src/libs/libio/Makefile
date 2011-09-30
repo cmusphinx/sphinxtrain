@@ -57,7 +57,6 @@ SRCS = \
   s3lamb_io.c \
   s3map_io.c \
   s3mixw_io.c \
-  s3regmat_io.c \
   s3tmat_io.c \
   s3ts2cb_io.c \
   s3phseg_io.c \

@@ -37,7 +37,6 @@
 #include <math.h>
 #include <s3/s3.h>
 #include <s3/common.h>
-#include <s3/s3regmat_io.h>
 #include <s3/mllr.h>
 #include <sphinxbase/matrix.h>
 

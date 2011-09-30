@@ -46,7 +46,6 @@
 #include <s3/s3gau_io.h>
 #include <s3/s3acc_io.h>
 #include <s3/gauden.h>
-#include <s3/regmat_io.h>
 #include <sphinxbase/matrix.h>
 
 #include <s3/mllr.h>

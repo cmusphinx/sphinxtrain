@@ -47,9 +47,6 @@
     <ClCompile Include="..\..\..\..\src\libs\libio\s3phseg_io.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libio\s3regmat_io.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libio\s3tmat_io.c">
       <Filter>Source Files</Filter>
     </ClCompile>

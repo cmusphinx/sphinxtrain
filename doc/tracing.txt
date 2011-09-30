@@ -35,9 +35,6 @@ main
    -> print_gau_cnt
 	-> s3gau_read (What is Gaussian count?)
 	    :Read multi-streams means or variances (different from s3.4)
-   -> print_regmat_cnt
-	-> s3regmatcnt_read  (Count?)
-	    :Read left hand and right hand side regression matrix. 
    -> print_lambda 
 	-> s3lamb_read (What is lambda?)
 	    :Read lambda
@@ -46,26 +43,6 @@ Chapter II : wave2feat
 wave2feat is a useful tool to convert a wave file to feature files. It
 is recommend that it should be used with tools such as sox if
 wave2feat doesn't support certain configuration.
-
-wave2feat.c (formerly known as new_fe_wrapper.c )
--> main
-   -> fe_parse_options (in the same file)
-	-> fe_init_params
-   -> fe_convert_files
-	-> fe_init
-	-> fe_build_filenames
-	-> fe_open_files
-	-> fe_readblock_spch
-	-> fe_process_utt (See dictionary for details)
-	-> fe_writeblock_feat
-
-How different is wave2feat's frontend and Sphinx3.4's frontend?  
-
-[EBG] The front end is (or should be) exactly the same on SphinxTrain,
-sphinx3, and sphinx2. The only tangible difference is that the front
-end includes sphinx3.h, sphinx2.h, or prim_types.h depending on the
-location. But this has to be fixed.
-
 
 Dictionary of functions
 fe_create_hamming

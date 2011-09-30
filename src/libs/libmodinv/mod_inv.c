@@ -52,7 +52,6 @@
 #include <s3/s3mixw_io.h>
 #include <s3/s3tmat_io.h>
 #include <s3/s3gau_io.h>
-#include <s3/s3regmat_io.h>
 #include <s3/model_def.h>
 
 #include <sys_compat/file.h>

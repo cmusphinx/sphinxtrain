@@ -56,12 +56,12 @@
 #include <s3/s3tmat_io.h>
 #include <s3/s3mixw_io.h>
 #include <s3/s3lamb_io.h>
-#include <s3/s3regmat_io.h>
 #include <s3/s3ts2cb_io.h>
 #include <s3/s3io.h>
 #include <sys_compat/file.h>
 #include <s3/s2_param.h>
 #include <s3/s3.h>
+#include <s3/mllr_io.h>
 
 #include <stdio.h>
 #include <math.h>
@@ -235,64 +235,48 @@ print_full_gau(const char *fn)
     ckd_free(veclen);
     return S3_SUCCESS;
 }
-
+
 int
 print_regmat_cnt(const char *fn)
 {
-    float32 ****regr;
-    float32 *****regl;
+    float32 ****regl;
+    float32 ***regr;
     uint32 n_mllr_class;
     uint32 n_feat;
     uint32 *veclen;
-    uint32 mllr_mult;
-    uint32 mllr_add;
-    uint32 c;
-    uint32 f;
-    uint32 i, j, k, l;
+    uint32 c, f, j, k;
 
-    if (s3regmatcnt_read(fn,
-			 &regr,
-			 &regl,
-			 &n_mllr_class,
-			 &n_feat,
-			 &veclen,
-			 &mllr_mult,
-			 &mllr_add) != S3_SUCCESS) {
+    if (read_reg_mat (fn, &veclen, &n_mllr_class, &n_feat, &regl, &regr) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
     for (c = 0; c < n_mllr_class; c++) {
 	for (f = 0; f < n_feat; f++) {
-	    l = veclen[f];
-	    for (i = 0; i < l; i++) {
-		printf("regmat=(%u %u %u)\n", c, f, i);
-		for (j = 0; j <= l; j++) {
-		    printf("%2u:", j);
-		    printf(e_fmt_ld_sp, regr[c][f][i][j]);
-		    printf("r");
-		    for (k = 0; k <= l; k++) {
-			printf(e_fmt_ld_sp, regl[c][f][i][j][k]);
-		    }
-		    printf("\n");
+	    printf("%d\n", veclen[f]); 
+	    for (j = 0; j < veclen[f]; j++) {
+		for (k = 0; k < veclen[f]; ++k) {
+		    printf("%f ", regl[c][f][j][k]);
 		}
+		printf("\n");
 	    }
+	    for (j = 0; j < veclen[f]; j++) {
+		printf("%f ", regr[c][f][j]);
+	    }
+	    printf("\n");
+	    /* Identity transform for variances. */
+	    for (j = 0; j < veclen[f]; j++) {
+		printf("1.0 ");
+	    }
+	    printf("\n");
 	}
     }
     ckd_free(veclen);
 
-    for (c = 0; c < n_mllr_class; c++) {
-	for (f = 0; f < n_feat; f++) {
-	    ckd_free_2d ((void **)regr[c][f]);
-	    ckd_free_3d ((void ***)regl[c][f]);
-	}
-    }
-    
-    ckd_free_2d ((void **)regr);
-    ckd_free_2d ((void **)regl);
+    free_mllr_reg(&regl, &regr, n_mllr_class, n_feat);
 
     return S3_SUCCESS;
 }
-
+
 int
 print_gau_cnt(const char *fn)
 {

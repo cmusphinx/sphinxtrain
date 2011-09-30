@@ -51,11 +51,9 @@
 #include <s3/model_inventory.h>
 #include <s3/model_def_io.h>
 #include <s3/s3gau_io.h>
-#include <s3/s3regmat_io.h>
 #include <s3/s3mixw_io.h>
 #include <s3/s3tmat_io.h>
 #include <s3/s3acc_io.h>
-#include <s3/regmat_io.h>
 #include <s3/mllr.h>
 #include <s3/mllr_io.h>
 
@@ -97,7 +95,6 @@ normalize()
     float64 s;
     uint32 n_mixw;
     uint32 n_stream;
-    uint32 n_mllr_class;
     uint32 n_density;
     float32 ***tmat_acc = NULL;
     uint32 n_tmat;
@@ -129,10 +126,6 @@ normalize()
     const char *out_dcount_fn;
     
     int err;
-    uint32 mllr_mult;
-    uint32 mllr_add;
-    float32 *****regl = NULL;
-    float32 ****regr = NULL;
     uint32 no_retries=0;
 
     
@@ -381,33 +374,6 @@ normalize()
 			     tmat_acc,
 			     n_tmat,
 			     n_state_pm) != S3_SUCCESS) {
-		if (err == 0) {
-		    E_ERROR("Unable to write %s; Retrying...\n", file_name);
-		}
-		++err;
-		sleep(3);
-		no_retries++;
-		if(no_retries>10){ 
-		  E_FATAL("Failed to get the files after 10 retries(about 5 minutes).\n ");
-		}
-	    }
-	} while (err > 1);
-    }
-
-    if (oaccum_dir && regr && regl) {
-	/* write the total MLLR regression matrix accumulators */
-
-	err = 0;
-	sprintf(file_name, "%s/regmat_counts", oaccum_dir);
-	do {
-	    if (s3regmatcnt_write(file_name,
-				  regr,
-				  regl,
-				  n_mllr_class,
-				  n_stream,
-				  veclen,
-				  mllr_mult,
-				  mllr_add) != S3_SUCCESS) {
 		if (err == 0) {
 		    E_ERROR("Unable to write %s; Retrying...\n", file_name);
 		}
