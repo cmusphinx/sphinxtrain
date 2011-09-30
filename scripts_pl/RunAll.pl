@@ -72,6 +72,7 @@ my @steps =
      "$ST::CFG_SCRIPT_DIR/62.lattice_conversion/slave_conv.pl",
      "$ST::CFG_SCRIPT_DIR/65.mmie_train/slave_convg.pl",
      "$ST::CFG_SCRIPT_DIR/90.deleted_interpolation/deleted_interpolation.pl",
+     "$ST::CFG_SCRIPT_DIR/decode/slave.pl",
     );
 
 # Do the common initialization and state tying steps

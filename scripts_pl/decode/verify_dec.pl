@@ -45,7 +45,7 @@ use File::Basename;
 use File::Spec::Functions;
 
 use lib catdir(dirname($0), updir(), 'lib');
-use SphinxTrain::Config cfg => 'etc/sphinx_decode.cfg';
+use SphinxTrain::Config cfg => 'etc/sphinx_train.cfg';
 use SphinxTrain::Util;
 
 $| = 1;				# Turn on autoflushing
