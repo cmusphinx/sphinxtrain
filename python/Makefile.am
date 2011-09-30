@@ -6,7 +6,6 @@ EXTRA_DIST = \
 	cmusphinx/s3lda.py \
 	cmusphinx/arpalm.py \
 	cmusphinx/test_hmm.py \
-	cmusphinx/foo.dict \
 	cmusphinx/cluster_mixw.py \
 	cmusphinx/hypseg.py \
 	cmusphinx/sendump.py \
@@ -24,19 +23,18 @@ EXTRA_DIST = \
 	cmusphinx/mllt.py \
 	cmusphinx/s3file.py \
 	cmusphinx/fstutils.py \
-	cmusphinx/feat \
 	cmusphinx/feat/__init__.py \
 	cmusphinx/feat/_1s_c_d_dd.py \
 	cmusphinx/feat/s2_4x.py \
 	cmusphinx/mfcc.py \
 	cmusphinx/s3model.py \
-	cmusphinx/test \
 	cmusphinx/test/filler.dict \
+	cmusphinx/test/foo.dict \
+	cmusphinx/test/bar.dict \
 	cmusphinx/test/sa1.logspec \
 	cmusphinx/test/100.arpa.gz \
 	cmusphinx/test/test.ctl \
 	cmusphinx/test/sa1.dict \
-	cmusphinx/test/tidigits \
 	cmusphinx/test/tidigits/dictionary \
 	cmusphinx/test/tidigits/mixture_weights \
 	cmusphinx/test/tidigits/transition_matrices \
@@ -66,7 +64,6 @@ EXTRA_DIST = \
 	cmusphinx/s3mdef.py \
 	cmusphinx/evaluation.py \
 	cmusphinx/mllr.py \
-	cmusphinx/bar.dict \
 	cmusphinx/dict_spd.py \
 	cmusphinx/lattice.py \
 	cmusphinx/lattice_conv.py \

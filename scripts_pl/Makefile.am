@@ -87,3 +87,5 @@ nobase_scripts_SCRIPTS = \
 	sphinxDocGen.sh.in \
 	texFormat.pl \
 	tune_senones.pl
+
+EXTRA_DIST = $(nobase_scripts_SCRIPTS)
