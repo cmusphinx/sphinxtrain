@@ -158,7 +158,7 @@ mod_inv_read_gauden(model_inventory_t *minv,
     uint32 n_mgau, i;
     uint32 n_feat, j;
     uint32 n_density, k;
-    const uint32 *veclen, *vl;
+    uint32 *v1, *v2;
     gauden_t *g;
     
     if (s3gau_read(meanfn,
@@ -166,7 +166,7 @@ mod_inv_read_gauden(model_inventory_t *minv,
 		   &n_mgau,
 		   &n_feat,
 		   &n_density,
-		   &veclen) != S3_SUCCESS) {
+		   &v1) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
@@ -198,7 +198,7 @@ mod_inv_read_gauden(model_inventory_t *minv,
 		    		  &i,
 		    		  &j,
 		    		  &k,
-		    		  &vl, FALSE) != S3_SUCCESS) {
+		    		  &v2, FALSE) != S3_SUCCESS) {
 	    return S3_ERROR;
 	}
     }
@@ -208,7 +208,7 @@ mod_inv_read_gauden(model_inventory_t *minv,
 		       &i,
 		       &j,
 		       &k,
-		       &vl) != S3_SUCCESS) {
+		       &v2) != S3_SUCCESS) {
 	    return S3_ERROR;
 	}
     }
@@ -228,21 +228,23 @@ mod_inv_read_gauden(model_inventory_t *minv,
     }
 	
     for (i = 0; i < n_feat; i++) {
-	if (vl[i] != veclen[i]) {
+	if (v1[i] != v2[i]) {
 	    E_FATAL("Vector length of feature %u is %u in mean file but %u in variance file\n",
-		    i, veclen[i], vl[i]);
+		    i, v1[i], v2[i]);
 	}
     }
 
-    ckd_free((void *)vl);
 
     g = minv->gauden;
 
     /* configure the gauden structure */
 
     gauden_set_n_mgau(g, n_mgau);
-    gauden_set_feat(g, n_feat, veclen);
+    gauden_set_feat(g, n_feat, v1);
     gauden_set_n_density(g, n_density);
+
+    ckd_free(v1);
+    ckd_free(v2);
 
     gauden_set_mean(g, mean);
     if (var_is_full)

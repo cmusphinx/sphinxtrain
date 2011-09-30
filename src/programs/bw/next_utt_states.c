@@ -64,6 +64,7 @@ state_t *next_utt_states(uint32 *n_state,
 			 )
 {
     char **word;
+    char *utterance;
     uint32 n_word;
     uint32 n_phone;
     char *btw_mark;
@@ -72,11 +73,12 @@ state_t *next_utt_states(uint32 *n_state,
 
     state_t *state_seq;
 
-    word  = mk_wordlist(trans, &n_word);
-
+    utterance = ckd_salloc(trans);
+    word  = mk_wordlist(utterance, &n_word);
     phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
+
     if (phone == NULL) {
-	E_WARN("Unable to produce phonetic transcription for the word '%s'\n", n_word);
+	E_WARN("Unable to produce phonetic transcription for the utterance '%s'\n", trans);
 	ckd_free(word);
 	return NULL;
     }
@@ -102,12 +104,11 @@ state_t *next_utt_states(uint32 *n_state,
     ckd_free(phone);
     ckd_free(btw_mark);
     ckd_free(word);
+    ckd_free(utterance);
 
     return state_seq;
 }
 
-/* the following function is used for MMIE training
-   lqin 2010-03 */
 state_t *next_utt_states_mmie(uint32 *n_state,
 			      lexicon_t *lex,
 			      model_inventory_t *inv,
@@ -137,12 +138,8 @@ state_t *next_utt_states_mmie(uint32 *n_state,
   
   state_seq = state_seq_make(n_state, phone, n_phone, inv, mdef);
   
-  /* state_seq_print(state_seq, *n_state, mdef); */
-  
   ckd_free(phone);
   ckd_free(btw_mark);
   
   return state_seq;
 }
-/* end */
-

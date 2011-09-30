@@ -833,7 +833,10 @@ main_reestimate(model_inventory_t *inv,
 	/* create a sentence HMM */
 	state_seq = next_utt_states(&n_state, lex, inv, mdef, trans);
 	printf(" %5u", n_state);
-	if (!viterbi) {
+	
+	if (state_seq == NULL) {
+	    E_WARN("Skipped utterance '%s'", trans);
+	} else if (!viterbi) {
 	    /* accumulate reestimation sums for the utterance */
 	    if (baum_welch_update(&log_lik,
 				  f, n_frame,
@@ -859,8 +862,7 @@ main_reestimate(model_inventory_t *inv,
 		       log_lik);
 	    }
 
-	}
-	else {
+	} else {
 	    /* Viterbi search and accumulate in it */
 	    if (viterbi_update(&log_lik,
 			       f, n_frame,
@@ -883,6 +885,7 @@ main_reestimate(model_inventory_t *inv,
 		       log_lik);
 	    }
 	}
+
 	if (upd_timer)
 	    timing_stop(upd_timer);
 

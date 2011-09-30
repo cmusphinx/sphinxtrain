@@ -191,6 +191,7 @@ print_gau(const char *fn)
 	    }
 	}
     }
+    ckd_free(veclen);
     return S3_SUCCESS;
 }
 

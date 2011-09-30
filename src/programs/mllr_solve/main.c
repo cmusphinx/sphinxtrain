@@ -120,7 +120,7 @@ mllr_mat(float32 	*****out_A,
       uint32 	n_stream_rd; 
       uint32 	n_density_rd; 
 
-      const uint32 *veclen_rd	= NULL; 
+      uint32    *veclen_rd	= NULL; 
 
       uint32 i, j, k, l, s, p , q;
       int32 m, mc;
@@ -331,8 +331,8 @@ int main(int argc, char *argv[])
     uint32      n_mgau_rd;
     uint32      n_stream_rd;
     uint32      n_density_rd;
-    const uint32 *veclen	= NULL;
-    const uint32 *veclen_rd	= NULL;
+    uint32 *veclen	= NULL;
+    uint32 *veclen_rd	= NULL;
 
     float32     ****A  		= NULL;          /* Output mllr: A */
     float32     ***B   		= NULL;          /* Output mllr: B */

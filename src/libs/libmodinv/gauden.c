@@ -151,13 +151,12 @@ gauden_set_feat(gauden_t *g,
     uint32 i;
 
     g->n_feat = n_feat;
-    g->veclen = veclen;
+    g->veclen = ckd_calloc(n_feat, sizeof(uint32));
+    memcpy(g->veclen, veclen, n_feat * sizeof(uint32));
 
-    fflush(stdout);
-    
     E_INFO("%d feature streams (", n_feat);
     for (i = 0; i < n_feat; i++) {
-	E_INFOCONT("|%d|=%d ", i, veclen[i]);
+	E_INFOCONT("|%d|=%d ", i, g->veclen[i]);
     }
     E_INFOCONT(")\n");
 
@@ -2008,6 +2007,10 @@ solve_quadratic(float64 x, float64 y, float64 z, float64 *root1, float64 *root2)
     
     return TRUE;
 }
+
+#ifndef MAX
+#define MAX(a,b) ( (a) > (b) ? (a) : (b) )
+#endif
 
 float32
 cal_constD(vector_t in_mean,

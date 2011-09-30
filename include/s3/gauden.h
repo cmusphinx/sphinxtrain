@@ -53,12 +53,8 @@ extern "C" {
 }
 #endif
 
-/* the following parameters are used for MMIE training 
-   lqin 2010-03 */
 #define D_FACTOR 2.0
-#define MAX(a,b) ( (a) > (b) ? (a) : (b) )
 #define MIN_VAR 1.0E-20
-/* end */
 
 #include <s3/s3.h>
 #include <s3/vector.h>
@@ -67,11 +63,7 @@ extern "C" {
 
 typedef struct gauden_s {
     uint32 n_feat;
-#ifdef SWIG /* A bug in SWIG - it thinks "const" means "static const" inside a struct. */
     uint32 *veclen;
-#else
-    const uint32 *veclen;
-#endif
 
     uint32 n_mgau;
     uint32 n_density;

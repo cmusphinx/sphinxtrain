@@ -220,7 +220,7 @@ rdacc_den(const char *dir,
 	  uint32 *inout_n_mgau,
 	  uint32 *inout_n_stream,
 	  uint32 *inout_n_density,
-	  const uint32 **inout_veclen)
+	  uint32 **inout_veclen)
 {
     char fn[MAXPATHLEN+1];
     vector_t ***in_wt_mean;
@@ -353,7 +353,7 @@ rdacc_den_full(const char *dir,
 	       uint32 *inout_n_mgau,
 	       uint32 *inout_n_stream,
 	       uint32 *inout_n_density,
-	       const uint32 **inout_veclen)
+	       uint32 **inout_veclen)
 {
     char fn[MAXPATHLEN+1];
     vector_t ***in_wt_mean;
@@ -477,8 +477,7 @@ rdacc_den_full(const char *dir,
     return S3_SUCCESS;
 }
 
-/* the following function is used for MMIE training
-   lqin 2010-03 */
+
 int
 rdacc_mmie_den(const char *dir,
 	       const char *lat_name,
@@ -488,7 +487,7 @@ rdacc_mmie_den(const char *dir,
 	       uint32 *inout_n_mgau,
 	       uint32 *inout_n_stream,
 	       uint32 *inout_n_density,
-	       const uint32 **inout_veclen)
+	       uint32 **inout_veclen)
 {
   char fn[MAXPATHLEN+1];
   vector_t ***in_wt_mean;
@@ -603,4 +602,3 @@ rdacc_mmie_den(const char *dir,
   
   return S3_SUCCESS;
 }
-/* end */

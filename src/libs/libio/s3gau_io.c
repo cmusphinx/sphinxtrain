@@ -59,7 +59,7 @@ s3gau_read(const char *fn,
 	   uint32 *out_n_mgau,
 	   uint32 *out_n_feat,
 	   uint32 *out_n_density,
-	   const uint32 **out_veclen)
+	   uint32 **out_veclen)
 {
     FILE *fp;
     const char *do_chk;

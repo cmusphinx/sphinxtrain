@@ -101,8 +101,7 @@ cnt_st_seg(model_def_t *mdef,
 
     for (seq_no = corpus_get_begin(); corpus_next_utt(); seq_no++) {
 	if (!(seq_no % 250)) {
-	    fprintf(stderr, " cnt[%u]", seq_no);
-	    fflush(stderr);
+	    E_INFOCONT(" cnt[%u]", seq_no);
 	}
 	
 	/* Read transcript and convert it into a senone sequence */
@@ -127,25 +126,3 @@ cnt_st_seg(model_def_t *mdef,
 
     return n_frame_per;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */

@@ -201,6 +201,7 @@ rd_gau(const char *fn, uint32 n_o)
 					    n_stream,
 					    n_density,
 					    veclen);
+    ckd_free(veclen);
     return S3_SUCCESS;
 }
 int

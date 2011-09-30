@@ -73,7 +73,7 @@ int rdacc_den(const char *dir,
 	      uint32 *inout_n_mgau,
 	      uint32 *inout_n_stream,
 	      uint32 *inout_n_density,
-	      const uint32 **inout_veclen);
+	      uint32 **inout_veclen);
 
 int
 rdacc_den_full(const char *dir,
@@ -84,10 +84,8 @@ rdacc_den_full(const char *dir,
 	       uint32 *inout_n_mgau,
 	       uint32 *inout_n_stream,
 	       uint32 *inout_n_density,
-	       const uint32 **inout_veclen);
+	       uint32 **inout_veclen);
 
-/* the following function is used for MMIE training
-   lqin 2010-03 */
 int rdacc_mmie_den(const char *dir,
 		   const char *lat_name,
 		   vector_t ****inout_wt_mean,
@@ -96,8 +94,7 @@ int rdacc_mmie_den(const char *dir,
 		   uint32 *inout_n_mgau,
 		   uint32 *inout_n_stream,
 		   uint32 *inout_n_density,
-		   const uint32 **inout_veclen);
-/* end */
+		   uint32 **inout_veclen);
 
 #ifdef __cplusplus
 }

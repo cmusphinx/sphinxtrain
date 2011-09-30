@@ -47,9 +47,7 @@
 
 #include "parse_cmd_ln.h"
 
-/* The SPHINX-III common library */
 #include <s3/common.h>
-
 #include <s3/model_inventory.h>
 #include <s3/model_def_io.h>
 #include <s3/s3gau_io.h>
@@ -58,11 +56,12 @@
 #include <s3/s3tmat_io.h>
 #include <s3/s3acc_io.h>
 #include <s3/regmat_io.h>
+#include <s3/mllr.h>
+#include <s3/mllr_io.h>
+
 #include <sphinxbase/matrix.h>
 
-/* Some SPHINX-II compatibility definitions */
 #include <s3/s2_param.h>
-
 #include <s2/log.h>
 
 #include <sys_compat/file.h>
@@ -72,16 +71,10 @@
 #include <math.h>
 #include <assert.h>
 
-#include <s3/mllr.h>
-#include <s3/mllr_io.h>
 
 static int normalize(void);
-
 
-/* the following function is used for MMIE training
-   lqin 2010-03 */
 static int mmi_normalize(void);
-/* end */
 
 static int
 initialize(int argc,
@@ -122,7 +115,8 @@ normalize()
     uint32 n_mgau;
     uint32 n_gau_stream;
     uint32 n_gau_density;
-    const uint32 *veclen = NULL;
+    uint32 *veclen = NULL;
+    
     const char **accum_dir;
     const char *oaccum_dir;
     const char *in_mixw_fn;
@@ -133,6 +127,7 @@ normalize()
     const char *in_var_fn;
     const char *out_var_fn;
     const char *out_dcount_fn;
+    
     int err;
     uint32 mllr_mult;
     uint32 mllr_add;
@@ -186,8 +181,7 @@ normalize()
 		       &veclen) != S3_SUCCESS) {
 	  E_FATAL_SYSTEM("Couldn't read %s", in_mean_fn);
 	}
-	ckd_free((void *)veclen);
-	veclen = NULL;
+	ckd_free(veclen);
     }
 
     if (in_var_fn != NULL) {
@@ -214,8 +208,7 @@ normalize()
 		E_FATAL_SYSTEM("Couldn't read %s", in_var_fn);
 	    }
 	}
-	ckd_free((void *)veclen);
-	veclen = NULL;
+	ckd_free(veclen);
     }
 
     n_stream = 0;
@@ -582,10 +575,7 @@ normalize()
 
     return S3_SUCCESS;
 }
-
 
-/* the following function is used for MMIE training
-   lqin 2010-03 */
 static int
 mmi_normalize()
 {
@@ -598,7 +588,7 @@ mmi_normalize()
   vector_t ***in_var = NULL;
   vector_t ***wt_mean = NULL;
   vector_t ***wt_var = NULL;
-  const uint32 *veclen = NULL;
+  uint32 *veclen = NULL;
   
   const char **accum_dir;
   const char *in_mean_fn;
@@ -624,7 +614,7 @@ mmi_normalize()
   uint32 n_temp_mgau;
   uint32 n_temp_stream;
   uint32 n_temp_density;
-  const uint32 *temp_veclen = NULL;
+  uint32 *temp_veclen = NULL;
   
   accum_dir = cmd_ln_str_list("-accumdir");
   
@@ -682,8 +672,7 @@ mmi_normalize()
 		   &veclen) != S3_SUCCESS) {
       E_FATAL_SYSTEM("Couldn't read %s", in_mean_fn);
     }
-    ckd_free((void *)veclen);
-    veclen = NULL;
+    ckd_free(veclen);
   }
 
   /* read input variance */
@@ -751,8 +740,7 @@ mmi_normalize()
 		   &temp_veclen) != S3_SUCCESS) {
       E_FATAL_SYSTEM("Couldn't read %s", in_mean_fn);
     }
-    ckd_free((void *)temp_veclen);
-    temp_veclen = NULL;
+    ckd_free(temp_veclen);
   }
 
   if (out_var_fn) {
@@ -764,8 +752,7 @@ mmi_normalize()
 		   &temp_veclen) != S3_SUCCESS) {
       E_FATAL_SYSTEM("Couldn't read %s", in_var_fn);
     }
-    ckd_free((void *)temp_veclen);
-    temp_veclen = NULL;
+    ckd_free(temp_veclen);
   }
   
   /* update mean parameters */
@@ -856,10 +843,7 @@ mmi_normalize()
   
   return S3_SUCCESS;
 }
-/* end */
 
-/* the main() function is modified for MMIE training
-   lqin 2010-03 */
 int
 main(int argc, char *argv[])
 {
@@ -880,102 +864,3 @@ main(int argc, char *argv[])
 
     return 0;
 }
-/* end */
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.11  2006/02/06  13:05:04  eht
- * Moved reading of input mean/var out of the loop that reads and accumulates
- * counts because it doesn't need to be there.  Also, since veclen was freed
- * after reading in the input means/vars, its value was potentially
- * corrupted for later executed code (i.e. further accumulation and mean/var save).
- * 
- * Revision 1.10  2004/11/17 01:46:59  arthchan2003
- * Change the sleeping time to be at most 30 seconds. No one will know whether the code dies or not if keep the code loop infinitely.
- *
- * Revision 1.9  2004/08/19 22:24:14  arthchan2003
- * Fixing numerical problem of compute_mllr and mllr_solve.  There are small numerical differences between the inputs typed with float64 or float32. In terms of (<6 signficiant digits).  This small difference will translate to perceivable numerical difference in the final matrix. (>5 significant digits).  This fix also marks a stable release for mllr_solve.  I also disallow user to use -regmat in norm because it is highly dangerous and known to be slow and didn't help too much.
- *
- * Revision 1.8  2004/07/27 12:07:31  arthchan2003
- * Check-in mllr_solve, a program that can compute the adaptation matrix. There is still some precision problem at this point. But it is good enough to check-in
- *
- * Revision 1.7  2004/07/21 22:32:27  egouvea
- * Fixed some compatibility issues between platforms: make sure we open
- * files with "wb" or "rb", move some #include not defined for all
- * platforms to the proper #if defined() etc.
- *
- * Revision 1.6  2004/07/21 22:00:44  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.5  2002/05/16 21:07:14  egouvea
- * norm was requesting some parameters that it doesn't really need, like
- * feature string definition and size of input vector. Removed the request.
- *
- * Revision 1.4  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.3  2001/03/01 00:47:44  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.16  97/07/16  11:22:03  eht
- * Some changes needed by reorganization of library routines
- * 
- * Revision 1.15  97/03/07  08:46:26  eht
- * - deal w/ change from -veclen -> -ceplen
- * - deal w/ new i/o routines
- * - deal w/ multi-class MLLR changes
- * - fix seg fault bug when not reestimating means/vars
- * 
- * Revision 1.14  1996/09/12  18:13:58  eht
- * Bixa & Vipul MLLR changes
- *
- * Revision 1.12  1996/03/25  15:25:06  eht
- * Deal w/ varying input feature (e.g. MFCC) vector length
- *
- * Revision 1.11  1996/01/26  17:40:51  eht
- * Use new feature module
- * Have gauden() either store the current veclen or get it from
- * feat module.
- *
- * Revision 1.10  1995/12/15  18:37:07  eht
- * Added some type cases for memory alloc/free
- *
- * Revision 1.9  1995/12/14  20:15:43  eht
- * Made info output prose a little more clear.
- *
- * Revision 1.8  1995/11/30  21:03:11  eht
- * Added warning messages if command line says to write a parameter
- * file, but no corresponding count file existed.
- *
- * Revision 1.7  1995/11/16  21:15:31  eht
- * Fixed some bugs for case when no transition matrix
- * counts are gathered
- *
- * Revision 1.6  1995/10/12  18:28:28  eht
- * Get log.h from <s2/log.h>
- *
- * Revision 1.5  1995/10/10  13:09:40  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.4  1995/10/09  15:29:21  eht
- * Removed __FILE__, __LINE__ arguments to ckd_alloc stuff
- *
- * Revision 1.3  1995/08/09  20:36:29  eht
- * Export normalization of gaussian density to gauden.c
- *
- * Revision 1.2  1995/06/20  12:05:19  eht
- * Removed output of dnom
- *
- * Revision 1.1  1995/06/02  20:35:38  eht
- * Initial revision
- *
- *
- */

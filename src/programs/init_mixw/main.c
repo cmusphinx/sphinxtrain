@@ -387,7 +387,7 @@ init_mixw()
 		    i, tmp_veclen[i], veclen[i]);
 	}
     }
-    ckd_free((void *)tmp_veclen);
+    ckd_free(tmp_veclen);
 
     E_INFO("Reading dest %s\n",
 	   cmd_ln_str("-dest_moddeffn"));

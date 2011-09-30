@@ -343,8 +343,8 @@ map_update(void)
     uint32 n_cb, n_cb_rd;
     uint32 n_stream, n_stream_rd;
     uint32 n_density, n_density_rd;
-    const uint32 *veclen = NULL;
-    const uint32 *veclen_rd = NULL;
+    uint32 *veclen = NULL;
+    uint32 *veclen_rd = NULL;
 
     const char **accum_dir;
     const char *si_mixw_fn;
@@ -458,7 +458,7 @@ map_update(void)
 		E_FATAL("Mimsatch in tranition matrices from %s\n", accum_dir[i]);
 	}
     }
-    ckd_free((void *)veclen_rd);
+    ckd_free(veclen_rd);
 
     /* Allocate MAP parameters */
     map_mean  = gauden_alloc_param(n_cb, n_stream, n_density, veclen);
@@ -582,26 +582,26 @@ map_update(void)
 			 n_state)!= S3_SUCCESS)
 	    E_FATAL("Unable to write MAP transition matrices to %s\n",map_tmat_fn);
 
-    ckd_free((void *)veclen);
+    ckd_free(veclen);
     gauden_free_param(si_mean);
     gauden_free_param(si_var);
     if (si_mixw)
-	ckd_free_3d((void *)si_mixw);
+	ckd_free_3d(si_mixw);
     if (si_tmat)
-	ckd_free_3d((void *)si_tmat);
+	ckd_free_3d(si_tmat);
     gauden_free_param(wt_mean);
     gauden_free_param(wt_var);
-    ckd_free_3d((void *)wt_dcount);
+    ckd_free_3d(wt_dcount);
     if (map_mean)
 	gauden_free_param(map_mean);
     if (map_var)
 	gauden_free_param(map_var);
     if (map_tau)
-	ckd_free_3d((void *)map_tau);
+	ckd_free_3d(map_tau);
     if (map_mixw)
-	ckd_free_3d((void *)map_mixw);
+	ckd_free_3d(map_mixw);
     if (map_tmat)
-	ckd_free_3d((void *)map_tmat);
+	ckd_free_3d(map_tmat);
     
     return S3_SUCCESS;
 }

@@ -160,8 +160,7 @@ agg_st_seg(model_def_t *mdef,
 
     for (seq_no = corpus_get_begin(); corpus_next_utt(); seq_no++) {
 	if (!(seq_no % 250)) {
-	    fprintf(stderr, " [%u]", seq_no);
-	    fflush(stderr);
+	    E_INFOCONT(" [%u]", seq_no);
 	}
 	
 	    if (mfcc) {

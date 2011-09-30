@@ -93,6 +93,7 @@ main(int argc, char *argv[])
 		if (veclen[i] != r_veclen[i])
 			E_FATAL("Size of feature stream %d in variances doesn't match means: %d != %d\n",
 				i, r_veclen[i], veclen[i]);
+	ckd_free(r_veclen);
 
 	/* Build one kd-tree for each feature stream. */
 	root = ckd_calloc(n_feat, sizeof(*root));

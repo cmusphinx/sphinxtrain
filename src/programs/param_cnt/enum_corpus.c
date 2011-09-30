@@ -44,25 +44,22 @@
  *********************************************************************/
 
 #include "enum_corpus.h"
-
 #include "cnt_fn.h"
 #include "mk_sseq.h"
-
-/* BHIKSHA FIX */
 #include "phone_cnt.h"
-/* END BHIKSHA FIX */
+
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/prim_type.h>
 
 #include <s3/ck_seg.h>
-#include <sphinxbase/prim_type.h>
 #include <s3/corpus.h>
 #include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
 #include <s3/vector.h>
-#include <sphinxbase/ckd_alloc.h>
 #include <s3/s3.h>
 
 #include <stdio.h>
-
+
 int
 enum_corpus(lexicon_t *lex,
 	    model_def_t *mdef,
@@ -110,14 +107,12 @@ enum_corpus(lexicon_t *lex,
 	    E_FATAL("Unable to read word transcript for %s\n", corpus_utt_brief_name());
 	}
 
-/* BHIKSHA FIX; IF ONLY PHONE COUNTS WANTED DONT NEED STATE SEGS */
         if (cnt_fn != phone_cnt){
 	    if (corpus_get_seg(&seg, &n_frame) != S3_SUCCESS) {
 	        E_FATAL("Unable to read Viterbi state segmentation for %s\n",
 		    corpus_utt_brief_name());
             }
 	}
-/* END BHIKSHA FIX */
 	    
 	word = mk_wordlist(trans, &n_word);
 	phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
@@ -126,7 +121,6 @@ enum_corpus(lexicon_t *lex,
 	    continue;
 	}
 
-/* BHIKSHA FIX; THIS STEP ONLY IF WE NEED STATE COUNTS */
         if (cnt_fn != phone_cnt){
 	    /* check to see whether the word transcript and dictionary entries
 	       agree with the state segmentation */
@@ -165,28 +159,3 @@ enum_corpus(lexicon_t *lex,
     
     return S3_SUCCESS;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:32  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/03/07  08:40:21  eht
- * Initial revision
- * 
- * Revision 1.1  1996/03/25  15:21:20  eht
- * Initial revision
- *
- *
- */

@@ -61,7 +61,7 @@ s3gau_read_maybe_full(const char *fn,
 		      uint32 *out_n_mgau,
 		      uint32 *out_n_feat,
 	  	      uint32 *out_n_density,
-		      const uint32 **out_veclen,
+		      uint32 **out_veclen,
 		      uint32 need_full)
 {
     FILE *fp;
@@ -187,7 +187,7 @@ s3gau_read_full(const char *fn,
 		uint32 *out_n_mgau,
 		uint32 *out_n_feat,
 		uint32 *out_n_density,
-		const uint32 **out_veclen)
+		uint32 **out_veclen)
 {
     return s3gau_read_maybe_full(fn, out, out_n_mgau, out_n_feat, 
                                  out_n_density, out_veclen, TRUE);

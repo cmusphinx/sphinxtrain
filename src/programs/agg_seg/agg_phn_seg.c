@@ -94,8 +94,7 @@ agg_phn_seg(lexicon_t *lex,
 
     while (corpus_next_utt()) {
 	if ((++tick_cnt % 500) == 0) {
-	    printf("[%u] ", tick_cnt);
-	    fflush(stdout);
+	    E_INFOCONT("[%u] ", tick_cnt);
 	}
 
 	if (corpus_get_sent(&trans) != S3_SUCCESS) {

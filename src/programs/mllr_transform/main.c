@@ -163,7 +163,7 @@ mllr_adapt_mean(const char *outmeanfn,
 
     uint32 	 n_mgau_rd;
     uint32 	 n_feat_rd;
-    const uint32 *veclen_rd = NULL;
+    uint32 	*veclen_rd = NULL;
 
     uint32  	 n_mllr_class;
 
@@ -207,7 +207,7 @@ mllr_adapt_mean(const char *outmeanfn,
             }
         }
     }
-    ckd_free((void *)veclen_rd);
+    ckd_free(veclen_rd);
 
     gau_begin = 0;
     if (cdonly)
@@ -301,7 +301,7 @@ mllr_adapt_gaucnt(const char *outgaufn,
             }
         }
     }
-    ckd_free((void *)veclen_rd);
+    ckd_free(veclen_rd);
 
     gau_begin = 0;
     if (cdonly)

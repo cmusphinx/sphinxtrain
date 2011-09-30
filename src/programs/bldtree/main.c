@@ -155,11 +155,9 @@ init(model_def_t **out_mdef,
      uint32 *out_mixw_s,
      float32 *****out_mixw,
      float32 *****out_mixw_occ,
-   /* ADDITIONS FOR CONTINUOUS_TREES - 18 May 98 */
      float32 *****out_mean,
      float32 *****out_var,
      uint32   **out_veclen,
-   /* END ADDITIONS FOR CONTINUOUS_TREES */
      uint32 *out_n_model,
      uint32 *out_n_state,
      uint32 *out_n_stream,
@@ -192,9 +190,7 @@ init(model_def_t **out_mdef,
     float32 *istwt;
     const char **stwt_str;
     quest_t *all_q;
-/* MODIFICATION FOR CONTEXT CHECK */
     uint32 n_l_q, n_r_q;
-/* END MODIFICATIONS FOR CONTEXT CHECK */
     uint32 n_all_q;
     uint32 n_phone_q, n_wdbndry;
     float64 norm;
@@ -202,10 +198,9 @@ init(model_def_t **out_mdef,
     float32 mwfloor;
     float64 wt_ent;
     float64 s_wt_ent=0;
-/* ADDITION FOR CONTINUOUS_TREES, 18 May 98 */
     char*   type;
     uint32  continuous;
-    const uint32  *l_veclen, *t_veclen;
+    uint32  *l_veclen, *t_veclen;
     uint32  l_nstates, t_nstates;
     uint32  t_nfeat, t_ndensity;
     vector_t  ***fullmean;
@@ -218,7 +213,6 @@ init(model_def_t **out_mdef,
     
     char      *cntflag;
     float32   cntthreshold,stcnt;
-/* END ADDITION FOR CONTINUOUS_TREES */
 
     
 
@@ -262,10 +256,8 @@ init(model_def_t **out_mdef,
 	}
     }
 
-    /*ADDITION - CHECK FOR NUMBER OF OCCURANCES OF STATE */
     cntflag = (char *)ckd_calloc(p_e-p_s+1,sizeof(char));
     cntthreshold = cmd_ln_float32("-cntthresh");
-    /* END ADDITION - CHECK FOR NUMBER OF OCCURANCES OF STATE */
 
     /* Find first and last mixing weight used for p_s through p_e */
     mixw_s = mdef->defn[p_s].state[0];
@@ -299,7 +291,6 @@ init(model_def_t **out_mdef,
 	}
     }
 
-    /*ADDITION FOR STATE COUNT CHECK */
     for (i=p_s,j=0,mm=0; i<=p_e ;i++,j++) { 
         cntflag[j] = 1;
         for (k=0; k < n_state; k++) {
@@ -314,7 +305,6 @@ init(model_def_t **out_mdef,
         }
         if (cntflag[j]==1) mm++;
     }
-    /* END ADDITION FOR STATE COUNT CHECK */
 
     n_model = mm;
     *out_n_model = n_model;
@@ -365,8 +355,6 @@ init(model_def_t **out_mdef,
     *out_mixw_occ = mixw_occ;
     *out_mixw = mixw;
 
-    /* MODIFICATION FOR STATE COUNT CHECK */
-    /* Re-index mixing weights by model and topological state position */
     for (i = p_s, j = 0, mm = 0; i <= p_e; i++, mm++) {
         if (cntflag[mm]==1) {
 	    for (k = 0; k < n_state; k++) {
@@ -376,13 +364,10 @@ init(model_def_t **out_mdef,
             j++;
 	}
     }
-    /* END MODIFICATION FOR STATE COUNT CHECK */
 
     assert(j == n_model);
     mwfloor = cmd_ln_float32("-mwfloor");
 
-/* ADDITIONS FOR CONTINUOUS_TREES 18 May 98.
-   If DISCRETE HMM, GET PROBABILITIES, ELSE SIMPLY GET MEANS AND VARIANCES */
     type = cmd_ln_str("-ts2cbfn");
     if (strcmp(type,".semi.")!=0 && strcmp(type,".cont.") != 0)
         E_FATAL("Type %s unsupported; trees can only be built on types .semi. or .cont.\n",type);
@@ -397,11 +382,6 @@ init(model_def_t **out_mdef,
         E_FATAL("Attempt to build trees on semi-continuous HMMs with %d < 256 gaussians!\n****A minimum of 256 gaussians are expected!\n",n_density);
     }
 #endif
-/* END ADDITIONS FOR CONTINUOUS_TREES */
-
-    
-/* MODIFICATIONS FOR CONTINUOUS_TREES: Added "if (continuous==0)" to lines relating
-   to wt_ent */
 
     for (s = 0, wt_ent = 0; s < n_state; s++) {
 	if (continuous==0) s_wt_ent = 0;
@@ -429,10 +409,7 @@ init(model_def_t **out_mdef,
     }
 
     if (continuous == 0) E_INFO("%u-class entropy: %e\n", n_model, wt_ent);
-/* END MODIFICATIONS FOR CONTINUOUS_TREES */
 
-/* ADDITIONS FOR CONTINUOUS_TREES 18 May 98.
-   If DISCRETE HMM, GET PROBABILITIES, ELSE SIMPLY GET MEANS AND VARIANCES */
     if (continuous == 1) {
 	int32 var_is_full = cmd_ln_int32("-fullvar");
         /* Read Means and Variances; perform consistency checks */
@@ -443,7 +420,7 @@ init(model_def_t **out_mdef,
                        &t_ndensity,
                        &l_veclen) != S3_SUCCESS)
             E_FATAL("Error reading mean file %s\n",cmd_ln_str("-meanfn"));
-        *out_veclen = (uint32 *)l_veclen;
+        *out_veclen = l_veclen;
         if (t_nfeat != n_stream && t_ndensity != n_density)
             E_FATAL("Mismatch between Mean and Mixture weight files\n");
 
@@ -485,7 +462,6 @@ init(model_def_t **out_mdef,
         var = (float32 ****)ckd_calloc_4d(n_model,n_state,n_stream,sumveclen,sizeof(float32));
         varfloor = cmd_ln_float32("-varfloor");
  
-        /* MODIFICATION FOR STATE COUNT CHECK */
         for (i = p_s, j = 0, m = mixw_s, mm = 0; i <= p_e; i++, mm++) {
             if (cntflag[mm]==1) {
                 for (k = 0; k < n_state; k++, m++) {
@@ -532,7 +508,6 @@ init(model_def_t **out_mdef,
             }
             else m += n_state; /* account for states of skipped model */
         }
-        /* END MODIFICATION FOR STATE COUNT CHECK */
         assert(j == n_model);
 
         /* Now n_density = 1 */
@@ -546,7 +521,6 @@ init(model_def_t **out_mdef,
 	if (fullvar_full)
 	    gauden_free_param_full(fullvar_full);
     }
-/* END ADDITIONS FOR CONTINUOUS_TREES */
 
 
     /*
@@ -556,7 +530,6 @@ init(model_def_t **out_mdef,
     dfeat = (uint32 **)ckd_calloc_2d(n_model, N_DFEAT, sizeof(uint32));
     *out_dfeat = dfeat;
 
-    /* MODIFICATION FOR STATE COUNT CHECK */
     for (p = p_s, j = 0, mm = 0; p <= p_e; p++, mm++) {
         if (cntflag[mm] == 1) {
 	    acmod_set_id2tri(mdef->acmod_set, &b, &l, &r, &pn, p);
@@ -570,7 +543,6 @@ init(model_def_t **out_mdef,
     }
     assert(j == n_model);
     ckd_free(cntflag);
-    /* END MODIFICATION FOR STATE COUNT CHECK */
 
     psetfn = cmd_ln_str("-psetfn");
 
@@ -578,14 +550,9 @@ init(model_def_t **out_mdef,
     *out_pset = pset = read_pset_file(psetfn, mdef->acmod_set, &n_pset);
     *out_n_pset = n_pset;
 
-/* CONTEXT CHECK: MODIFY TO HANDLE LEFT AND RIGHT CONTEXT QUESTIONS 
-   SEPARATELY IF NEEDED */
-
     /* Determine the # of phone sets and word boundary
      * questions there are */
-    /* MODIFICATION FOR CONTEXT CHECK: COUNT LEFT AND RIGHT SEPARATELY,
-       IF SO MARKED; ELSE COUNT IT TWICE - IT GOES INTO BOTH LEFT AND
-       RIGHT CONTEXTS */
+
     n_l_q = n_r_q = 0;
     for (i = 0, n_phone_q = 0, n_wdbndry = 0; i < n_pset; i++) {
 	if (pset[i].member){
@@ -621,10 +588,6 @@ init(model_def_t **out_mdef,
 	   n_all_q, 2 * n_phone_q, 2 * n_wdbndry);
     E_INFO("%u Left Only questions, and %u Right Only questions\n",
            2*n_l_q, 2*n_r_q);
-
-   /* END MODIFICATION FOR CONTEXT CHECK */
-   /* MODIFICATION FOR CONTEXT CHECK : CREATE SEPARATE LEFT AND RIGHT
-      QUESTIONS WHERE NECESSARY */
 
     /* Generate all the L simple questions to be asked when generating
      * simple trees */
@@ -706,7 +669,6 @@ init(model_def_t **out_mdef,
 	  E_ERROR("Invalid phoneme set %s\n", pset[i].name);
 
     }
-/* END MODIFICATION FOR CONTEXT CHECK */
 
     return S3_SUCCESS;
 }
@@ -717,11 +679,9 @@ int main(int argc, char *argv[])
 {
     float32 ****mixw_occ = NULL;
     float32 ****mixw = NULL;
-/* ADDITIONS FOR CONTINUOUS_TREES: 18 May 98 */
     float32 ****means = NULL;
     float32 ****vars = NULL;
     uint32  *veclen = NULL;
-/* END ADDITIONS FOR CONTINUOUS_TREES */
     uint32 mixw_s;
     uint32 n_model = 0;
     uint32 n_state = 0;
@@ -748,7 +708,6 @@ int main(int argc, char *argv[])
 
     state = cmd_ln_int32("-state");
 
-/* MODIFICATION FOR CONTINUOUS_TREES 18 May 98: PASSING &means, &vars and &veclen */
     if (init(&mdef,
 	     phn,
 	     state,
@@ -768,7 +727,6 @@ int main(int argc, char *argv[])
 	     &n_pset,
 	     &all_q,
 	     &n_all_q) != S3_SUCCESS) {
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 	E_FATAL("Initialization failed\n");
     }
 
@@ -783,7 +741,6 @@ int main(int argc, char *argv[])
 
     /* Build the composite tree.  Recursively generates
     * the composite decision tree.  See dtree.c in libcommon */
-/* MODIFICATION FOR CONTINUOUS_TREES - PASS THE MEAN, VAR etc. TOO */
     tr = mk_tree_comp(mixw_occ, means, vars, veclen, n_model, n_state, 
                       n_stream, n_density, stwt,
 		      id, n_model,
@@ -796,7 +753,6 @@ int main(int argc, char *argv[])
 		      cmd_ln_int32("-csplitmax"),
 		      cmd_ln_float32("-csplitthr"),
 		      mwfloor);
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 
     /* Save it to a file */
     fp = fopen(cmd_ln_str("-treefn"), "w");
