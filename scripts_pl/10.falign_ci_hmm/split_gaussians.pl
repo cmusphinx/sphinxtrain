@@ -53,13 +53,30 @@ use SphinxTrain::Util;
 # script.
 # ***************************************************************************
 
-die "Usage: $0 [-cfg <config file>] <current n_gaussians> <increase>\n"
-    if @ARGV != 2;
+die "Usage: $0 [-cfg <config file>] <current n_gaussians> <increase>\n" if @ARGV != 2;
+
+# With semi continuous models, we already start with the right number
+# of components
+if ($ST::CFG_HMM_TYPE ne ".cont.") {
+  Log("Split Gaussian not performed for semi continuous or tied-mixture\n");
+  exit 0;
+}
+
+if ($ST::CFG_FALIGN_CI_MGAU ne "yes") {
+  Log ("Split Gaussian not performed unless \$CFG_FALIGN_CI_MGAU = 'yes'\n", 'phase');
+  exit 0;
+}
+
 my ($n_current, $n_inc) = @ARGV;
 if ($n_current + $n_inc > $ST::CFG_FINAL_NUM_DENSITIES) {
   LogError("Increase in number of Gaussians beyond the desired total\n" .
 	   "Current: $n_current, increase by: $n_inc, desired total: $ST::CFG_FINAL_NUM_DENSITIES\n");
   exit -3;
+}
+
+# If $n_inc isn't at least 1, there's nothing else to do
+if ($n_inc <= 0) {
+  exit 0;
 }
 
 use vars qw($MLLT_FILE $MODEL_TYPE);
@@ -108,23 +125,6 @@ copy "$src_tmatfn", "$backup_tmatfn";
 
 # The transition file won't change, so just copy it
 copy "$src_tmatfn", "$dest_tmatfn";
-
-# With semi continuous models, we already start with the right number
-# of components
-if ($ST::CFG_HMM_TYPE ne ".cont.") {
-  Log("Split Gaussian not performed for semi continuous or tied-mixture\n");
-  exit 0;
-}
-
-if ($ST::CFG_FALIGN_CI_MGAU ne "yes") {
-  Log ("Split Gaussian not performed unless \$CFG_FALIGN_CI_MGAU = 'yes'\n", 'phase');
-  exit 0;
-}
-
-# If $n_inc isn't at least 1, there's nothing else to do
-if ($n_inc <= 0) {
-  exit 0;
-}
 
 my $logdir = "$ST::CFG_LOG_DIR/10.falign_ci_hmm";
 mkdir ($logdir,0777);
