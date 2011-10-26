@@ -1077,8 +1077,8 @@ lat_fwd_bwd(s3lattice_t *lat)
     
     if (lat->arc[i].good_arc == 1) {
       /* get the acoustic and lm socre for a word hypothesis */
-      ac_score = lat->arc[i].ac_score;
-      lm_score = lat->arc[i].lm_score * lm_scale;
+      ac_score = lat->arc[i].ac_score / lm_scale;
+      lm_score = lat->arc[i].lm_score;
       
       /* compute alpha */
       for (j=0; j<lat->arc[i].n_prev_arcs; j++) {
@@ -1107,8 +1107,8 @@ lat_fwd_bwd(s3lattice_t *lat)
     
     if (lat->arc[i].good_arc == 1) {
       /* get the acoustic and lm socre for a word hypothesis */
-      ac_score = lat->arc[i].ac_score;
-      lm_score = lat->arc[i].lm_score * lm_scale;
+      ac_score = lat->arc[i].ac_score / lm_scale;
+      lm_score = lat->arc[i].lm_score;
       
       /* compute beta */
       for (j=0; j<lat->arc[i].n_next_arcs; j++) {
@@ -1136,8 +1136,8 @@ lat_fwd_bwd(s3lattice_t *lat)
       lat->arc[i].gamma = LOG_ZERO;
       if (lat->arc[i].good_arc == 1)
 	{
-	  ac_score = lat->arc[i].ac_score;
-	  lm_score = lat->arc[i].lm_score * lm_scale;
+	  ac_score = lat->arc[i].ac_score / lm_scale;
+	  lm_score = lat->arc[i].lm_score;
 	  lat->arc[i].gamma = lat->arc[i].alpha + lat->arc[i].beta - (ac_score + lm_score + lat->prob);
 	}
     }
