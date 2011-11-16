@@ -1,4 +1,6 @@
-EXTRA_DIST = \
+scriptsdir=$(pkglibdir)/python
+
+nobase_scripts_SCRIPTS = \
 	setup.py \
 	cmusphinx \
 	cmusphinx/lat_rescore_fst.py \
@@ -68,3 +70,5 @@ EXTRA_DIST = \
 	cmusphinx/lattice.py \
 	cmusphinx/lattice_conv.py \
 	cmusphinx/s3gaucnt.py
+
+EXTRA_DIST = $(nobase_scripts_SCRIPTS)

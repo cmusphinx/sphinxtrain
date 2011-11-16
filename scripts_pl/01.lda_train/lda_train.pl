@@ -60,8 +60,8 @@ my @bwaccumdirs = map catdir($ST::CFG_BWACCUM_DIR, $_),
 closedir(ACCUMDIR);
 
 # Add PYTHONPATH
-$ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_BASE_DIR, 'python');
-my $rv = RunTool(catfile($ST::CFG_BASE_DIR, 'python', 'cmusphinx', 'lda.py'),
+$ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_SPHINXTRAIN_DIR, 'python');
+my $rv = RunTool(catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'cmusphinx', 'lda.py'),
 		 $logfile, 0,
 		 $ldafile, @bwaccumdirs);
 
