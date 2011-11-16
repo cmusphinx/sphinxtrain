@@ -51,8 +51,8 @@ sub new {
     my $this = shift;
     my $class = ref $this || $this;
 
-    if (-x '/usr/pbs/bin/qsub') {
-	unshift(@_, pbsbin => '/usr/pbs/bin');
+    if (-x '/usr/local/bin/qsub') {
+	unshift(@_, pbsbin => '/usr/local/bin');
     }
     my $self = {@_};
     bless $self, $class;
