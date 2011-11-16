@@ -725,7 +725,8 @@ mmi_viterbi_run(float64 *log_forw_prob,
     uint32 **bp;
     uint32 *n_active_astate;
     uint32 *active_cb;
-    uint32 i;
+    uint32 i, j;
+    int32 t;
     int ret;
     int final_state_error = 0;
     float64 log_fp;/* accumulator for the log of the probability
@@ -775,7 +776,13 @@ mmi_viterbi_run(float64 *log_forw_prob,
     /* Calculate log[ p( O | \lambda ) ] */
     assert(active_alpha[n_obs-1][i] > 0);
     log_fp = log(active_alpha[n_obs-1][i]);
-
+    for (t = 0; t < n_obs; t++) {
+        assert(scale[t] > 0);
+        log_fp -= log(scale[t]);
+        for (j = 0; j < inv->gauden->n_feat; j++) {
+            log_fp += dscale[t][j];
+        }
+    }
     *log_forw_prob = log_fp;
 
  all_done:
