@@ -117,7 +117,7 @@
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalDependencies>sphinxbase.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\..\..\sphinxbase\bin\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\..\sphinxbase\bin\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
