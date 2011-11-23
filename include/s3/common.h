@@ -61,7 +61,6 @@ extern "C" {
 #include <s3/vector.h>
 #include <s3/prefix_upto.h>
 #include <s3/corpus.h>
-#include <s3/n_words.h>
 #include <s3/remap.h>
 #include <s3/acmod_set.h>
 #include <s3/lexicon.h>
@@ -76,36 +75,3 @@ extern "C" {
 #endif
 
 #endif /* COMMON_H */ 
-
-
-/*
- * Log record.  Maintained by CVS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.4  97/07/16  11:39:10  eht
- * *** empty log message ***
- * 
- * Revision 1.3  95/10/09  20:55:35  eht
- * Changes needed for prim_type.h
- * 
- * Revision 1.2  1995/09/08  19:13:52  eht
- * Updated to remove references to pset module and add references
- * to acmod_set module
- *
- * Revision 1.1  1995/08/15  13:44:14  eht
- * Initial revision
- *
- *
- */

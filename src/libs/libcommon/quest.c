@@ -62,7 +62,7 @@ s3parse_quest(pset_t *pset, uint32 n_pset, quest_t *q, char *in_str)
     s = in_str;
     
     /* skip leading whitespace */
-    for (; *s != '\0' && isspace((int)*s); s++);
+    for (; *s != '\0' && isspace((unsigned char)*s); s++);
 
     if (*s == '\0')	/* Nothing to parse */
 	return s;
@@ -107,7 +107,7 @@ s3parse_quest(pset_t *pset, uint32 n_pset, quest_t *q, char *in_str)
     *sp = ' ';	/* undo set to null */
 
     /* skip whitespace */
-    for (; *s != '\0' && isspace((int)*s); s++);
+    for (; *s != '\0' && isspace((unsigned char)*s); s++);
 
     if (s[0] == '-') {
 	if (s[1] == '1') {
@@ -125,7 +125,7 @@ s3parse_quest(pset_t *pset, uint32 n_pset, quest_t *q, char *in_str)
     }
 
     /* skip trailing whitespace, if any */
-    for (; *s != '\0' && isspace((int)*s); s++);
+    for (; *s != '\0' && isspace((unsigned char)*s); s++);
 
     return s;
 }
@@ -144,7 +144,7 @@ count_quest_in_conj(pset_t *pset,
 
     t = in_str;
 
-    for (; *t != '\0' && isspace((int)*t); t++);
+    for (; *t != '\0' && isspace((unsigned char)*t); t++);
     if (*t == ')') {
 	E_ERROR("Empty conjunction\n");
 	
@@ -154,7 +154,7 @@ count_quest_in_conj(pset_t *pset,
 	t = s3parse_quest(pset, n_pset, q, t);
 	++n_quest;
 
-	for (; t && *t != '\0' && isspace((int)*t); t++);
+	for (; t && *t != '\0' && isspace((unsigned char)*t); t++);
     }
     if (t == NULL) {
 	E_ERROR("Error while parsing conjunction: %s\n", in_str);
@@ -187,7 +187,7 @@ s3parse_conj(pset_t *pset,
     if (*s == '\0') return s;
 
     /* skip leading whitespace */
-    for (; *s != '\0' && isspace((int)*s); s++);
+    for (; *s != '\0' && isspace((unsigned char)*s); s++);
     
     if (*s == '\0') return s;
 
@@ -200,7 +200,7 @@ s3parse_conj(pset_t *pset,
 	return NULL;
     }
 
-    for (; *s != '\0' && isspace((int)*s); s++);
+    for (; *s != '\0' && isspace((unsigned char)*s); s++);
 
     if (*s == '\0') {
 	E_ERROR("No terms and close paren in conjunction\n", in_str);
@@ -216,7 +216,7 @@ s3parse_conj(pset_t *pset,
 
     for (i = 0; i < n_quest; i++) {
 	s = s3parse_quest(pset, n_pset, &termlst[i], s);
-	for (; *s != '\0' && isspace((int)*s); s++);
+	for (; *s != '\0' && isspace((unsigned char)*s); s++);
     }
 
     assert(*s == ')');
@@ -235,7 +235,7 @@ s3cnt_q_term(char *in_str)
     s = in_str;
 
     /* skip any leading whitespace */
-    for (; *s != '\0' && isspace((int)*s); s++);
+    for (; *s != '\0' && isspace((unsigned char)*s); s++);
     
     /* assume everything is well-formed for the moment.
      * later processing will catch syntax errors
@@ -258,7 +258,7 @@ s3parse_comp_quest(pset_t *pset,
 
     s = in_str;
 
-    for (; *s != '\0' && isspace((int)*s); s++);
+    for (; *s != '\0' && isspace((unsigned char)*s); s++);
 
     if (*s == '\0') {
 	E_ERROR("Empty string seen for composite question\n");
@@ -312,7 +312,7 @@ parse_simple_q(quest_t *q,
     len = strlen(q_str);
 
     /* skip leading whitespace */
-    for (i = 0; i < len && isspace((int)q_str[i]); i++);
+    for (i = 0; i < len && isspace((unsigned char)q_str[i]); i++);
 
     if (i == len)
 	return;
@@ -651,33 +651,3 @@ simplify_comp_quest(comp_quest_t *q,
      * question that was simplified */
     return ret;
 }
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.4  2003/11/18 21:07:25  egouvea
- * Got rid of warning casting the argument to "isspace".
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.3  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.2  96/06/17  14:40:41  eht
- * *** empty log message ***
- * 
- * Revision 1.1  1996/03/25  15:31:39  eht
- * Initial revision
- *
- *
- */

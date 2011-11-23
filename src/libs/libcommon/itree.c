@@ -308,40 +308,3 @@ itree_enum()
 
     return base->cell[posn].child;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:39  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.6  97/06/23  07:41:50  eht
- * Initialize a variable so compiler won't emit "potentially uninitialized" messages
- * 
- * Revision 1.5  96/06/17  14:39:22  eht
- * Removed unused local variables
- * 
- * Revision 1.4  1996/03/04  15:54:26  eht
- * Added ability to walk the index trees
- *
- * Revision 1.3  1995/10/09  20:56:36  eht
- * Changes needed for prim_type.h
- *
- * Revision 1.2  1995/10/09  15:02:03  eht
- * Changed ckd_alloc interface to get rid of __FILE__, __LINE__ arguments
- *
- * Revision 1.1  1995/06/02  14:52:54  eht
- * Initial revision
- *
- *
- */

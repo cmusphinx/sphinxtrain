@@ -1797,46 +1797,3 @@ ins_twigs(dtree_node_t *node,
 
     assert(FALSE);
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2005/07/14  13:41:07  dhdfu
- * Bug 633610 (Carl Quillen): If the data set is very small, we may call
- * prune_leaves() with a leaf node.  Don't try to descend into subnodes
- * in that case!
- * 
- * Revision 1.4  2004/07/21 18:05:39  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.6  97/07/23  10:49:21  eht
- * - Got rid of extraneous function
- * - Added get_node() call to get a tree node with a given id
- * 
- * Revision 1.5  97/07/17  15:25:41  eht
- * Fix bug where prune_subtrees() was giving incorrect count.
- * 
- * Revision 1.4  97/07/17  14:28:37  eht
- * Added prune_lowcnt() function to allow low occupancy states to be pruned.
- * 
- * Revision 1.3  97/07/16  12:17:25  eht
- * Fix bug in tied_state(); order of dfeat is l, b, r not b, l, r
- * 
- * Revision 1.2  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.1  97/07/07  10:53:10  eht
- * Initial revision
- * 
- *
- */

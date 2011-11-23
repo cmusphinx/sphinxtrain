@@ -71,12 +71,6 @@
     <ClCompile Include="..\..\..\..\src\libs\libcommon\mk_ts2ci.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libcommon\mk_wordlist.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libcommon\n_words.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libcommon\prefetch.c">
       <Filter>Source Files</Filter>
     </ClCompile>

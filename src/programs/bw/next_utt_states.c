@@ -47,7 +47,6 @@
 
 #include <s3/lexicon.h>
 #include <s3/model_inventory.h>
-#include <s3/mk_wordlist.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/mk_phone_list.h>
 #include <s3/cvt2triphone.h>
@@ -74,7 +73,10 @@ state_t *next_utt_states(uint32 *n_state,
     state_t *state_seq;
 
     utterance = ckd_salloc(trans);
-    word  = mk_wordlist(utterance, &n_word);
+    n_word = str2words(utterance, NULL, 0);
+    word = ckd_calloc(n_word, sizeof(char*));
+    str2words(utterance, word, n_word);
+    
     phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
 
     if (phone == NULL) {

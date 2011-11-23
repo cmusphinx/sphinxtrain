@@ -43,7 +43,6 @@ pkginclude_HEADERS = \
 	s3/div.h \
 	s3/get_cpu_time.h \
 	s3/get_time.h \
-	s3/n_words.h \
 	s3/mk_ts2ci.h \
 	s3/vector.h \
 	s3/s2_write_cb.h \
@@ -74,7 +73,6 @@ pkginclude_HEADERS = \
 	s3/lexicon.h \
 	s3/prefetch.h \
 	s3/model_def_io.h \
-	s3/mk_wordlist.h \
 	s3/ts2cb.h \
 	s3/btree.h \
 	s3/heap.h \

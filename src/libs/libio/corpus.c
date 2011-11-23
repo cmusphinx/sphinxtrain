@@ -1486,7 +1486,7 @@ corpus_read_next_transcription_line(char **trans)
 
 		/* look for the first non-whitespace character before
 		   the open paren */
-		for (--s; (s >= transcription_line) && isspace((int)*s); s--);
+		for (--s; (s >= transcription_line) && isspace((unsigned char)*s); s--);
 		if (s < transcription_line) {
 		  E_FATAL("Utterance transcription is empty: %s\n", transcription_line);
 		}

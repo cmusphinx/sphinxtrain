@@ -22,7 +22,6 @@ libio_la_SOURCES = \
 	 s3tmat_io.c \
 	 s3ts2cb_io.c \
 	 segdmp.c \
-	 share_ctl.c \
 	 swap.c \
 	 topo_read.c
 

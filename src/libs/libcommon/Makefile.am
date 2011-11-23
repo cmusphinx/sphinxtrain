@@ -23,8 +23,6 @@ libcommon_la_SOURCES = \
 	 mk_sseq.c \
 	 mk_trans_seq.c \
 	 mk_ts2ci.c \
-	 mk_wordlist.c \
-	 n_words.c \
 	 prefetch.c \
 	 prefix_upto.c \
 	 profile.c \

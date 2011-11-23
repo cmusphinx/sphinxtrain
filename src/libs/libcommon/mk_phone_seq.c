@@ -47,7 +47,6 @@
 #include <sphinxbase/err.h>
 
 #include <s3/mk_phone_seq.h>
-#include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
 #include <s3/cvt2triphone.h>
 #include <s3/corpus.h>
@@ -68,7 +67,10 @@ mk_phone_seq(acmod_id_t **out_phone,
     acmod_id_t *phone;
     char *btw_mark;
 
-    word = mk_wordlist(trans, &n_word);
+
+    n_word = str2words(trans, NULL, 0);
+    word = ckd_calloc(n_word, sizeof(char*));
+    str2words(trans, word, n_word);
     phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
     if (phone == NULL) {
 	E_WARN("Unable to produce phonetic transcription for the utterance '%s'.\n", corpus_utt());
@@ -84,25 +86,3 @@ mk_phone_seq(acmod_id_t **out_phone,
 
     return S3_SUCCESS;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */

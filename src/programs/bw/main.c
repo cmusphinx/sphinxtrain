@@ -58,7 +58,6 @@
 #include <s3/prefetch.h>
 #include <s3/profile.h>
 #include <s3/get_host_name.h>
-#include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
 #include <s3/cvt2triphone.h>
 #include <s3/mk_sseq.h>

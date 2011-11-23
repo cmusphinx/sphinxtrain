@@ -48,7 +48,6 @@
 
 #include <s3/segdmp.h>
 #include <s3/corpus.h>
-#include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
 #include <s3/ck_seg.h>
 #include <s3/cvt2triphone.h>
@@ -105,7 +104,10 @@ agg_phn_seg(lexicon_t *lex,
 	    E_FATAL("Unable to read Viterbi state segmentation for %s\n", corpus_utt_brief_name());
 	}
 	    
-	word = mk_wordlist(trans, &n_word);
+	n_word = str2words(trans, NULL, 0);
+	word = ckd_calloc(n_word, sizeof(char*));
+	str2words(trans, word, n_word);
+
 	phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
 	start = ckd_calloc(n_phone, sizeof(uint32));
 	len = ckd_calloc(n_phone, sizeof(uint32));

@@ -51,7 +51,6 @@
 #include <s3/mk_sseq.h>
 #include <s3/ck_seg.h>
 #include <s3/corpus.h>
-#include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
 #include <s3/cvt2triphone.h>
 #include <s3/gauden.h>
@@ -225,7 +224,9 @@ init_gau(lexicon_t *lex,
 			corpus_utt_brief_name());
 	    }
 	    
-	    word = mk_wordlist(trans, &n_word);
+    	    n_word = str2words(trans, NULL, 0);
+    	    word = ckd_calloc(n_word, sizeof(char*));
+	    str2words(trans, word, n_word);
 	    phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
 
 	    /* check to see whether the word transcript and dictionary entries

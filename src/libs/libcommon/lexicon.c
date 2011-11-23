@@ -44,7 +44,6 @@
  *********************************************************************/
 
 #include <s3/lexicon.h>
-#include <s3/n_words.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/hash_table.h>
 #include <sphinxbase/pio.h>
@@ -195,8 +194,8 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 	    continue;
 	}
 
-	/* n_words() counts the # of space separated "words" on a line */
-	n_phone = n_words(line->buf)-1;
+	/* str2words() counts the # of space separated "words" on a line */
+	n_phone = str2words(line->buf, NULL, 0) - 1;
 
 #ifdef LEXICON_VERBOSE
 	E_INFO("%s %d phones\n", line->buf, n_phone);

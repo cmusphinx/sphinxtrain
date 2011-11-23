@@ -53,7 +53,6 @@
 
 #include <s3/ck_seg.h>
 #include <s3/corpus.h>
-#include <s3/mk_wordlist.h>
 #include <s3/mk_phone_list.h>
 #include <s3/vector.h>
 #include <s3/s3.h>
@@ -114,7 +113,10 @@ enum_corpus(lexicon_t *lex,
             }
 	}
 	    
-	word = mk_wordlist(trans, &n_word);
+	n_word = str2words(trans, NULL, 0);
+	word = ckd_calloc(n_word, sizeof(char*));
+	str2words(trans, word, n_word);
+
 	phone = mk_phone_list(&btw_mark, &n_phone, word, n_word, lex);
 	if (phone == NULL) {
 	    E_WARN("Unable to produce phone sequence; skipping utt %s\n", corpus_utt());
