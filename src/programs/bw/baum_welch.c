@@ -60,7 +60,6 @@
 #include <s3/corpus.h>
 #include <sphinxbase/cmd_ln.h>
 
-#include <s3/s2_param.h>
 
 #include <s3/s3.h>
 

@@ -40,8 +40,8 @@
 
 #include <sys_compat/file.h>
 
-#include <s2/byteorder.h>
-#include <s3/s2io.h>
+#include <sphinxbase/byteorder.h>
+#include <sphinxbase/prim_type.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,7 +70,7 @@ areadshort (char *file,
     close (fd);
     return -1;
   }
-  SWAPL(&length);
+  SWAP_INT32(&length);
   /* Just get the file size if we were not given a buffer. */
   if (data_ref == NULL) {
 	  close(fd);
@@ -98,7 +98,7 @@ areadshort (char *file,
   close (fd);
   *data_ref = (short *) data;
   for(offset = 0; offset < length; offset++)
-    SWAPW(*data_ref + offset);
+    SWAP_INT16(*data_ref + offset);
   *length_ref = length;
   return length;
 }

@@ -48,7 +48,6 @@
 #include <s3/mk_sseq.h>
 
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/s2_param.h>
 
 #include <assert.h>
 
@@ -64,7 +63,7 @@ mk_sseq(uint16 *seg,
     uint32 p;
     model_def_entry_t *defn = NULL;
     uint32 s;
-    uint32 n_state = S2_N_STATE-1;	/* BEWARE: this should not stay */
+    uint32 n_state = MAX_N_STATE-1;	/* BEWARE: this should not stay */
     uint16 seg_val;
 
     sseq = ckd_calloc(n_frame, sizeof(uint32));

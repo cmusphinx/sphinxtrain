@@ -46,7 +46,6 @@
 
 #include <s3/model_inventory.h>
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/s2_param.h>
 #include <s3/common.h>
 
 #include <s3/s3mixw_io.h>

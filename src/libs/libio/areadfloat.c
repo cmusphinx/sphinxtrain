@@ -38,9 +38,7 @@
                 conversions when necessary.
  */
 
-#include <s2/byteorder.h>
-
-#include <s3/s2io.h>
+#include <sphinxbase/byteorder.h>
 
 #include <sys_compat/file.h>
 #include <stdio.h>

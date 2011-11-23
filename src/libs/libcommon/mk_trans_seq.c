@@ -46,7 +46,6 @@
  *********************************************************************/
 
 #include <s3/mk_trans_seq.h>
-#include <s3/s2_param.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/s3.h>
 
@@ -66,7 +65,7 @@ mk_trans_seq(uint32 **out_tmat_seq,
     uint32 f;
     uint32 p;
     model_def_entry_t *defn;
-    uint32 n_state = S2_N_STATE-1;	/* BEWARE: this should not stay */
+    uint32 n_state = MAX_N_STATE-1;	/* BEWARE: this should not stay */
     uint16 seg_val;
     uint32 tmat=0;
 

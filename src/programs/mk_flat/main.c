@@ -48,10 +48,8 @@
 #include <s3/model_def_io.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/cmd_ln.h>
-#include <s3/s2_read_seno.h>
 #include <s3/s3mixw_io.h>
 #include <s3/s3tmat_io.h>
-#include <s3/s2_param.h>
 #include <s3/topo_read.h>
 
 #include <stdio.h>

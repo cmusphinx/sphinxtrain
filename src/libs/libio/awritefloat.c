@@ -38,8 +38,8 @@
 		conversions when necessary.
  */
 
-#include <s2/byteorder.h>
-#include <s3/s2io.h>
+#include <sphinxbase/byteorder.h>
+#include <sphinxbase/prim_type.h>
 
 #include <sys_compat/file.h>
 #include <stdio.h>
@@ -60,7 +60,7 @@ awritefloat (char *file,
     return -1;
   }
 
-  SWAPL(&length);
+  SWAP_INT32(&length);
   if (write (fd, (char *) &length, 4) != 4)
   {
     fprintf (stderr, "awritefloat: %s: can't write length\n", file);
@@ -68,10 +68,10 @@ awritefloat (char *file,
     close (fd);
     return -1;
   }
-  SWAPL(&length);
+  SWAP_INT32(&length);
 
   for(offset = 0; offset < length; offset++)
-    SWAPF(data + offset);
+    SWAP_FLOAT32(data + offset);
   size = length * sizeof (float);
   if (write (fd, (char *) data, size) != size)
   {
@@ -81,7 +81,7 @@ awritefloat (char *file,
     return (-1);
   }
   for(offset = 0; offset < length; offset++)
-    SWAPF(data + offset);
+    SWAP_FLOAT32(data + offset);
 
   printf ("Wrote %d floats in %s.\n", length, file);
   close (fd);

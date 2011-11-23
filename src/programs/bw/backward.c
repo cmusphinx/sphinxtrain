@@ -53,7 +53,6 @@
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/state.h>
 #include <s3/profile.h>
-#include <s3/s2_param.h>
 #include <s3/gauden.h>
 #include <s3/s3.h>
 
@@ -62,7 +61,9 @@
 #include <assert.h>
 #include <math.h>
 #include <string.h>
-
+
+#define S2_ALPHA_BETA_EPSILON	0.01
+
 void
 partial_op(float64 *p_op,
 	   float64 op,

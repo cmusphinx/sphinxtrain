@@ -100,7 +100,6 @@
 #include <s3/corpus.h>
 #include <s3/model_inventory.h>
 #include <s3/model_def.h>
-#include <s3/s2_param.h>
 #include <s3/s3.h>
 #include <s3/state_seq.h>
 

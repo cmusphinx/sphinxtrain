@@ -53,7 +53,6 @@
 #include <s3/model_def_io.h>
 #include <s3/s3mixw_io.h>
 #include <sys_compat/file.h>
-#include <s3/s2_param.h>
 #include <s3/s3.h>
 
 #include <sphinxbase/err.h>

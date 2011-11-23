@@ -47,7 +47,6 @@
 
 #include <s3/ck_seg.h>
 
-#include <s3/s2_param.h>
 #include <s3/acmod_set.h>
 #include <s3/s3.h>
 
@@ -63,7 +62,7 @@ ck_seg(acmod_set_t *acmod_set,
     uint32	seg_ci;
     acmod_id_t	trans_ci;
     uint32 f;
-    uint32 n_state = S2_N_STATE-1;	/* # of emitting states/model */
+    uint32 n_state = MAX_N_STATE-1;	/* # of emitting states/model */
 
     if (n_phone == 0) {
 	if (n_frame == 0) 

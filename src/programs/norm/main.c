@@ -59,9 +59,6 @@
 
 #include <sphinxbase/matrix.h>
 
-#include <s3/s2_param.h>
-#include <s2/log.h>
-
 #include <sys_compat/file.h>
 #include <sys_compat/misc.h>
 

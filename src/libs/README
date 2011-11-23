@@ -18,8 +18,6 @@ libio	    : I/O library
 
 libmodinv   : model inventory library
 
-libs2io     : Sphinx-II I/O library
-
 libclust    : Routines for clustering (for VQ etc.)
 	      Routines for merging PDFs (for decision trees)
 

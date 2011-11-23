@@ -53,13 +53,13 @@
 #include <sphinxbase/err.h>
 #include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/byteorder.h>
 
 #include <s3/profile.h>
 #include <s3/remap.h>
 #include <s3/corpus.h>
 #include <s3/s3phseg_io.h>
 #include <s3/model_def.h>
-#include <s2/byteorder.h>
 
 #include <math.h>
 #include <string.h>
@@ -208,7 +208,7 @@ write_s2stseg(const char *filename,
     }
 
     word = n_obs;
-    SWAPW(&word);
+    SWAP_INT16(&word);
     fwrite(&word, 2, 1, fh);
 
     stseg = ckd_calloc(n_obs, sizeof(uint16));
@@ -226,7 +226,7 @@ write_s2stseg(const char *filename,
 
 	/* mixw = senone (we hope!) */
 	stseg[t] = state_seq[j].mixw;
-	SWAPW(&stseg[t]);
+	SWAP_INT16(&stseg[t]);
 
 	/* Backtrace. */
 	if (t > 0) {

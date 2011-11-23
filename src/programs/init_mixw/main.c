@@ -62,7 +62,6 @@
 #include <s3/s3gau_io.h>
 
 /* Some SPHINX-II compatibility definitions */
-#include <s3/s2_param.h>
 
 #include <stdio.h>
 #include <math.h>

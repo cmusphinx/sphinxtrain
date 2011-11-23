@@ -31,7 +31,6 @@
 #include <s3/s3cb2mllr_io.h>
 
 /* Some SPHINX-II compatibility definitions */
-#include <s3/s2_param.h>
 #include <s3/s3.h>
 #include <sphinxbase/err.h>
 

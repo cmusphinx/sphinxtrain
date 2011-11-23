@@ -52,10 +52,6 @@
 #include <s3/mllr_io.h>
 #include <s3/s3cb2mllr_io.h>
 
-/* Some SPHINX-II compatibility definitions */
-#include <s3/s2_param.h>
-#include <s2/log.h>
-
 #include <sys_compat/file.h>
 #include <sys_compat/misc.h>
 

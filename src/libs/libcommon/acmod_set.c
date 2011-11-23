@@ -90,7 +90,6 @@
 #include <s3/acmod_set.h>
 
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/s2_param.h>
 #include <s3/s3.h>
 
 #include <stdio.h>

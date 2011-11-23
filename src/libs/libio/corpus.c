@@ -74,7 +74,6 @@
 #include <s3/prefetch.h>
 #include <s3/mllr_io.h>
 #include <s3/acmod_set.h>
-#include <s3/s2io.h>
 #include <s3/s3.h>
 
 #include <stdio.h>

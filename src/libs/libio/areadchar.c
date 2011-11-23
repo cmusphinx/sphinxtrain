@@ -38,8 +38,8 @@
 		conversions when necessary.
  */
 
-#include <s2/byteorder.h>
-#include <s3/s2io.h>
+#include <sphinxbase/byteorder.h>
+#include <sphinxbase/prim_type.h>
 
 #include <sys_compat/file.h>
 #include <stdio.h>
@@ -65,7 +65,7 @@ areadchar (char *file,
     close (fd);
     return -1;
   }
-  SWAPL(&length);
+  SWAP_INT32(&length);
   /* Just get the file size if we were not given a buffer. */
   if (data_ref == NULL) {
 	  close(fd);

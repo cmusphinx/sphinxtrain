@@ -37,7 +37,6 @@
 #ifndef __CDCN_NORM_HEADER_H__
 #define __CDCN_NORM_HEADER_H__
 #include <s3/common.h>
-#include <s3/s2io.h>
 
 int readdistribution(char *filename, float ***mean,
 		     float ***vars, float **prob, int *ncodes, int *Ndim);

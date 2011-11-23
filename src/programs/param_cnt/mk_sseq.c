@@ -46,9 +46,9 @@
  *********************************************************************/
 
 #include "mk_sseq.h"
+#include "s3/s3.h"
 
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/s2_param.h>
 
 #include <assert.h>
 
@@ -64,7 +64,7 @@ mk_sseq(uint16 *seg,
     uint32 p;
     model_def_entry_t *defn=0;
     uint32 s;
-    uint32 n_state = S2_N_STATE-1;	/* BEWARE: this should not stay */
+    uint32 n_state = MAX_N_STATE-1;	/* BEWARE: this should not stay */
     uint16 seg_val;
 
     sseq = ckd_calloc(n_frame, sizeof(uint32));
@@ -94,29 +94,3 @@ mk_sseq(uint16 *seg,
 
     return sseq;
 }
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:32  awb
- * *** empty log message ***
- *
- * Revision 1.2  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.1  1996/03/25  15:21:20  eht
- * Initial revision
- *
- *
- */

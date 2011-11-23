@@ -42,7 +42,6 @@
 #define PI	3.1415927
 
 #include <s3/common.h>
-#include <s3/s2io.h>
 #include <s3/s3.h>
 
 float gauss(float *x,

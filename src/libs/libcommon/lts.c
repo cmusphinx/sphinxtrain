@@ -46,7 +46,9 @@
 #include "s3/common.h"
 #include "s3/lts.h"
 #include "s3/lexicon.h"
-#include "s2/byteorder.h"
+
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/byteorder.h>
 
 static cst_lts_phone apply_model(cst_lts_letter *vals,
 				 cst_lts_addr start,
@@ -186,7 +188,7 @@ static cst_lts_phone apply_model(cst_lts_letter *vals,cst_lts_addr start,
     /* Hmm this still might be wrong on some machines that align the      */
     /* structure cst_lts_rules differently                                */
     cst_lts_rule state;
-    unsigned short nstate;
+    uint16 nstate;
     static const int sizeof_cst_lts_rule = 6;
 
     memmove(&state,&model[start*sizeof_cst_lts_rule],sizeof_cst_lts_rule);
@@ -200,7 +202,7 @@ static cst_lts_phone apply_model(cst_lts_letter *vals,cst_lts_addr start,
 	    nstate = state.qfalse;
 	/* This should really happen at compilation time */
 	/* if (WORDS_BIGENDIAN) */ /* byteswap macros are slightly bogus */
-	SWAP_W(nstate);
+	SWAP_INT16(&nstate);
 
 	memmove(&state,&model[nstate*sizeof_cst_lts_rule],sizeof_cst_lts_rule);
     }

@@ -45,7 +45,6 @@
 
 #include "mk_seg.h"
 
-#include <s3/s2_param.h>
 #include <s3/s3.h>
 
 #include <assert.h>
