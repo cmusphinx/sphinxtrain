@@ -3,15 +3,12 @@ pkginclude_HEADERS = \
 	s3/acmod_set.h \
 	s3/array_alloc.h \
 	s3/array_io.h \
-	s3/bcomment_io.h \
 	s3/best_q.h \
-	s3/bo_magic.h \
 	s3/btree.h \
 	s3/ck_seg.h \
 	s3/common.h \
-	s3/corpus.h
+	s3/corpus.h \
 	s3/cvt2triphone.h \
-	s3/div.h \
 	s3/div.h \
 	s3/dtree.h \
 	s3/enum_subset.h \
@@ -25,7 +22,6 @@ pkginclude_HEADERS = \
 	s3/itree.h \
 	s3/kdtree.h \
 	s3/kmeans.h \
-	s3/lambda_io.h \
 	s3/lexicon.h \
 	s3/lts.h \
 	s3/merge_den.h \

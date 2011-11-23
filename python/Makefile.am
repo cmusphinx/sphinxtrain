@@ -2,7 +2,6 @@ scriptsdir=$(pkglibdir)/python
 
 nobase_scripts_SCRIPTS = \
 	setup.py \
-	cmusphinx \
 	cmusphinx/lat_rescore_fst.py \
 	cmusphinx/__init__.py \
 	cmusphinx/s3lda.py \
