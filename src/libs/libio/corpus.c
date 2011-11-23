@@ -1558,7 +1558,7 @@ corpus_get_xfrm(float32 *****out_a,
 
 
 int
-load_lattice(s3lattice_t **out_lattice, const char *lat_dir, const char *lat_ext)
+corpus_load_lattice(s3lattice_t **out_lattice, const char *lat_dir, const char *lat_ext)
 {
     char *rel_path;
     char fn[1024];

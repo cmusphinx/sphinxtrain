@@ -52,7 +52,6 @@
 
 #include <s3/segdmp.h>
 #include <s3/s3io.h>
-#include <s3/fp_cache.h>
 #include <s3/vector.h>
 #include <s3/swap.h>
 #include <sys_compat/file.h>

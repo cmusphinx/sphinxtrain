@@ -58,8 +58,6 @@ state_t *next_utt_states(uint32 *n_state,
 			 model_def_t *mdef,
 			 char *transcript);
 
-/* the following function is used for MMIE training
-   lqin 2010-03 */
 state_t *next_utt_states_mmie(uint32 *n_state,
 			      lexicon_t *lex,
 			      model_inventory_t *inv,
@@ -67,7 +65,6 @@ state_t *next_utt_states_mmie(uint32 *n_state,
 			      char *curr_word,
 			      acmod_id_t *l_phone,
 			      acmod_id_t *r_phone);
-/* end */
 
 #endif /* NEXT_UTT_STATES_H */ 
 

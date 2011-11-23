@@ -10,14 +10,10 @@ libcommon_la_SOURCES = \
 	 cvt2triphone.c \
 	 dtree.c \
 	 enum_subset.c \
-	 get_cpu_time.c \
-	 get_host_name.c \
-	 get_time.c \
 	 heap.c \
 	 itree.c \
 	 lexicon.c \
 	 lts.c \
-	 Makefile.am \
 	 mk_phone_list.c \
 	 mk_phone_seq.c \
 	 mk_sseq.c \
@@ -29,7 +25,6 @@ libcommon_la_SOURCES = \
 	 quest.c \
 	 remap.c \
 	 state_seq.c \
-	 timer.c \
 	 ts2cb.c \
 	 two_class.c \
 	 vector.c \

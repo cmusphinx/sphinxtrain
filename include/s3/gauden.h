@@ -350,8 +350,6 @@ gauden_massage_var(vector_t ***var,
                   uint32 n_density,
                   const uint32 *veclen);
 
-/* the following functions are used for MMIE training
-   lqin 2010-03 */
 void
 gauden_norm_wt_mmie_mean(vector_t ***in_mean,
 			 vector_t ***wt_mean,
@@ -399,52 +397,9 @@ cal_constD(vector_t in_mean,
 
 uint32
 solve_quadratic(float64 x, float64 y, float64 z, float64 *root1, float64 *root2);
-/* end */
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* GAUDEN_H */ 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2005/09/15  19:31:27  dhdfu
- * Correct signedness (also sneak in a secret change for a secret project)
- * 
- * Revision 1.4  2004/07/21 17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.6  97/07/16  11:39:10  eht
- * *** empty log message ***
- * 
- * Revision 1.5  1996/07/29  16:49:12  eht
- * made call to gauden_compute() consistent w/ gauden_mixture()
- *
- * Revision 1.4  1996/03/25  15:53:14  eht
- * Changes to deal w/ case where # of densities referenced
- * by a single utterance is << # total densities
- *
- * Revision 1.3  1996/01/26  18:28:23  eht
- * Added 'const' specifier for veclen argument that is not modified
- * w/in.
- *
- * Revision 1.2  1995/10/10  13:10:34  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.1  1995/09/08  15:21:06  eht
- * Initial revision
- *
- *
- */

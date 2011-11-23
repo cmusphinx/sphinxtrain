@@ -1,8 +1,6 @@
 pkginclude_HEADERS = \
 	s3/acmod_set_ds.h \
 	s3/acmod_set.h \
-	s3/array_alloc.h \
-	s3/array_io.h \
 	s3/best_q.h \
 	s3/btree.h \
 	s3/ck_seg.h \
@@ -12,12 +10,8 @@ pkginclude_HEADERS = \
 	s3/div.h \
 	s3/dtree.h \
 	s3/enum_subset.h \
-	s3/fp_cache.h \
 	s3/gauden.h \
-	s3/gauden_io.h \
-	s3/get_cpu_time.h \
 	s3/get_host_name.h \
-	s3/get_time.h \
 	s3/heap.h \
 	s3/itree.h \
 	s3/kdtree.h \
@@ -43,7 +37,6 @@ pkginclude_HEADERS = \
 	s3/profile.h \
 	s3/pset_io.h \
 	s3/quest.h \
-	s3/read_seno_dtree.h \
 	s3/remap.h \
 	s3/s3acc_io.h \
 	s3/s3cb2mllr_io.h \
@@ -58,10 +51,8 @@ pkginclude_HEADERS = \
 	s3/s3ts2cb_io.h \
 	s3/segdmp.h \
 	s3/state.h \
-	s3/state_param_def_io.h \
 	s3/state_seq.h \
 	s3/swap.h \
-	s3/timer.h \
 	s3/topo_read.h \
 	s3/ts2cb.h \
 	s3/two_class.h \
@@ -71,6 +62,5 @@ pkginclude_HEADERS = \
 	sys_compat/misc.h \
 	sys_compat/net.h \
 	sys_compat/posixsock.h \
-	sys_compat/string.h \
 	sys_compat/time.h
 

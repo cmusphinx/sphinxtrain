@@ -53,13 +53,10 @@
 #include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <s3/acmod_set.h>
-#include <s3/model_def_io.h>	/* should be broken into model_def.h and model_def_io.h */
-
-#include <s3/array_alloc.h>
-
+#include <s3/model_def_io.h>
 #include <string.h>
 #include <assert.h>
-
+
 /*********************************************************************
  *
  * Function: state_seq_print

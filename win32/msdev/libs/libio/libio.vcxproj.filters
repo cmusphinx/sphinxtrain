@@ -14,9 +14,6 @@
     <ClCompile Include="..\..\..\..\src\libs\libio\corpus.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libio\fp_cache.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libio\model_def_io.c">
       <Filter>Source Files</Filter>
     </ClCompile>

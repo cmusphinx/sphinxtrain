@@ -209,10 +209,7 @@ acmod_id_t *mk_phone_list(char **btw_mark,
 
     return p;
 }
-
 
-/* the following functions are used for MMIE training
-   lqin 2010-03 */
 acmod_id_t *
 mk_word_phone_list(char **btw_mark,
 		   uint32 *n_phone,
@@ -291,57 +288,3 @@ mk_boundary_phone(char *word,
   
   return p;
 }
-/* end */
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.5  2004/07/17 08:00:23  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.3  1996/03/25  15:31:39  eht
- * Include <string.h> so that string function
- * prototypes are included
- *
- * Revision 1.2  1995/12/01  20:47:54  eht
- * Make changes necessary to move this file from bw to libcommon
- *
- * Revision 1.1  1995/12/01  20:43:51  eht
- * Initial revision
- *
- * Revision 1.7  1995/11/02  16:18:40  eht
- * Fix so that if a phone seq is not able to be produced,
- * the utterance is just skipped
- *
- * Revision 1.6  1995/10/10  12:43:50  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.5  1995/10/09  14:55:33  eht
- * Change interface to new ckd_alloc routines
- *
- * Revision 1.4  1995/09/08  19:11:14  eht
- * Updated to use new acmod_set module.  Prior to testing
- * on TI digits.
- *
- * Revision 1.3  1995/09/07  18:58:16  eht
- * *** empty log message ***
- *
- * Revision 1.2  95/06/28  14:33:10  14:33:10  eht (Eric Thayer)
- * commented some more
- * 
- *
- */

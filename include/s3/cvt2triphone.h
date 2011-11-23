@@ -63,8 +63,6 @@ cvt2triphone(acmod_set_t *acmod_set,
 	     char *btw_mark,
 	     uint32 n_phone);
 
-/* the following function is used for MMIE training
-   lqin 2010-03 */
 int
 cvt2triphone_mmie(acmod_set_t *acmod_set,
 		  acmod_id_t *phone,
@@ -72,41 +70,8 @@ cvt2triphone_mmie(acmod_set_t *acmod_set,
 		  acmod_id_t *r_phone,
 		  char *btw_mark,
 		  uint32 n_phone);
-/* end */
 
 #ifdef __cplusplus
 }
 #endif
 #endif /* CVT2TRIPHONE_H */ 
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.7  2004/07/21  17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.6  2004/07/17 08:00:22  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.3  1996/03/25  15:50:37  eht
- * Added include of <prim_type.h> since they are used here
- *
- * Revision 1.2  1995/12/01  20:46:21  eht
- * include <s3/acmod_set.h> to define admod_*_t
- *
- * Revision 1.1  1995/12/01  20:42:16  eht
- * Initial revision
- *
- *
- */

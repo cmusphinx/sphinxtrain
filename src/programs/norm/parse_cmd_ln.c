@@ -142,9 +142,6 @@ norm \n\
 	  ARG_BOOLEAN,
 	  "no",
 	  "Tie all covariances together"},
-
-	/* the following parameters are used for MMIE training
-	   lqin 2010-03 */
 	{ "-mmie",
 	  ARG_BOOLEAN,
 	  "no",

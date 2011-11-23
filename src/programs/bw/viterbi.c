@@ -707,8 +707,6 @@ viterbi_update(float64 *log_forw_prob,
     return ret;
 }
 
-/* the following functions are used for MMIE training
-   lqin 2010-03 */
 int32
 mmi_viterbi_run(float64 *log_forw_prob,
 		vector_t **feature,
@@ -1118,30 +1116,3 @@ mmi_viterbi_update(vector_t **feature,
 
     return ret;
 }
-/* end */
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.1  1996/07/29  16:20:55  eht
- * Initial revision
- *
- *
- */

@@ -55,7 +55,6 @@
 #include <s3/s3tmat_io.h>
 #include <s3/s3mixw_io.h>
 #include <s3/s3gau_io.h>
-#include <s3/gauden_io.h>
 #include <s3/gauden.h>
 #include <sphinxbase/matrix.h>
 #include <sphinxbase/prim_type.h>

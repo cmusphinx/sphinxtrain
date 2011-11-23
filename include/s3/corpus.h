@@ -218,11 +218,8 @@ int32 corpus_provides_phseg(void);
 int corpus_get_phseg(acmod_set_t *acmod_set,
 		     s3phseg_t **out_phseg);
 
-/* the following function is used for MMIE training
-   lqin 2010-03 */
 int
-load_lattice(s3lattice_t **out_lattice, const char *lat_dir, const char *lat_ext);
-/* end */
+corpus_load_lattice(s3lattice_t **out_lattice, const char *lat_dir, const char *lat_ext);
 
 #ifdef __cplusplus
 }

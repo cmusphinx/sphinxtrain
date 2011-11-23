@@ -169,8 +169,6 @@ s3phseg_free(s3phseg_t *phseg)
 	}
 }
 
-/* the following function is used for MMIE training
-   lqin 2010-03 */
 int
 s3lattice_read(const char *fn,
 	       s3lattice_t **lattice)
@@ -278,4 +276,3 @@ s3lattice_read(const char *fn,
   fclose(fp);
   return S3_ERROR;
 }
-/* end */

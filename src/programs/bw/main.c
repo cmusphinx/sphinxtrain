@@ -57,7 +57,6 @@
 #include <s3/common.h>
 #include <s3/prefetch.h>
 #include <s3/profile.h>
-#include <s3/get_host_name.h>
 #include <s3/mk_phone_list.h>
 #include <s3/cvt2triphone.h>
 #include <s3/mk_sseq.h>
@@ -979,8 +978,7 @@ main_reestimate(model_inventory_t *inv,
 	}
     }
     
-    printf("overall> %s %u (-%u) %e %e",
-	   get_host_name(),
+    printf("overall> %u (-%u) %e %e",
 	   total_frames,
 	   n_frame_skipped,
 	   (total_frames > 0 ? total_log_lik / total_frames : 0.0),
@@ -1040,9 +1038,6 @@ main_reestimate(model_inventory_t *inv,
     else
 	E_INFO("Counts NOT saved.\n");
 }
-
-/* the following functions are used for MMIE training
-   lqin 2010-03 */
 
 /* x=log(a) y=log(b), log_add(x,y) = log(a+b) */
 float64
@@ -1750,7 +1745,7 @@ main_mmi_reestimate(model_inventory_t *inv,
     corpus_get_sent(&trans);
 
     /* accumulate density counts on lattice */
-    if (load_lattice(&lat, lat_dir, lat_ext) == S3_SUCCESS) {
+    if (corpus_load_lattice(&lat, lat_dir, lat_ext) == S3_SUCCESS) {
       
       /* different type of mmie training */
       switch (n_mmi_type) {
@@ -1829,8 +1824,7 @@ main_mmi_reestimate(model_inventory_t *inv,
     ++n_utt;
   }
     
-  printf ("overall> %s %u (-%u) %e %e",
-	  get_host_name(),
+  printf ("overall> %u (-%u) %e %e",
 	  n_utt-n_utt_fail,
 	  n_utt_fail,
 	  (n_utt-n_utt_fail>0 ? total_log_postprob/(n_utt-n_utt_fail) : 0.0),

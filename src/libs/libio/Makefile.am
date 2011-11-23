@@ -8,7 +8,6 @@ libio_la_SOURCES = \
 	 awritefloat.c \
 	 pset_io.c \
 	 corpus.c \
-	 fp_cache.c \
 	 model_def_io.c \
 	 s3acc_io.c \
 	 s3cb2mllr_io.c \

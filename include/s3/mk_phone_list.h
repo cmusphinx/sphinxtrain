@@ -70,8 +70,6 @@ mk_phone_list(char **btw_mark,
 	      uint32 n_word,
 	      lexicon_t *lex);
 
-/* the following functions are used for MMIE training
-   lqin 2010-03 */
 acmod_id_t *
 mk_word_phone_list(char **btw_mark,
 		   uint32 *n_phone,
@@ -82,50 +80,8 @@ acmod_id_t *
 mk_boundary_phone(char *word,
 		  uint32 n_begin,
 		  lexicon_t *lex);
-/* end */
 
 #ifdef __cplusplus
 }
 #endif
 #endif /* MK_PHONE_LIST_H */ 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2004/07/21  17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.5  2004/07/17 08:00:22  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  1995/12/01  20:49:12  eht
- * Coding standard adherance changes
- *
- * Revision 1.1  1995/12/01  20:43:21  eht
- * Initial revision
- *
- * Revision 1.4  1995/10/12  18:22:18  eht
- * Updated comments and changed <s3/state.h> to "state.h"
- *
- * Revision 1.3  1995/10/10  12:44:06  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.2  1995/09/08  19:13:11  eht
- * Updated to use the new acmod_set module.  Prior to
- * testing on TI digits
- *
- * Revision 1.1  1995/06/02  20:43:56  eht
- * Initial revision
- *
- *
- */

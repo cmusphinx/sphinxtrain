@@ -64,8 +64,6 @@ typedef struct s3phseg_s {
     struct s3phseg_s *next;	/* Next entry in alignment */
 } s3phseg_t;
 
-/* the following structs are used for MMIE training
-   lqin 2010-03 */
 typedef struct s3lattice_s {
   uint32 n_arcs;                /* total number of arcs in lattice */
   uint32 n_true_arcs;           /* the number of arcs from the numerator lattice */
@@ -85,7 +83,6 @@ typedef struct s3arc_s {
   uint32 *next_arcs;                /* next arcs */
   uint32 good_arc;
 } s3arc_t;
-/* end */
 
 int s3phseg_read(const char *fn,
 		 acmod_set_t *acmod_set,
@@ -97,11 +94,8 @@ int s3phseg_write(const char *fn,
 
 void s3phseg_free(s3phseg_t *phseg);
 
-/* the following function is used for MMIE training
-   lqin 2010-03 */
 int s3lattice_read(const char *fn,
 		   s3lattice_t **lattice);
-/* end */
 
 #ifdef __cplusplus
 }

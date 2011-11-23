@@ -58,14 +58,12 @@
 #include "agg_all_seg.h"
 
 #include <s3/segdmp.h>
-#include <s3/fp_cache.h>
 
 #include <s3/lexicon.h>
 #include <s3/model_def_io.h>
 #include <s3/ts2cb.h>
 #include <s3/s3ts2cb_io.h>
 #include <s3/s3cb2mllr_io.h>
-#include <s3/state_param_def_io.h>
 #include <s3/corpus.h>
 #include <s3/s3.h>
 
