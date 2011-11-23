@@ -652,8 +652,6 @@ accum_stat(model_inventory_t *inv,
 
 #include <time.h>
 
-#include <s3/mixw_param_io.h>
-#include <s3/tmat_param_io.h>
 
 static int32
 mk_bkp(int32 mixw_reest,

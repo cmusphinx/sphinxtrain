@@ -6,9 +6,7 @@ pkginclude_HEADERS = \
 	s3/bcomment_io.h \
 	s3/best_q.h \
 	s3/bo_magic.h \
-	s3/bquest_io.h \
 	s3/btree.h \
-	s3/cep_manip.h \
 	s3/ck_seg.h \
 	s3/common.h \
 	s3/corpus.h
@@ -17,7 +15,6 @@ pkginclude_HEADERS = \
 	s3/div.h \
 	s3/dtree.h \
 	s3/enum_subset.h \
-	s3/floatbuf_io.h \
 	s3/fp_cache.h \
 	s3/gauden.h \
 	s3/gauden_io.h \
@@ -25,18 +22,14 @@ pkginclude_HEADERS = \
 	s3/get_host_name.h \
 	s3/get_time.h \
 	s3/heap.h \
-	s3/int32_io.h \
-	s3/intbuf_io.h \
 	s3/itree.h \
 	s3/kdtree.h \
 	s3/kmeans.h \
 	s3/lambda_io.h \
 	s3/lexicon.h \
-	s3/live_norm.h \
 	s3/lts.h \
 	s3/merge_den.h \
 	s3/metric.h \
-	s3/mixw_param_io.h \
 	s3/mk_phone_list.h \
 	s3/mk_phone_seq.h \
 	s3/mk_sseq.h \
@@ -73,7 +66,6 @@ pkginclude_HEADERS = \
 	s3/state_seq.h \
 	s3/swap.h \
 	s3/timer.h \
-	s3/tmat_param_io.h \
 	s3/topo_read.h \
 	s3/ts2cb.h \
 	s3/two_class.h \
