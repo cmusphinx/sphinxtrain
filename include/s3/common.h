@@ -59,7 +59,6 @@ extern "C" {
 
 #include <sphinxbase/cmd_ln.h>
 #include <s3/vector.h>
-#include <s3/prefix_upto.h>
 #include <s3/corpus.h>
 #include <s3/remap.h>
 #include <s3/acmod_set.h>

@@ -65,9 +65,6 @@
     <ClCompile Include="..\..\..\..\src\libs\libcommon\prefetch.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libcommon\prefix_upto.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libcommon\profile.c">
       <Filter>Source Files</Filter>
     </ClCompile>

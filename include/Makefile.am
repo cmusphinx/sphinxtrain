@@ -11,14 +11,12 @@ pkginclude_HEADERS = \
 	s3/dtree.h \
 	s3/enum_subset.h \
 	s3/gauden.h \
-	s3/get_host_name.h \
 	s3/heap.h \
 	s3/itree.h \
 	s3/kdtree.h \
 	s3/kmeans.h \
 	s3/lexicon.h \
 	s3/lts.h \
-	s3/merge_den.h \
 	s3/metric.h \
 	s3/mk_phone_list.h \
 	s3/mk_phone_seq.h \
@@ -31,9 +29,7 @@ pkginclude_HEADERS = \
 	s3/model_def.h \
 	s3/model_def_io.h \
 	s3/model_inventory.h \
-	s3/norm.h \
 	s3/prefetch.h \
-	s3/prefix_upto.h \
 	s3/profile.h \
 	s3/pset_io.h \
 	s3/quest.h \

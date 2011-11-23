@@ -93,7 +93,6 @@ var -psetfn questions -stwt 1.0 0.05 0.01 -state 0 -ssplitmin 1 \n\
 	  NULL,
 	  "Model definition file of the discrete models" },
 
-/* ADDITION FOR CONTINUOUS_TREES */
         { "-ts2cbfn",
           ARG_STRING,
           ".semi.",
@@ -123,8 +122,6 @@ var -psetfn questions -stwt 1.0 0.05 0.01 -state 0 -ssplitmin 1 \n\
           ARG_FLOAT32,
           "0.00001",
           "Ignore all states with counts less than this"},
-
-/* END ADDITION FOR CONTINUOUS_TREES */
 
 	{ "-mixwfn",
 	  ARG_STRING,

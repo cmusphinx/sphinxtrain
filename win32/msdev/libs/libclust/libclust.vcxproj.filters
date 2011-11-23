@@ -20,9 +20,6 @@
     <ClCompile Include="..\..\..\..\src\libs\libclust\kmeans.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libclust\merge_den.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libclust\metric.c">
       <Filter>Source Files</Filter>
     </ClCompile>

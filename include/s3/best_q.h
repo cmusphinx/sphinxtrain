@@ -59,11 +59,9 @@ extern "C" {
 
 float64
 best_q(float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES 21 May 98 */
        float32 ****means,
        float32 ****vars,
        uint32  *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
        uint32 n_model,
        uint32 n_state,
        uint32 n_stream,
@@ -77,9 +75,7 @@ best_q(float32 ****mixw,
        uint32 *id,
        uint32 n_id,
        float32 ***dist,
-/* ADDITION FOR CONTINUOUS_TREES 21 May 98 */
        float64 node_wt_ent,  /* Weighted entropy of node */
-/* END ADDITION FOR CONTINUOUS_TREES */
        quest_t **out_best_q);
 
 #ifdef __cplusplus
@@ -88,25 +84,3 @@ best_q(float32 ****mixw,
 
 #endif /* BEST_Q_H */ 
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  17:46:08  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:39:10  eht
- * Initial revision
- * 
- *
- */

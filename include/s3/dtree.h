@@ -75,10 +75,8 @@ typedef struct dtree_node_str {
     uint32 n_id;                /* # of triphones represented */
 
     float32 ***mixw_occ;
-/* ADDITION FOR CONTINUOUS_TREES, 19 May 98 */
     float32 ***means;
     float32 ***vars;
-/* END ADDITION FOR CONTINUOUS_TREES */
     float32 occ;                /* # of time state is observed */
     float64 wt_ent;             /* weighted entropy of this node */
 
@@ -178,11 +176,9 @@ mk_node(dtree_node_t *node,
 	uint32 n_id,
 
 	float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES, 18 May 98 */
         float32 ****means,
         float32 ****vars,
         uint32  *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
         uint32 n_model,
 	uint32 n_state,
 	uint32 n_stream,
@@ -195,11 +191,9 @@ float64
 set_best_quest(dtree_node_t *node,
 
 	       float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES, 20 May 98 */
                float32 ****means,
                float32 ****vars,
                uint32  *veclen,
-/* END ADDITION FOR CONTINUOUS TREES */
 	       uint32 n_model,
 	       uint32 n_state,
 	       uint32 n_stream,
@@ -217,11 +211,9 @@ set_best_quest(dtree_node_t *node,
 
 dtree_t *
 mk_tree(float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES, 20 May 98 */
         float32 ****means,
         float32 ****vars,
         uint32  *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 	uint32 n_model,
 	uint32 n_state,
 	uint32 n_stream,
@@ -246,11 +238,9 @@ mk_tree(float32 ****mixw,
 
 dtree_t *
 mk_tree_comp(float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES, 18 May 98 */
              float32 ****means,
              float32 ****vars,
              uint32  *veclen,
-/* END ADDITIONS FOR CONTINUOUS_TREES */
 	     uint32 n_model,
 	     uint32 n_state,
 	     uint32 n_stream,
@@ -280,9 +270,7 @@ mk_tree_comp(float32 ****mixw,
 
 void
 cluster_leaves(dtree_t *tr,
-/* ADDITION FOR CONTINUOUS_TREES */
                uint32 *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 	       float64 *wt_ent_dec,
 	       uint32 *out_n_a,
 	       uint32 *out_n_b,
@@ -297,11 +285,9 @@ void
 split_node_comp(dtree_t *tr,
                 uint32 node_id,
                 float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES */
                 float32 ****means,
                 float32 ****vars,
                 uint32  *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
                 uint32 n_model,
                 uint32 n_state,
                 uint32 n_stream,
@@ -322,11 +308,9 @@ void
 split_node(dtree_t *tr,
 	   uint32 node_id,
 	   float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES */
            float32 ****means,
            float32 ****vars,
            uint32 *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 	   uint32 n_model,
 	   uint32 n_state,
 	   uint32 n_stream,
@@ -359,11 +343,9 @@ split_node_nobest(dtree_t *tr,
 comp_quest_t *
 mk_comp_quest(float64 *wt_ent_dec,
 	      float32 ****mixw,
-/* ADDITIONS FOR CONTINUOUS_TREES, 19 May 98 */
               float32 ****means,
               float32 ****vars,
               uint32  *veclen,
- /* END ADDITIONS FOR CONTINUOUS_TREES */
 	      uint32 n_model,
 	      uint32 n_state,
 	      uint32 n_stream,
@@ -404,7 +386,6 @@ prune_subtrees(dtree_node_t *node);
 uint32
 prune_lowcnt(dtree_node_t *node, float32 cnt_thr);
 
-/* ADDITION FOR CONTINUOUS_TREES */
 uint32
 leaf_mean_vars(dtree_node_t *node,
                pset_t *pset,
@@ -415,41 +396,8 @@ leaf_mean_vars(dtree_node_t *node,
                uint32 n_stream,
                uint32 *veclen,
                uint32 off);
-/* END ADDITION FOR CONTINUOUS_TREES */
 
 #ifdef __cplusplus
 }
 #endif
 #endif /* DTREE_H */ 
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  17:46:09  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.4  97/07/23  10:48:42  eht
- * Added get_node() function
- * 
- * Revision 1.3  97/07/17  14:29:02  eht
- * Added prune_lowcnt() function for pruning low occupancy count tree nodes.
- * 
- * Revision 1.2  97/07/16  11:39:10  eht
- * *** empty log message ***
- * 
- * Revision 1.1  97/07/07  10:53:27  eht
- * Initial revision
- * 
- *
- */

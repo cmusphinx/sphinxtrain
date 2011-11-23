@@ -537,7 +537,6 @@ leaf_mixw_occ(dtree_node_t *node,
 }
 
 
-/* ADDITION FOR CONTINUOUS_TREES */
 uint32
 leaf_mean_vars(dtree_node_t *node,
 	       pset_t *pset,
@@ -587,7 +586,6 @@ leaf_mean_vars(dtree_node_t *node,
 	return off;
     }
 }
-/* END ADDITION FOR CONTINUOUS_TREES */
 
 
 uint32
@@ -784,11 +782,9 @@ mk_node(dtree_node_t *node,
 	uint32 *id,
 	uint32 n_id,
 	float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES, 18 May 98 */
         float32 ****means,
         float32 ****vars,
         uint32  *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 	uint32 n_model,
 	uint32 n_state,
 	uint32 n_stream,
@@ -801,7 +797,6 @@ mk_node(dtree_node_t *node,
     float64 *dnom, norm, wt_ent, s_wt_ent, occ;
     float32 mx_wt;
     uint32 *l_id;
-/* ADDITION FOR CONTINUOUS_TREES 19 May 98*/
     float32 ***lmeans=0,***lvars=0;
     float32 varfloor=0;
     uint32 continuous, sumveclen;
@@ -823,13 +818,10 @@ mk_node(dtree_node_t *node,
         lmeans   = (float32 ***) ckd_calloc_3d(n_state,n_stream,sumveclen,sizeof(float32));
         lvars   = (float32 ***) ckd_calloc_3d(n_state,n_stream,sumveclen,sizeof(float32));
     }
-/* END ADDITION FOR CONTINUOUS_TREES */
 
     mixw_occ = (float32 ***)ckd_calloc_3d(n_state, n_stream, n_density, sizeof(float32));
     dist     = (float32 **)ckd_calloc_2d(n_stream, n_density, sizeof(float32));
     dnom     = (float64 *)ckd_calloc(n_stream, sizeof(float64));
-
-/* MODIFICATION/ADDITIONS FOR CONTINUOUS_TREES; 19 May 98: merge means and vars too */
 
     /* Merge distributions of all the elements in a cluster for combined
        distribution */
@@ -871,7 +863,6 @@ mk_node(dtree_node_t *node,
 	    }
 	}
     }
-/* END ADDITIONS FOR CONTINUOUS_TREES */
 
     /* Find out which state is under consideration */
     for (j = 0, mx_wt = 0, s = 0; s < n_state; s++) {
@@ -886,8 +877,6 @@ mk_node(dtree_node_t *node,
 	occ += mixw_occ[j][0][k];
     }
 
-/* ADDITION/MODIFICATION FOR CONTINUOUS_TREES 19 May 98: USE MEANS AND VARIANCES
-   IN THE CASE OF CONTINUOUS HMMs (RATHER THAN MIXWs) */
     for (s = 0, wt_ent = 0; s < n_state; s++) {
 	for (j = 0; j < n_stream; j++) {
 	    for (k = 0, dnom[j] = 0; k < n_density; k++) {
@@ -916,7 +905,6 @@ mk_node(dtree_node_t *node,
 
 	wt_ent += stwt[s] * s_wt_ent;
     }
-/* END MODIFICATIONS / ADDITION FOR CONTINUOUS_TREES */
 
     node->node_id = node_id;
     l_id = ckd_calloc(n_id, sizeof(uint32));
@@ -926,12 +914,10 @@ mk_node(dtree_node_t *node,
     node->id = l_id;
     node->n_id = n_id;
     node->mixw_occ = mixw_occ;
-/* ADDITION FOR CONTINUOUS_TREES, 19 May 98 */
     if (continuous == 1) {
         node->means = lmeans;
         node->vars = lvars;
     }
-/* END ADDITION FOR CONTINUOUS_TREES */
     node->occ = occ;
     node->wt_ent = wt_ent;
 
@@ -945,11 +931,9 @@ mk_node(dtree_node_t *node,
 float64
 set_best_quest(dtree_node_t *node,
 	       float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES, 20 May 98 */
                float32 ****means,
                float32 ****vars,
                uint32  *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 	       uint32 n_model,
 	       uint32 n_state,
 	       uint32 n_stream,
@@ -971,9 +955,7 @@ set_best_quest(dtree_node_t *node,
     
     dist = (float32 ***)ckd_calloc_3d(n_state, n_stream, n_density, sizeof(float32));
 
-/* COMMENT ADDED FOR CONTINUOUS_TREES */
     /* Convert occ. counts to probabilities. norm now has total occ. count */
-/* END ADDITION FOR CONTINUOUS_TREES */
     for (s = 0; s < n_state; s++) {
 	for (j = 0; j < n_stream; j++) {
 	    for (k = 0; k < n_density; k++) {
@@ -994,8 +976,6 @@ set_best_quest(dtree_node_t *node,
 	}
     }
 
-/* MODIFICATION FOR CONTINUOUS_TREES; PASS MEAN, VAR, VECLEN AND THE WEIGHTED ENTROPY 
-   OF THE NODE ALSO */
     node->wt_ent_dec = best_q(mixw, means, vars, veclen,
                               n_model, n_state, n_stream, n_density,
 			      stwt,
@@ -1005,7 +985,6 @@ set_best_quest(dtree_node_t *node,
 			      node->id, node->n_id,
 			      dist, node->wt_ent,
 			      (quest_t **)&node->q);
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 
     ckd_free_3d((void ***)dist);
 
@@ -1017,11 +996,9 @@ void
 split_node_comp(dtree_t *tr,
 		uint32 node_id,
 		float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES */
                 float32 ****means,
                 float32 ****vars,
                 uint32  *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 		uint32 n_model,
 		uint32 n_state,
 		uint32 n_stream,
@@ -1091,8 +1068,6 @@ split_node_comp(dtree_t *tr,
     node->y->p = node;
     node->n->p = node;
 
-/* MODIFICATION FOR CONTINUOUS_TREES; Additions for Continuous Hmm, pass means, vars,
-   veclen */
     mk_node(node->y,
 	    node_id_yes,
 	    id_yes, n_yes,
@@ -1120,7 +1095,6 @@ split_node_comp(dtree_t *tr,
 				       all_q, n_all_q, pset, n_base_phone,
 				       dfeat, n_dfeat,
 				       split_min, split_max, split_thr, mwfloor);
-/* END MODIFICATIONS FOR CONTINUOUS_TREES */
 }
 
 
@@ -1128,11 +1102,9 @@ void
 split_node(dtree_t *tr,
 	   uint32 node_id,
 	   float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES */
            float32 ****means,
            float32 ****vars,
            uint32 *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 	   uint32 n_model,
 	   uint32 n_state,
 	   uint32 n_stream,
@@ -1202,7 +1174,6 @@ split_node(dtree_t *tr,
     node->y->p = node;
     node->n->p = node;
 
-/* MODIFICATION FOR CONTINUOUS_TREES; Pass means, vars and veclen also */
     mk_node(node->y,
 	    node_id_yes,
 	    id_yes, n_yes,
@@ -1242,7 +1213,6 @@ split_node(dtree_t *tr,
 		   all_q, n_all_q, pset,
 		   dfeat, n_dfeat,
 		   mwfloor);
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 }
 
 
@@ -1283,11 +1253,9 @@ best_leaf_node(dtree_node_t *node)
 
 dtree_t *
 mk_tree_comp(float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES, 18 May 98 */
              float32 ****means, 
              float32 ****vars, 
              uint32  *veclen,
-/* END ADDITIONS FOR CONTINUOUS_TREES */
 	     uint32 n_model,
 	     uint32 n_state,
 	     uint32 n_stream,
@@ -1328,14 +1296,11 @@ mk_tree_comp(float32 ****mixw,
     
     root = &comp_tree->node[0];
 
-/* MODIFICATION FOR CONTINUOUS_TREES 18 May 98, pass means and var along with mixw */
     mk_node(root, 0,
 	    id, n_id,
 	    mixw, means, vars, veclen,
             n_model, n_state, n_stream, n_density, stwt, mwfloor);
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 
-/* MODIFICATION FOR CONTINUOUS_TREES 18 May 98, pass means and var along with mixw */
     root->q = (void *)mk_comp_quest(&root->wt_ent_dec,
 				    mixw, means, vars, veclen, 
                                     n_model, n_state, n_stream, n_density, stwt,
@@ -1344,7 +1309,6 @@ mk_tree_comp(float32 ****mixw,
 				    dfeat, n_dfeat,
 				    split_min, split_max, split_thr,
 				    mwfloor);
-/* END MODIFICATION FOR CONTINUOUS_TREES */
     
     for (i = 0; i < split_max_comp; i++) {
 	b_n = best_leaf_node(root);
@@ -1369,14 +1333,12 @@ mk_tree_comp(float32 ****mixw,
 	    break;
 	}
 		   
-/* MODIFICATION FOR CONTINUOUS_TREES 18 May 98, pass means and var along with mixw */
 	split_node_comp(comp_tree, b_n->node_id,
 			mixw, means, vars, veclen, 
                         n_model, n_state, n_stream, n_density, stwt,
 			all_q, n_all_q, pset, n_base_phone,
 			dfeat, n_dfeat,
 			split_min, split_max, split_thr, mwfloor);
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 
 #if 0
 	printf("Comp Split %u:\n", i);
@@ -1396,11 +1358,9 @@ mk_tree_comp(float32 ****mixw,
 
 dtree_t *
 mk_tree(float32 ****mixw,
-/* ADDITION FOR CONTINUOUS_TREES, 20 May 98 */
         float32 ****means,
         float32 ****vars,
         uint32  *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 	uint32 n_model,
 	uint32 n_state,
 	uint32 n_stream,
@@ -1439,11 +1399,9 @@ mk_tree(float32 ****mixw,
     mk_node(root, 0,
 	    id, n_id,
 	    mixw,
-/* ADDITION FOR CONTINUOUS_TREES; 20 May 98; passing means, vars, veclen */
             means,
             vars,
             veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 	    n_model,
 	    n_state,
 	    n_stream,
@@ -1453,11 +1411,9 @@ mk_tree(float32 ****mixw,
 
     set_best_quest(root,
 		   mixw,
-/* ADDITION FOR CONTINUOUS_TREES; 20 May 98; passing means, vars and veclen */
                    means,
                    vars,
                    veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 		   n_model,
 		   n_state,
 		   n_stream,
@@ -1506,11 +1462,9 @@ mk_tree(float32 ****mixw,
 
 	split_node(s_tree, b_n->node_id,
 		   mixw,
-/* ADDITION FOR CONTINUOUS_TREES; 20 May 98; passing means, vars and veclen */
                    means,
                    vars,
                    veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 		   n_model,
 		   n_state,
 		   n_stream,
@@ -1561,9 +1515,7 @@ tree2quest(dtree_t *tr,
 
 void
 cluster_leaves(dtree_t *tr,
-/* ADDITION FOR CONTINUOUS_TREES */
                uint32 *veclen,
-/* END ADDITION FOR CONTINUOUS_TREES */
 	       float64 *wt_ent_dec,
 	       uint32 *out_n_a,
 	       uint32 *out_n_b,
@@ -1615,17 +1567,13 @@ cluster_leaves(dtree_t *tr,
 
     /* compute the density occupancies of the leaves */
     leaf_mixw_occ(root, pset, mixw_occ, node_id, n_state, n_stream, n_density, 0);
-/* MODIFICATION FOR CONTINUOUS_TREES; ACT ACCORDING TO TYPE */
     if (continuous == 1) {
         /* compute means and variances of the leaves */
         leaf_mean_vars(root, pset, means, vars, node_id, n_state, n_stream, veclen, 0);
     }
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 
-/* MODIFICATION FOR CONTINUOUS_TREES; Pass means, vars and veclen also */
     /* Cluster the leaf nodes into two classes */
     *wt_ent_dec = two_class(mixw_occ, means, vars, veclen, n_leaf, n_state, n_stream, n_density, stwt, clust, mwfloor);
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 
     for (i = 0; i < n_leaf; i++) {
 	tr->node[node_id[i]].clust = clust[i];
@@ -1655,11 +1603,9 @@ cluster_leaves(dtree_t *tr,
 comp_quest_t *
 mk_comp_quest(float64 *wt_ent_dec,
 	      float32 ****mixw,
-/* ADDITIONS FOR CONTINUOUS_TREES, 19 May 98 */
               float32 ****means,
               float32 ****vars,
               uint32  *veclen,
- /* END ADDITIONS FOR CONTINUOUS_TREES */
 	      uint32 n_model,
 	      uint32 n_state,
 	      uint32 n_stream,
@@ -1687,7 +1633,6 @@ mk_comp_quest(float64 *wt_ent_dec,
     uint32 n_a, n_b;
     comp_quest_t *q;
 
-/* MODIFICATION FOR CONTINUOUS_TREES, 20 May 98; Pass mean, var and varlen also */
     tr = mk_tree(mixw, means, vars, veclen, 
                  n_model, n_state, n_stream, n_density, stwt,
 		 id, n_id,
@@ -1695,7 +1640,6 @@ mk_comp_quest(float64 *wt_ent_dec,
 		 dfeat, n_dfeat,
 		 split_min, split_max, split_thr,
 		 mwfloor);
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 
     if (tr == NULL) {
 	*wt_ent_dec = 0;
@@ -1704,16 +1648,12 @@ mk_comp_quest(float64 *wt_ent_dec,
 
     print_tree(stderr, "s>", &tr->node[0], pset, 1);
 
-/* COMMENT FOR CONTINUOUS_TREES, 20 May 89 */
     /* Note that the tree now contains both mixw and mean and var info
        so they no longer need to be passed */
-/* END COMMENT FOR CONTINUOUS_TREES */
-/* MODIFICATION FOR CONTINUOUS_TREES,20 May 98; Pass veclen; tree already has mean and var */
     cluster_leaves(tr, veclen, wt_ent_dec, &n_a, &n_b,
 		   pset,
 		   n_state, n_stream, n_density, stwt,
 		   mwfloor);
-/* END MODIFICATION FOR CONTINUOUS_TREES */
 
     /* Build the disjunction w/ the fewest terms */
     if (n_b > n_a) {
