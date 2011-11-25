@@ -978,7 +978,7 @@ main_reestimate(model_inventory_t *inv,
 	}
     }
     
-    printf("overall> %u (-%u) %e %e",
+    printf("overall> stats %u (-%u) %e %e",
 	   total_frames,
 	   n_frame_skipped,
 	   (total_frames > 0 ? total_log_lik / total_frames : 0.0),
