@@ -4,7 +4,7 @@ use strict;
 require './scripts/testlib.pl';
 
 chomp(my $host=`../config.guess | xargs ../config.sub`);
-my $bindir="../bin.$host/";
+my $bindir="../src/programs/prunetree/";
 my $resdir="res/";
 my $exec_resdir="prunetree";
 my $bin="$bindir$exec_resdir";

@@ -47,6 +47,8 @@
 
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/err.h>
+#include <sphinxbase/strfuncs.h>
+#include <sphinxbase/pio.h>
 
 #include <s3/pset_io.h>
 #include <s3/s3.h>
@@ -61,8 +63,7 @@ read_pset_file(const char *file_name,
 	       uint32 *n_pset)
 {
     FILE *fp;
-    char line[1024];
-    char sav_line[1024];
+    lineiter_t *li;
     uint32 i, j, lc, n_phone, p;
     pset_t *out;
     uint32 n_ci;
@@ -70,13 +71,13 @@ read_pset_file(const char *file_name,
     fp = fopen(file_name, "r");
 
     if (fp == NULL) {
-	E_WARN_SYSTEM("Unable to open %s", file_name);
-
+	E_ERROR_SYSTEM("Unable to open %s", file_name);
 	return NULL;
     }
 
-    for (lc = 0; fgets(line, 1024, fp) != NULL; lc++);
-    
+    for (lc = 0, li = lineiter_start(fp); li; li = lineiter_next(li), lc++);
+
+    printf("!!!!!!!!Allocated %d lines\n", lc);
     out = ckd_calloc(lc, sizeof(pset_t));
     *n_pset = lc;
 
@@ -84,29 +85,20 @@ read_pset_file(const char *file_name,
 
     n_ci = acmod_set_n_ci(acmod_set);
 
-    for (i = 0; i < lc; i++) {
-	fgets(line, 1024, fp);
-	line[strlen(line)-1] = '\0';
+    for (i = 0, li = lineiter_start(fp); li; li = lineiter_next(li), i++) {
 
-	strcpy (sav_line, line);
-	
-	strtok(line, " \t");
-
-	for (n_phone = 0; strtok(NULL, " \t"); n_phone++);
-
-	strcpy (line, sav_line);
+	n_phone = str2words(li->buf, NULL, 0) - 1;
 
 	out[i].n_phone = n_phone;
 
 	if (n_phone > 0) {
 	    out[i].phone  = ckd_calloc(n_phone, sizeof(acmod_id_t));
 	    out[i].member = ckd_calloc(n_ci, sizeof(uint32));
-	
-	    out[i].name = strdup(strtok(line, " \t"));
+	    out[i].name = strdup(strtok(li->buf, " \t"));
 	    for (j = 0; j < n_phone; j++) {
 		char *phone = strtok(NULL, " \t");
-		p = (uint32)acmod_set_name2id(acmod_set, phone);
-		if (p == (uint32)NO_ACMOD) {
+		p = acmod_set_name2id(acmod_set, phone);
+		if (p == NO_ACMOD) {
 		    E_WARN("Unknown phone %s in set %s\n", phone, out[i].name);
 		    continue;
 		}
@@ -115,7 +107,8 @@ read_pset_file(const char *file_name,
 	    }
 	}
 	else {
-	    out[i].name = strdup(strtok(line, " \t"));
+	    string_trim(li->buf, STRING_BOTH);
+	    out[i].name = strdup(li->buf);
 	    out[i].posn = ckd_calloc(N_WORD_POSN, sizeof(uint32));
 
 	    if (strcmp(out[i].name, "WDBNDRY_B") == 0) {
@@ -140,31 +133,3 @@ read_pset_file(const char *file_name,
 
     return out;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2006/03/14  22:43:25  dhdfu
- * small correctness fix as suggested by Evandro - use NO_ACMOD instead of -1
- * 
- * Revision 1.5  2006/03/14 19:30:31  dhdfu
- * Ignore (with a warning) unknown phones in a questions file, instead of segfaulting
- *
- * Revision 1.4  2004/07/21 18:30:31  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:36:22  eht
- * Initial revision
- * 
- *
- */

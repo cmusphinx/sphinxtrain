@@ -17,6 +17,9 @@
     <ClCompile Include="..\..\..\..\src\libs\libio\model_def_io.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libs\libio\pset_io.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libio\s3acc_io.c">
       <Filter>Source Files</Filter>
     </ClCompile>
