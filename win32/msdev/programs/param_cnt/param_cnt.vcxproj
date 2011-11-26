@@ -143,12 +143,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\programs\param_cnt\mk_sseq.c">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\programs\param_cnt\param_cnt.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -178,7 +172,6 @@
     <ClInclude Include="..\..\..\..\src\programs\param_cnt\cb_cnt.h" />
     <ClInclude Include="..\..\..\..\src\programs\param_cnt\cnt_fn.h" />
     <ClInclude Include="..\..\..\..\src\programs\param_cnt\enum_corpus.h" />
-    <ClInclude Include="..\..\..\..\src\programs\param_cnt\mk_sseq.h" />
     <ClInclude Include="..\..\..\..\src\programs\param_cnt\param_cnt.h" />
     <ClInclude Include="..\..\..\..\src\programs\param_cnt\parse_cmd_ln.h" />
     <ClInclude Include="..\..\..\..\src\programs\param_cnt\phone_cnt.h" />

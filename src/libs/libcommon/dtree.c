@@ -52,7 +52,6 @@
 
 #include <s3/dtree.h>
 #include <s3/best_q.h>
-#include <s3/two_class.h>
 #include <s3/quest.h>
 #include <s3/div.h>
 #include <s3/s3.h>

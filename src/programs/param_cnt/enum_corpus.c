@@ -45,12 +45,12 @@
 
 #include "enum_corpus.h"
 #include "cnt_fn.h"
-#include "mk_sseq.h"
 #include "phone_cnt.h"
 
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/prim_type.h>
 
+#include <s3/mk_sseq.h>
 #include <s3/ck_seg.h>
 #include <s3/corpus.h>
 #include <s3/mk_phone_list.h>

@@ -57,7 +57,6 @@ extern "C" {
 #include <s3/pset_io.h>
 #include <sphinxbase/prim_type.h>
 #include <s3/acmod_set.h>
-#include <s3/btree.h>
 #include <s3/quest.h>
 
 #define NO_CLUST (0xffffffff)

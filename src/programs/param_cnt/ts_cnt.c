@@ -46,11 +46,12 @@
  *********************************************************************/
 
 #include "ts_cnt.h"
-#include "mk_sseq.h"
 
 #include <sphinxbase/prim_type.h>
-#include <s3/cvt2triphone.h>
 #include <sphinxbase/ckd_alloc.h>
+
+#include <s3/cvt2triphone.h>
+#include <s3/mk_sseq.h>
 #include <s3/s3.h>
 
 #include <stdio.h>

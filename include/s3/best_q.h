@@ -78,6 +78,19 @@ best_q(float32 ****mixw,
        float64 node_wt_ent,  /* Weighted entropy of node */
        quest_t **out_best_q);
 
+float64
+two_class(float32 ****mixw_occ,
+          float32 ****means,
+          float32 ****vars,
+          uint32 *veclen,
+          uint32 n_dist,
+          uint32 n_state,
+          uint32 n_stream,
+          uint32 n_density,
+          float32 *stwt,
+          uint32 *bclust,
+          float32 mwfloor);
+
 #ifdef __cplusplus
 }
 #endif

@@ -93,32 +93,3 @@ mk_sseq(uint16 *seg,
 
     return sseq;
 }
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.4  97/06/23  07:43:52  eht
- * Initialize a variable so that compiler stays quiet about potentially uninitialized var
- * 
- * Revision 1.3  96/06/17  14:40:15  eht
- * mdef structure now contains the associated acmod_set structure.  No need to pass it
- * 
- * Revision 1.2  1996/04/02  17:02:41  eht
- * Include header from <s3/...> rather than locally
- *
- *
- */

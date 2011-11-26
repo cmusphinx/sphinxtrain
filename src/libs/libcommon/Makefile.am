@@ -3,13 +3,11 @@ noinst_LTLIBRARIES = libcommon.la
 libcommon_la_SOURCES = \
 	 acmod_set.c \
 	 best_q.c \
-	 btree.c \
 	 ck_seg.c \
 	 cmu6_lts_rules.c \
 	 cmu6_lts_rules.h \
 	 cvt2triphone.c \
 	 dtree.c \
-	 enum_subset.c \
 	 heap.c \
 	 itree.c \
 	 lexicon.c \
@@ -25,7 +23,6 @@ libcommon_la_SOURCES = \
 	 remap.c \
 	 state_seq.c \
 	 ts2cb.c \
-	 two_class.c \
 	 vector.c \
 	 was_added.c
 

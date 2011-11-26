@@ -1,15 +1,12 @@
 pkginclude_HEADERS = \
-	s3/acmod_set_ds.h \
 	s3/acmod_set.h \
 	s3/best_q.h \
-	s3/btree.h \
 	s3/ck_seg.h \
 	s3/common.h \
 	s3/corpus.h \
 	s3/cvt2triphone.h \
 	s3/div.h \
 	s3/dtree.h \
-	s3/enum_subset.h \
 	s3/gauden.h \
 	s3/heap.h \
 	s3/itree.h \
@@ -51,12 +48,9 @@ pkginclude_HEADERS = \
 	s3/swap.h \
 	s3/topo_read.h \
 	s3/ts2cb.h \
-	s3/two_class.h \
 	s3/vector.h \
 	s3/was_added.h \
 	sys_compat/file.h \
 	sys_compat/misc.h \
-	sys_compat/net.h \
-	sys_compat/posixsock.h \
 	sys_compat/time.h
 

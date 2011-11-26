@@ -63,18 +63,6 @@ typedef struct pair_str {
     struct pair_str *next;
 } pair_t;
 
-#ifndef NULL
-#define NULL (void *)0
-#endif
-
-#ifndef TRUE
-#define TRUE	1
-#endif
-
-#ifndef FALSE
-#define FALSE	0
-#endif
-
 pair_t **
 init_was_added(uint32 n_dest);
 
@@ -86,25 +74,3 @@ was_added(pair_t **l,
 }
 #endif
 #endif /* WAS_ADDED_H */ 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  17:46:10  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.1  1996/01/26  18:29:54  eht
- * Initial revision
- *
- *
- */

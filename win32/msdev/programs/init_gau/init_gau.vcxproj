@@ -153,7 +153,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\src\programs\init_gau\accum.h" />
     <ClInclude Include="..\..\..\..\src\programs\init_gau\init_gau.h" />
-    <ClInclude Include="..\..\..\..\src\programs\init_gau\mk_sseq.h" />
     <ClInclude Include="..\..\..\..\src\programs\init_gau\parse_cmd_ln.h" />
   </ItemGroup>
   <ItemGroup>

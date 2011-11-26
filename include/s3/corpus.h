@@ -56,7 +56,7 @@ extern "C" {
 
 #include <sphinxbase/prim_type.h>
 #include <s3/vector.h>
-#include <s3/acmod_set_ds.h>
+#include <s3/acmod_set.h>
 #include <s3/s3phseg_io.h>
 
 #include <stdio.h>

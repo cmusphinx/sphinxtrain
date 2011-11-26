@@ -104,25 +104,3 @@ s3ts2cb_write(const char *fn,
 		      n_cb,
 		      sizeof(uint32));
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/11/29  01:11:17  egouvea
- * Fixed license terms in some new files.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/03/17  15:01:49  eht
- * Initial revision
- * 
- *
- */
