@@ -1,11 +1,6 @@
 noinst_LTLIBRARIES = libio.la
 
 libio_la_SOURCES = \
-	 areadchar.c \
-	 areadshort.c \
-	 areadfloat.c \
-	 areadint.c \
-	 awritefloat.c \
 	 pset_io.c \
 	 corpus.c \
 	 model_def_io.c \
