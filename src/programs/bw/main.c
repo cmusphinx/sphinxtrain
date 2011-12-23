@@ -1872,10 +1872,6 @@ main_mmi_reestimate(model_inventory_t *inv,
     E_INFO("Counts saved to %s\n", cmd_ln_str("-accumdir"));
   else
     E_INFO("Counts NOT saved.\n");
-
-  /* free lda memory */
-  if (lda)
-    ckd_free_3d((void ***)lda);
 }
 
 int main(int argc, char *argv[])
