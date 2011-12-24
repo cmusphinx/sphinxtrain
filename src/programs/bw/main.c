@@ -1824,7 +1824,7 @@ main_mmi_reestimate(model_inventory_t *inv,
     ++n_utt;
   }
     
-  printf ("overall> %u (-%u) %e %e",
+  printf ("overall> stats %u (-%u) %e %e",
 	  n_utt-n_utt_fail,
 	  n_utt_fail,
 	  (n_utt-n_utt_fail>0 ? total_log_postprob/(n_utt-n_utt_fail) : 0.0),
