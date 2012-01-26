@@ -164,6 +164,7 @@ doc/Makefile
 include/Makefile
 python/Makefile
 scripts_pl/Makefile
+scripts_pl/sphinxtrain
 src/Makefile
 src/programs/Makefile
 src/libs/Makefile
@@ -199,7 +200,6 @@ src/programs/param_cnt/Makefile
 src/programs/printp/Makefile
 src/programs/prunetree/Makefile
 src/programs/tiestate/Makefile
-src/programs/sphinxtrain
 test/Makefile
 ])
 

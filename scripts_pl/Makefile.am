@@ -1,3 +1,7 @@
+bin_SCRIPTS = sphinxtrain
+
+EXTRA_DIST = sphinxtrain.in
+
 scriptsdir=$(pkglibdir)/scripts_pl
 
 nobase_scripts_SCRIPTS = \
@@ -62,7 +66,6 @@ nobase_scripts_SCRIPTS = \
 	80.mllr_adapt/mllr_solve.pl \
 	80.mllr_adapt/slave_adapt.pl \
 	90.deleted_interpolation/deleted_interpolation.pl \
-	copy_setup.pl \
 	decode/psdecode.pl \
 	decode/slave.pl \
 	decode/verify_dec.pl \
@@ -76,16 +79,7 @@ nobase_scripts_SCRIPTS = \
 	lib/SphinxTrain/Util.pm \
 	lib/test_SimpleConfig.pl \
 	lib/test_SimpleConfig.txt \
-	make_dict.festival \
-	make_feats.pl \
-	Makefile.am \
-	make_phoneset.pl \
-	maketopology.pl \
-	new_experiment.pl \
-	RunAll.pl \
-	setup_SphinxTrain.pl \
-	sphinxDocGen.sh.in \
-	texFormat.pl \
-	tune_senones.pl
+	prepare/make_phoneset.pl \
+	prepare/maketopology.pl
 
 EXTRA_DIST = $(nobase_scripts_SCRIPTS)

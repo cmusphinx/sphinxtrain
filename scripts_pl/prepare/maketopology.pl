@@ -38,7 +38,7 @@ use File::Basename;
 use File::Spec::Functions;
 use File::Path;
 
-use lib catdir(dirname($0), 'lib');
+use lib catdir(dirname($0), '../lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
