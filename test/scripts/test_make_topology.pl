@@ -3,7 +3,7 @@
 use strict;
 require './scripts/testlib.pl';
 
-my $bindir="../scripts_pl/";
+my $bindir="../scripts/";
 my $resdir="res/";
 my $dir="make_topology";
 my $bin ="perl ${bindir}maketopology.pl";

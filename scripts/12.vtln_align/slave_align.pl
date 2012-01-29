@@ -193,25 +193,9 @@ for (my $warp = $ST::CFG_VTLN_START;
     if ($have_feats) {
 	Log("Phase 5: Skipped, feature files already exist\n");
     }
-    # Try to use extract_features.pl if it exists
-    elsif (-x "$ST::CFG_SCRIPT_DIR/extract_features.pl") {
-	my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.extract.$warp.log";
-	my $rv = RunTool('../scripts_pl/extract_features.pl',
-			 $logfile, 0,
-			 -c => $ST::CFG_LISTOFFILES,
-			 -w => $ST::CFG_WAVFILE_EXTENSION,
-			 -e => "$warp.$ST::CFG_FEATFILE_EXTENSION",
-			 '--', 
-			 -warp_params => $warp);
-	if ($rv != 0) {
-	    Log("Failed in warp $warp");
-	    exit 1;
-	}
-    }
-    # Otherwise use the default make_feats.pl
     elsif (-x "$ST::CFG_SCRIPT_DIR/make_feats.pl") {
 	my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.extract.$warp.log";
-	my $rv = RunTool('../scripts_pl/make_feats.pl',
+	my $rv = RunTool('../scripts/make_feats.pl',
 			 $logfile, 0,
 			 -ctl => $ST::CFG_LISTOFFILES,
 			 -ext => "$warp.$ST::CFG_FEATFILE_EXTENSION",

@@ -74,7 +74,7 @@ mkdir ($outdir,0777);
 LogStatus('completed');
 
 Log("Phase 2: Make Speaker Lists");
-my $rv = RunTool("../scripts_pl/make_speaker_lists.pl",
+my $rv = RunTool("../scripts/make_speaker_lists.pl",
 		 $logfile, 0,
 		 $ST::DEC_CFG_LISTOFFILES,
 		 $hypfile, $outdir);

@@ -10,7 +10,7 @@ $CFG_SPHINXTRAIN_DIR = "___SPHINXTRAIN_DIR___";
 # Directory containing SphinxTrain binaries
 $CFG_BIN_DIR = "$CFG_BASE_DIR/bin";
 $CFG_GIF_DIR = "$CFG_BASE_DIR/gifs";
-$CFG_SCRIPT_DIR = "$CFG_BASE_DIR/scripts_pl";
+$CFG_SCRIPT_DIR = "$CFG_BASE_DIR/scripts";
 
 # Experiment name, will be used to name model files and log files
 $CFG_EXPTNAME = "$CFG_DB_NAME";

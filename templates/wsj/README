@@ -8,7 +8,7 @@ installation):
 
 mkdir /somewhere/WSJ
 cd /somewhere/WSJ
-/path/to/SphinxTrain/scripts_pl/setup_SphinxTrain.pl -template wsj
+/path/to/SphinxTrain/scripts/setup_SphinxTrain.pl -template wsj
 
 This setup relies on having the WSJ0 and WSJ1 corpora, LDC catalog
 numbers LDC93S6B and LDC94S13B (only the Sennheiser microphone speech
@@ -41,13 +41,13 @@ Now, you will be able to generate all the files needed for training.
 You need to run (please replace /path/to/SphinxTrain with the actual
 path to your SphinxTrain installation):
 
-perl scripts_pl/create_transcripts.pl
-perl scripts_pl/extract_features.pl
+perl scripts/create_transcripts.pl
+perl scripts/extract_features.pl
 cp /path/to/SphinxTrain/test/res/cmudict.0.6d etc
 
 Finally, you should be able to do basic training of the WSJ0 (SI-84)
 corpus:
 
-perl scripts_pl/RunAll.pl
+sphinxtrain run
 
 To do more interesting things you will need to edit etc/sphinx_train.cfg.

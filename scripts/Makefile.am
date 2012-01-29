@@ -2,7 +2,7 @@ bin_SCRIPTS = sphinxtrain
 
 EXTRA_DIST = sphinxtrain.in
 
-scriptsdir=$(pkglibdir)/scripts_pl
+scriptsdir=$(pkglibdir)/scripts
 
 nobase_scripts_SCRIPTS = \
 	000.comp_feat/make_feats.pl \

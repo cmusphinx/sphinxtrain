@@ -50,9 +50,9 @@ systems, and certainly on Linux.  To build, simply run
 
     ./configure
     make
+    make install
 
-(Or whatever you call GNU Make).  This should configure everything
-automatically. The code has been tested with gcc.
+This should configure everything automatically. The code has been tested with gcc.
 
 Also, check the section title "All Platforms" above.
 
@@ -82,6 +82,7 @@ Also, check the section title "All Platforms" above.
 
 Acknowldegments
 ^^^^^^^^^^^^^^^
+
 This work was built over a large number of years at CMU by most of the
 people in the Sphinx Group. Some code goes back to 1986. The most
 recent work in tidying this up for release includes the following,

@@ -41,12 +41,12 @@ def run_stages(stages):
         for step in steps:
     	    name = step.split("/")[0].split(".")[-1]
     	    if name == stage:
-		os.system(sphinxpath + "/lib/sphinxtrain/scripts_pl/" + step)
+		os.system(sphinxpath + "/lib/sphinxtrain/scripts/" + step)
 
 def run():
     print "Running the training"
     for step in steps:
-	os.system(sphinxpath + "/lib/sphinxtrain/scripts_pl/" + step)
+	os.system(sphinxpath + "/lib/sphinxtrain/scripts/" + step)
 
 def usage():
     print ""

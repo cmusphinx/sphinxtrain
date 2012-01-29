@@ -160,11 +160,10 @@ AC_SUBST(sphinxbasebuild)
 AC_CONFIG_FILES([
 Makefile
 etc/Makefile
-doc/Makefile
 include/Makefile
 python/Makefile
-scripts_pl/Makefile
-scripts_pl/sphinxtrain
+scripts/Makefile
+scripts/sphinxtrain
 src/Makefile
 src/programs/Makefile
 src/libs/Makefile
