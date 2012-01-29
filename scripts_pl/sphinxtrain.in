@@ -36,32 +36,48 @@ steps = [
 "decode/slave.pl"
 ]
 
+def run_stages(stages):
+    for stage in stages.split(","):
+        for step in steps:
+    	    name = step.split("/")[0].split(".")[-1]
+    	    if name == stage:
+		os.system(sphinxpath + "/lib/sphinxtrain/scripts_pl/" + step)
+
 def run():
     print "Running the training"
     for step in steps:
 	os.system(sphinxpath + "/lib/sphinxtrain/scripts_pl/" + step)
 
 def usage():
+    print ""
+    print "Sphinxtrain processes the audio files and creates and acoustic model "
+    print "for CMUSphinx toolkit. The data needs to have a certain layout "
+    print "See the tutorial http://cmusphinx.sourceforge.net/wiki/tutorialam "
+    print "for details"
+    print ""
     print "Usage: sphinxtrain [options] <command>"
     print ""
     print "Commands:"
     print "     -t <task> setup - copy configuration into database"
-    print "     run - run the training"
+    print "     [-s <stage1,stage2,stage3>] run - run the training or just selected stages"
 
 def main():
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ht:", ["help", "task"])
+        opts, args = getopt.getopt(sys.argv[1:], "ht:s:", ["help", "task", "stages"])
     except getopt.GetoptError, err:
         print str(err)
         usage()
         sys.exit(-1)
         
     task = None
+    stages = None
         
     for o, a in opts:
 	if o in ("-t", "--task"):
 	    task = a
+	if o in ("-s", "--stages"):
+	    stages = a
 	if o in ("-h", "--help"):
     	    usage()
     
@@ -76,7 +92,12 @@ def main():
 	    print "No task name defined"
 	    sys.exit(-1)	
 	setup(task)
-    if command == "run":
+    elif command == "run":
+	if stages == None:
+	    run()
+	else:
+	    run_stages(stages)
+    else:
 	run()
     	    
 if __name__ == "__main__":
