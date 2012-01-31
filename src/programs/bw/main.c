@@ -820,7 +820,7 @@ main_reestimate(model_inventory_t *inv,
 		strcat(pdumpfn, uttid);
 		strcat(pdumpfn, ".pdump");
 		if ((pdumpfh = fopen(pdumpfn, "w")) == NULL)
-			E_FATAL_SYSTEM("Failed to open %s for wrigint", pdumpfn);
+			E_FATAL_SYSTEM("Failed to open %s for writing", pdumpfn);
 		ckd_free(pdumpfn);
 	}
 	else
@@ -833,7 +833,7 @@ main_reestimate(model_inventory_t *inv,
 	printf(" %5u", n_state);
 	
 	if (state_seq == NULL) {
-	    E_WARN("Skipped utterance '%s'", trans);
+	    E_WARN("Skipped utterance '%s'\n", trans);
 	} else if (!viterbi) {
 	    /* accumulate reestimation sums for the utterance */
 	    if (baum_welch_update(&log_lik,

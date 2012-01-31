@@ -957,7 +957,7 @@ corpus_set_lsn_filename(const char *fn)
 
     transcription_fp = fopen(transcription_filename, "r");
     if (transcription_fp == NULL) {
-	E_FATAL_SYSTEM("Cannot open LSN filename %s", transcription_filename);
+	E_FATAL_SYSTEM("Can not open transcription file '%s'", transcription_filename);
     }
 
     return S3_SUCCESS;
@@ -1469,7 +1469,7 @@ corpus_read_next_transcription_line(char **trans)
 		/* check LSN utt id (if any) against ctl file utt id */
 		if (!fullsuffixmatch) {
 		    if (strcmp_ci(utt_id, corpus_utt()) != 0) {
-		        E_WARN("LSN utt id, %s, does not match ctl utt id, %s.\n",
+		        E_WARN("Utterance id in the transcriptoin file, '%s', does not match id in the control file, '%s'.\n",
 			       utt_id, corpus_utt());
 		    }
 		}
@@ -1478,7 +1478,7 @@ corpus_read_next_transcription_line(char **trans)
 		    int suffpos = strlen(uttfullname) - strlen(utt_id);
 
 		    if (suffpos >= 0 && strlen(utt_id) > 0 && strcmp_ci(&uttfullname[suffpos], utt_id) != 0) {
-		        E_WARN("LSN utt id, %s, is not a suffix of control file sub-path %s.\n",
+		        E_WARN("Utterance id in transcription flie, '%s', is not a suffix of control file sub-path %s.\n",
 			       utt_id, uttfullname);
 		    }
 		}
@@ -1494,7 +1494,7 @@ corpus_read_next_transcription_line(char **trans)
 				   following the first non-whitespace character found above */
 	    }
 	    else {
-		E_ERROR("Expected open paren after ending close paren in line:\n%s", transcription_line);
+		E_ERROR("Expected open paren after ending close paren in line: '%s'\n", transcription_line);
 		return S3_ERROR;
 	    }
 	}

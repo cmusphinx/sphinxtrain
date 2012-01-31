@@ -112,7 +112,7 @@ kmeans_init -gthobj single -stride 1 -ntrial 1 -minratio 0.001 \n\
 	{ "-lsnfn",
 	  ARG_STRING,
 	  NULL,
-	  "LSN file name (word transcripts)" },
+	  "Transcription file name" },
 	  
 	{ "-dictfn",
 	  ARG_STRING,

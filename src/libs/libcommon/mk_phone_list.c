@@ -164,6 +164,11 @@ acmod_id_t *mk_phone_list(char **btw_mark,
     unsigned int i, j, k;
     acmod_id_t *p;
 
+    if (n_word == 0) {
+	E_WARN("Word sequence is empty\n");
+	return NULL;
+    }
+
     /*
      * Determine the # of phones in the sequence.
      */
