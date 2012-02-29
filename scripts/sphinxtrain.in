@@ -5,14 +5,21 @@ sphinxpath="@prefix@"
 import getopt, sys, os
 
 def setup(task):
+    if not os.path.exists("etc"):
+        os.mkdir("etc")
+    
     print "Setting up the database " + task
+
     out_cfg = open("etc/sphinx_train.cfg", "w")
     for line in open(sphinxpath + "/lib/sphinxtrain/etc/sphinx_train.cfg", "r"):
 	line = line.replace("___DB_NAME___", task).replace("___BASE_DIR___", os.getcwd()).replace("___SPHINXTRAIN_DIR___", sphinxpath + "/lib/sphinxtrain")
 	out_cfg.write(line)
+    out_cfg.close()
+
     out_cfg = open("etc/feat.params", "w")
     for line in open(sphinxpath + "/lib/sphinxtrain/etc/feat.params", "r"):
 	out_cfg.write(line)
+    out_cfg.close()
 
 steps = [
 "000.comp_feat/slave_feat.pl",
