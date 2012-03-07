@@ -51,35 +51,6 @@ my $ret_value = 0;
 
 Log("MODULE: 00 verify training files");
 
-# My test files for OS case sensitivity
-my $lowercase_file = "tmp_case_sensitive_test";
-my $uppercase_file = "TMP_CASE_SENSITIVE_TEST";
-# Just in case, clean up both cases
-unlink $uppercase_file;
-unlink $lowercase_file;
-# Create file with lowercase name
-open (TEST, ">$lowercase_file");
-close(TEST);
-# Now, try to open with uppercase name
-my $is_case_sensitive;
-if (open(TEST, "<$uppercase_file")) {
-# If successful, the OS is case insensitive, and we have to check for
-# phones in a case insensitive manner
-    $is_case_sensitive = 0;
-    close(TEST);
-    Log("O.S. is case insensitive (\"A\" == \"a\").");
-    Log("Phones will be treated as case insensitive.");
-} else {
-# If unsuccessful, the OS is case sensitive, and we have to check for
-# phones in a case sensitive manner
-    $is_case_sensitive = 1;
-    Log("O.S. is case sensitive (\"A\" != \"a\").");
-    Log("Phones will be treated as case sensitive.");
-}
-# Clean up the mess
-unlink $lowercase_file;
-unlink $uppercase_file;
-
 # PHASE 1: Check to see if the phones in the dictionary are listed in the phonelist file
 # PHASE 2: Check to make sure there are not duplicate entries in the dictionary
 my %phonelist_hash;
@@ -89,7 +60,7 @@ my %phonelist_hash;
     my %dict_phone_hash = ();
     my %dict_hash = ();
 
-    Log("Phase 1: DICT - Checking to see if the dict and filler dict agrees with the phonelist file.");
+    Log("Phase 1: Checking to see if the dict and filler dict agrees with the phonelist file.");
     # This is rather ugly, but it's late and I'm just trying to get the pieces together
     # Clean it up later
 
@@ -103,11 +74,7 @@ my %phonelist_hash;
 	    # in @phone
 	    my @phones = ($phonetic =~ m/(\S+)/g);
 	    for my $phone (@phones) {
-	      if ($is_case_sensitive) {
 		$dict_phone_hash{$phone}++;
-	      } else {
-		$dict_phone_hash{uc($phone)}++;
-	      }
 	    }
 	}
 	$counter++;
@@ -121,11 +88,7 @@ my %phonelist_hash;
 	    my $phonetic = $2;
 	    my @phones = ($phonetic =~ m/(\S+)/g);
 	    for my $phone (@phones) {
-	      if ($is_case_sensitive) {
-		$dict_phone_hash{$phone}++;
-	      } else {
 		$dict_phone_hash{uc($phone)}++;
-	      }
 	    }
 	}
 	$counter++;
@@ -138,11 +101,7 @@ my %phonelist_hash;
     while (<PHONE>) {
 	my $line = Trim($_);
 	$has_SIL = 1 if ($line =~ m/^SIL$/);
-	if ($is_case_sensitive) {
-	  $phonelist_hash{$line} = 0;
-	} else {
-	  $phonelist_hash{uc($line)} = 0;
-	}
+	$phonelist_hash{$line} = 0;
     }
     close PHONE;
 
@@ -175,7 +134,7 @@ my %phonelist_hash;
     }
 
     LogStatus($status);
-    Log("Phase 2: DICT - Checking to make sure there are not duplicate entries in the dictionary");
+    Log("Phase 2: Checking to make sure there are not duplicate entries in the dictionary");
     my $duplicate_status = 'passed';
     for my $key (keys %dict_hash) {
 	if ($dict_hash{$key} > 1) {
@@ -205,7 +164,7 @@ my @uttids;
     # 3.) Check that each utterance specified in the .ctl file has a positive length
     #     Verify that the files listed are available and are not of size 0
 
-    Log("Phase 3: CTL - Check general format; utterance length (must be positive); files exist");
+    Log("Phase 3: Check general format for the fileids file; utterance length (must be positive); files exist");
     $status = 'passed';
     my $estimated_training_data = 0;
     # 3.5) Check that there is a newline at the end of the file (yes,
@@ -213,7 +172,7 @@ my @uttids;
     if ($ctl_lines[-1] !~ /\n$/) {
 	$status = 'FAILED';
 	$ret_value = -6;
-	LogWarning("CTL file missing a newline at end of file");
+	LogWarning("Error in '$ST::CFG_LISTOFFILES': missing a newline at end of file");
     }
     for $ctl_line (@ctl_lines) {
         chomp($ctl_line);
@@ -253,13 +212,13 @@ my @uttids;
 		if (! $size) {
 		    $ret_value = -4;
 		    $status = 'FAILED';
-		    LogWarning ("CTL file, $ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION, does not exist, or is empty");
+		    LogWarning ("Error in '$ST::CFG_LISTOFFILES', the feature file '$ST::CFG_FEATFILES_DIR/$file.$ST::CFG_FEATFILE_EXTENSION' does not exist, or is empty");
 		}
 		push @uttids, $file;
 	    } else {
 		$status = 'FAILED';
 		$ret_value = -5;
-		LogWarning ("CTL line does not parse correctly:\n$ctl_line");
+		LogWarning ("Error in '$ST::CFG_LISTOFFILES'. Can not parse the line '$ctl_line'\n");
 	    }
 	}
     }
@@ -269,8 +228,8 @@ my @uttids;
 
     
     # 4) Check number of lines in the transcript and in ctl - they should be the same";
-    Log ("Phase 4: CTL - Checking number of lines in the transcript should match lines in control file");
-    open TRN,"$ST::CFG_TRANSCRIPTFILE" or die "Can not open Transcript file ($ST::CFG_TRANSCRIPTFILE)";
+    Log ("Phase 4: Checking number of lines in the transcript file should match lines in fileids file");
+    open TRN,"$ST::CFG_TRANSCRIPTFILE" or die "Can not open transcript file ($ST::CFG_TRANSCRIPTFILE)";
     my $number_transcript_lines = 0;
     my $trnline;
     while (<TRN>) {
@@ -292,7 +251,7 @@ my @uttids;
     }
 
     # 5) Should already have estimates on the total training time, 
-    Log ("Phase 5: CTL - Determine amount of training data, see if n_tied_states seems reasonable.");
+    Log ("Phase 5: Determine amount of training data, see if n_tied_states seems reasonable.");
     $status = 'passed';
     if ($estimated_training_data) {
 	my $total_training_hours = ($estimated_training_data / 3600)/100;
@@ -324,7 +283,7 @@ my %transcript_phonelist_hash = ();
 # Verify that all transcription words are in the dictionary, and all
 # phones are covered
 {
-    Log("Phase 6: TRANSCRIPT - Checking that all the words in the transcript are in the dictionary");
+    Log("Phase 6: Checking that all the words in the transcript are in the dictionary");
     open DICT,"$ST::CFG_DICTIONARY" or die "Can not open the dictionary ($ST::CFG_DICTIONARY)";
     my @dict = <DICT>;
     close DICT;
@@ -334,11 +293,7 @@ my %transcript_phonelist_hash = ();
     my %d;
     for (@dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
-	if ($is_case_sensitive) {
-	  $d{$1} = $2;
-	} else {
-	  $d{$1} = uc($2);
-	}
+	$d{$1} = $2;
     }
     
     open DICT,"$ST::CFG_FILLERDICT" or die "Can not open filler dict ($ST::CFG_FILLERDICT)";
@@ -349,11 +304,7 @@ my %transcript_phonelist_hash = ();
     
     for (@fill_dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
-	if ($is_case_sensitive) {
-	  $d{$1} = $2;
-	} else {
-	  $d{$1} = uc($2);
-	}
+	$d{$1} = $2;
     }
     
     @dict = undef;			# not needed
@@ -415,7 +366,7 @@ my %transcript_phonelist_hash = ();
 }
 
 {
-    Log("Phase 7: TRANSCRIPT - Checking that all the phones in the transcript are in the phonelist, and all phones in the phonelist appear at least once");
+    Log("Phase 7: Checking that all the phones in the transcript are in the phonelist, and all phones in the phonelist appear at least once");
     my $status = 'passed';
 
     for my $phone (sort keys %phonelist_hash) {

@@ -53,35 +53,6 @@ my $ret_value = 0;
 
 Log("MODULE: 00 verify testing files");
 
-# My test files for OS case sensitivity
-my $lowercase_file = "tmp_case_sensitive_test";
-my $uppercase_file = "TMP_CASE_SENSITIVE_TEST";
-# Just in case, clean up both cases
-unlink $uppercase_file;
-unlink $lowercase_file;
-# Create file with lowercase name
-open (TEST, ">$lowercase_file");
-close(TEST);
-# Now, try to open with uppercase name
-my $is_case_sensitive;
-if (open(TEST, "<$uppercase_file")) {
-# If successful, the OS is case insensitive, and we have to check for
-# phones in a case insensitive manner
-    $is_case_sensitive = 0;
-    close(TEST);
-    Log("O.S. is case insensitive (\"A\" == \"a\").");
-    Log("Phones will be treated as case insensitive.");
-} else {
-# If unsuccessful, the OS is case sensitive, and we have to check for
-# phones in a case sensitive manner
-    $is_case_sensitive = 1;
-    Log("O.S. is case sensitive (\"A\" != \"a\").");
-    Log("Phones will be treated as case sensitive.");
-}
-# Clean up the mess
-unlink $lowercase_file;
-unlink $uppercase_file;
-
 # Check to make sure .ctl file is roughly of correct format
 # 1.) Check that each utterance specified in the .ctl file has a positive length
 #     Verify that the files listed are available and are not of size 0
@@ -173,11 +144,7 @@ my %transcript_phonelist_hash = ();
     my %d;
     for (@dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
-	if ($is_case_sensitive) {
-	  $d{$1} = $2;
-	} else {
-	  $d{$1} = uc($2);
-	}
+	$d{$1} = $2;
     }
     
     open DICT,"$ST::CFG_FILLERDICT" or die "Can not open filler dict ($ST::CFG_FILLERDICT)";
@@ -188,11 +155,7 @@ my %transcript_phonelist_hash = ();
     
     for (@fill_dict) {		# Create a hash of the dict entries
 	/(\S+)\s+(.*)$/;
-	if ($is_case_sensitive) {
-	  $d{$1} = $2;
-	} else {
-	  $d{$1} = uc($2);
-	}
+	$d{$1} = $2;
     }
     
     @dict = undef;			# not needed
