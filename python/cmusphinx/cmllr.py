@@ -54,7 +54,7 @@ def estimate_cmllr(stats, inmean, invar, mdef):
     print 'Get statistics & sum it'
     # CD only : just sum over all CD densities
     for j in range(mdef.n_ci_sen, inmean.n_mgau):
-        print 'state = %i' % j
+#        print 'state = %i' % j
         for k in range(0, inmean.density):            
             # Mean ( vector, dim : ndim )
             mean = inmean[j][i][k]
@@ -74,49 +74,43 @@ def estimate_cmllr(stats, inmean, invar, mdef):
             # Extended sum of mean statistics (i.e. sum(L_m_r o) ) 
             # ( vector, dim : ndim+1 )
             obsmean  = stats.mean[j][i][k]
-            xobsmean = np.concatenate(((dnom,),obsmean))
+            xobsmean = np.concatenate((obsmean, (dnom,)))
             # G{l} = \sum_r \Sigma_{l}^{-1} * \sum_t L_m_r oe oe^T (outer)
             #      = ...                 * [\sum_t L_m_r  (\sum_t  L_m_r o)^T]
             #                              [\sum_t L_m_r o \sum_t L_m_r o o^T]
-            SumT = np.diag(obsvar)            
-            SumT = np.concatenate(((obsmean.T,),SumT),axis=0)
-            # ==  numpy.r_['0,2',obsmean,SumT]
-            SumT = np.c_[xobsmean,SumT]
+            SumT = obsvar
+            SumT = np.concatenate((SumT, (obsmean.T,)),axis=0)
+            SumT = np.c_[SumT, xobsmean]
             for l in range(0, ndim):
-                G[l] += invvar[l] * SumT            
+                G[l] += invvar[l] * SumT
                 # K{l} = \sum_r \Sigma_{l}^{-1} * \Mean{l} * L_m_r oe
                 #      = ...                               * [\sum_t L_m_r (\sum_t  L_m_r o)^T]
-                K[l] += invvar[l] * mean[l] * xobsmean
+            K += np.outer(invvar * mean, xobsmean)
             #Sum for all gausians
             B += dnom
     # End of collecting stats
-    # Compute W matrix
-    print 'Get W'
-    Ginv = np.zeros((ndim+1, ndim+1))   
+
+    Ginv = np.zeros((ndim+1, ndim+1))
     while (niter < 10):
         niter += 1
         for i in range(0, ndim):
-            print "%i dim , iter : %i" % ( i , niter )
-            #Ginv = np.linalg.inv(G[i])
-            Ginv = np.linalg.pinv(G[i],rcond=1.0e-6)
+            Ginv = np.linalg.inv(G[i])
+            #Ginv = np.linalg.pinv(G[i],rcond=1.0e-6)
             # Init W for convergence of likehood
-            iniW = np.concatenate(((bias[i],),A[i,:]))
+            iniW = np.concatenate((A[i,:], (bias[i],)))
             # Get extended cofactors
             cofact = get_cofact(A,i)
             # Get alpha
             alpha  = get_alpha(Ginv,K[i],B,cofact)
-            #print "alpha : %f" % alpha
+            print "alpha : %f" % alpha
             W = np.zeros(ndim+1)
             tvec = alpha * cofact + K[i]
             W = np.dot(Ginv,tvec)
             like_new = get_row_like(G[i],K[i],cofact,B,W)
             like_old = get_row_like(G[i],K[i],cofact,B,iniW)
-            if (like_new >like_old) :
-                #print 'updating row %i, iter %i,( %f < %f )' % ( i , niter, like_old, like_new )
-                det = 0
-                A[i,:] = W[1:ndim+1]
-                det = np.dot(cofact,W)
-                bias[i] = W[0]
+            if (like_new > like_old) :
+                A[i,:] = W[0:ndim]
+                bias[i] = W[ndim]
             else:
                 print 'NOT updating row %i, iter %i,( %f > %f )' % ( i , niter, like_old, like_new )
     #to preserve compatibility with write_mllr
@@ -128,7 +122,7 @@ def get_row_like(G,K,cofact,B,W):
     row_like = 0
     tvec = np.dot(W,G)
     row_like = np.dot(tvec - 2 * K, W)
-    det =  np.dot(cofact,W) 
+    det = np.dot(cofact,W)
     row_like = ( math.log(math.fabs(det)) * B ) - ( row_like / 2 )
     return row_like
 
@@ -169,19 +163,20 @@ def get_cofact(A, i):
     # Cofact(A) = det(A) * A^{-1}
     #
     # For determinant computing , slogdet is more suitable for large matrix but not available with numpy < 2.0
-    # (sign, logdet) = np.linalg.slogdet(A)
-    # det = sign * np.exp(logdet)
+    #   (sign, logdet) = np.linalg.slogdet(A)
+    #   det = sign * np.exp(logdet)
     det = np.linalg.det(A)
     # Invert of matrix A
-    ainv = np.linalg.pinv(A,rcond=1.0e-6)
-    #ainv = np.linalg.inv(A)
+    #ainv = np.linalg.pinv(A,rcond=1.0e-6)
+    ainv = np.linalg.inv(A)
     # Only for i row
     # ainv = ainv[i,:]
     # Only for i columns
     ainv = ainv[:,i]
     cofact = det * ainv
+    # cofact = ainv
     # Extend cofactors
-    cofact = np.concatenate(((0,),cofact))
+    cofact = np.concatenate((cofact, (0,)))
     return cofact
 
 def write_mllr(fout, Ws):
@@ -232,8 +227,8 @@ def solve_transform(Ws):
         # Get rotation and bias terms separately
         b = W[:,0]
         A = W[:,1:]
-    #Ap = np.linalg.inv(A)
-    Ap = np.linalg.pinv(A,rcond=1.0e-6)
+    Ap = np.linalg.inv(A)
+    #Ap = np.linalg.pinv(A,rcond=1.0e-6)
     bp = np.linalg.solve(A,b)
     #to preserve compatibility with write_mllr
     Wi = np.c_[bp,Ap]
@@ -302,18 +297,16 @@ if __name__ == '__main__':
             sys.exit()
     outmean = 'means.cmllr'
     outvar  = 'variances.cmllr'
-    print 'begin'
     inmean = s3gau.open(args[0])
     invar = s3gau.open(args[1]) 
     mdef = s3mdef.open(args[2])
     accumdirs = args[3:]
-    stats = s3gaucnt.accumdirs(accumdirs)
+    stats = s3gaucnt.accumdirs_full(accumdirs)
     Ws = estimate_cmllr(stats, inmean, invar, mdef)
+    write_mllr(open("cmllr_matrix", "w"), Ws)
     Wp = solve_transform(Ws)
-    write_mllr(sys.stdout, Wp)
     param = solve_mllr(Wp, inmean, invar, mdef)
     om = s3gau.open(outmean,"wb")
     om.writeall(param[0])
     om = s3gau.open(outvar,"wb")
     om.writeall(param[1])
-    print 'end'
