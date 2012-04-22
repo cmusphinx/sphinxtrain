@@ -163,60 +163,11 @@ my $vtlnlsn = catfile($outdir, "${ST::CFG_EXPTNAME}.vtlnlsn");
 for (my $warp = $ST::CFG_VTLN_START;
      $warp <= $ST::CFG_VTLN_END; $warp += $ST::CFG_VTLN_STEP) {
     $warp = sprintf("%.2f", $warp);
-    Log("Phase 4: Running VTLN alignment for warp factor $warp");    
-    # Build state segmentation directories
-    my $wdsegdir = catdir($outdir, $warp);
-    mkpath($wdsegdir, 0, 0777);
-    open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
-    my $have_feats = 1;
-    my %dirs;
-    while (<INPUT>) {
-	chomp;
-	my @fields = split;
-	my $fileid = shift @fields;
-	# Also look for feature files while we're at it
-	unless (-r catfile($ST::CFG_FEATFILES_DIR,
-			   "$fileid.$warp.$ST::CFG_FEATFILE_EXTENSION")) {
-	    $have_feats = 0;
-	}
-	my $basedir = dirname($fileid);
-	next if $basedir eq ".";
-	unless ($dirs{$basedir}) {
-	    $dirs{$basedir}++;
-	    mkpath(catdir($wdsegdir, $basedir), 0, 0777);
-	}
-    }
-    close INPUT;
 
-    # Extract features (unless they're already there)
-    Log("Phase 5: Extracting features with warp factor $warp\n");
-    if ($have_feats) {
-	Log("Phase 5: Skipped, feature files already exist\n");
-    }
-    elsif (-x "$ST::CFG_SCRIPT_DIR/make_feats.pl") {
-	my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.extract.$warp.log";
-	my $rv = RunTool('../scripts/make_feats.pl',
-			 $logfile, 0,
-			 -ctl => $ST::CFG_LISTOFFILES,
-			 -ext => "$warp.$ST::CFG_FEATFILE_EXTENSION",
-			 -w => $ST::CFG_WAVFILE_EXTENSION,
-			 -cfg => $ST::CFG_FILE,
-			 '--', 
-			 -warp_params => $warp);
-	if ($rv != 0) {
-	    Log("Failed in warp $warp");
-	    exit 1;
-	}
-    }
-    else {
-	Log("Failed to find a script for feature extraction");
-	exit 1;
-    }
-
-    # Run n_parts of force alignment
-    Log("Phase 6: Running force alignment in  $n_parts parts\n");
+    Log("Phase 4: Running force alignment in  $n_parts parts\n");
     my @jobs;
     for (my $i = 1; $i <= $n_parts; ++$i) {
+    	
 	push @jobs, LaunchScript("falign.$warp.$i", ['vtln_align.pl', $warp, $i, $n_parts]);
     }
 
@@ -299,7 +250,7 @@ for (my $warp = $ST::CFG_VTLN_START;
     exit $return_value if $return_value;
 
     # Now update the master control file and transcript
-    Log("Phase 7: Updating master control file and transcript\n");
+    Log("Phase 5: Updating master control file and transcript\n");
     my $newvtlnctl = "$vtlnctl.new";
     my $newvtlnlsn = "$vtlnlsn.new";
     # A lot of filehandles here!

@@ -60,13 +60,40 @@ $| = 1; # Turn on autoflushing
 Log ("MODULE: 000 Computing feature from audio files\n");
 my @jobs;
 for (my $i = 1; $i <= $n_parts; $i++) {
-  push @jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.train", $ST::CFG_LISTOFFILES]);
+    push @jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.train", $ST::CFG_LISTOFFILES]);
 }
 for (my $i = 1; $i <= $n_parts; $i++) {
-  push @jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.test", $ST::DEC_CFG_LISTOFFILES]);
+    push @jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.test", $ST::DEC_CFG_LISTOFFILES]);
 }
 foreach my $job (@jobs) {
-  WaitForScript($job);
+     WaitForScript($job);
+}
+
+if ($ST::CFG_VTLN eq "yes") {
+    my $outdir = "$ST::CFG_BASE_DIR/feat";
+    my $logdir = "$ST::CFG_LOG_DIR/000_comp_feat";
+
+    mkdir($outdir,0777);
+    my @vtln_jobs;
+		
+    $ST::CFG_VTLN_START = 0.80 unless defined($ST::CFG_VTLN_START);
+    $ST::CFG_VTLN_END = 1.45 unless defined($ST::CFG_VTLN_END);
+    $ST::CFG_VTLN_STEP = 0.05 unless defined($ST::CFG_VTLN_STEP);
+
+    my $vtlnctl = catfile($outdit, "${ST::CFG_EXPTNAME}.vtlnctl");
+    my $vtlnlsn = catfile($outdir, "${ST::CFG_EXPTNAME}.vtlnlsn");
+    for (my $warp = $ST::CFG_VTLN_START; 
+         $warp <= $ST::CFG_VTLN_END; $warp += $ST::CFG_VTLN_STEP) {
+	 $warp = sprintf("%.2f", $warp);
+
+	for (my $i = 1; $i <= $n_parts; $i++) {
+	    push @vtln_jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.train", $ST::CFG_LISTOFFILES, $warp]);
+	}
+
+	foreach my $vtln_job (@vtln_jobs) {
+	    WaitForScript($vtln_job);
+	}
+    }
 }
 
 Log ("Feature extraction is done\n");

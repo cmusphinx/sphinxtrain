@@ -57,12 +57,19 @@ use SphinxTrain::Util;
 #************************************************************************
 
 $| = 1; # Turn on autoflushing
-die "USAGE: $0 <part> <npart> [<exptid> <control>]" if @ARGV < 2;
-my ($part, $npart, $exptid, $ctlfile) = @ARGV;
+die "USAGE: $0 <part> <npart> [<exptid> <control> <warp>]" if @ARGV < 2;
+my ($part, $npart, $exptid, $ctlfile, $warp) = @ARGV;
+
 $part = 1 unless defined($part);
 $npart = 1 unless defined($npart);
+
 $exptid = $ST::CFG_EXPTNAME unless defined($exptid);
 $ctlfile = $ST::CFG_LISTOFFILES unless defined($ctlfile);
+$outfolder = $ST::CFG_FEATFILES_DIR unless defined($warp);
+$processname = "000.comp_feat";
+$log_dir = "$ST::CFG_LOG_DIR/$processname";
+mkdir ($log_dir,0777) unless -d $log_dir;
+$logfile = "$log_dir/${exptid}-${part}-${npart}.log";
 
 # Defines input audio format
 $wavtype = $ST::CFG_WAVFILE_TYPE unless defined($wavtype);
@@ -71,10 +78,13 @@ if ($wavtype eq 'nist') {$nist = "yes";}
 if ($wavtype eq 'raw') {$raw = "yes";}
 if ($wavtype eq 'mswav') {$mswav = "yes";}
 
-$processname = "000.comp_feat";
-$log_dir = "$ST::CFG_LOG_DIR/$processname";
-mkdir ($log_dir,0777) unless -d $log_dir;
-$logfile = "$log_dir/${exptid}-${part}-${npart}.log";
+
+my @warp_args;
+if (defined($warp)) {
+    $outfolder = catdir("$ST::CFG_BASE_DIR/feat", $warp);
+    $logfile = "$log_dir/${exptid}-${part}-${npart}-${warp}.log";
+    push(@warp_args, -warp_params => $warp);
+}
 
 open CTL, "<$ctlfile" or die "Failed to open control file $ctlfile: $!";
 while (<CTL>) {
@@ -84,14 +94,19 @@ while (<CTL>) {
 }
 close CTL;
 
-Log("Extracting $ctlcount segments starting at $ctloffset (part $part of $npart) ", 'audio files');
+if (defined($warp)) {
+    Log("Extracting features from $ctlcount segments starting at $ctloffset with warp factor $warp (part $part of $npart)\n", 'audio files');
+} else {
+    Log("Extracting features from $ctlcount segments starting at $ctloffset (part $part of $npart) ", 'audio files');
+}
+
 my $rv = RunTool('sphinx_fe', $logfile, $ctlcount,
 		  -c => $ctlfile,
 		  -part => $part,
 		  -npart => $npart,
 		  -di => $ST::CFG_WAVFILES_DIR,
 		  -ei => $ST::CFG_WAVFILE_EXTENSION,
-		  -do => $ST::CFG_FEATFILES_DIR,
+		  -do => $outfolder,
 		  -eo => $ST::CFG_FEATFILE_EXTENSION,
 		  -nist => $nist,
 		  -raw => $raw,
@@ -99,9 +114,11 @@ my $rv = RunTool('sphinx_fe', $logfile, $ctlcount,
 		  -samprate => $ST::CFG_WAVFILE_SRATE,
 		  -nfilt => $ST::CFG_NUM_FILT,
 		  -lowerf => $ST::CFG_LO_FILT,
-		  -upperf => $ST::CFG_HI_FILT);
+		  -upperf => $ST::CFG_HI_FILT,
+	          @warp_args);
 
 if ($rv) {
     LogError("Failed to start ${ST::CFG_BIN_DIR}/sphinx_fe");
 }
+
 exit ($rv);

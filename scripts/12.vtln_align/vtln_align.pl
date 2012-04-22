@@ -51,6 +51,8 @@ use SphinxTrain::Util;
 die "Usage: $0 <warp> <part> <nparts>\n" unless @ARGV == 3;
 my ($warp, $part, $npart) = @ARGV;
 
+my $out_dir = catdir("$ST::CFG_BASE_DIR/vtlnout", $warp);
+
 my $hmm_dir = defined($ST::CFG_FORCE_ALIGN_MODELDIR)
     ? $ST::CFG_FORCE_ALIGN_MODELDIR
     : "$ST::CFG_MODEL_DIR/$ST::CFG_EXPTNAME.ci_$ST::CFG_DIRLABEL";
@@ -89,9 +91,10 @@ if (defined($ST::CFG_SVSPEC)){
 }
 if (-r $mllt_file) {
     push(@feat_args,
-	 -lda => $mllt_file,
-	 -ldadim => $ST::CFG_LDA_DIMENSION);
+     -lda => $mllt_file,
+     -ldadim => $ST::CFG_LDA_DIMENSION);
 }
+
 
 # Get the number of utterances
 open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
@@ -131,8 +134,8 @@ my $return_value = RunTool
      -ctl => $ST::CFG_LISTOFFILES,
      -ctloffset => $ctl_counter * ($part-1),
      -ctlcount => $ctl_counter,
-     -cepdir => $ST::CFG_FEATFILES_DIR,
-     -cepext => ".$warp.$ST::CFG_FEATFILE_EXTENSION",
+     -cepdir => $out_dir,
+     -cepext => ".$ST::CFG_FEATFILE_EXTENSION",
      -insent => $transcriptfile,
      -outsent => $outfile,
      -wdsegdir => "$outdir$ctlext",
