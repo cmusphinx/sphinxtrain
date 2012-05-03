@@ -82,7 +82,7 @@ my $varfn       = "$hmm_dir/variances";
 my $minvar      = 1e-4;
 
 my $topn = $ST::CFG_FINAL_NUM_DENSITIES;
-$topn = $ST::CFG_CD_TOPN if (defined($ST::CFG_CD_TOPN) and ($ST::CFG_FULLVAR eq 'no') and ($ST::CFG_CD_TOPN < $n_gau));
+$topn = $ST::CFG_CD_TOPN if (defined($ST::CFG_CD_TOPN) and ($ST::CFG_FULLVAR eq 'no') and ($ST::CFG_CD_TOPN < $ST::CFG_FINAL_NUM_DENSITIES));
 
 my $mmie_type   = defined($ST::CFG_MMIE_TYPE) ? $ST::CFG_MMIE_TYPE : "rand";
 my $lw          = defined($ST::CFG_LANGUAGEWEIGHT) ? $ST::CFG_LANGUAGEWEIGHT : "11.5";

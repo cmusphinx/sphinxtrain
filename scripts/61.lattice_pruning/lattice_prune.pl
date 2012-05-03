@@ -85,8 +85,8 @@ $filecount = 1 unless ($filecount);
 my $fileoffset = $filecount * ($part-1);
 
 # Add PYTHONPATH
-$ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_BASE_DIR, 'python');
-my $rv = RunTool(catfile($ST::CFG_BASE_DIR, 'python', 'cmusphinx', 'lattice_prune.py'),
+$ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_SPHINXTRAIN_DIR, 'python');
+my $rv = RunTool(catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'cmusphinx', 'lattice_prune.py'),
 		 $logfile, $filecount,
 		 $abeam, $nbeam, $lw, $lmfile, $denlatdir, $pruned_denlatdir,
 		 $filelst, $transfile, $filecount, $fileoffset);
