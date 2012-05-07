@@ -83,6 +83,11 @@ Also, check the section title "All Platforms" above.
 Acknowldegments
 ^^^^^^^^^^^^^^^
 
+The development of this code has included support at different times
+by various United States Government agencies, under different programs,
+including the Defence Advanced Projects Agency (DARPA) and the
+National Science Foundation (NSF). We are grateful for their support.
+
 This work was built over a large number of years at CMU by most of the
 people in the Sphinx Group. Some code goes back to 1986. The most
 recent work in tidying this up for release includes the following,
