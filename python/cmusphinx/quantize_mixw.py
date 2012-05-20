@@ -7,6 +7,7 @@ import sys
 import os
 import struct
 import s3mixw
+import sendump
 import sphinxbase
 
 def mixw_kmeans_iter(lmw, cb):
@@ -173,36 +174,7 @@ def write_sendump_huff(mixwmap, cb, outfile):
     huff.detach()
     fh.close()
 
-def read_sendump(infile, n_cb=4):
-    def readstr(fh):
-        nbytes = struct.unpack('I', fh.read(4))[0]
-        if nbytes == 0:
-            return None
-        else:
-            return fh.read(nbytes)
 
-    sendump = file(infile, "rb")
-    title = readstr(sendump)
-    while True:
-        header = readstr(sendump)
-        if header == None:
-            break
-
-    # Number of codewords and pdfs
-    r, c = struct.unpack('II', sendump.read(8))
-    print r,c
-
-    # Now read the stuff
-    opdf_8b = numpy.empty((670,n_cb,r))
-    for i in range(0,n_cb):
-        for j in range(0,r):
-            # Read bytes, expand to ints, shift them up
-            mixw = numpy.fromfile(sendump, dtype='int8', count=670).astype('i') << 10
-            sendump.read(2)
-            # Negate, exponentiate, and untranspose
-            opdf_8b[:,i,j] = numpy.power(1.0001, -mixw)
-
-    return opdf_8b
 
 def norm_floor_mixw(mixw, floor=1e-7):
     return (mixw.T / mixw.T.sum(0)).T.clip(floor, 1.0)
@@ -210,10 +182,9 @@ def norm_floor_mixw(mixw, floor=1e-7):
 if __name__ == '__main__':
     ifn, ofn = sys.argv[1:]
     if os.path.basename(ifn).startswith('sendump'):
-        mixw = read_sendump(ifn)
+        mixw = sendump.Sendump(ifn).mixw()
     else:
         mixw = norm_floor_mixw(s3mixw.open(ifn).getall(), 1e-7)
     cb = quantize_mixw_kmeans(mixw, 15, 1e-7)
-    print cb
     mwmap = map_mixw_cb(mixw, cb, 1e-7)
     write_sendump_hb(mwmap, cb, ofn)
