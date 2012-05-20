@@ -68,6 +68,10 @@ nobase_scripts_SCRIPTS = \
 	cmusphinx/dict_spd.py \
 	cmusphinx/lattice.py \
 	cmusphinx/lattice_conv.py \
-	cmusphinx/s3gaucnt.py
+	cmusphinx/s3gaucnt.py \
+	cmusphinx/prune_mixw.py \
+	cmusphinx/quantize_mixw.py \
+	cmusphinx/lat2dot.py \
+	cmusphinx/qmwx.pyx
 
 EXTRA_DIST = $(nobase_scripts_SCRIPTS)
