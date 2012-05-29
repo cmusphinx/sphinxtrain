@@ -1,7 +1,5 @@
 bin_SCRIPTS = sphinxtrain
 
-EXTRA_DIST = sphinxtrain.in
-
 scriptsdir=$(pkglibdir)/scripts
 
 nobase_scripts_SCRIPTS = \
@@ -82,4 +80,4 @@ nobase_scripts_SCRIPTS = \
 	prepare/make_phoneset.pl \
 	prepare/maketopology.pl
 
-EXTRA_DIST = $(nobase_scripts_SCRIPTS)
+EXTRA_DIST = $(nobase_scripts_SCRIPTS) sphinxtrain.in
