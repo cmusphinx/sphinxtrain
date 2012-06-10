@@ -270,7 +270,7 @@ free_kd_tree(kd_tree_node_t *tree)
 	free_kd_tree(tree->left);
 	free_kd_tree(tree->right);
 	if (tree->n_level)
-		ckd_free(tree->boxes);
+		ckd_free_2d(tree->boxes);
 	ckd_free(tree->bbi);
 	ckd_free(tree->lower);
 	ckd_free(tree->upper);
@@ -330,6 +330,7 @@ write_bbi_list(FILE *fp, kd_tree_node_t *node)
 	qsort(bbi, k, sizeof(*bbi), compare_boxes);
 	for (i = 0; i < k; ++i)
 		fprintf(fp, "%d ", bbi[i].idx);
+	ckd_free(bbi);
 	return 0;
 }
 

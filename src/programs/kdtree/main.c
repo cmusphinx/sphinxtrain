@@ -112,6 +112,10 @@ main(int argc, char *argv[])
 	for (i = 0; i < n_feat; ++i)
 		free_kd_tree(root[i]);
 	ckd_free(root);
+	ckd_free(veclen);
+	ckd_free_4d(means);
+	ckd_free_4d(variances);
+	cmd_ln_free();
 
 	return 0;
 }
