@@ -64,6 +64,7 @@ nobase_scripts_SCRIPTS = \
 	80.mllr_adapt/mllr_solve.pl \
 	80.mllr_adapt/slave_adapt.pl \
 	90.deleted_interpolation/deleted_interpolation.pl \
+	91.g2p_train/g2p_train.pl \
 	decode/psdecode.pl \
 	decode/slave.pl \
 	decode/verify_dec.pl \

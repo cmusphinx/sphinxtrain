@@ -1,4 +1,4 @@
-SUBDIRS = \
+BASEDIRS = \
 agg_seg \
 bldtree \
 bw \
@@ -26,3 +26,10 @@ param_cnt \
 printp \
 prunetree \
 tiestate
+
+
+if G2P_DECODER
+SUBDIRS = $(BASEDIRS) g2p_train g2p_eval 
+else 
+SUBDIRS = $(BASEDIRS)
+endif

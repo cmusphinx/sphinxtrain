@@ -40,6 +40,7 @@ steps = [
 "62.lattice_conversion/slave_conv.pl",
 "65.mmie_train/slave_convg.pl",
 "90.deleted_interpolation/deleted_interpolation.pl",
+"91.g2p_train/g2p_train.pl",
 "decode/slave.pl"
 ]
 
