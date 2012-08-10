@@ -390,6 +390,10 @@ void align(string input_file, string prefix, bool seq1_del, bool seq2_del, int s
 				continue;
 			tokens.clear();
 			split_string(&line, &tokens, &s1s2_delim);
+			if(tokens.size()<2) {
+				// Cannot parse line
+				continue;
+			}
 			seq1.clear();
 			split_string(&tokens.at(0), &seq1, &seq1in_sep);
 			seq2.clear();
@@ -447,7 +451,6 @@ void split(string input_file, string prefix) {
 			} else {
 			  trainfile << line << endl;
 			}
-			  
 			lineNum++;
 		}
 	}

@@ -40,8 +40,10 @@ def process_testset( testfile, wordlist_out, reference_out, verbose=False ):
     if verbose: print "Preprocessing the testset dictionary file..."
     test_dict = defaultdict(list)
     for entry in open(testfile,"r"):
-        #word, pron = entry.strip().split("  ")
-        word, pron = re.split(r' {2,}', entry.strip())
+        try:
+            word, pron = re.split(r' {2,}', entry.strip())
+        except:
+    	    continue
         test_dict[word].append(pron)
 
     wordlist_ofp  = open(wordlist_out,"w")
