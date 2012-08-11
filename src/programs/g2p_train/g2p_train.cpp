@@ -391,7 +391,7 @@ void align(string input_file, string prefix, bool seq1_del, bool seq2_del, int s
 			tokens.clear();
 			split_string(&line, &tokens, &s1s2_delim);
 			if(tokens.size()<2) {
-				// Cannot parse line
+				cout << "Cannot parse line:" << line << endl;
 				continue;
 			}
 			seq1.clear();
@@ -429,6 +429,8 @@ void align(string input_file, string prefix, bool seq1_del, bool seq2_del, int s
 			ofile << endl;
 		}
 	}
+	ofile.flush();
+	ofile.close();
 }
 
 void split(string input_file, string prefix) {

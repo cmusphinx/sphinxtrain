@@ -27,7 +27,7 @@ const char helpstr[] =
 	  -seq2in_sep SEQ2IN_SEP, Separator for seq2 in the input training file. Defaults to ' '.  \n\
 	  -s1s2_delim S1S2_DELIM, Separator for seq1/seq2 in the input training file. Defaults to '  '. \n\
 	  -iter ITER,             Maximum number of iterations for EM. Defaults to 10. \n\
-	  -order ORDER,           N-gram order. Defaults to 9.  \n\
+	  -order ORDER,           N-gram order. Defaults to 6.  \n\
 	  -smooth SMOOTH,         Smoothing method. Available options are: \n\
 	                          \"no\", \"presmoothed\", \"unsmoothed\", \"kneser_ney\", \"absolute\",  \n\
 	                          \"katz\", \"witten_bell\". Defaults to \"kneser_ney\". \n\
@@ -57,7 +57,7 @@ const char helpstr[] =
 	  			{ "-seq2in_sep", ARG_STRING,	" ",			"Separator for seq2 in the input training file. Defaults to ' '." },
 	  			{ "-s1s2_delim", ARG_STRING,	"  ",			"Separator for seq1/seq2 in the input training file. Defaults to '  '." },
 	  			{ "-iter", 		 ARG_INT32,		"10",			"Maximum number of iterations for EM. Defaults to 10." },
-	  			{ "-order",		 ARG_INT32,		"9",			"N-gram order. Defaults to 9." },
+	  			{ "-order",		 ARG_INT32,		"6",			"N-gram order. Defaults to 6." },
 	  			{ "-prune",		 ARG_STRING,	"no",			"Prunning method. Available options are: 'no', 'count_prune', 'relative_entropy', 'seymore'. Defaults to 'no'." },
 	  			{ "-theta",		 ARG_FLOATING,	"0",			"Theta value for 'relative_entropy' and 'seymore' prunning. Defaults to 0 (ie no pruning)." },
 	  			{ "-pattern",	 ARG_STRING,	"", 			"Count cuttoffs for the various n-gram orders for 'count_prune' prunning. Defaults to ''." },
