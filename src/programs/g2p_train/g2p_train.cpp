@@ -184,7 +184,7 @@ void relabel(StdMutableFst *fst, StdMutableFst *out, string prefix, string eps, 
 	out->SetInputSymbols(isyms);
 	out->SetOutputSymbols(osyms);
 
-	E_INFO("Writing text model to disk...\n");
+	cout << "Writing text model to disk..." << endl;
 	//Save syms tables
 	isyms->WriteText(prefix+".input.syms");
 	osyms->WriteText(prefix+".output.syms");
@@ -206,14 +206,14 @@ void train_model(string eps, string s1s2_sep, string skip, int order, string smo
     using fst::script::WeightClass;
 
 	// create symbols file
-	E_INFO("Generating symbols...\n");
+    cout << "Generating symbols..." << endl;
 	NGramInput *ingram = new NGramInput(
 		prefix+".corpus.aligned", prefix+".corpus.syms",
 		"", eps, unknown_symbol, "", "");
 	ingram->ReadInput(0, 1);
 
 	// compile strings into a far archive
-	E_INFO("Compiling symbols into FAR archive...\n");
+	cout << "Compiling symbols into FAR archive..." << endl;
 	fst::FarEntryType fet = fst::StringToFarEntryType(entry_type);
 	fst::FarTokenType ftt = fst::StringToFarTokenType(token_type);
     fst::FarType fartype = fst::FarTypeFromString(far_type);
@@ -232,7 +232,7 @@ void train_model(string eps, string s1s2_sep, string skip, int order, string smo
 	                       key_suffix);
 
 	//count n-grams
-	E_INFO("Counting n-grams...\n");
+	cout << "Counting n-grams..." << endl;
 	NGramCounter<Log64Weight> ngram_counter(order, epsilon_as_backoff);
 
 	FstReadOptions opts;
@@ -259,7 +259,7 @@ void train_model(string eps, string s1s2_sep, string skip, int order, string smo
 	      counted = ngram_counter.Count(&log_ifst);
 	    }
 	    if (!counted)
-	    	E_INFO("ngramcount: fst #%d\n", fstnumber);
+	    	cout << "ngramcount: fst #"<< fstnumber << endl;
 
 	    if (ifst->InputSymbols() != 0) {  // retain for symbol table
 	        if (lfst)
@@ -285,7 +285,7 @@ void train_model(string eps, string s1s2_sep, string skip, int order, string smo
 	vfst.Write(prefix+".corpus.cnts");
 	StdMutableFst *fst = StdMutableFst::Read(prefix+".corpus.cnts", true);
 	if(smooth != "no") {
-		E_INFO("Smoothing model...\n");
+		cout << "Smoothing model..." << endl;
 
 		bool prefix_norm = 0;
 	if (smooth == "presmoothed") {  // only for use with randgen counts
@@ -326,7 +326,7 @@ void train_model(string eps, string s1s2_sep, string skip, int order, string smo
 	}
 	}
 	if(prune != "no") {
-		E_INFO("Pruning model...\n");
+		cout << "Pruning model..." << endl;
 
 		if (prune == "count_prune") {
 			NGramCountPrune ngramsh(fst, count_pattern,
@@ -350,16 +350,16 @@ void train_model(string eps, string s1s2_sep, string skip, int order, string smo
 		}
 	}
 
-	E_INFO("Minimizing model...\n");
+	cout << "Minimizing model..." << endl;
 	MutableFstClass *minimized = new s::MutableFstClass(fst);
 	Minimize(minimized, 0, fst::kDelta);
 
 	fst = minimized->GetMutableFst<StdArc>();
-	E_INFO("Correcting final model...\n");
+	cout << "Correcting final model..." << endl;
 	StdMutableFst* out = new StdVectorFst();
 	relabel(fst, out, prefix, eps, skip, s1s2_sep, seq_sep);
 
-	E_INFO("Writing binary model to disk...\n");
+	cout << "Writing binary model to disk..." << endl;
 	out->Write(prefix+".fst");
 }
 
@@ -372,7 +372,7 @@ void align(string input_file, string prefix, bool seq1_del, bool seq2_del, int s
 	ifstream dict(input_file.c_str(), ifstream::in);
 	string o = prefix+".corpus.aligned";
 	ofstream ofile(o.c_str(), ifstream::out);
-	E_INFO("Loading...\n");
+	cout << "Loading..." << endl;
 	M2MFstAligner fstaligner(seq1_del, seq2_del, seq1_max, seq2_max, seq_sep,
 			seq_sep, s1s2_sep, eps, skip, true);
 
@@ -403,20 +403,20 @@ void align(string input_file, string prefix, bool seq1_del, bool seq2_del, int s
 	}
 	dict.close();
 
-	E_INFO("Starting EM...\n");
+	cout << "Starting EM... " << endl;
 	int i = 1;
 	float change;
 	change = fstaligner.maximization(false);
 	for (i = 1; i <= iter; i++) {
 		fstaligner.expectation();
 		change = fstaligner.maximization(false);
-		E_INFO("Iteration %d: %f\n", i, change);
+		cout << "Iteration " << i << ": " << change << endl;
 	}
 	fstaligner.expectation();
 	change = fstaligner.maximization(true);
-	E_INFO("Iteration %d: %f\n", i, change);
+	cout << "Iteration " << i << ": " << change << endl;
 
-	E_INFO("Generating best alignments...\n");
+	cout << "Generating best alignments..."<< endl;
 	for (int i = 0; i < fstaligner.fsas.size(); i++) {
 		vector<PathData> paths = fstaligner.write_alignment(fstaligner.fsas[i],
 				1);
@@ -439,7 +439,7 @@ void split(string input_file, string prefix) {
 	ofstream trainfile(traindict.c_str(), ifstream::out);
 	ofstream testfile(testdict.c_str(), ifstream::out);
 
-	E_INFO("Splitting...\n");
+	cout << "Splitting...\n"<< endl;
 	
 	string line;
 	int lineNum = 1;

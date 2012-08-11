@@ -1,8 +1,9 @@
+#include <iostream>
 #include <vector>
 #include <string>
 #include <sphinxbase/err.h>
 #include <sphinxbase/cmd_ln.h>
-#include <g2p_train.hpp>
+#include "g2p_train.hpp"
 
 using namespace std;
 
@@ -61,9 +62,9 @@ const char helpstr[] =
 	  			{ "-theta",		 ARG_FLOATING,	"0",			"Theta value for 'relative_entropy' and 'seymore' prunning. Defaults to 0 (ie no pruning)." },
 	  			{ "-pattern",	 ARG_STRING,	"", 			"Count cuttoffs for the various n-gram orders for 'count_prune' prunning. Defaults to ''." },
 	  			{ "-smooth",	 ARG_STRING,	"kneser_ney",	"Smoothing method. Available options are: 'presmoothed', 'unsmoothed', 'kneser_ney', 'absolute', 'katz', 'witten_bell'. Defaults to 'kneser_ney'." },
-	  			{ "-ifile",		 ARG_STRING,	NULL,			"The input dictionary file." },
-	  			{ "-gen_testset",	 ARG_BOOLEAN,	"yes",			"Whether or not a testset (1 in every 10 words) will be left out from the input dictionary, for model evaluation. Defaults to true." },
-	  			{ "-prefix",	 ARG_STRING,	NULL,			"Prefix for saving the generated model and other files. Defaults to './model'" },
+	  			{ "-ifile",		 REQARG_STRING,	"",		      	"The input dictionary file." },
+	  			{ "-gen_testset",	 ARG_BOOLEAN,	"yes",		"Whether or not a testset (1 in every 10 words) will be left out from the input dictionary, for model evaluation. Defaults to true." },
+	  			{ "-prefix",	 ARG_STRING,	"model",		"Prefix for saving the generated model and other files. Defaults to 'model'" },
 	  			{ NULL, 		 0,				NULL, 			NULL }
 	  	};
 
@@ -106,13 +107,13 @@ const char helpstr[] =
 	  		E_FATAL("Output file not provided\n");
 	  	}
 		if(gen_testset) {
-			E_INFO("Splitting dictionary: %s into training and test set\n", input_file.c_str());
+			cout << "Splitting dictionary: " << input_file << " into training and test set" << endl;
 			split(input_file, prefix);
 			input_file = prefix+".train";
 	  	}
 		
 	  	if (!noalign) {
-	  		E_INFO("Using dictionary: %s\n", input_file.c_str());
+	  		cout << "Using dictionary: " << input_file << endl;
 	  		align(input_file, prefix, seq1_del, seq2_del, seq1_max,
 	  				seq2_max, seq_sep, s1s2_sep,
 	  				eps, skip, seq1in_sep, seq2in_sep,
