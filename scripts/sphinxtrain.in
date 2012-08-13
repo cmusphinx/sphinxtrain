@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import getopt, sys, os
+
 sphinxpath="@prefix@"
 
 is64bit = sys.maxsize > 2**32
@@ -7,8 +9,6 @@ if is64bit:
     sphinxpath = sphinxpath + "/lib64"
 else:
     sphinxpath = sphinxpath + "/lib"
-
-import getopt, sys, os
 
 def setup(task):
     if not os.path.exists("etc"):
