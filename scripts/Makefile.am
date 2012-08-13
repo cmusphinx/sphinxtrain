@@ -5,6 +5,7 @@ scriptsdir=$(pkglibdir)/scripts
 nobase_scripts_SCRIPTS = \
 	000.comp_feat/make_feats.pl \
 	000.comp_feat/slave_feat.pl \
+	0000.g2p_train/g2p_train.pl \
 	00.verify/verify_all.pl \
 	01.lda_train/baum_welch.pl \
 	01.lda_train/lda_train.pl \
@@ -64,7 +65,6 @@ nobase_scripts_SCRIPTS = \
 	80.mllr_adapt/mllr_solve.pl \
 	80.mllr_adapt/slave_adapt.pl \
 	90.deleted_interpolation/deleted_interpolation.pl \
-	91.g2p_train/g2p_train.pl \
 	decode/psdecode.pl \
 	decode/slave.pl \
 	decode/verify_dec.pl \

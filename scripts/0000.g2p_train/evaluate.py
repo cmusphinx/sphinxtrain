@@ -59,7 +59,7 @@ def process_testset( testfile, wordlist_out, reference_out, verbose=False ):
 def evaluate_testset( 
     modelfile, wordlistfile, referencefile, hypothesisfile, pathtog2pdecoder, 
     verbose=False, ignore="", ignore_both=False, regex_ignore="", 
-    mbrdecode="", beam=1500, alpha=.65, precision=.85, ratio=.72, order=6
+    beam=1500
     ):
     """
       Evaluate the Word Error Rate (WER) for the test set.
@@ -71,8 +71,8 @@ def evaluate_testset(
     """
 
     if verbose: print "Executing evaluation with command:"
-    command = "%s/phonetisaurus-g2p --model=%s --input=%s --beam=%d --alpha=%0.4f --prec=%0.4f --ratio=%0.4f --order=%d --words --isfile %s > %s" \
-        % (pathtog2pdecoder, modelfile, wordlistfile, beam, alpha, precision, ratio, order, mbrdecode, hypothesisfile)
+    command = "%s --model=%s --input=%s --beam=%d  --words --isfile > %s" \
+        % (os.path.join(pathtog2pdecoder, "phonetisaurus-g2p"), modelfile, wordlistfile, beam, hypothesisfile)
 #    print command
     os.system(command)
     references = {}
@@ -107,5 +107,4 @@ if __name__=="__main__":
         hyp_file,  decoder_path)
 #        , v erbose=args.verbose, ignore=args.ignore, 
 #        ignore_both=args.ignore_both, regex_ignore=args.regex_ignore,
-#        mbrdecode=args.mbrdecode, beam=args.beam, alpha=args.alpha, precision=args.precision, ratio=args.ratio, order=args.order 
 #        ) 

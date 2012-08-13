@@ -117,9 +117,13 @@ unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN
     }
     close INFDICT;
     close OUTFDICT;
+my $dictfn = "$ST::CFG_DICTIONARY";
+if($ST::CFG_G2P_MODEL == "yes") {
+    $dictfn = "$ST::CFG_DICTIONARY.full";
+}
 
     # Add the extra fillers to the main dictionary
-    open INDICT, "<$ST::CFG_DICTIONARY" or die "Failed to open $ST::CFG_DICTIONARY: $!";
+    open INDICT, "<$dictfn" or die "Failed to open $dictfn: $!";
     open OUTDICT, ">$dict" or die "Failed to open $dict: $!";
     while (<INDICT>) {
 	print OUTDICT;

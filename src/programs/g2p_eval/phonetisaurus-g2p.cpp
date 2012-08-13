@@ -34,10 +34,10 @@ using namespace fst;
 
 void phoneticizeWord( 
 		     const char* g2pmodel_file, string testword, 
-		     int nbest, string sep, bool mbrdecoder, float alpha, float precision, float ratio, int order,
+		     int nbest, string sep,
 		     int beam=500, int output_words=0 ){
     
-  Phonetisaurus phonetisaurus( g2pmodel_file, mbrdecoder, alpha, precision, ratio, order );
+  Phonetisaurus phonetisaurus( g2pmodel_file);
   
   vector<string>   entry = tokenize_entry( &testword, &sep, phonetisaurus.isyms );
 
@@ -60,10 +60,10 @@ void phoneticizeWord(
 
 
 void phoneticizeTestSet( const char* g2pmodel_file, string testset_file, 
-			 int nbest, string sep, bool mbrdecoder, float alpha, float precision, float ratio, int order,
-			 int beam=500, int output_words=0 ){
+			 int nbest, string sep,
+			 int beam=500, int output_words=0 , bool output_cost = true){
     
-  Phonetisaurus phonetisaurus( g2pmodel_file, mbrdecoder, alpha, precision, ratio, order );
+  Phonetisaurus phonetisaurus( g2pmodel_file);
     
   ifstream test_fp;
   test_fp.open( testset_file.c_str() );
@@ -92,15 +92,15 @@ void phoneticizeTestSet( const char* g2pmodel_file, string testset_file,
             
       vector<string>   entry = tokenize_entry( &word, &sep, phonetisaurus.isyms );
       
-      vector<PathData> paths = phonetisaurus.phoneticize( entry, nbest, beam=beam );
+      vector<PathData> paths = phonetisaurus.phoneticize( entry, nbest, beam);
       int nbest_new = nbest;
       if( output_words==0){
 	while( phonetisaurus.printPaths( paths, nbest_new, pron )==true ){
 	  nbest_new++;
-	  paths = phonetisaurus.phoneticize( entry, nbest_new, beam );
+	  paths = phonetisaurus.phoneticize( entry, nbest_new, beam);
 	}
       }else{
-	while( phonetisaurus.printPaths( paths, nbest_new, pron, word )==true){
+	while( phonetisaurus.printPaths( paths, nbest_new, pron, word, output_cost )==true){
 	  nbest_new++;
 	  paths = phonetisaurus.phoneticize( entry, nbest_new, beam );
 	}
@@ -117,15 +117,11 @@ void phoneticizeTestSet( const char* g2pmodel_file, string testset_file,
 DEFINE_string( model,     "", "The input WFST G2P model.");
 DEFINE_string( input,     "", "A word or test file.");
 DEFINE_bool(   isfile, false, "'--input' is a file.");
+DEFINE_bool(   output_cost, true, "Output cost in the hyp file.");
 DEFINE_int32(  nbest,      1, "Print out the N-best pronunciations.");
 DEFINE_int32(  beam,     500, "N-best search beam.");
 DEFINE_string( sep,       "", "Separator token for input words.");
-DEFINE_bool(   mbr,    false, "Use the Lattice Minimum Bayes-Risk decoder");
 DEFINE_bool(   words,  false, "Output words with hypotheses.");
-DEFINE_double( alpha,    0.6, "The alpha LM scale factor for the LMBR decoder.");
-DEFINE_int32(  order,      6, "The N-gram order for the MBR decoder.");
-DEFINE_double( prec,    0.85, "The N-gram precision factor for the LMBR decoder.");
-DEFINE_double( ratio,   0.72, "The N-gram ratio factor for the LMBR decoder.");
 
 
 int main( int argc, char **argv ) {
@@ -137,15 +133,16 @@ int main( int argc, char **argv ) {
     //If its a file, go for it
     phoneticizeTestSet( 
 		       FLAGS_model.c_str(), FLAGS_input, FLAGS_nbest,
-		       FLAGS_sep, FLAGS_mbr, FLAGS_alpha, FLAGS_prec,
-		       FLAGS_ratio, FLAGS_order, FLAGS_beam, FLAGS_words
+		       FLAGS_sep, 
+		       FLAGS_beam, FLAGS_words,
+		       FLAGS_output_cost
 			);
   }else{
     //Otherwise we just have a word
     phoneticizeWord(    
 		    FLAGS_model.c_str(), FLAGS_input, FLAGS_nbest, 
-		    FLAGS_sep, FLAGS_mbr, FLAGS_alpha, FLAGS_prec, 
-		    FLAGS_ratio, FLAGS_order, FLAGS_beam, FLAGS_words 
+		    FLAGS_sep, 
+		    FLAGS_beam, FLAGS_words 
 			);
   }
   exit(0);

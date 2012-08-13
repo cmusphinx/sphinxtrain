@@ -113,6 +113,11 @@ $ctl_counter = 1 unless ($ctl_counter);
 
 Log("Baum welch starting for MLLT, iteration: $iter ($part of $npart)", 'result');
 
+my $dictfn = "$ST::CFG_DICTIONARY";
+if($ST::CFG_G2P_MODEL == "yes") {
+	$dictfn = "$ST::CFG_DICTIONARY.full";
+}
+
 my $return_value = RunTool
     ('bw', $logfile, $ctl_counter,
      -moddeffn => $moddeffn,
@@ -124,7 +129,7 @@ my $return_value = RunTool
      -meanfn => $meanfn,
      -varfn => $varfn,
      -ltsoov => $ST::CFG_LTSOOV,
-     -dictfn => $ST::CFG_DICTIONARY,
+     -dictfn => $dictfn,
      -fdictfn => $ST::CFG_FILLERDICT,
      -ctlfn => $listoffiles,
      -part => $part,

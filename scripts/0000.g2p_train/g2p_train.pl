@@ -48,12 +48,12 @@ use SphinxTrain::Config;
 use SphinxTrain::Util;
 
 $| = 1; # Turn on autoflushing
-Log ("MODULE: 91 train grapheme-to-phoneme model\n");
+Log ("MODULE: 0000 train grapheme-to-phoneme model\n");
 if ($ST::CFG_G2P_MODEL eq "no") {
    Log("Skipped (set \$CFG_G2P_MODEL = 'yes' to enable)\n");
   exit(0);
 }
-my $logdir = "$ST::CFG_LOG_DIR/91.g2p_train";
+my $logdir = "$ST::CFG_LOG_DIR/0000.g2p_train";
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.g2p.log";
 
 Log ("Phase 1: Cleaning up directories: logs...\n");
@@ -77,10 +77,30 @@ return $rv if $rv;
 #Log("$rv\n");
 
 Log ("Phase 3: Evaluating g2p model...\n");
-system(catfile($ST::CFG_SPHINXTRAIN_DIR, 'scripts', '91.g2p_train', 'evaluate.py'),
+system(catfile($ST::CFG_SPHINXTRAIN_DIR, 'scripts', '0000.g2p_train', 'evaluate.py'),
                  $decoder_path,
                  $g2p_model, 
                  $test_file,
                  $g2p_prefix);
+
+Log ("Phase 4: Creating pronunciations for OOV words...\n");
+system("$ST::CFG_BIN_DIR/phonetisaurus-g2p --model=$g2p_model --output_cost=false --words --input=$ST::CFG_TRANSCRIPTFILE.oov --isfile > $ST::CFG_TRANSCRIPTFILE.oov.dic");
+
+Log ("Phase 5: Merging primary and OOV dictionaries...\n");
+open MERGED, ">", "$ST::CFG_DICTIONARY.full";
+open DIC, "<", "$ST::CFG_DICTIONARY";
+open OOV, "<", "$ST::CFG_TRANSCRIPTFILE.oov.dic";
+while(<DIC>) {
+    my($line) = $_;
+    print MERGED $line;
+}
+while(<OOV>) {
+    my($line) = $_;
+    print MERGED $line;
+}
+close MERGED;
+close DIC;
+close OOV;
+
 #Log("$rv\n");
 #return $rv if $rv;

@@ -157,7 +157,7 @@ fi
 AC_ARG_ENABLE(g2p-decoder,
  [  --enable-g2p-decoder  Enable the g2p decoder],
  [ g2p_decoder=yes ])
-AM_CONDITIONAL(G2P_DECODER, test x$debug = xtrue)
+AM_CONDITIONAL([G2P_DECODER], [test "x$g2p_decoder" = "xyes"])
 
 dnl ###############################
 dnl
@@ -285,7 +285,8 @@ src/programs/tiestate/Makefile
 test/Makefile
 ])
 
-AM_CONDITIONAL([G2P_DECODER], [test "x$g2p_decoder" = "xyes"])
+#AM_CONDITIONAL([G2P_DECODER], [test "x$g2p_decoder" = "xyes"])
+    AM_COND_IF([G2P_DECODER],[AC_DEFINE([G2P_DECODER])])
      AM_COND_IF([G2P_DECODER],
                 [AC_CONFIG_FILES([src/programs/g2p_eval/Makefile src/programs/g2p_train/Makefile])])
 

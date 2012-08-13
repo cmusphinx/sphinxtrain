@@ -314,6 +314,11 @@ my %transcript_phonelist_hash = ();
     
     my $status = 'passed';
     my $i = 0;
+    my %seen = ();
+    if ($ST::CFG_G2P_MODEL eq 'yes') {
+	open TRAIN_OOV, ">", "$ST::CFG_TRANSCRIPTFILE.oov";
+    }
+    
     while (<TRN>) {
 	# Some sanity checking:
 	#
@@ -345,10 +350,15 @@ my %transcript_phonelist_hash = ();
 	if ($text) {
 	    my @words = split /\s+/,$text;
 	    for my $word (@words) {
-		if ($ST::CFG_LTSOOV ne 'yes' and !($d{$word}) and ($word =~ m/\S+/)) {
+		if ($ST::CFG_G2P_MODEL ne 'yes' and $ST::CFG_LTSOOV ne 'yes' and !($d{$word}) and ($word =~ m/\S+/)) {
 		    LogWarning ("This word: $word was in the transcript file, but is not in the dictionary ($text). Do cases match?");
 		    $status = 'FAILED';
 		    $ret_value = -5;
+		} elsif ($ST::CFG_G2P_MODEL eq 'yes'  and !($d{$word}) and ($word =~ m/\S+/)) {
+		    if ($seen{$_} == 0) {
+    			print TRAIN_OOV "$word\n";
+				$seen{$_}++;
+		    }
 		} else {
 		    my @phones = ($d{$word} =~ m/(\S+)/g);
 		    for my $phone (@phones) {
@@ -361,7 +371,13 @@ my %transcript_phonelist_hash = ();
     continue {
 	++$i;
     }
+    
     close TRN;
+
+    if ($ST::CFG_G2P_MODEL eq 'yes') {
+	close TRAIN_OOV;
+    }
+
     LogStatus($status);
 }
 

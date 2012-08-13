@@ -48,12 +48,6 @@ public:
     string        sb;
     string        skip;
     string        tie;
-    int           order;
-    float         alpha;
-    float         precision;
-    float         ratio;
-    vector<float> thetas;
-    bool          mbrdecode;
     set<string>   skipSeqs;
     map<vector<string>, int>   clusters;
     //FST stuff
@@ -64,7 +58,7 @@ public:
         
     Phonetisaurus( );
         
-    Phonetisaurus( const char* _g2pmodel_file, bool _mbrdecode, float _alpha, float _precision, float _ratio, int _order );
+    Phonetisaurus( const char* _g2pmodel_file);
 
     StdVectorFst entryToFSA( vector<string> entry );
 
@@ -72,11 +66,10 @@ public:
     
     vector<PathData> phoneticize( vector<string> entry, int nbest, int beam=500 );
 
-    bool printPaths( vector<PathData> paths, int nbest, string correct="", string word="" );
+    bool printPaths( vector<PathData> paths, int nbest, string correct="", string word="", bool output_cost = true);
     
 private:
     void loadClusters( );
-    int _compute_thetas( int wlen );
 };
 
 #endif // PHONETISAURUS_H //

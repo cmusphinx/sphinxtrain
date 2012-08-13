@@ -144,6 +144,10 @@ my %silences = ();
 unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN_FILLERDICT)) {
     my $dict = "$outdir/$ST::CFG_EXPTNAME.falign.dict";
     my $fdict = "$outdir/$ST::CFG_EXPTNAME.falign.fdict";
+	my $dictfn = "$ST::CFG_DICTIONARY";
+	if($ST::CFG_G2P_MODEL == "yes") {
+    	$dictfn = "$ST::CFG_DICTIONARY.full";
+	}
 
     Log("Phase 3: Creating dictionary for alignment...");
     open INFDICT, "<$ST::CFG_FILLERDICT" or die "Failed to open $ST::CFG_FILLERDICT: $!";
@@ -164,7 +168,7 @@ unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN
     close OUTFDICT;
 
     # Add the extra fillers to the main dictionary
-    open INDICT, "<$ST::CFG_DICTIONARY" or die "Failed to open $ST::CFG_DICTIONARY: $!";
+    open INDICT, "< $dictfn" or die "Failed to open $dictfn: $!";
     open OUTDICT, ">$dict" or die "Failed to open $dict: $!";
     while (<INDICT>) {
 	print OUTDICT;

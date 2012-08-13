@@ -52,13 +52,18 @@ my $outdir = "$ST::CFG_BASE_DIR/falignout";
 
 my $transcriptfile = catfile($outdir, "${ST::CFG_EXPTNAME}.alignedtranscripts");
 # Create a single pronunciation dictionary and transcript if requested
+my $dictfn = "$ST::CFG_DICTIONARY";
+if($ST::CFG_G2P_MODEL == "yes") {
+    $dictfn = "$ST::CFG_DICTIONARY.full";
+}
+
 if ($ST::CFG_FORCE_ALIGN_SPD eq "yes") {
     my $spdict = catfile($outdir, "${ST::CFG_EXPTNAME}.spdict");
     my $sptrans = catfile($outdir, "${ST::CFG_EXPTNAME}.sptranscripts");
     my $logfile = catfile($logdir, "${ST::CFG_EXPTNAME}.spd.log");
     $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_BASE_DIR, 'python');
     my $rv = RunTool(catfile($ST::CFG_BASE_DIR, 'python', 'cmusphinx', 'dict_spd.py'),
-		     $logfile, 0, $ST::CFG_DICTIONARY, $transcriptfile, $spdict);
+		     $logfile, 0, $dictfn, $transcriptfile, $spdict);
     if ($rv != 0) {
 	die "Failed to create single pronunciation dictionary: $rv";
     }

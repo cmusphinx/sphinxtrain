@@ -44,13 +44,8 @@ Phonetisaurus::Phonetisaurus( ) {
     //Default constructor
 }
 
-Phonetisaurus::Phonetisaurus( const char* _g2pmodel_file, bool _mbrdecode, float _alpha, float _precision, float _ratio, int _order ) {
+Phonetisaurus::Phonetisaurus( const char* _g2pmodel_file ) {
     //Base constructor.  Load the clusters file, the models and setup shop.
-    mbrdecode = _mbrdecode;
-    alpha = _alpha;
-    precision = _precision;
-    ratio = _ratio;
-    order = _order;
     eps  = "<eps>";
     sb   = "<s>";
     se   = "</s>";
@@ -188,40 +183,6 @@ StdVectorFst Phonetisaurus::entryToFSA( vector<string> entry ){
     return efst;
 }
 
-int Phonetisaurus::_compute_thetas( int wlen ){
-  /*
-    Theta values are computed on a per-word basis
-    We scale the maximum order by the length of the input word.
-    Higher MBR N-gram orders favor longer pronunciation hypotheses.
-    Thus a high N-gram order coupled with a short word will
-    favor longer pronunciations with more insertions.
-
-      p=.63, r=.48
-      p=.85, r=.72
-    .918
-    Compute the N-gram Theta factors for the
-    model.  These are a function of,
-      N:  The maximum N-gram order
-      T:  The total number of 1-gram tokens 
-      p:  The 1-gram precision
-      r:  A constant ratio
-       
-    1) T may be selected arbitrarily.
-    2) Default values are selected from Tromble 2008
-  */
-  thetas.clear();
-  float T = 10.0;
-  int N   = min( wlen+1, order );
-  //cout << "N: " << N << endl;
-  //Theta0 is basically an insertion penalty
-  // -1/T
-  float ip = -0.3;
-  thetas.push_back( -1/T );
-  for( int n=1; n<=order; n++ )
-      thetas.push_back( 1.0/((N*T*precision) * (pow(ratio,(n-1)))) );
-  return N;
-}
-
 vector<PathData> Phonetisaurus::phoneticize( vector<string> entry, int nbest, int beam ){
     /*
      Generate pronunciation/spelling hypotheses for an 
@@ -231,60 +192,16 @@ vector<PathData> Phonetisaurus::phoneticize( vector<string> entry, int nbest, in
     StdVectorFst epsMapped;
     StdVectorFst shortest;
     StdVectorFst efst = entryToFSA( entry );
-    efst.Write("efst.fst");
     StdVectorFst smbr;
-    int N = _compute_thetas( entry.size() );
-
-    /*Phi matching - 
-      For some reason this performs MUCH worse than 
-      with standard epsilon transitions.  Why?
-    //<phi> is fixed to ID=2
-    PM* pm = new PM( *g2pmodel, MATCH_INPUT, 2 );
-    ComposeFstOptions<StdArc, PM> opts;
-    opts.gc_limit = 0;
-    opts.matcher1 = new PM(efst, MATCH_NONE,  kNoLabel);
-    opts.matcher2 = pm;
-    ComposeFst<StdArc> phicompose(efst, *g2pmodel, opts);
-    VectorFst<StdArc> result(phicompose);
-    */
     Compose( efst, *g2pmodel, &result );
 
     Project(&result, PROJECT_OUTPUT);
-    //result.Write("result-lattice.fst");
-//    if( mbrdecode==true ){
-//      ShortestPath( result, &smbr, beam );
-//      VectorFst<LogArc> logfst;
-//      Map( smbr, &logfst, StdToLogMapper() );
-//      RmEpsilon(&logfst);
-//      VectorFst<LogArc> detlogfst;
-//      //cout << "pre-determinize" << endl;
-//      Determinize(logfst, &detlogfst);
-//      //cout << "pre-minimize" << endl;
-//      Minimize(&detlogfst);
-//      detlogfst.SetInputSymbols(g2pmodel->OutputSymbols());
-//      detlogfst.SetOutputSymbols(g2pmodel->OutputSymbols());
-//      //cout << "build MBRDecoder" << endl;
-//      //cout << "order: " << order << " alpha: " << endl;
-//      //detlogfst.Write("abbreviate.fst");
-//      MBRDecoder mbrdecoder( N, &detlogfst, alpha, thetas );
-//      //cout << "decode" << endl;
-//      mbrdecoder.build_decoder( );
-//      Map( *mbrdecoder.omegas[N-1], &result, LogToStdMapper() );
-//    }
-    //cout << "Finished MBR stuff!" << endl;
     if( nbest > 1 ){
         //This is a cheesy hack. 
         ShortestPath( result, &shortest, beam );
     }else{
         ShortestPath( result, &shortest, 1 );
     }
-    /*
-    VectorFst<LogArc>* logResult = new VectorFst<LogArc>();
-    Map(result, logResult, StdToLogMapper());
-    logResult->SetInputSymbols(g2pmodel->OutputSymbols());
-    logResult->SetOutputSymbols(g2pmodel->OutputSymbols());
-    logResult->Write("ph-lattice.fst");
-    */
     RmEpsilon( &shortest );
     FstPathFinder pathfinder( skipSeqs );
     pathfinder.findAllStrings( shortest );
@@ -292,7 +209,7 @@ vector<PathData> Phonetisaurus::phoneticize( vector<string> entry, int nbest, in
     return pathfinder.paths;
 }
 
-bool Phonetisaurus::printPaths( vector<PathData> paths, int nbest, string correct, string word ){
+bool Phonetisaurus::printPaths( vector<PathData> paths, int nbest, string correct, string word, bool output_cost ){
     /*
      Convenience function to print out a path vector.
      Will print only the first N unique entries.
@@ -326,9 +243,18 @@ bool Phonetisaurus::printPaths( vector<PathData> paths, int nbest, string correc
 	if( onepath == "" )
 	  continue;
 	empty_path = false;
-	if( word != "" )
-	  cout << word << "  ";
-        cout << paths[k].pathcost << "  " << onepath;
+	if( word != "" ) {
+	  if(k!=0) {
+	    cout << word << "(" << k << ")" << "  ";
+	  } else {
+    	    cout << word  << "  ";
+    	    }
+	}
+	if(output_cost) {
+    	    cout << paths[k].pathcost << "  " << onepath;
+        } else {
+    	    cout << onepath;
+        }
         if( correct != "" )
             cout << "  " << correct;
         cout << endl;
