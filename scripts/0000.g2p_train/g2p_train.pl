@@ -84,7 +84,7 @@ system(catfile($ST::CFG_SPHINXTRAIN_DIR, 'scripts', '0000.g2p_train', 'evaluate.
                  $g2p_prefix);
 
 Log ("Phase 4: Creating pronunciations for OOV words...\n");
-system("$ST::CFG_BIN_DIR/phonetisaurus-g2p --model=$g2p_model --output_cost=false --words --input=$ST::CFG_TRANSCRIPTFILE.oov --isfile > $ST::CFG_TRANSCRIPTFILE.oov.dic");
+system("$ST::CFG_BIN_DIR/phonetisaurus-g2p --model=$g2p_model --nbest=1 --output_cost=false --words --input=$ST::CFG_TRANSCRIPTFILE.oov --isfile > $ST::CFG_TRANSCRIPTFILE.oov.dic");
 
 Log ("Phase 5: Merging primary and OOV dictionaries...\n");
 open MERGED, ">", "$ST::CFG_DICTIONARY.full";

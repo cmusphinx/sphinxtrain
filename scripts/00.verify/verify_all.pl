@@ -355,10 +355,10 @@ my %transcript_phonelist_hash = ();
 		    $status = 'FAILED';
 		    $ret_value = -5;
 		} elsif ($ST::CFG_G2P_MODEL eq 'yes'  and !($d{$word}) and ($word =~ m/\S+/)) {
-		    if ($seen{$_} == 0) {
+		    $seen{$word}++;
+		    if ($seen{$word} == 1) {
     			print TRAIN_OOV "$word\n";
-				$seen{$_}++;
-		    }
+    		    }
 		} else {
 		    my @phones = ($d{$word} =~ m/(\S+)/g);
 		    for my $phone (@phones) {
