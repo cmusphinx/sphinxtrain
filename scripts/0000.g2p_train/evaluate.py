@@ -71,7 +71,7 @@ def evaluate_testset(
     """
 
     if verbose: print "Executing evaluation with command:"
-    command = "%s --model=%s --input=%s --beam=%d  --words --isfile > %s" \
+    command = "%s -model %s -input %s -beam %d  -words yes -isfile yes -output_cost yes -output %s" \
         % (os.path.join(pathtog2pdecoder, "phonetisaurus-g2p"), modelfile, wordlistfile, beam, hypothesisfile)
 #    print command
     os.system(command)
@@ -105,6 +105,3 @@ if __name__=="__main__":
     evaluate_testset(
         g2p_model, wordlist, ref_file, 
         hyp_file,  decoder_path)
-#        , v erbose=args.verbose, ignore=args.ignore, 
-#        ignore_both=args.ignore_both, regex_ignore=args.regex_ignore,
-#        ) 

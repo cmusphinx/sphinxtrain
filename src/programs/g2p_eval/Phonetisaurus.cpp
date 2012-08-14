@@ -209,7 +209,7 @@ vector<PathData> Phonetisaurus::phoneticize( vector<string> entry, int nbest, in
     return pathfinder.paths;
 }
 
-bool Phonetisaurus::printPaths( vector<PathData> paths, int nbest, string correct, string word, bool output_cost ){
+bool Phonetisaurus::printPaths( vector<PathData> paths, int nbest,  ofstream *hypfile, string correct, string word, bool output_cost){
     /*
      Convenience function to print out a path vector.
      Will print only the first N unique entries.
@@ -245,21 +245,22 @@ bool Phonetisaurus::printPaths( vector<PathData> paths, int nbest, string correc
 	empty_path = false;
 	if( word != "" ) {
 	  if(k!=0) {
-	    cout << word << "(" << k << ")" << "  ";
+		  *hypfile << word << "(" << k << ")" << "  ";
 	  } else {
-    	    cout << word  << "  ";
+		  *hypfile << word  << "  ";
     	    }
 	}
 	if(output_cost) {
-    	    cout << paths[k].pathcost << "  " << onepath;
+			*hypfile << paths[k].pathcost << "  " << onepath;
         } else {
-    	    cout << onepath;
+        	*hypfile << onepath;
         }
         if( correct != "" )
-            cout << "  " << correct;
-        cout << endl;
+        	*hypfile << "  " << correct;
+        *hypfile << "\n";
         onepath = "";
     }
+
     return empty_path;
 }
 

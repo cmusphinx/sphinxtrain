@@ -66,7 +66,7 @@ public:
     
     vector<PathData> phoneticize( vector<string> entry, int nbest, int beam=500 );
 
-    bool printPaths( vector<PathData> paths, int nbest, string correct="", string word="", bool output_cost = true);
+    bool printPaths( vector<PathData> paths, int nbest, ofstream *hypfile, string correct="", string word="", bool output_cost = true);
     
 private:
     void loadClusters( );

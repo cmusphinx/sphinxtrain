@@ -77,14 +77,22 @@ return $rv if $rv;
 #Log("$rv\n");
 
 Log ("Phase 3: Evaluating g2p model...\n");
-system(catfile($ST::CFG_SPHINXTRAIN_DIR, 'scripts', '0000.g2p_train', 'evaluate.py'),
+system(catfile($ST::CFG_SCRIPT_DIR, '0000.g2p_train', 'evaluate.py'),
                  $decoder_path,
                  $g2p_model, 
                  $test_file,
                  $g2p_prefix);
 
 Log ("Phase 4: Creating pronunciations for OOV words...\n");
-system("$ST::CFG_BIN_DIR/phonetisaurus-g2p --model=$g2p_model --nbest=1 --output_cost=false --words --input=$ST::CFG_TRANSCRIPTFILE.oov --isfile > $ST::CFG_TRANSCRIPTFILE.oov.dic");
+my @wordsflag = (-words => 'yes');
+my @isfileflag = (-isfile => 'yes');
+my $rv = RunTool('phonetisaurus-g2p', $logfile, 0, 
+		 -model => $g2p_model, 
+		 -nbest => 1, 
+		 @wordsflag,
+		 -input => "$ST::CFG_TRANSCRIPTFILE.oov", 
+		 @isfileflag, 
+		 -output => "$ST::CFG_TRANSCRIPTFILE.oov.dic");
 
 Log ("Phase 5: Merging primary and OOV dictionaries...\n");
 open MERGED, ">", "$ST::CFG_DICTIONARY.full";
