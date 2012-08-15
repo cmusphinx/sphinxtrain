@@ -47,13 +47,13 @@ void phoneticizeWord(const char* g2pmodel_file, const char* output,
 	hypfile.open(output);
 
 	if (output_words == 0) {
-		while (phonetisaurus.printPaths(paths, nbest, &hypfile) == true) {
+		while (phonetisaurus.printPaths(paths, nbest, &hypfile) == true && nbest <= paths.size()) {
 			nbest++;
 			paths = phonetisaurus.phoneticize(entry, nbest, beam);
 		}
 	} else {
 		while (phonetisaurus.printPaths(paths, nbest, &hypfile, "", testword)
-				== true) {
+				== true && nbest <= paths.size()) {
 			nbest++;
 			paths = phonetisaurus.phoneticize(entry, nbest, beam);
 		}
@@ -99,22 +99,22 @@ void phoneticizeTestSet(const char* g2pmodel_file, const char* output,
 
 			vector<string> entry = tokenize_entry(&word, &sep,
 					phonetisaurus.isyms);
-
+//			cout << "Phoneticize: '" << word << "' number of chars = " << entry.size();
 			vector<PathData> paths = phonetisaurus.phoneticize(entry, nbest,
 					beam);
+//			cout << "  OK" << endl;
 			int nbest_new = nbest;
 			if (output_words == 0) {
-				while (phonetisaurus.printPaths(paths, nbest_new, &hypfile, output, pron)
-						== true) {
-					nbest_new++;
-					paths = phonetisaurus.phoneticize(entry, nbest_new, beam);
-				}
+			    while (phonetisaurus.printPaths(paths, nbest_new, &hypfile, output, pron) == true && nbest_new <= paths.size()) {
+				nbest_new++;
+				paths = phonetisaurus.phoneticize(entry, nbest_new, beam);
+			    }
 			} else {
-				while (phonetisaurus.printPaths(paths, nbest_new, &hypfile, pron,
-						word, output_cost) == true) {
-					nbest_new++;
-					paths = phonetisaurus.phoneticize(entry, nbest_new, beam);
-				}
+			    while (phonetisaurus.printPaths(paths, nbest_new, &hypfile, pron,
+				word, output_cost) == true && nbest_new <= paths.size()) {
+				nbest_new++;
+				paths = phonetisaurus.phoneticize(entry, nbest_new, beam);
+			    }
 			}
 		}
 		test_fp.close();

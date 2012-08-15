@@ -13,7 +13,7 @@ const char helpstr[] =
 	               [-skip SKIP] [-seq1in_sep SEQ1IN_SEP] [-seq2in_sep SEQ2IN_SEP]  \n\
 	               [-s1s2_delim S1S2_DELIM] [-iter ITER] [-order ORDER] [-smooth SMOOTH]  \n\
 	               [-prune PRUNE] [-theta THETA] [-pattern PATTERN] [-noalign]  \n\
-	               -ifile IFILE -prefix PREFIX \n\
+	               [-ratio RATIO] -ifile IFILE -prefix PREFIX \n\
 	\n\
 	  -seq1_del,              Allow deletions in sequence 1. Defaults to false.  \n\
 	  -seq2_del,              Allow deletions in sequence 2. Defaults to false.  \n\
@@ -38,7 +38,8 @@ const char helpstr[] =
 	  -noalign,               Do not align. Assume that the aligned corpus already exists. \n\
 	                          Defaults to false. \n\
 	  -ifile IFILE,           File containing sequences to be aligned.  \n\
-	  -gen_testset		  Whether or not a testset (1 in every 10 words) will be left out from the input dictionary, for model evaluation. Defaults to true. \n\
+	  -gen_testset		  	  Whether or not a testset will be left out from the input dictionary, for model evaluation. Defaults to true. \n\
+   	  -ratio RATIO		  	  if a testset is generated, 1 word in every RATIO words will be left out from the input dictionary and inserted to the test set for model evaluation. Defaults to 10. \n\
 	  -prefix PREFIX,         Prefix for saving the generated model and other files. Defaults to \"./model\"";
 
 	  int main(int argc, char* argv[]) {
@@ -65,6 +66,7 @@ const char helpstr[] =
 	  			{ "-ifile",		 REQARG_STRING,	"",		      	"The input dictionary file." },
 	  			{ "-gen_testset",	 ARG_BOOLEAN,	"yes",		"Whether or not a testset (1 in every 10 words) will be left out from the input dictionary, for model evaluation. Defaults to true." },
 	  			{ "-prefix",	 ARG_STRING,	"model",		"Prefix for saving the generated model and other files. Defaults to 'model'" },
+	  			{ "-ratio",  	 ARG_INT32, "10",		  	    "If a testset is generated, 1 word in every RATIO words will be left out from the input dictionary and inserted to the test set for model evaluation. Defaults to 10. " },
 	  			{ NULL, 		 0,				NULL, 			NULL }
 	  	};
 
@@ -88,6 +90,7 @@ const char helpstr[] =
 	  	string seq2in_sep = cmd_ln_str("-seq2in_sep");
 	  	string s1s2_delim = cmd_ln_str("-s1s2_delim");
 	  	int iter = cmd_ln_int32("-iter");
+	  	int ratio = cmd_ln_int32("-ratio");
 	  	int order = cmd_ln_int32("-order");
 	  	string smooth = cmd_ln_str("-smooth");
 	  	string prune = cmd_ln_str("-prune");
@@ -108,7 +111,7 @@ const char helpstr[] =
 	  	}
 		if(gen_testset) {
 			cout << "Splitting dictionary: " << input_file << " into training and test set" << endl;
-			split(input_file, prefix);
+			split(input_file, prefix, ratio);
 			input_file = prefix+".train";
 	  	}
 		

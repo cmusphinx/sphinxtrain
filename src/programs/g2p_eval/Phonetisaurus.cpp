@@ -209,6 +209,24 @@ vector<PathData> Phonetisaurus::phoneticize( vector<string> entry, int nbest, in
     return pathfinder.paths;
 }
 
+void printPath(PathData path, string onepath, int k, ofstream *hypfile, string correct, string word, bool output_cost) {
+	if( word != "" ) {
+	  if(k!=0) {
+		  *hypfile << word << "(" << k << ")" << "  ";
+	  } else {
+		  *hypfile << word  << "  ";
+    	    }
+	}
+	if(output_cost) {
+			*hypfile << path.pathcost << "  " << onepath;
+        } else {
+        	*hypfile << onepath;
+        }
+        if( correct != "" )
+        	*hypfile << "  " << correct;
+        *hypfile << "\n";
+}
+
 bool Phonetisaurus::printPaths( vector<PathData> paths, int nbest,  ofstream *hypfile, string correct, string word, bool output_cost){
     /*
      Convenience function to print out a path vector.
@@ -240,30 +258,17 @@ bool Phonetisaurus::printPaths( vector<PathData> paths, int nbest,  ofstream *hy
             if( j != paths[k].path.size()-1 )
                 onepath += " ";
         }
-	if( onepath == "" )
-	  continue;
-	empty_path = false;
-	if( word != "" ) {
-	  if(k!=0) {
-		  *hypfile << word << "(" << k << ")" << "  ";
-	  } else {
-		  *hypfile << word  << "  ";
-    	    }
+	if( onepath == "" ) {
+	    printPath(paths[k], "-", k, hypfile, correct, word, output_cost);
+	    continue;
 	}
-	if(output_cost) {
-			*hypfile << paths[k].pathcost << "  " << onepath;
-        } else {
-        	*hypfile << onepath;
-        }
-        if( correct != "" )
-        	*hypfile << "  " << correct;
-        *hypfile << "\n";
+	empty_path = false;
+	printPath(paths[k], onepath, k, hypfile, correct, word, output_cost);
         onepath = "";
     }
 
     return empty_path;
 }
-
 
 
 

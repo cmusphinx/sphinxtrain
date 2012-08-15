@@ -35,7 +35,7 @@
 #include <ngram/ngram-unsmoothed.h>
 #include <sphinxbase/err.h>
 #include "M2MFstAligner.hpp"
-#include "utils.hpp"
+#include "../g2p_eval/util.hpp"
 
 #define arc_type "standard"
 #define fst_type "vector"
@@ -101,7 +101,11 @@ void addarcs(StateId state_id, StateId newstate, const SymbolTable* oldsyms, Sym
 			oldlabel = oldlabel.append(eps);
 		}
 		vector<string> tokens;
-		split_string(&oldlabel, &tokens, &s1s2_sep, true);
+		tokens = tokenize_utf8_string(&oldlabel, &s1s2_sep);
+		if(tokens[0] == "") 
+		    tokens[0] = "_";
+		if(tokens[1] == "") 
+		    tokens[1] = "_";
 		int64 ilabel = isyms->AddSymbol(tokens.at(0));
 		int64 olabel = osyms->AddSymbol(tokens.at(1));
 
@@ -353,8 +357,8 @@ void train_model(string eps, string s1s2_sep, string skip, int order, string smo
 	cout << "Minimizing model..." << endl;
 	MutableFstClass *minimized = new s::MutableFstClass(fst);
 	Minimize(minimized, 0, fst::kDelta);
-
 	fst = minimized->GetMutableFst<StdArc>();
+
 	cout << "Correcting final model..." << endl;
 	StdMutableFst* out = new StdVectorFst();
 	relabel(fst, out, prefix, eps, skip, s1s2_sep, seq_sep);
@@ -386,18 +390,14 @@ void align(string input_file, string prefix, bool seq1_del, bool seq2_del, int s
 			getline(dict, line);
 			if (line.empty())
 				continue;
-			if (line.substr(0, 3).compare(";;;") == 0)
-				continue;
 			tokens.clear();
 			split_string(&line, &tokens, &s1s2_delim);
 			if(tokens.size()<2) {
 				cout << "Cannot parse line:" << line << endl;
 				continue;
 			}
-			seq1.clear();
-			split_string(&tokens.at(0), &seq1, &seq1in_sep);
-			seq2.clear();
-			split_string(&tokens.at(1), &seq2, &seq2in_sep);
+			seq1 = tokenize_utf8_string(&tokens.at(0), &seq1in_sep);
+			seq2 = tokenize_utf8_string(&tokens.at(1), &seq2in_sep);
 			fstaligner.entry2alignfst(seq1, seq2);
 		}
 	}
@@ -433,7 +433,7 @@ void align(string input_file, string prefix, bool seq1_del, bool seq2_del, int s
 	ofile.close();
 }
 
-void split(string input_file, string prefix) {
+void split(string input_file, string prefix, int ratio) {
 	ifstream dict(input_file.c_str(), ifstream::in);
 
 	string traindict = prefix+".train";
@@ -448,7 +448,7 @@ void split(string input_file, string prefix) {
 	if (dict.is_open()) {
 		while (dict.good()) {
 			getline(dict, line);
-			if(lineNum % 10 == 0) {
+			if(lineNum % ratio == 0) {
 			  testfile << line << endl;
 			} else {
 			  trainfile << line << endl;

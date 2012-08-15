@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void split(string input_file, string prefix);
+void split(string input_file, string prefix, int ratio);
 
 void align(string input_file, string prefix, bool seq1_del, bool seq2_del, 
 		int seq1_max, int seq2_max, string seq_sep, string s1s2_sep,
