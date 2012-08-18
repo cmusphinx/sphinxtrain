@@ -109,7 +109,7 @@ const char helpstr[] =
 	  	if (prefix.empty()) {
 	  		E_FATAL("Output file not provided\n");
 	  	}
-		if(gen_testset) {
+		if(gen_testset && !ifile.empty()) {
 			cout << "Splitting dictionary: " << input_file << " into training and test set" << endl;
 			split(input_file, prefix, ratio);
 			input_file = prefix+".train";

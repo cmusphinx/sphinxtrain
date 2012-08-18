@@ -99,10 +99,8 @@ void phoneticizeTestSet(const char* g2pmodel_file, const char* output,
 
 			vector<string> entry = tokenize_entry(&word, &sep,
 					phonetisaurus.isyms);
-//			cout << "Phoneticize: '" << word << "' number of chars = " << entry.size();
 			vector<PathData> paths = phonetisaurus.phoneticize(entry, nbest,
 					beam);
-//			cout << "  OK" << endl;
 			int nbest_new = nbest;
 			if (output_words == 0) {
 			    while (phonetisaurus.printPaths(paths, nbest_new, &hypfile, output, pron) == true && nbest_new <= paths.size()) {

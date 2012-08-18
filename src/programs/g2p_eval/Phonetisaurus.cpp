@@ -209,7 +209,7 @@ vector<PathData> Phonetisaurus::phoneticize( vector<string> entry, int nbest, in
     return pathfinder.paths;
 }
 
-void printPath(PathData path, string onepath, int k, ofstream *hypfile, string correct, string word, bool output_cost) {
+void printPath(PathData* path, string onepath, int k, ofstream *hypfile, string correct, string word, bool output_cost) {
 	if( word != "" ) {
 	  if(k!=0) {
 		  *hypfile << word << "(" << k << ")" << "  ";
@@ -218,7 +218,11 @@ void printPath(PathData path, string onepath, int k, ofstream *hypfile, string c
     	    }
 	}
 	if(output_cost) {
-			*hypfile << path.pathcost << "  " << onepath;
+	    if(path) {
+			*hypfile << path->pathcost << "  " << onepath;
+	    } else {
+			*hypfile << "999.999  " << onepath;
+	    }
         } else {
         	*hypfile << onepath;
         }
@@ -259,12 +263,18 @@ bool Phonetisaurus::printPaths( vector<PathData> paths, int nbest,  ofstream *hy
                 onepath += " ";
         }
 	if( onepath == "" ) {
-	    printPath(paths[k], "-", k, hypfile, correct, word, output_cost);
 	    continue;
 	}
 	empty_path = false;
-	printPath(paths[k], onepath, k, hypfile, correct, word, output_cost);
+	printPath(&paths[k], onepath, k, hypfile, correct, word, output_cost);
         onepath = "";
+    }
+    if(empty_path) {
+	if(k == 0) {
+	    printPath(NULL, "-", 0, hypfile, correct, word, output_cost);
+	} else {
+    	    printPath(&paths[0], "-", 0, hypfile, correct, word, output_cost);
+    	}
     }
 
     return empty_path;
