@@ -6,9 +6,9 @@ sphinxpath="@prefix@"
 
 is64bit = sys.maxsize > 2**32
 if is64bit:
-    sphinxpath = sphinxpath + "/lib64"
+    sphinxlibpath = sphinxpath + "/lib64"
 else:
-    sphinxpath = sphinxpath + "/lib"
+    sphinxlibpath = sphinxpath + "/lib"
 
 def setup(task):
     if not os.path.exists("etc"):
@@ -17,13 +17,16 @@ def setup(task):
     print "Setting up the database " + task
 
     out_cfg = open("etc/sphinx_train.cfg", "w")
-    for line in open(sphinxpath + "/sphinxtrain/etc/sphinx_train.cfg", "r"):
-	line = line.replace("___DB_NAME___", task).replace("___BASE_DIR___", os.getcwd()).replace("___SPHINXTRAIN_DIR___", sphinxpath + "/sphinxtrain")
+    for line in open(sphinxlibpath + "/sphinxtrain/etc/sphinx_train.cfg", "r"):
+	line = line.replace("___DB_NAME___", task)
+	line = line.replace("___BASE_DIR___", os.getcwd())
+	line = line.replace("___SPHINXTRAIN_DIR___", sphinxlibpath + "/sphinxtrain")
+	line = line.replace("___SPHINXTRAIN_BIN_DIR___", sphinxpath + "/libexec/sphinxtrain")
 	out_cfg.write(line)
     out_cfg.close()
 
     out_cfg = open("etc/feat.params", "w")
-    for line in open(sphinxpath + "/sphinxtrain/etc/feat.params", "r"):
+    for line in open(sphinxlibpath + "/sphinxtrain/etc/feat.params", "r"):
 	out_cfg.write(line)
     out_cfg.close()
 
@@ -55,12 +58,12 @@ def run_stages(stages):
         for step in steps:
     	    name = step.split("/")[0].split(".")[-1]
     	    if name == stage:
-		os.system(sphinxpath + "/sphinxtrain/scripts/" + step)
+		os.system(sphinxlibpath + "/sphinxtrain/scripts/" + step)
 
 def run():
     print "Running the training"
     for step in steps:
-	os.system(sphinxpath + "/sphinxtrain/scripts/" + step)
+	os.system(sphinxlibpath + "/sphinxtrain/scripts/" + step)
 
 def usage():
     print ""

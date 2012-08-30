@@ -6,8 +6,8 @@ nobase_scripts_SCRIPTS = \
 	000.comp_feat/make_feats.pl \
 	000.comp_feat/slave_feat.pl \
 	0000.g2p_train/g2p_train.pl \
-    0000.g2p_train/evaluate.py \
-    0000.g2p_train/calculateER.py \
+	0000.g2p_train/evaluate.py \
+	0000.g2p_train/calculateER.py \
 	00.verify/verify_all.pl \
 	01.lda_train/baum_welch.pl \
 	01.lda_train/lda_train.pl \
