@@ -367,11 +367,6 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  NULL,
 	  "The filler word dictionary (e.g. SIL, SILb, ++COUGH++)" },
 
-	{ "-ltsoov",
-	  ARG_BOOLEAN,
-	  "no",
-	  "Use CMUDict letter-to-sound rules to generate pronunciations for out-of-vocabulary words" },
-
 	{ "-ctlfn",
 	  ARG_STRING,
 	  NULL,

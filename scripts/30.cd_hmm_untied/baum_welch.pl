@@ -132,7 +132,6 @@ my $return_value = RunTool
      -tmatfn => $tmatfn,
      -meanfn => $meanfn,
      -varfn => $varfn,
-     -ltsoov => $ST::CFG_LTSOOV,
      -dictfn => GetDict(),
      -fdictfn => $ST::CFG_FILLERDICT,
      -ctlfn => $listoffiles,

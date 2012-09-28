@@ -230,41 +230,7 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
     if (hash_table_lookup(lex->ht, ortho, (void **)&cur) == 0) {
 	return cur;
     }
-    else if (lex->lts_rules) {
-        int i, wid;
-	char *word;
-
-	E_INFO("No defined pronunciation for %s, using LTS prediction: ", ortho);
-	wid = lex->entry_cnt;
-	cur = lexicon_append_entry(lex);
-	lts_apply(ortho, "", lex->lts_rules, cur);
-	/* Check that all the phones are in the mdef (we have real
-	 * problems if not!) */
-	for (i = 0; i < cur->phone_cnt; ++i) {
-	    E_INFOCONT("%s ", cur->phone[i]);
-	    cur->ci_acmod_id[i] =
-		acmod_set_name2id(lex->phone_set, cur->phone[i]);
-	    if (cur->ci_acmod_id[i] == NO_ACMOD) {
-		E_INFOCONT("\n");
-		E_ERROR("Unknown phone %s\n", cur->phone[i]);
-		ckd_free(cur->phone);
-		cur->phone = NULL;
-		ckd_free(cur->ci_acmod_id);
-		cur->ci_acmod_id = NULL;
-		cur->phone_cnt = 0;
-		return NULL;
-	    }
-	}
-	E_INFOCONT("\n");
-	word = ckd_salloc(ortho);
-	if (add_word(word, wid, lex, cur) != S3_SUCCESS) {
-	    E_ERROR("Failed to add LTS pronunciation to lexicon!\n");
-	    return NULL;
-	}
-	return cur;
-   }
-    else
-	return NULL;
+    return NULL;
 }
 
 

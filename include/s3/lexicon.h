@@ -55,8 +55,6 @@ extern "C" {
 #endif
 
 #include <s3/acmod_set.h>
-#include <s3/lts.h>
-
 #include <sphinxbase/prim_type.h>
 #include <sphinxbase/hash_table.h>
 
@@ -74,7 +72,6 @@ typedef struct lex_entry_str {
 typedef struct lexicon_s {
     uint32 entry_cnt;
     hash_table_t *ht;
-    lts_t *lts_rules;
     acmod_set_t *phone_set;
 } lexicon_t;
 

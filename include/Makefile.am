@@ -13,7 +13,6 @@ pkginclude_HEADERS = \
 	s3/kdtree.h \
 	s3/kmeans.h \
 	s3/lexicon.h \
-	s3/lts.h \
 	s3/metric.h \
 	s3/mk_phone_list.h \
 	s3/mk_phone_seq.h \

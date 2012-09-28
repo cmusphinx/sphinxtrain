@@ -423,8 +423,6 @@ main_initialize(int argc,
 		       mdef->acmod_set);
     if (lex == NULL)
 	return S3_ERROR;
-    if (cmd_ln_boolean("-ltsoov"))
-	lex->lts_rules = (lts_t *)&cmu6_lts_rules;
     
     if (fdictfn) {
 	E_INFO("Reading filler lexicon: %s\n",

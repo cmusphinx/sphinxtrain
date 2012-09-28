@@ -4,14 +4,11 @@ libcommon_la_SOURCES = \
 	 acmod_set.c \
 	 best_q.c \
 	 ck_seg.c \
-	 cmu6_lts_rules.c \
-	 cmu6_lts_rules.h \
 	 cvt2triphone.c \
 	 dtree.c \
 	 heap.c \
 	 itree.c \
 	 lexicon.c \
-	 lts.c \
 	 mk_phone_list.c \
 	 mk_phone_seq.c \
 	 mk_sseq.c \

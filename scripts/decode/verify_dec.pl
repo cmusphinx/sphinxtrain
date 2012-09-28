@@ -169,7 +169,7 @@ my %transcript_phonelist_hash = ();
 	if ($text) {
 	    my @words = split /\s+/,$text;
 	    for my $word (@words) {
-		if ($ST::CFG_LTSOOV ne 'yes' and !($d{$word}) and ($word =~ m/\S+/)) {
+		if ($ST::CFG_G2P_MODEL ne 'yes' and !($d{$word}) and ($word =~ m/\S+/)) {
 		    LogWarning ("This word: $word was in the transcript file, but is not in the dictionary ($text). Do cases match?");
 		    $status = 'FAILED';
 		    $ret_value = -5;
