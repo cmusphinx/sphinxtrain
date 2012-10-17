@@ -63,8 +63,6 @@ add_word(char *ortho,
 {
     e->ortho = ortho;
     e->word_id = wid;
-
-    hash_table_enter(l->ht, e->ortho, (void *)e);
     
     return S3_SUCCESS;
 }
@@ -130,6 +128,18 @@ lex_entry_t *lexicon_append_entry(lexicon_t *lex)
     return new;
 }
 
+void lexicon_entry_free(lex_entry_t *entry)
+{
+    if (entry->ortho)
+        ckd_free(entry->ortho);
+    if (entry->ci_acmod_id)
+        ckd_free(entry->ci_acmod_id);
+    if (entry->phone)
+        ckd_free(entry->phone);
+    ckd_free(entry);
+    return;
+}
+
 lexicon_t *lexicon_read(lexicon_t *prior_lex,
 			const char *filename,
 			acmod_set_t *acmod_set)
@@ -155,6 +165,7 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 	lex = prior_lex;
     else
 	lex = lexicon_new();
+
     if (lex->phone_set == NULL)
 	lex->phone_set = acmod_set;
 
@@ -167,12 +178,7 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 	    continue;
 	}
 	
-	if (!reuse_entry) {
-	    next_entry = lexicon_append_entry(lex);
-	}
-	else {
-	    reuse_entry = FALSE; /* reset to standard case */
-	}
+	next_entry = lexicon_append_entry(lex);
 
 	/* allocate space for string.  It will be parsed
 	 * by strtok() */
@@ -188,9 +194,7 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 		     lex,
 		     next_entry) != S3_SUCCESS) {
 	    E_ERROR("%s duplicate entry?\n", word);
-
-	    reuse_entry = TRUE;	/* Since this line is skipped, reuse
-				 * the lex entry for the next line */
+	    lexicon_entry_free(next_entry);
 	    continue;
 	}
 
@@ -205,12 +209,11 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 	   to the phone list for this entry */
 	if (add_phones(n_phone, next_entry, acmod_set) != S3_SUCCESS) {
 	    E_ERROR("pronunciation for %s has undefined phones; skipping.\n", word);
-	    
-	    reuse_entry = TRUE;
-
+	    lexicon_entry_free(next_entry);
 	    continue;
 	}
-
+	
+	hash_table_enter(lex->ht, next_entry->ortho, (void *)next_entry);
 	++wid;	/* only happens should everything be successful */
     }
 
@@ -241,10 +244,7 @@ void lexicon_free(lexicon_t *lexicon)
     for (itor = hash_table_iter(lexicon->ht);
              itor; itor = hash_table_iter_next(itor)) {
         lex_entry_t *entry = hash_entry_val(itor->ent);
-        ckd_free(entry->ortho);
-        ckd_free(entry->ci_acmod_id);
-        ckd_free(entry->phone);
-        ckd_free(entry);
+        lexicon_entry_free(entry);
     }
     hash_table_free(lexicon->ht);
     ckd_free(lexicon);
