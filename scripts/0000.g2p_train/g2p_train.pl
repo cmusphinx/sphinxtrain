@@ -49,9 +49,9 @@ use SphinxTrain::Util;
 
 $| = 1; # Turn on autoflushing
 Log ("MODULE: 0000 train grapheme-to-phoneme model\n");
-if ($ST::CFG_G2P_MODEL eq "no") {
-   Log("Skipped (set \$CFG_G2P_MODEL = 'yes' to enable)\n");
-  exit(0);
+if ($ST::CFG_G2P_MODEL ne "yes") {
+    Log("Skipped (set \$CFG_G2P_MODEL = 'yes' to enable)\n");
+    exit(0);
 }
 my $logdir = "$ST::CFG_LOG_DIR/0000.g2p_train";
 my $logfile = "$logdir/$ST::CFG_EXPTNAME.g2p.log";
