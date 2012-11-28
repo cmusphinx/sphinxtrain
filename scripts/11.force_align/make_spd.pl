@@ -53,7 +53,7 @@ my $outdir = "$ST::CFG_BASE_DIR/falignout";
 my $transcriptfile = catfile($outdir, "${ST::CFG_EXPTNAME}.alignedtranscripts");
 # Create a single pronunciation dictionary and transcript if requested
 my $dictfn = "$ST::CFG_DICTIONARY";
-if($ST::CFG_G2P_MODEL == "yes") {
+if ($ST::CFG_G2P_MODEL eq "yes") {
     $dictfn = "$ST::CFG_DICTIONARY.full";
 }
 

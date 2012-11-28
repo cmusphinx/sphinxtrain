@@ -134,7 +134,7 @@ if (-r $MLLT_FILE) {
 }
 
 my $dictfn = "$ST::CFG_DICTIONARY";
-if($ST::CFG_G2P_MODEL == "yes") {
+if ($ST::CFG_G2P_MODEL eq "yes") {
     $dictfn = "$ST::CFG_DICTIONARY.full";
 }
 

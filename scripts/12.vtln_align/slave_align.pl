@@ -118,7 +118,7 @@ unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN
     close INFDICT;
     close OUTFDICT;
 my $dictfn = "$ST::CFG_DICTIONARY";
-if($ST::CFG_G2P_MODEL == "yes") {
+if ($ST::CFG_G2P_MODEL eq "yes") {
     $dictfn = "$ST::CFG_DICTIONARY.full";
 }
 
