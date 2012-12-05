@@ -25,4 +25,3 @@ libcommon_la_SOURCES = \
 INCLUDES = -I$(top_srcdir)/include
 
 libcommon_la_LIBADD = $(top_builddir)/src/libs/libclust/libclust.la
-
