@@ -55,7 +55,6 @@
 
 /* The SPHINX-III common library */
 #include <s3/common.h>
-#include <s3/prefetch.h>
 #include <s3/profile.h>
 #include <s3/mk_phone_list.h>
 #include <s3/cvt2triphone.h>
@@ -1879,8 +1878,6 @@ int main(int argc, char *argv[])
     model_def_t *mdef = NULL;
     feat_t *feat = NULL;
     
-    (void) prefetch_init();	/* should do this BEFORE any allocations */
-
     if (main_initialize(argc, argv,
 			&inv, &lex, &mdef, &feat) != S3_SUCCESS) {
 	E_FATAL("initialization failed\n");

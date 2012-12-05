@@ -71,7 +71,6 @@
 #include <sys_compat/file.h>
 #include <sys_compat/misc.h>
 
-#include <s3/prefetch.h>
 #include <s3/mllr_io.h>
 #include <s3/acmod_set.h>
 #include <s3/s3.h>
@@ -1274,10 +1273,6 @@ corpus_read_next_sent_file(char **trans)
     FILE *fp;
     lineiter_t *li;
 
-    /* start prefetching the next file, if one. */
-    if (next_ctl_path != NULL)
-	(void) prefetch_hint(mk_filename(DATA_TYPE_SENT, next_ctl_path));
-
     /* open the current file */
     fp = open_file_for_reading(DATA_TYPE_SENT);
 
@@ -1320,10 +1315,6 @@ corpus_get_generic_featurevec(vector_t **mfc,
 	coeff = NULL;
 	cptr = NULL;
     }
-
-    /* start prefetching the next file, if one. */
-    if (next_ctl_path != NULL)
-	(void) prefetch_hint(mk_filename(DATA_TYPE_MFCC, next_ctl_path));
 
     do {
 	if ((cur_ctl_sf == NO_FRAME) && (cur_ctl_ef == NO_FRAME)) {
