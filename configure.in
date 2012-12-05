@@ -27,18 +27,6 @@ EOF
 	exit 1
 fi
 
-AC_PATH_PROG(FESTIVAL, festival, /usr/bin/festival,
-  $PATH:/bin:/usr/bin:/usr/local/bin:/usr/local/festival/bin:/opt/festival/bin:/usr0/festival/bin)
-if test "x$FESTIVAL" = x; then
-	cat <<\EOF
-*** Could not find the Festival binary on your system.
-*** Please set the FESTIVAL environment variable and re-run
-*** ./configure.  For example:
-$ env FESTIVAL=/path/to/festival ./configure
-EOF
-	exit 1
-fi
-
 dnl Use PIC on x86_64, as we can't build Perl/Python modules otherwise
 dnl (and it isn't much slower unlike on register-starved i386)
 case $host_cpu in
@@ -159,82 +147,43 @@ AC_ARG_ENABLE(g2p-decoder,
  [ g2p_decoder=yes ])
 AM_CONDITIONAL([G2P_DECODER], [test "x$g2p_decoder" = "xyes"])
 
+
 dnl ###############################
 dnl
 dnl G2P related stuff start here
 dnl
 dnl ###############################
 if   test "x$g2p_decoder" = "xyes" ; then
-	AC_LANG([C++])
-	G2PINCPATHS="-I/usr/include/ -I/usr/local/include/"
-	CPPFLAGS="$CPPFLAGS $G2PINCPATHS"
+
+AC_DEFINE([G2P_DECODER])
+AC_LANG([C++])
+
+# Get openfst and opengrm library and include locations
+AC_ARG_WITH([openfst-includes],
+  [AS_HELP_STRING([--with-openfst-includes],
+      [location of the openfst headers, defaults to /usr/local/include])],
+        [OPENFST_CFLAGS="-I$withval"],
+        [OPENFST_CFLAGS="-I/usr/local/include"])
+AC_SUBST([OPENFST_CFLAGS])
+          
+AC_ARG_WITH([openfst-libs],
+            [AS_HELP_STRING([--with-openfst-libs], [location of the openfst libraries])],
+            [OPENFST_LIBS="-L$withval -lfst -lfstfar -lfstfarscript -lfstscript -ldl -lngram"],
+            [OPENFST_LIBS="-lfst -lfstfar -lfstfarscript -lfstscript -ldl -lngram"])
+AC_SUBST([OPENFST_LIBS])
 	
-	dnl
-	dnl Check for openFst headers
-	dnl
-	AC_CHECK_HEADER([fst/fstlib.h], [],
-	 [AC_MSG_ERROR([fst/fstlib.h header not found])]
-	)
-	
-	AC_CHECK_HEADER([fst/symbol-table.h], [],
-	 [AC_MSG_ERROR([fst/symbol-table.h header not found])]
-	)
-	
-	AC_CHECK_HEADER([fst/extensions/far/farscript.h], [],
-	 [AC_MSG_ERROR([fst/extensions/far/farscript.h header not found])]
-	)
-	
-	AC_CHECK_HEADER([fst/extensions/far/main.h], [],
-	 [AC_MSG_ERROR([fst/extensions/far/main.h header not found])]
-	)
-	
-	AC_CHECK_HEADER([fst/script/print.h], [],
-	 [AC_MSG_ERROR([fst/script/print.h header not found])]
-	)
-	
-	dnl
-	dnl Check for openNGram headers
-	dnl
-	AC_CHECK_HEADER([ngram/ngram-input.h], [],
-	 [AC_MSG_ERROR([ngram/ngram-input.h header not found])]
-	)
-	
-	AC_CHECK_HEADER([ngram/ngram-make.h], [],
-	 [AC_MSG_ERROR([ngram/ngram-make.h header not found])]
-	)
-	
-	AC_CHECK_HEADER([ngram/ngram-kneserney.h], [],
-	 [AC_MSG_ERROR([ngram/ngram-kneserney.h header not found])]
-	)
-	
-	AC_CHECK_HEADER([ngram/ngram-absolute.h], [],
-	 [AC_MSG_ERROR([ngram/ngram-absolute.h header not found])]
-	)
-	
-	AC_CHECK_HEADER([ngram/ngram-katz.h], [],
-	 [AC_MSG_ERROR([ngram/ngram-katz.h header not found])]
-	)
-	
-	AC_CHECK_HEADER([ngram/ngram-wittenbell.h], [],
-	 [AC_MSG_ERROR([ngram/ngram-wittenbell.h header not found])]
-	)
-	
-	AC_CHECK_HEADER([ngram/ngram-unsmoothed.h], [],
-	 [AC_MSG_ERROR([ngram/ngram-unsmoothed.h header not found])]
-	)
-	
-	AC_CHECK_HEADER([ngram/ngram-shrink.h], [],
-	 [AC_MSG_ERROR([ngram/ngram-shrink.h header not found])]
-	)
-	AC_CHECK_HEADER([ngram/ngram-relentropy.h], [],
-	 [AC_MSG_ERROR([ngram/ngram-relentropy.h header not found])]
-	)
-	AC_CHECK_HEADER([ngram/ngram-seymoreshrink.h], [],
-	 [AC_MSG_ERROR([ngram/ngram-seymoreshrink.h header not found])]
-	)
-	AC_CHECK_HEADER([ngram/ngram-countprune.h], [],
-	 [AC_MSG_ERROR([ngram/ngram-countprune.h header not found])]
-	)
+# Check for openFst headers
+saved_cppflags="${CPPFLAGS}"
+CPPFLAGS="${CPPFLAGS} ${OPENFST_CFLAGS}"
+AC_CHECK_HEADER([fst/fstlib.h], [],
+ [AC_MSG_ERROR([fst/fstlib.h header not found])]
+ []
+)	
+AC_CHECK_HEADER([ngram/ngram-input.h], [],
+ [AC_MSG_ERROR([ngram/ngram-input.h header not found])]
+)	
+CPPFLAGS="${saved_cppflags}"
+
 fi
 
 AC_SUBST(sphinxbase)
@@ -265,6 +214,8 @@ src/programs/delint/Makefile
 src/programs/inc_comp/Makefile
 src/programs/init_gau/Makefile
 src/programs/init_mixw/Makefile
+src/programs/g2p_eval/Makefile
+src/programs/g2p_train/Makefile
 src/programs/kdtree/Makefile
 src/programs/kmeans_init/Makefile
 src/programs/make_quests/Makefile
@@ -284,13 +235,5 @@ src/programs/prunetree/Makefile
 src/programs/tiestate/Makefile
 test/Makefile
 ])
-
-#AM_CONDITIONAL([G2P_DECODER], [test "x$g2p_decoder" = "xyes"])
-    AM_COND_IF([G2P_DECODER],[AC_DEFINE([G2P_DECODER])])
-     AM_COND_IF([G2P_DECODER],
-                [AC_CONFIG_FILES([src/programs/g2p_eval/Makefile src/programs/g2p_train/Makefile])])
-
-
-
 
 AC_OUTPUT
