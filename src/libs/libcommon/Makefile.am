@@ -14,7 +14,6 @@ libcommon_la_SOURCES = \
 	 mk_sseq.c \
 	 mk_trans_seq.c \
 	 mk_ts2ci.c \
-	 profile.c \
 	 quest.c \
 	 remap.c \
 	 state_seq.c \

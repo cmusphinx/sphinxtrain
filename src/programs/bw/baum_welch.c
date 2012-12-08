@@ -53,13 +53,12 @@
 #include "backward.h"
 #include "accum.h"
 #include <s3/state_seq.h>
-
 #include <s3/model_inventory.h>
-#include <sphinxbase/ckd_alloc.h>
-#include <s3/profile.h>
 #include <s3/corpus.h>
-#include <sphinxbase/cmd_ln.h>
 
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/profile.h>
 
 #include <s3/s3.h>
 
@@ -147,6 +146,7 @@ baum_welch_update(float64 *log_forw_prob,
 		  int32 pass2var,
 		  int32 var_is_full,
 		  FILE *pdumpfh,
+		  bw_timers_t *timers,
 		  feat_t *fcb)
 {
     float64 *scale = NULL;
@@ -159,10 +159,6 @@ baum_welch_update(float64 *log_forw_prob,
 			 * of observing the input given the model */
     uint32 t;		/* time */
     int ret;
-
-    timing_t *fwd_timer = NULL;
-    timing_t *bwd_timer = NULL;
-    timing_t *rstu_timer = NULL;
     uint32 i,j;
 
     /* caller must ensure that there is some non-zero amount
@@ -170,10 +166,6 @@ baum_welch_update(float64 *log_forw_prob,
     assert(n_obs > 0);
     assert(n_state > 0);
 
-    fwd_timer = timing_get("fwd");
-    bwd_timer = timing_get("bwd");
-    rstu_timer = timing_get("rstu");
-    
     scale = (float64 *)ckd_calloc(n_obs, sizeof(float64));
     dscale = (float64 **)ckd_calloc(n_obs, sizeof(float64 *));
     n_active_astate = (uint32 *)ckd_calloc(n_obs, sizeof(uint32));
@@ -183,8 +175,7 @@ baum_welch_update(float64 *log_forw_prob,
 
     /* Compute the scaled alpha variable and scale factors
      * for all states and time subject to the pruning constraints */
-    if (fwd_timer)
-	timing_start(fwd_timer);
+    ptmr_start(&timers->fwd_timer);
 
 /*
  * Debug?
@@ -193,7 +184,7 @@ baum_welch_update(float64 *log_forw_prob,
     ret = forward(active_alpha, active_astate, n_active_astate, bp,
 		  scale, dscale,
 		  feature, n_obs, state, n_state,
-		  inv, a_beam, phseg, 0);
+		  inv, a_beam, phseg, timers, 0);
 
 #if BW_DEBUG
     for (i=0 ; i < n_obs;i++){
@@ -227,8 +218,7 @@ baum_welch_update(float64 *log_forw_prob,
 	    ckd_free(segfn);
     }
 
-    if (fwd_timer)
-	timing_stop(fwd_timer);
+    ptmr_stop(&timers->fwd_timer);
 
     if (ret != S3_SUCCESS) {
 
@@ -240,8 +230,7 @@ baum_welch_update(float64 *log_forw_prob,
 
     /* Compute the scaled beta variable and update the reestimation
      * sums */
-    if (bwd_timer)
-	timing_start(bwd_timer);
+    ptmr_start(&timers->bwd_timer);
 
 #if BW_DEBUG
     E_INFO("Before Backward search\n");
@@ -252,9 +241,8 @@ baum_welch_update(float64 *log_forw_prob,
 			  state, n_state,
 			  inv, b_beam, spthresh,
 			  mixw_reest, tmat_reest, mean_reest, var_reest, pass2var,
-			  var_is_full, pdumpfh, fcb);
-    if (bwd_timer)
-	timing_stop(bwd_timer);
+			  var_is_full, pdumpfh, timers, fcb);
+    ptmr_stop(&timers->bwd_timer);
 
     if (ret != S3_SUCCESS) {
 
@@ -271,13 +259,11 @@ baum_welch_update(float64 *log_forw_prob,
     /* If no error was found in the forward or backward procedures,
      * add the resulting utterance reestimation accumulators to the
      * global reestimation accumulators */
-    if (rstu_timer)
-	timing_start(rstu_timer);
+    ptmr_start(&timers->rstu_timer);
     accum_global(inv, state, n_state,
 		 mixw_reest, tmat_reest, mean_reest, var_reest,
 		 var_is_full);
-    if (rstu_timer)
-	timing_stop(rstu_timer);
+    ptmr_stop(&timers->rstu_timer);
 
     for (i = 0; i < n_active_astate[n_obs-1] && active_astate[n_obs-1][i] != (n_state-1); i++);
 

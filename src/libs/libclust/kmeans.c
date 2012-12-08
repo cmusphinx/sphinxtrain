@@ -46,9 +46,11 @@
  *     Eric H. Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
-#include <s3/kmeans.h>
+
 #include <sphinxbase/ckd_alloc.h>
-#include <s3/profile.h>
+#include <sphinxbase/profile.h>
+
+#include <s3/kmeans.h>
 #include <s3/s3.h>
 
 #include <assert.h>
@@ -632,28 +634,3 @@ k_means_subset(vector_t *mean,			/* initial set of means */
 
     return sqerr;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:39  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.1  1995/12/01  20:56:39  eht
- * Initial revision
- *
- *
- */

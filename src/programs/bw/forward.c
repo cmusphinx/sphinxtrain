@@ -46,19 +46,21 @@
 
 #define ACHK 10
 
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/profile.h>
+
 #include <s3/model_inventory.h>
 #include <s3/s3phseg_io.h>
 #include <s3/vector.h>
-#include <sphinxbase/ckd_alloc.h>
 #include <s3/gauden.h>
 #include <s3/state.h>
 #include <s3/s3.h>
 
-#include <s3/profile.h>
-
 #include <assert.h>
 #include <math.h>
 #include <string.h>
+
+#include "baum_welch.h"
 
 #define FORWARD_DEBUG 0
 #define INACTIVE	0xffff
@@ -188,6 +190,7 @@ forward(float64 **active_alpha,
 	model_inventory_t *inv,
 	float64 beam,
 	s3phseg_t *phseg,
+	bw_timers_t *timers,
 	uint32 mmi_train)
 {
     uint32 i, j, s, t, u;
@@ -217,14 +220,10 @@ forward(float64 **active_alpha,
     uint32 retval = S3_SUCCESS;
     uint32 n_l_cb;
     int32 *acbframe; /* Frame in which a codebook was last active */
-    timing_t *gau_timer = NULL;
     float64 *outprob;
     /* Can we prune this frame using phseg? */
     int can_prune_phseg;
     float64 *best_pred = NULL;
-    
-    /* Get the CPU timer associated with mixture Gaussian evaluation */
-    gau_timer = timing_get("gau");
     
     /* # of distinct codebooks referenced by this utterance */
     n_l_cb = inv->n_cb_inverse;
@@ -274,10 +273,9 @@ forward(float64 **active_alpha,
      * in the active state list.
      */
 
-    /* compute alpha for the initial state at t == 0 */
-    if (gau_timer)
-	timing_start(gau_timer);
+    ptmr_start(&timers->gau_timer);
 
+    /* compute alpha for the initial state at t == 0 */
     /* Compute the component Gaussians for state 0 mixture density */
     gauden_compute_log(now_den[state_seq[0].l_cb],
 		       now_den_idx[state_seq[0].l_cb],
@@ -295,8 +293,7 @@ forward(float64 **active_alpha,
 				now_den_idx[state_seq[0].l_cb],
 				mixw[state_seq[0].mixw],
 				g);
-    if (gau_timer)
-	timing_stop(gau_timer);
+    ptmr_stop(&timers->gau_timer);
     if (outprob[0] <= MIN_IEEE_NORM_POS_FLOAT32) {
 	E_ERROR("Small output prob (== %.2e) seen at frame 0 state 0\n", outprob[0]);
 
@@ -380,8 +377,7 @@ forward(float64 **active_alpha,
 			
 			if (acbframe[l_cb] != t) {
 			    /* Component density values not yet computed */
-			    if (gau_timer)
-				timing_start(gau_timer);
+			    ptmr_start(&timers->gau_timer);
 			    gauden_compute_log(now_den[l_cb],
 					       now_den_idx[l_cb],
 					       feature[t],
@@ -399,8 +395,7 @@ forward(float64 **active_alpha,
 			    active_l_cb[n_active_l_cb++] = l_cb;
 			    acbframe[l_cb] = t;
 
-			    if (gau_timer)
-				timing_stop(gau_timer);
+			    ptmr_stop(&timers->gau_timer);
 			}
 
 			/* Put next state j into the active list */
@@ -736,78 +731,3 @@ cleanup:
 
     return retval;
 }
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2006/03/27  04:08:57  dhdfu
- * Optionally use a set of phoneme segmentations to constrain Baum-Welch
- * training.
- * 
- * Revision 1.5  2004/07/21 18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.4  2004/06/17 19:17:14  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.13  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.12  1996/07/29  16:15:18  eht
- * - gauden_compute call arguments made (hopefully) more rational
- * - change alpha and scale rep to float64 from float32
- * - smaller den and den_idx structures
- *
- * Revision 1.11  1996/03/26  13:51:08  eht
- * - Deal w/ beam float32 -> float64 bug
- * - Deal w/ case when # densities referenced in an utterance is much fewer than the
- *   total # of densities to train.
- * - Deal w/ adflag[] not set bug
- *
- * Revision 1.10  1996/03/04  15:58:56  eht
- * added more cpu time counters
- *
- * Revision 1.9  1996/02/02  17:39:53  eht
- * - Uncomment pruning.
- * - Allow a list of active Gaussians to be evaluated rather than all.
- *
- * Revision 1.8  1995/12/14  19:49:26  eht
- * - Add code to only normalize gaussian densities when 1 tied mixture is used.  O/W don't do.
- * - Add code to warn about zero output probability for emitting states.
- *
- * Revision 1.7  1995/10/12  18:30:22  eht
- * Made state.h a "local" header file
- *
- * Revision 1.6  1995/10/10  12:43:50  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.5  1995/10/09  14:55:33  eht
- * Change interface to new ckd_alloc routines
- *
- * Revision 1.4  1995/09/14  14:19:36  eht
- * reformatted slightly
- *
- * Revision 1.3  1995/08/09  20:17:41  eht
- * hard code the beam for now
- *
- * Revision 1.2  1995/07/07  11:57:54  eht
- * Changed formatting and content of verbose output and
- * make scale sum of alphas for a given time rather than
- * max alpha to make SPHINX-II comparison easier.
- *
- * Revision 1.1  1995/06/02  20:41:22  eht
- * Initial revision
- *
- *
- */

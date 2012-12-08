@@ -25,7 +25,6 @@ pkginclude_HEADERS = \
 	s3/model_def.h \
 	s3/model_def_io.h \
 	s3/model_inventory.h \
-	s3/profile.h \
 	s3/pset_io.h \
 	s3/quest.h \
 	s3/remap.h \

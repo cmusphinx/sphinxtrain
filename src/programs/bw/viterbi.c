@@ -49,13 +49,14 @@
 #include "backward.h"
 #include "viterbi.h"
 #include "accum.h"
+#include "baum_welch.h"
 
 #include <sphinxbase/err.h>
 #include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/byteorder.h>
+#include <sphinxbase/profile.h>
 
-#include <s3/profile.h>
 #include <s3/remap.h>
 #include <s3/corpus.h>
 #include <s3/s3phseg_io.h>
@@ -257,6 +258,7 @@ viterbi_update(float64 *log_forw_prob,
 	       int32 pass2var,
 	       int32 var_is_full,
 	       FILE *pdumpfh,
+	       bw_timers_t *timers,
 	       feat_t *fcb)
 {
     float64 *scale = NULL;
@@ -287,11 +289,6 @@ viterbi_update(float64 *log_forw_prob,
     uint32 n_density;
     uint32 n_top;
     int ret;
-    timing_t *fwd_timer = NULL;
-    timing_t *rstu_timer = NULL;
-    timing_t *gau_timer = NULL;
-    timing_t *rsts_timer = NULL;
-    timing_t *rstf_timer = NULL;
     float64 log_fp;	/* accumulator for the log of the probability
 			 * of observing the input given the model */
     uint32 max_n_next = 0;
@@ -306,17 +303,6 @@ viterbi_update(float64 *log_forw_prob,
        of work to be done here */
     assert(n_obs > 0);
     assert(n_state > 0);
-
-    /* Get the forward estimation CPU timer */
-    fwd_timer = timing_get("fwd");
-    /* Get the per utterance reestimation CPU timer */
-    rstu_timer = timing_get("rstu");
-    /* Get the Gaussian density evaluation CPU timer */
-    gau_timer = timing_get("gau");
-    /* Get the per state reestimation CPU timer */
-    rsts_timer = timing_get("rsts");
-    /* Get the per frame reestimation CPU timer */
-    rstf_timer = timing_get("rstf");
 
     g = inv->gauden;
     n_feat = gauden_n_feat(g);
@@ -343,12 +329,11 @@ viterbi_update(float64 *log_forw_prob,
     bp = (uint32 **)ckd_calloc(n_obs, sizeof(uint32 *));
 
     /* Run forward algorithm, which has embedded Viterbi. */
-    if (fwd_timer)
-	timing_start(fwd_timer);
+    ptmr_start(&timers->fwd_timer);
     ret = forward(active_alpha, active_astate, n_active_astate, bp,
 		  scale, dscale,
 		  feature, n_obs, state_seq, n_state,
-		  inv, a_beam, phseg, 0);
+		  inv, a_beam, phseg, timers, 0);
     /* Dump a phoneme segmentation if requested */
     if (cmd_ln_str("-outphsegdir")) {
 	    const char *phsegdir;
@@ -368,8 +353,7 @@ viterbi_update(float64 *log_forw_prob,
 			n_state, n_obs, active_alpha, scale, bp);
 	    ckd_free(segfn);
     }
-    if (fwd_timer)
-	timing_stop(fwd_timer);
+    ptmr_stop(&timers->fwd_timer);
 
 
     if (ret != S3_SUCCESS) {
@@ -487,8 +471,7 @@ viterbi_update(float64 *log_forw_prob,
 	l_ci_cb = state_seq[j].l_ci_cb;
 	n_active_cb = 0;
 
-	if (gau_timer)
-	    timing_start(gau_timer);
+	ptmr_start(&timers->gau_timer);
 
 	gauden_compute_log(now_den[l_cb],
 			   now_den_idx[l_cb],
@@ -516,11 +499,9 @@ viterbi_update(float64 *log_forw_prob,
 	/* This is the normalizer sum_m c_{jm} p(o_t|\lambda_{jm}) */
 	op = gauden_mixture(now_den[l_cb], now_den_idx[l_cb],
 			    mixw[state_seq[j].mixw], g);
-	if (gau_timer)
-	    timing_stop(gau_timer);
+	ptmr_stop(&timers->gau_timer);
 
-	if (rsts_timer)
-	    timing_start(rsts_timer);
+	ptmr_start(&timers->rsts_timer);
 	/* Make up this bogus value to be consistent with backward.c */
 	p_reest_term = 1.0 / op;
 
@@ -603,12 +584,10 @@ viterbi_update(float64 *log_forw_prob,
 	    }
 	}
 		
-	if (rsts_timer)
-	    timing_stop(rsts_timer);
+	ptmr_stop(&timers->rsts_timer);
 	/* Note that there is only one state/frame so this is kind of
 	   redundant */
- 	if (rstf_timer)
-	    timing_start(rstf_timer);
+	ptmr_start(&timers->rstf_timer);
 	if (mean_reest || var_reest) {
 	    /* Update the mean and variance reestimation accumulators */
 	    if (pdumpfh)
@@ -628,8 +607,7 @@ viterbi_update(float64 *log_forw_prob,
 			 fcb);
 	    memset(&denacc[0][0][0], 0, denacc_size);
 	}
-	if (rstf_timer)
-	    timing_stop(rstf_timer);
+	ptmr_stop(&timers->rstf_timer);
 
 	if (t > 0) { 
 	    prev = active_astate[t-1][bp[t][q]];
@@ -649,13 +627,11 @@ viterbi_update(float64 *log_forw_prob,
 
     /* If no error was found, add the resulting utterance reestimation
      * accumulators to the global reestimation accumulators */
-    if (rstu_timer)
-	timing_start(rstu_timer);
+    ptmr_start(&timers->rstu_timer);
     accum_global(inv, state_seq, n_state,
 		 mixw_reest, tmat_reest, mean_reest, var_reest,
 		 var_is_full);
-    if (rstu_timer)
-	timing_stop(rstu_timer);
+    ptmr_stop(&timers->rstu_timer);
 
     /* Find the final state */
     for (i = 0; i < n_active_astate[n_obs-1]; ++i) {
@@ -747,7 +723,7 @@ mmi_viterbi_run(float64 *log_forw_prob,
     ret = forward(active_alpha, active_astate, n_active_astate, bp,
 		  scale, dscale,
 		  feature, n_obs, state_seq, n_state,
-		  inv, a_beam, NULL, 1);
+		  inv, a_beam, NULL, NULL, 1);
 
     if (ret != S3_SUCCESS) {
 
@@ -883,7 +859,7 @@ mmi_viterbi_update(vector_t **feature,
     ret = forward(active_alpha, active_astate, n_active_astate, bp,
 		  scale, dscale,
 		  feature, n_obs, state_seq, n_state,
-		  inv, a_beam, NULL, 1);
+		  inv, a_beam, NULL, NULL, 1);
     
     if (cmd_ln_str("-outphsegdir")) {
 	E_FATAL("current MMI implementation don't support -outphsegdir\n");

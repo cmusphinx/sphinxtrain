@@ -50,11 +50,30 @@
 
 #include <sphinxbase/prim_type.h>
 #include <sphinxbase/feat.h>
+#include <sphinxbase/profile.h>
 
 #include <s3/vector.h>
 #include <s3/state.h>
 #include <s3/model_inventory.h>
 #include <s3/s3phseg_io.h>
+
+
+/**
+ * \struct bw_timers_s
+ *
+ * Timers used to profile the training
+ */
+typedef struct {
+    ptmr_t utt_timer;
+    ptmr_t upd_timer;
+    ptmr_t fwd_timer;
+    ptmr_t bwd_timer;
+    ptmr_t gau_timer;
+    ptmr_t rsts_timer;
+    ptmr_t rstf_timer;
+    ptmr_t rstu_timer;
+} bw_timers_t;
+
 
 int32
 baum_welch_update(float64 *log_forw_prob,
@@ -74,6 +93,7 @@ baum_welch_update(float64 *log_forw_prob,
 		  int32 pass2var,
 		  int32 var_is_full,
 		  FILE *pdumpfh,
+		  bw_timers_t *timers,
 		  feat_t *fcb);
 
 #endif /* BAUM_WELCH_H */ 

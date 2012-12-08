@@ -53,9 +53,7 @@
 #include "baum_welch.h"
 #include "accum.h"
 
-/* The SPHINX-III common library */
 #include <s3/common.h>
-#include <s3/profile.h>
 #include <s3/mk_phone_list.h>
 #include <s3/cvt2triphone.h>
 #include <s3/mk_sseq.h>
@@ -72,6 +70,7 @@
 #include <sys_compat/file.h>
 
 #include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/profile.h>
 #include <sphinxbase/feat.h>
 
 #include <stdio.h>
@@ -113,7 +112,46 @@ string_join(const char *base, ...)
 
     return out;
 }
-
+
+static void
+print_all_timers(bw_timers_t *timers, int32 n_frame)
+{
+    printf(" utt %4.3fx %4.3fe"
+	   " upd %4.3fx %4.3fe"
+	   " fwd %4.3fx %4.3fe"
+	   " bwd %4.3fx %4.3fe"
+	   " gau %4.3fx %4.3fe"
+	   " rsts %4.3fx %4.3fe"
+	   " rstf %4.3fx %4.3fe"
+	   " rstu %4.3fx %4.3fe",
+
+	timers->utt_timer.t_cpu/(n_frame*0.01),
+	(timers->utt_timer.t_cpu > 0 ? timers->utt_timer.t_elapsed / timers->utt_timer.t_cpu : 0.0),
+
+	timers->upd_timer.t_cpu/(n_frame*0.01),
+	(timers->upd_timer.t_cpu > 0 ? timers->upd_timer.t_elapsed / timers->upd_timer.t_cpu : 0.0),
+
+	timers->fwd_timer.t_cpu/(n_frame*0.01),
+	(timers->fwd_timer.t_cpu > 0 ? timers->fwd_timer.t_elapsed / timers->fwd_timer.t_cpu : 0.0),
+
+	timers->bwd_timer.t_cpu/(n_frame*0.01),
+	(timers->bwd_timer.t_cpu > 0 ? timers->bwd_timer.t_elapsed / timers->bwd_timer.t_cpu : 0.0),
+
+	timers->gau_timer.t_cpu/(n_frame*0.01),
+	(timers->gau_timer.t_cpu > 0 ? timers->gau_timer.t_elapsed / timers->gau_timer.t_cpu : 0.0),
+
+        timers->rsts_timer.t_cpu/(n_frame*0.01),
+        (timers->rsts_timer.t_cpu > 0 ? timers->rsts_timer.t_elapsed / timers->rsts_timer.t_cpu : 0.0),
+
+        timers->rstf_timer.t_cpu/(n_frame*0.01),
+        (timers->rstf_timer.t_cpu > 0 ? timers->rstf_timer.t_elapsed / timers->rstf_timer.t_cpu : 0.0),
+    
+        timers->rstu_timer.t_cpu/(n_frame*0.01),
+        (timers->rstu_timer.t_cpu > 0 ? timers->rstu_timer.t_elapsed / timers->rstu_timer.t_cpu : 0.0));
+    printf("\n");
+}
+
+
 /*********************************************************************
  *
  * Function: 
@@ -604,15 +642,8 @@ main_reestimate(model_inventory_t *inv,
     const char *pdumpdir;
     FILE *pdumpfh;
     uint32 in_veclen;
-    timing_t *utt_timer = NULL;
-    timing_t *upd_timer = NULL;
-    timing_t *fwd_timer = NULL;
-    timing_t *bwd_timer = NULL;
-    timing_t *gau_timer = NULL;
-    timing_t *rsts_timer = NULL;
-    timing_t *rstf_timer = NULL;
-    timing_t *rstu_timer = NULL;
 
+    bw_timers_t* timers;
     int32 profile;
 
     int32 pass2var;
@@ -626,10 +657,10 @@ main_reestimate(model_inventory_t *inv,
     uint32 n_frame_skipped = 0;
 
     uint32 ckpt_intv = 0;
-    uint32 no_retries=0;
+    uint32 no_retries = 0;
 
-    uint32 outputfullpath=0;
-    uint32 fullsuffixmatch=0;
+    uint32 outputfullpath = 0;
+    uint32 fullsuffixmatch = 0;
 
     E_INFO("Reestimation: %s\n",
 	   (viterbi ? "Viterbi" : "Baum-Welch"));
@@ -645,23 +676,15 @@ main_reestimate(model_inventory_t *inv,
     corpus_set_full_suffix_match(fullsuffixmatch);
 
     if (profile) {
-	utt_timer  = timing_new();
-	upd_timer   = timing_new();
-	fwd_timer = timing_new();
-	bwd_timer = timing_new();
-	gau_timer = timing_new();
-	rsts_timer = timing_new();
-	rstf_timer = timing_new();
-	rstu_timer = timing_new();
-
-	/* bind some timers to names so that lower level routines
-	 * can get at them easily */
-	timing_bind_name("fwd", fwd_timer);
-	timing_bind_name("bwd", bwd_timer);
-	timing_bind_name("gau", gau_timer);
-	timing_bind_name("rsts", rsts_timer);
-	timing_bind_name("rstf", rstf_timer);
-	timing_bind_name("rstu", rstu_timer);
+	timers = ckd_calloc(1, sizeof(bw_timers_t));
+	ptmr_init(&timers->utt_timer);
+        ptmr_init(&timers->upd_timer);
+	ptmr_init(&timers->fwd_timer);
+        ptmr_init(&timers->bwd_timer);
+        ptmr_init(&timers->gau_timer);
+	ptmr_init(&timers->rsts_timer);
+        ptmr_init(&timers->rstf_timer);
+	ptmr_init(&timers->rstu_timer);
     }
 
     mixw_reest = cmd_ln_int32("-mixwreest");
@@ -721,34 +744,16 @@ main_reestimate(model_inventory_t *inv,
 
     while (corpus_next_utt()) {
 	/* Zero timers before utt processing begins */
-	if (utt_timer) {
-	    timing_reset(utt_timer);
-	}
-	if (upd_timer) {
-	    timing_reset(upd_timer);
-	}
-	if (fwd_timer) {
-	    timing_reset(fwd_timer);
-	}
-	if (bwd_timer) {
-	    timing_reset(bwd_timer);
-	}
-	if (gau_timer) {
-	    timing_reset(gau_timer);
-	}
-	if (rsts_timer) {
-	    timing_reset(rsts_timer);
-	}
-	if (rstf_timer) {
-	    timing_reset(rstf_timer);
-	}
-	if (rstu_timer) {
-	    timing_reset(rstu_timer);
-	}
+	ptmr_reset(&timers->utt_timer);
+	ptmr_reset(&timers->upd_timer);
+	ptmr_reset(&timers->fwd_timer);
+	ptmr_reset(&timers->bwd_timer);
+	ptmr_reset(&timers->gau_timer);
+	ptmr_reset(&timers->rsts_timer);
+	ptmr_reset(&timers->rstf_timer);
+	ptmr_reset(&timers->rstu_timer);
 
-	if (utt_timer) {
-	    timing_start(utt_timer);
-	}
+	ptmr_start(&timers->utt_timer);
 
 	printf("utt> %5u %25s", 
 	       seq_no,
@@ -823,8 +828,7 @@ main_reestimate(model_inventory_t *inv,
 	else
 		pdumpfh = NULL;
 
-	if (upd_timer)
-	    timing_start(upd_timer);
+	ptmr_start(&timers->upd_timer);
 	/* create a sentence HMM */
 	state_seq = next_utt_states(&n_state, lex, inv, mdef, trans);
 	printf(" %5u", n_state);
@@ -848,6 +852,7 @@ main_reestimate(model_inventory_t *inv,
 				  pass2var,
 				  var_is_full,
 				  pdumpfh,
+				  timers,
 				  feat) == S3_SUCCESS) {
 		total_frames += n_frame;
 		total_log_lik += log_lik;
@@ -872,7 +877,9 @@ main_reestimate(model_inventory_t *inv,
 			       var_reest,
 			       pass2var,
 			       var_is_full,
-			       pdumpfh, feat) == S3_SUCCESS) {
+			       pdumpfh, 
+			       timers,
+			       feat) == S3_SUCCESS) {
 		total_frames += n_frame;
 		total_log_lik += log_lik;
 		printf(" %e %e",
@@ -881,8 +888,7 @@ main_reestimate(model_inventory_t *inv,
 	    }
 	}
 
-	if (upd_timer)
-	    timing_stop(upd_timer);
+	ptmr_stop(&timers->upd_timer);
 
 	if (pdumpfh)
 		fclose(pdumpfh);
@@ -893,45 +899,10 @@ main_reestimate(model_inventory_t *inv,
 
 	seq_no++;
 
-	if (utt_timer)
-	    timing_stop(utt_timer);
-	
-	if (profile) {
-	    printf(" utt %4.3fx %4.3fe"
-		   " upd %4.3fx %4.3fe"
-		   " fwd %4.3fx %4.3fe"
-		   " bwd %4.3fx %4.3fe"
-		   " gau %4.3fx %4.3fe"
-		   " rsts %4.3fx %4.3fe"
-		   " rstf %4.3fx %4.3fe"
-		   " rstu %4.3fx %4.3fe",
-		   
-		   utt_timer->t_cpu/(n_frame*0.01),
-		   (utt_timer->t_cpu > 0 ? utt_timer->t_elapsed / utt_timer->t_cpu : 0.0),
-
-		   upd_timer->t_cpu/(n_frame*0.01),
-		   (upd_timer->t_cpu > 0 ? upd_timer->t_elapsed / upd_timer->t_cpu : 0.0),
-
-		   fwd_timer->t_cpu/(n_frame*0.01),
-		   (fwd_timer->t_cpu > 0 ? fwd_timer->t_elapsed / fwd_timer->t_cpu : 0.0),
-
-		   bwd_timer->t_cpu/(n_frame*0.01),
-		   (bwd_timer->t_cpu > 0 ? bwd_timer->t_elapsed / bwd_timer->t_cpu : 0.0),
-
-		   gau_timer->t_cpu/(n_frame*0.01),
-		   (gau_timer->t_cpu > 0 ? gau_timer->t_elapsed / gau_timer->t_cpu : 0.0),
-
-		   rsts_timer->t_cpu/(n_frame*0.01),
-		   (rsts_timer->t_cpu > 0 ? rsts_timer->t_elapsed / rsts_timer->t_cpu : 0.0),
-
-		   rstf_timer->t_cpu/(n_frame*0.01),
-		   (rstf_timer->t_cpu > 0 ? rstf_timer->t_elapsed / rstf_timer->t_cpu : 0.0),
-
-		   rstu_timer->t_cpu/(n_frame*0.01),
-		   (rstu_timer->t_cpu > 0 ? rstu_timer->t_elapsed / rstu_timer->t_cpu : 0.0));
-	}
-	printf("\n");
-	fflush(stdout);
+	ptmr_stop(&timers->utt_timer);
+    
+	if (profile)
+	    print_all_timers(timers, n_frame);
 
 	++n_utt;
 
@@ -982,8 +953,8 @@ main_reestimate(model_inventory_t *inv,
 	   total_log_lik);
     if (profile) {
 	printf(" %4.3fx %4.3fe",
-	       (total_frames > 0 ? utt_timer->t_tot_cpu/(total_frames*0.01) : 0.0),
-	       (utt_timer->t_tot_cpu > 0 ? utt_timer->t_tot_elapsed / utt_timer->t_tot_cpu : 0.0));
+	       (total_frames > 0 ? timers->utt_timer.t_tot_cpu/(total_frames*0.01) : 0.0),
+	       (timers->utt_timer.t_tot_cpu > 0 ? timers->utt_timer.t_tot_elapsed / timers->utt_timer.t_tot_cpu : 0.0));
     }
     
     printf("\n");
@@ -1027,6 +998,10 @@ main_reestimate(model_inventory_t *inv,
 	sleep(DUMP_RETRY_PERIOD);
 
 
+    }
+
+    if (profile) {
+	ckd_free(timers);
     }
 
     /* Write a log entry on success */

@@ -54,6 +54,8 @@
 #include <s3/model_inventory.h>
 #include <s3/s3phseg_io.h>
 
+#include "baum_welch.h"
+
 int32
 write_phseg(const char *filename,
 	    model_inventory_t *modinv,
@@ -92,6 +94,7 @@ viterbi_update(float64 *log_forw_prob,
 	       int32 pass2var,
 	       int32 var_is_full,
 	       FILE *pdumpfh,
+	       bw_timers_t *timers,
 	       feat_t *fcb);
 
 int32

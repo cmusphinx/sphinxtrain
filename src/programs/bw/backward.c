@@ -48,15 +48,17 @@
  * 	Eric H. Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/profile.h>
+
 #include <s3/model_inventory.h>
 #include <s3/vector.h>
-#include <sphinxbase/ckd_alloc.h>
 #include <s3/state.h>
-#include <s3/profile.h>
 #include <s3/gauden.h>
 #include <s3/s3.h>
 
 #include "accum.h"
+#include "baum_welch.h"
 
 #include <assert.h>
 #include <math.h>
@@ -324,6 +326,7 @@ backward_update(float64 **active_alpha,
 		int32 pass2var,
 		int32 var_is_full,
 		FILE *pdumpfh,
+		bw_timers_t *timers,
                 feat_t *fcb)
 {
     void *tt;			/* temp variable used to do
@@ -401,10 +404,6 @@ backward_update(float64 **active_alpha,
     int32 *acbframe;
     uint32 n_active_cb;
 
-    timing_t *gau_timer = NULL;
-    timing_t *rsts_timer = NULL;
-    timing_t *rstf_timer = NULL;
-
     float64  ttt;
 
     uint32 max_n_next = 0;
@@ -413,15 +412,6 @@ backward_update(float64 **active_alpha,
     uint32 l_ci_cb;
 
     uint32 n_cb;
-
-    /* Get the Gaussian density evaluation CPU timer */
-    gau_timer = timing_get("gau");
-
-    /* Get the per state reestimation CPU timer */
-    rsts_timer = timing_get("rsts");
-
-    /* Get the per frame reestimation CPU timer */
-    rstf_timer = timing_get("rstf");
 
     /* Look for the final state in the active states at the last frame */
     for (q_f = 0;
@@ -687,8 +677,7 @@ backward_update(float64 **active_alpha,
 	    if (acbframe[l_cb] != t+1) {
 		/* The top N densities for the observation
 		   at time t+1 and their indices */
-		if (gau_timer)
-		    timing_start(gau_timer);
+		ptmr_start(&timers->gau_timer);
 
 		gauden_compute_log(now_den[l_cb],
 				   now_den_idx[l_cb],
@@ -722,8 +711,7 @@ backward_update(float64 **active_alpha,
 		    }
 		}
 
-		if (gau_timer)
-		    timing_stop(gau_timer);
+		ptmr_stop(&timers->gau_timer);
 	    }
 	}
 
@@ -754,8 +742,7 @@ backward_update(float64 **active_alpha,
 #if BACKWARD_DEBUG
 	    E_INFO("In beta update, state %d is active\n",j);
 #endif
-	    if (gau_timer)
-		timing_stop(gau_timer);
+	    ptmr_stop(&timers->gau_timer);
 
 	    assert(asf[j] == TRUE);
 	    assert(state_seq[j].mixw != TYING_NON_EMITTING);
@@ -782,8 +769,7 @@ backward_update(float64 **active_alpha,
 		   for reasonable pruning thresholds */
 		assert(prior_beta[j] > 0);
 		
-		if (rsts_timer)
-		    timing_start(rsts_timer);
+		ptmr_start(&timers->rsts_timer);
 
                 /* NOTE!!! This is equivalent to post_j / op, a fact
                    that is used in the calculation of mixture
@@ -805,8 +791,7 @@ backward_update(float64 **active_alpha,
 		    E_WARN("posterior of state %u @ time %u (== %.8e) < 0\n", j, post_j, t+1);
 		    retval = S3_ERROR;
 
-		    if (rsts_timer)
-			timing_stop(rsts_timer);
+		    ptmr_stop(&timers->rsts_timer);
 		    goto free;
 		}
 
@@ -821,8 +806,7 @@ backward_update(float64 **active_alpha,
 		    
 		    retval = S3_ERROR;
 
-		    if (rsts_timer)
-			timing_stop(rsts_timer);
+		    ptmr_stop(&timers->rsts_timer);
 		    goto free;
 		}
 
@@ -929,8 +913,7 @@ backward_update(float64 **active_alpha,
 		    }
 		}
 		
-		if (rsts_timer)
-		    timing_stop(rsts_timer);
+		ptmr_stop(&timers->rsts_timer);
 		
 		/* Add another term for \beta_t(i) */
 		beta[i] += tprob[u] * op * prior_beta[j];
@@ -1052,14 +1035,12 @@ backward_update(float64 **active_alpha,
 		/* accumulate before scaling so scale[t] doesn't appear
 		 * in the reestimation sums */
 
-		if (rsts_timer)
-		    timing_start(rsts_timer);
+		ptmr_start(&timers->rsts_timer);
 		if (tmat_reest) {
 		    tacc[i][j-i] += 
 			active_alpha[t][q] * tprob[u] * beta[j] * recip_final_alpha;
 		}
-		if (rsts_timer)
-		    timing_stop(rsts_timer);
+		ptmr_stop(&timers->rsts_timer);
 
 		assert(tprob[u] > 0);
 
@@ -1093,8 +1074,7 @@ backward_update(float64 **active_alpha,
 	    beta[i] *= scale[t];
 	}
 
- 	if (rstf_timer)
-	    timing_start(rstf_timer);
+	ptmr_start(&timers->rstf_timer);
 	if (mean_reest || var_reest) {
 	    /* Update the mean and variance reestimation accumulators */
 	    if (pdumpfh)
@@ -1123,8 +1103,7 @@ backward_update(float64 **active_alpha,
 	if (mean_reest || var_reest)
 	    memset(&denacc[0][0][0], 0, denacc_size);
 
-	if (rstf_timer)
-	    timing_stop(rstf_timer);
+	ptmr_stop(&timers->rstf_timer);
  	
 	/* swap beta and prior beta */
 	tt = beta;
@@ -1137,8 +1116,7 @@ backward_update(float64 **active_alpha,
 	asf_next = tt;
     }
 
-    if (gau_timer)
-	timing_start(gau_timer);
+    ptmr_start(&timers->gau_timer);
     gauden_compute_log(now_den[state_seq[0].l_cb],
 		       now_den_idx[state_seq[0].l_cb],
 		       feature[0],
@@ -1157,8 +1135,7 @@ backward_update(float64 **active_alpha,
 			mixw[state_seq[0].mixw],
 			g);
     
-    if (gau_timer)
-	timing_stop(gau_timer);
+    ptmr_stop(&timers->gau_timer);
     
     if (retval == S3_SUCCESS) {
 
@@ -1253,8 +1230,7 @@ backward_update(float64 **active_alpha,
 	    }
 	}
 	
- 	if (rstf_timer)
-	    timing_start(rstf_timer);
+	ptmr_start(&timers->rstf_timer);
 	if (mean_reest || var_reest) {
 	    /* Update the mean and variance reestimation accumulators */
 	    if (pdumpfh)
@@ -1273,8 +1249,7 @@ backward_update(float64 **active_alpha,
 			 pdumpfh, fcb);
 	}
 
-	if (rstf_timer)
-	    timing_stop(rstf_timer);
+	ptmr_stop(&timers->rstf_timer);
     }
 
     printf(" %d", n_active_tot / n_obs);
@@ -1303,104 +1278,3 @@ free:
 
     return (retval);
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2004/07/21  18:30:33  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.5  2004/06/17 19:17:14  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.4  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.3  2001/02/20 00:28:35  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.20  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.19  1996/08/22  10:27:05  eht
- * - Pruning added based on posterior state probabilities
- * - Fix some bugs for some combinations of reest(*) flags
- * - Removed unused vars
- *
- * Revision 1.18  1996/08/06  14:03:20  eht
- * Compute and print out average active emitting beta states
- *
- * Revision 1.17  1996/07/29  16:09:47  eht
- * - Make reestimation accumulation operation (hopefully) more clear.
- * - Go to (float64) throughout alpha and beta computations
- * - Scale[t] is now pre-divided for efficiency.
- * - Test for alpha[t][j] != 0 so that beta is constrained to paths
- *   which existed in the computation of alpha[][].  Got rid of
- *   unreasonable posterior probability errors.
- * - MLLR reestimation
- *
- * Revision 1.16  1996/03/26  13:48:16  eht
- * - Fixed bbeam bug when it was defined as float32 rather than float64
- * - Deal w/ case where many fewer densities referenced by an utt than total #
- *   of densities to train.
- *
- * Revision 1.15  1996/03/04  15:59:17  eht
- * Added more cpu time counters
- *
- * Revision 1.14  1996/02/02  17:37:36  eht
- * Enable pruning again.  Need to consider better pruning in the future
- *
- * Revision 1.13  1996/01/26  18:23:49  eht
- * Deal w/ accumulating CI mixture Gaussian counts when only CD mixture Gaussians are present.
- *
- * Revision 1.12  1995/12/15  18:37:07  eht
- * Added some type cases for memory alloc/free
- *
- * Revision 1.11  1995/12/14  19:28:35  eht
- * Add another sanity check assert()
- * Add code to deal w/ not reestimating each class of parameter (tmat, mixw, mean, var).
- *
- * Revision 1.10  1995/12/01  20:54:46  eht
- * Fixed problem where gamma accumulators are freed when set
- * to NULL.
- *
- * Revision 1.9  1995/11/30  20:48:39  eht
- * Deal with non-allocation of accumulators when tmat_reest,
- * mixw_reest, mean_reest and var_reest are off.
- *
- * Revision 1.8  1995/10/18  11:18:04  eht
- * Replaced bcopy() with memset() for ANSI compatibility
- *
- * Revision 1.7  1995/10/12  18:30:22  eht
- * Made state.h a "local" header file
- *
- * Revision 1.6  1995/10/10  12:43:50  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.5  1995/10/09  14:55:33  eht
- * Change interface to new ckd_alloc routines
- *
- * Revision 1.4  1995/09/14  14:19:36  eht
- * Do some error checking on scale[].  Essentially, the
- * only scale factor that is not involved in some normalization
- * in the alpha pass is scale[0], but it doesn't seem to cost
- * too much to be careful.
- *
- * Revision 1.3  1995/08/30  18:33:38  eht
- * Updated comments
- *
- * Revision 1.2  1995/08/09  20:16:19  eht
- * fix some off-by-one errors
- *
- * Revision 1.1  1995/06/02  20:41:22  eht
- * Initial revision
- *
- *
- */

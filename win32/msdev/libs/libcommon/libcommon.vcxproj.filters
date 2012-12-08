@@ -50,9 +50,6 @@
     <ClCompile Include="..\..\..\..\src\libs\libcommon\mk_ts2ci.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\libs\libcommon\profile.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\libs\libcommon\quest.c">
       <Filter>Source Files</Filter>
     </ClCompile>

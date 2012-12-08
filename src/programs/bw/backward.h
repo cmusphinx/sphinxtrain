@@ -53,6 +53,8 @@
 #include <s3/state.h>
 #include <s3/model_inventory.h>
 
+#include "baum_welch.h"
+
 int32
 backward_update(float64 **active_alpha,
 		uint32 **active_astate,
@@ -73,6 +75,7 @@ backward_update(float64 **active_alpha,
 		int32 pass2var,
 		int32 var_is_full,
 		FILE *pdumpfn,
+		bw_timers_t *timers,
 		feat_t *fcb);
 
 void

@@ -50,6 +50,7 @@
 #include <sphinxbase/prim_type.h>
 #include <sphinxbase/feat.h>
 #include <sphinxbase/err.h>
+#include <sphinxbase/profile.h>
 
 #include <s3/lexicon.h>
 #include <s3/model_def_io.h>
@@ -63,7 +64,6 @@
 #include <s3/gauden.h>
 #include <s3/corpus.h>
 #include <s3/segdmp.h>
-#include <s3/profile.h>
 #include <s3/s3.h>
 #include <s3/vector.h>
 
@@ -75,7 +75,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
-
+
 static uint32 stride = 1;
 static uint32 l_ts = -1;
 static uint32 l_strm = -1;
@@ -92,7 +92,12 @@ static uint32 n_tot_frame = 0;
 
 static FILE *dmp_fp = NULL;
 static uint32 dmp_swp = -1;
-
+
+static ptmr_t all_timer;
+static ptmr_t km_timer;
+static ptmr_t var_timer;
+static ptmr_t em_timer;
+
 uint32
 setup_d2o_map(model_def_t *d_mdef,
 	      model_def_t *o_mdef)
@@ -400,11 +405,6 @@ main_initialize(int argc,
     const char *ts2cbfn;
 
     parse_cmd_ln(argc, argv);
-
-    timing_bind_name("km", timing_new());
-    timing_bind_name("var", timing_new());
-    timing_bind_name("em", timing_new());
-    timing_bind_name("all", timing_new());
 
     feat = 
         feat_init(cmd_ln_str("-feat"),
@@ -1305,15 +1305,8 @@ init_state(const char *obsdmp,
     float64 tot_sqerr;
     segdmp_type_t t;
     uint32 i, j, ts, n;
-    timing_t *km_timer;
-    timing_t *var_timer;
-    timing_t *em_timer;
     int32 full_covar;
 
-    km_timer = timing_get("km");
-    var_timer = timing_get("var");
-    em_timer = timing_get("em");
-    
     full_covar = cmd_ln_int32("-fullvar");
     /* fully-continuous for now */
     mean = gauden_alloc_param(ts_cnt, n_stream, n_density, veclen);
@@ -1398,11 +1391,9 @@ init_state(const char *obsdmp,
 
 	E_INFO("Convergence ratios are abs(cur - prior) / abs(prior)\n");
 	/* Do some variety of k-means clustering */
-	if (km_timer)
-	    timing_start(km_timer);
+	ptmr_start(&km_timer);
 	sqerr = cluster(ts, n_stream, n_frame, veclen, blksize, mean[i], n_density, &label);
-	if (km_timer)
-	    timing_stop(km_timer);
+	ptmr_stop(&km_timer);
 
 	if (sqerr < 0) {
 	    E_ERROR("Unable to do k-means for state %u; skipping...\n", ts);
@@ -1412,15 +1403,13 @@ init_state(const char *obsdmp,
 
 	/* Given the k-means and assuming equal prior liklihoods
 	 * compute the variances */
-	if (var_timer)
-	    timing_start(var_timer);
+	ptmr_start(&var_timer);
 	if (full_covar)
 		full_variances(ts, mean[i], fullvar[i], n_density, n_stream, veclen, blksize,
 			       n_frame, label);
 	else
 		variances(ts, mean[i], var[i], n_density, n_stream, veclen, blksize, n_frame, label);
-	if (var_timer)
-	    timing_stop(var_timer);
+	ptmr_stop(&var_timer);
 
 	if (mixwfn) {
 	    /* initialize the mixing weights by counting # of occurrances
@@ -1432,16 +1421,14 @@ init_state(const char *obsdmp,
 	    if (reest == TRUE && full_covar)
 		E_ERROR("EM re-estimation is not yet supported for full covariances\n");
 	    else if (reest == TRUE) {
-		if (em_timer)
-		    timing_start(em_timer);
+		ptmr_start(&em_timer);
 		/* Do iterations of EM to estimate the mixture densities */
 		reest_sum(ts, mean[i], var[i], mixw[i], n_density, n_stream,
 			  n_frame, veclen, blksize,
 			  cmd_ln_int32("-niter"),
 			  FALSE,
 			  cmd_ln_int32("-vartiethr"));
-		if (em_timer)
-		    timing_stop(em_timer);
+		ptmr_stop(&em_timer);
 	    }
 	}
 	
@@ -1511,7 +1498,7 @@ init_state(const char *obsdmp,
 
     return S3_SUCCESS;
 }
-
+
 int
 main(int argc, char *argv[])
 {
@@ -1524,19 +1511,10 @@ main(int argc, char *argv[])
     uint32 ts_off;
     uint32 ts_cnt;
     FILE *fp;
-    timing_t *all_timer= NULL;
-    timing_t *km_timer= NULL;
-    timing_t *var_timer= NULL;
-    timing_t *em_timer= NULL;
 
     if (main_initialize(argc, argv, &lex, &omdef, &dmdef, &feat) != S3_SUCCESS) {
 	return -1;
     }
-
-    km_timer = timing_get("km");
-    var_timer = timing_get("var");
-    em_timer = timing_get("em");
-    all_timer = timing_get("all");
 
     n_stream = feat_dimension1(feat);
     veclen = feat_stream_lengths(feat);
@@ -1558,17 +1536,12 @@ main(int argc, char *argv[])
 
 	n_tot_frame = 0;
 
-	if (all_timer)
-	    timing_reset(all_timer);
-	if (km_timer)
-	    timing_reset(km_timer);
-	if (var_timer)
-	    timing_reset(var_timer);
-	if (em_timer)
-	    timing_reset(em_timer);
+	ptmr_reset(&all_timer);
+	ptmr_reset(&km_timer);
+	ptmr_reset(&var_timer);
+	ptmr_reset(&em_timer);
+	ptmr_start(&all_timer);
 
-	if (all_timer)
-	    timing_start(all_timer);
 	if (init_state(cmd_ln_str("-segdmpfn"),
 		       cmd_ln_str("-segidxfn"),
 		       cmd_ln_int32("-ndensity"),
@@ -1586,35 +1559,26 @@ main(int argc, char *argv[])
 		       != S3_SUCCESS) {
 	    E_ERROR("Unable to train [%u %u]\n", ts_off, ts_off+ts_cnt-1);
 	}
-	if (all_timer)
-	    timing_stop(all_timer);
+	ptmr_stop(&all_timer);
 
 	if (n_tot_frame > 0) {
 	    E_INFO("TOTALS:");
-	    if (km_timer) {
-		E_INFOCONT(" km %4.3fx %4.3e", 
-			km_timer->t_cpu / (n_tot_frame * 0.01),
-			(km_timer->t_cpu > 0 ?
-			 km_timer->t_elapsed / km_timer->t_cpu : 0.0));
-	    }
-	    if (var_timer) {
-		E_INFOCONT(" var %4.3fx %4.3e", 
-			var_timer->t_cpu / (n_tot_frame * 0.01),
-			(var_timer->t_cpu > 0 ?
-			 var_timer->t_elapsed / var_timer->t_cpu : 0.0));
-	    }
-	    if (em_timer) {
-		E_INFOCONT(" em %4.3fx %4.3e", 
-			em_timer->t_cpu / (n_tot_frame * 0.01),
-			(em_timer->t_cpu > 0 ?
-			 em_timer->t_elapsed / em_timer->t_cpu : 0.0));
-	    }
-	    if (all_timer) {
-		E_INFOCONT(" all %4.3fx %4.3e", 
-			all_timer->t_cpu / (n_tot_frame * 0.01),
-			(all_timer->t_cpu > 0 ?
-			 all_timer->t_elapsed / all_timer->t_cpu : 0.0));
-	    }
+    	    E_INFOCONT(" km %4.3fx %4.3e", 
+	    	km_timer.t_cpu / (n_tot_frame * 0.01),
+		(km_timer.t_cpu > 0 ?
+		 km_timer.t_elapsed / km_timer.t_cpu : 0.0));
+    	    E_INFOCONT(" var %4.3fx %4.3e", 
+		var_timer.t_cpu / (n_tot_frame * 0.01),
+		(var_timer.t_cpu > 0 ?
+		 var_timer.t_elapsed / var_timer.t_cpu : 0.0));
+	    E_INFOCONT(" em %4.3fx %4.3e", 
+		em_timer.t_cpu / (n_tot_frame * 0.01),
+		(em_timer.t_cpu > 0 ?
+		 em_timer.t_elapsed / em_timer.t_cpu : 0.0));
+    	    E_INFOCONT(" all %4.3fx %4.3e", 
+	    	all_timer.t_cpu / (n_tot_frame * 0.01),
+		(all_timer.t_cpu > 0 ?
+		 all_timer.t_elapsed / all_timer.t_cpu : 0.0));
 	    E_INFOCONT("\n");
 	}
 	
@@ -1635,17 +1599,13 @@ main(int argc, char *argv[])
     else if (strcmp(cmd_ln_str("-gthobj"), "single") == 0) {
 	n_tot_frame = 0;
 
-	if (all_timer)
-	    timing_reset(all_timer);
-	if (km_timer)
-	    timing_reset(km_timer);
-	if (var_timer)
-	    timing_reset(var_timer);
-	if (em_timer)
-	    timing_reset(em_timer);
+	ptmr_reset(&all_timer);
+	ptmr_reset(&km_timer);
+	ptmr_reset(&var_timer);
+	ptmr_reset(&em_timer);
 
-	if (all_timer)
-	    timing_start(all_timer);
+	ptmr_start(&all_timer);
+	
 	if (init_state(cmd_ln_str("-segdmpfn"),
 		       NULL,	/* No index -> single class dump file */
 		       cmd_ln_int32("-ndensity"),
@@ -1662,35 +1622,26 @@ main(int argc, char *argv[])
 		       1) != S3_SUCCESS) {
 	    E_ERROR("Unable to train\n");
 	}
-	if (all_timer)
-	    timing_stop(all_timer);
+	ptmr_stop(&all_timer);
 
 	if (n_tot_frame > 0) {
 	    E_INFO("TOTALS:");
-	    if (km_timer) {
-		E_INFOCONT(" km %4.3fx %4.3e", 
-			km_timer->t_cpu / (n_tot_frame * 0.01),
-			(km_timer->t_cpu > 0 ?
-			 km_timer->t_elapsed / km_timer->t_cpu : 0.0));
-	    }
-	    if (var_timer) {
-		E_INFOCONT(" var %4.3fx %4.3e", 
-			var_timer->t_cpu / (n_tot_frame * 0.01),
-			(var_timer->t_cpu > 0 ?
-			 var_timer->t_elapsed / var_timer->t_cpu : 0.0));
-	    }
-	    if (em_timer) {
-		E_INFOCONT(" em %4.3fx %4.3e", 
-			em_timer->t_cpu / (n_tot_frame * 0.01),
-			(em_timer->t_cpu > 0 ?
-			 em_timer->t_elapsed / em_timer->t_cpu : 0.0));
-	    }
-	    if (all_timer) {
-		E_INFOCONT(" all %4.3fx %4.3e", 
-			all_timer->t_cpu / (n_tot_frame * 0.01),
-			(all_timer->t_cpu > 0 ?
-			 all_timer->t_elapsed / all_timer->t_cpu : 0.0));
-	    }
+    	    E_INFOCONT(" km %4.3fx %4.3e", 
+		km_timer.t_cpu / (n_tot_frame * 0.01),
+		(km_timer.t_cpu > 0 ?
+		 km_timer.t_elapsed / km_timer.t_cpu : 0.0));
+	    E_INFOCONT(" var %4.3fx %4.3e", 
+		var_timer.t_cpu / (n_tot_frame * 0.01),
+		(var_timer.t_cpu > 0 ?
+		 var_timer.t_elapsed / var_timer.t_cpu : 0.0));
+	    E_INFOCONT(" em %4.3fx %4.3e", 
+		em_timer.t_cpu / (n_tot_frame * 0.01),
+		(em_timer.t_cpu > 0 ?
+		 em_timer.t_elapsed / em_timer.t_cpu : 0.0));
+	    E_INFOCONT(" all %4.3fx %4.3e", 
+    		all_timer.t_cpu / (n_tot_frame * 0.01),
+		(all_timer.t_cpu > 0 ?
+		 all_timer.t_elapsed / all_timer.t_cpu : 0.0));
 	    E_INFOCONT("\n");
 	}
     }
