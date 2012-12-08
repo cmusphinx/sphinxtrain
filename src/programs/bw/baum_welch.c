@@ -175,7 +175,8 @@ baum_welch_update(float64 *log_forw_prob,
 
     /* Compute the scaled alpha variable and scale factors
      * for all states and time subject to the pruning constraints */
-    ptmr_start(&timers->fwd_timer);
+    if (timers)
+	ptmr_start(&timers->fwd_timer);
 
 /*
  * Debug?
@@ -218,7 +219,8 @@ baum_welch_update(float64 *log_forw_prob,
 	    ckd_free(segfn);
     }
 
-    ptmr_stop(&timers->fwd_timer);
+    if (timers)
+	ptmr_stop(&timers->fwd_timer);
 
     if (ret != S3_SUCCESS) {
 
@@ -230,7 +232,8 @@ baum_welch_update(float64 *log_forw_prob,
 
     /* Compute the scaled beta variable and update the reestimation
      * sums */
-    ptmr_start(&timers->bwd_timer);
+    if (timers)
+	ptmr_start(&timers->bwd_timer);
 
 #if BW_DEBUG
     E_INFO("Before Backward search\n");
@@ -242,7 +245,8 @@ baum_welch_update(float64 *log_forw_prob,
 			  inv, b_beam, spthresh,
 			  mixw_reest, tmat_reest, mean_reest, var_reest, pass2var,
 			  var_is_full, pdumpfh, timers, fcb);
-    ptmr_stop(&timers->bwd_timer);
+    if (timers)
+	ptmr_stop(&timers->bwd_timer);
 
     if (ret != S3_SUCCESS) {
 
@@ -259,11 +263,13 @@ baum_welch_update(float64 *log_forw_prob,
     /* If no error was found in the forward or backward procedures,
      * add the resulting utterance reestimation accumulators to the
      * global reestimation accumulators */
-    ptmr_start(&timers->rstu_timer);
+    if (timers)
+	ptmr_start(&timers->rstu_timer);
     accum_global(inv, state, n_state,
 		 mixw_reest, tmat_reest, mean_reest, var_reest,
 		 var_is_full);
-    ptmr_stop(&timers->rstu_timer);
+    if (timers)
+	ptmr_stop(&timers->rstu_timer);
 
     for (i = 0; i < n_active_astate[n_obs-1] && active_astate[n_obs-1][i] != (n_state-1); i++);
 

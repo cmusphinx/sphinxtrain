@@ -273,7 +273,8 @@ forward(float64 **active_alpha,
      * in the active state list.
      */
 
-    ptmr_start(&timers->gau_timer);
+    if (timers)
+	ptmr_start(&timers->gau_timer);
 
     /* compute alpha for the initial state at t == 0 */
     /* Compute the component Gaussians for state 0 mixture density */
@@ -293,7 +294,8 @@ forward(float64 **active_alpha,
 				now_den_idx[state_seq[0].l_cb],
 				mixw[state_seq[0].mixw],
 				g);
-    ptmr_stop(&timers->gau_timer);
+    if (timers)
+	ptmr_stop(&timers->gau_timer);
     if (outprob[0] <= MIN_IEEE_NORM_POS_FLOAT32) {
 	E_ERROR("Small output prob (== %.2e) seen at frame 0 state 0\n", outprob[0]);
 
@@ -377,7 +379,8 @@ forward(float64 **active_alpha,
 			
 			if (acbframe[l_cb] != t) {
 			    /* Component density values not yet computed */
-			    ptmr_start(&timers->gau_timer);
+			    if (timers)
+				ptmr_start(&timers->gau_timer);
 			    gauden_compute_log(now_den[l_cb],
 					       now_den_idx[l_cb],
 					       feature[t],
@@ -395,7 +398,8 @@ forward(float64 **active_alpha,
 			    active_l_cb[n_active_l_cb++] = l_cb;
 			    acbframe[l_cb] = t;
 
-			    ptmr_stop(&timers->gau_timer);
+			    if (timers)
+				ptmr_stop(&timers->gau_timer);
 			}
 
 			/* Put next state j into the active list */

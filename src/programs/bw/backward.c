@@ -677,7 +677,8 @@ backward_update(float64 **active_alpha,
 	    if (acbframe[l_cb] != t+1) {
 		/* The top N densities for the observation
 		   at time t+1 and their indices */
-		ptmr_start(&timers->gau_timer);
+	        if (timers)
+		    ptmr_start(&timers->gau_timer);
 
 		gauden_compute_log(now_den[l_cb],
 				   now_den_idx[l_cb],
@@ -711,7 +712,8 @@ backward_update(float64 **active_alpha,
 		    }
 		}
 
-		ptmr_stop(&timers->gau_timer);
+		if (timers)
+		    ptmr_stop(&timers->gau_timer);
 	    }
 	}
 
@@ -742,7 +744,8 @@ backward_update(float64 **active_alpha,
 #if BACKWARD_DEBUG
 	    E_INFO("In beta update, state %d is active\n",j);
 #endif
-	    ptmr_stop(&timers->gau_timer);
+	    if (timers)
+		ptmr_stop(&timers->gau_timer);
 
 	    assert(asf[j] == TRUE);
 	    assert(state_seq[j].mixw != TYING_NON_EMITTING);
@@ -769,7 +772,8 @@ backward_update(float64 **active_alpha,
 		   for reasonable pruning thresholds */
 		assert(prior_beta[j] > 0);
 		
-		ptmr_start(&timers->rsts_timer);
+		if (timers)
+		    ptmr_start(&timers->rsts_timer);
 
                 /* NOTE!!! This is equivalent to post_j / op, a fact
                    that is used in the calculation of mixture
@@ -791,7 +795,8 @@ backward_update(float64 **active_alpha,
 		    E_WARN("posterior of state %u @ time %u (== %.8e) < 0\n", j, post_j, t+1);
 		    retval = S3_ERROR;
 
-		    ptmr_stop(&timers->rsts_timer);
+		    if (timers)
+			ptmr_stop(&timers->rsts_timer);
 		    goto free;
 		}
 
@@ -806,7 +811,8 @@ backward_update(float64 **active_alpha,
 		    
 		    retval = S3_ERROR;
 
-		    ptmr_stop(&timers->rsts_timer);
+		    if (timers)
+			ptmr_stop(&timers->rsts_timer);
 		    goto free;
 		}
 
@@ -913,7 +919,8 @@ backward_update(float64 **active_alpha,
 		    }
 		}
 		
-		ptmr_stop(&timers->rsts_timer);
+	        if (timers)
+		    ptmr_stop(&timers->rsts_timer);
 		
 		/* Add another term for \beta_t(i) */
 		beta[i] += tprob[u] * op * prior_beta[j];
@@ -1035,12 +1042,14 @@ backward_update(float64 **active_alpha,
 		/* accumulate before scaling so scale[t] doesn't appear
 		 * in the reestimation sums */
 
-		ptmr_start(&timers->rsts_timer);
+		if (timers)
+		    ptmr_start(&timers->rsts_timer);
 		if (tmat_reest) {
 		    tacc[i][j-i] += 
 			active_alpha[t][q] * tprob[u] * beta[j] * recip_final_alpha;
 		}
-		ptmr_stop(&timers->rsts_timer);
+		if (timers)
+		    ptmr_stop(&timers->rsts_timer);
 
 		assert(tprob[u] > 0);
 
@@ -1074,7 +1083,8 @@ backward_update(float64 **active_alpha,
 	    beta[i] *= scale[t];
 	}
 
-	ptmr_start(&timers->rstf_timer);
+        if (timers)
+	    ptmr_start(&timers->rstf_timer);
 	if (mean_reest || var_reest) {
 	    /* Update the mean and variance reestimation accumulators */
 	    if (pdumpfh)
@@ -1103,7 +1113,8 @@ backward_update(float64 **active_alpha,
 	if (mean_reest || var_reest)
 	    memset(&denacc[0][0][0], 0, denacc_size);
 
-	ptmr_stop(&timers->rstf_timer);
+        if (timers)
+    	    ptmr_stop(&timers->rstf_timer);
  	
 	/* swap beta and prior beta */
 	tt = beta;
@@ -1116,7 +1127,8 @@ backward_update(float64 **active_alpha,
 	asf_next = tt;
     }
 
-    ptmr_start(&timers->gau_timer);
+    if (timers)
+	ptmr_start(&timers->gau_timer);
     gauden_compute_log(now_den[state_seq[0].l_cb],
 		       now_den_idx[state_seq[0].l_cb],
 		       feature[0],
@@ -1135,7 +1147,8 @@ backward_update(float64 **active_alpha,
 			mixw[state_seq[0].mixw],
 			g);
     
-    ptmr_stop(&timers->gau_timer);
+    if (timers)
+	ptmr_stop(&timers->gau_timer);
     
     if (retval == S3_SUCCESS) {
 
@@ -1230,7 +1243,8 @@ backward_update(float64 **active_alpha,
 	    }
 	}
 	
-	ptmr_start(&timers->rstf_timer);
+	if (timers)
+	    ptmr_start(&timers->rstf_timer);
 	if (mean_reest || var_reest) {
 	    /* Update the mean and variance reestimation accumulators */
 	    if (pdumpfh)
@@ -1249,7 +1263,8 @@ backward_update(float64 **active_alpha,
 			 pdumpfh, fcb);
 	}
 
-	ptmr_stop(&timers->rstf_timer);
+	if (timers)
+	    ptmr_stop(&timers->rstf_timer);
     }
 
     printf(" %d", n_active_tot / n_obs);

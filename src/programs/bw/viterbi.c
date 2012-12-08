@@ -329,7 +329,8 @@ viterbi_update(float64 *log_forw_prob,
     bp = (uint32 **)ckd_calloc(n_obs, sizeof(uint32 *));
 
     /* Run forward algorithm, which has embedded Viterbi. */
-    ptmr_start(&timers->fwd_timer);
+    if (timers)
+	ptmr_start(&timers->fwd_timer);
     ret = forward(active_alpha, active_astate, n_active_astate, bp,
 		  scale, dscale,
 		  feature, n_obs, state_seq, n_state,
@@ -353,7 +354,8 @@ viterbi_update(float64 *log_forw_prob,
 			n_state, n_obs, active_alpha, scale, bp);
 	    ckd_free(segfn);
     }
-    ptmr_stop(&timers->fwd_timer);
+    if (timers)
+	ptmr_stop(&timers->fwd_timer);
 
 
     if (ret != S3_SUCCESS) {
@@ -471,7 +473,8 @@ viterbi_update(float64 *log_forw_prob,
 	l_ci_cb = state_seq[j].l_ci_cb;
 	n_active_cb = 0;
 
-	ptmr_start(&timers->gau_timer);
+	if (timers)
+	    ptmr_start(&timers->gau_timer);
 
 	gauden_compute_log(now_den[l_cb],
 			   now_den_idx[l_cb],
@@ -499,9 +502,11 @@ viterbi_update(float64 *log_forw_prob,
 	/* This is the normalizer sum_m c_{jm} p(o_t|\lambda_{jm}) */
 	op = gauden_mixture(now_den[l_cb], now_den_idx[l_cb],
 			    mixw[state_seq[j].mixw], g);
-	ptmr_stop(&timers->gau_timer);
+        if (timers)
+	    ptmr_stop(&timers->gau_timer);
 
-	ptmr_start(&timers->rsts_timer);
+	if (timers)
+	    ptmr_start(&timers->rsts_timer);
 	/* Make up this bogus value to be consistent with backward.c */
 	p_reest_term = 1.0 / op;
 
@@ -584,10 +589,12 @@ viterbi_update(float64 *log_forw_prob,
 	    }
 	}
 		
-	ptmr_stop(&timers->rsts_timer);
+	if (timers)
+	    ptmr_stop(&timers->rsts_timer);
 	/* Note that there is only one state/frame so this is kind of
 	   redundant */
-	ptmr_start(&timers->rstf_timer);
+        if (timers)
+    	    ptmr_start(&timers->rstf_timer);
 	if (mean_reest || var_reest) {
 	    /* Update the mean and variance reestimation accumulators */
 	    if (pdumpfh)
@@ -607,7 +614,8 @@ viterbi_update(float64 *log_forw_prob,
 			 fcb);
 	    memset(&denacc[0][0][0], 0, denacc_size);
 	}
-	ptmr_stop(&timers->rstf_timer);
+        if (timers)
+	    ptmr_stop(&timers->rstf_timer);
 
 	if (t > 0) { 
 	    prev = active_astate[t-1][bp[t][q]];
@@ -627,11 +635,13 @@ viterbi_update(float64 *log_forw_prob,
 
     /* If no error was found, add the resulting utterance reestimation
      * accumulators to the global reestimation accumulators */
-    ptmr_start(&timers->rstu_timer);
+    if (timers)
+	ptmr_start(&timers->rstu_timer);
     accum_global(inv, state_seq, n_state,
 		 mixw_reest, tmat_reest, mean_reest, var_reest,
 		 var_is_full);
-    ptmr_stop(&timers->rstu_timer);
+    if (timers)
+	ptmr_stop(&timers->rstu_timer);
 
     /* Find the final state */
     for (i = 0; i < n_active_astate[n_obs-1]; ++i) {

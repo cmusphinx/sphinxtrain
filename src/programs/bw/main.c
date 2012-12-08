@@ -744,16 +744,19 @@ main_reestimate(model_inventory_t *inv,
 
     while (corpus_next_utt()) {
 	/* Zero timers before utt processing begins */
-	ptmr_reset(&timers->utt_timer);
-	ptmr_reset(&timers->upd_timer);
-	ptmr_reset(&timers->fwd_timer);
-	ptmr_reset(&timers->bwd_timer);
-	ptmr_reset(&timers->gau_timer);
-	ptmr_reset(&timers->rsts_timer);
-	ptmr_reset(&timers->rstf_timer);
-	ptmr_reset(&timers->rstu_timer);
-
-	ptmr_start(&timers->utt_timer);
+	if (timers) {
+	    ptmr_reset(&timers->utt_timer);
+	    ptmr_reset(&timers->upd_timer);
+	    ptmr_reset(&timers->fwd_timer);
+	    ptmr_reset(&timers->bwd_timer);
+	    ptmr_reset(&timers->gau_timer);
+	    ptmr_reset(&timers->rsts_timer);
+	    ptmr_reset(&timers->rstf_timer);
+	    ptmr_reset(&timers->rstu_timer);
+	}
+	
+	if (timers)
+	    ptmr_start(&timers->utt_timer);
 
 	printf("utt> %5u %25s", 
 	       seq_no,
@@ -828,7 +831,8 @@ main_reestimate(model_inventory_t *inv,
 	else
 		pdumpfh = NULL;
 
-	ptmr_start(&timers->upd_timer);
+        if (timers)
+    	    ptmr_start(&timers->upd_timer);
 	/* create a sentence HMM */
 	state_seq = next_utt_states(&n_state, lex, inv, mdef, trans);
 	printf(" %5u", n_state);
@@ -888,7 +892,8 @@ main_reestimate(model_inventory_t *inv,
 	    }
 	}
 
-	ptmr_stop(&timers->upd_timer);
+	if (timers)
+	    ptmr_stop(&timers->upd_timer);
 
 	if (pdumpfh)
 		fclose(pdumpfh);
@@ -898,13 +903,16 @@ main_reestimate(model_inventory_t *inv,
 	free(trans);	/* alloc'ed using strdup() */
 
 	seq_no++;
+	n_utt++;
 
-	ptmr_stop(&timers->utt_timer);
+        if (timers)
+	    ptmr_stop(&timers->utt_timer);
     
 	if (profile)
 	    print_all_timers(timers, n_frame);
 
-	++n_utt;
+	printf("\n");
+	fflush(stdout);
 
 	if ((ckpt_intv > 0) &&
 	    ((n_utt % ckpt_intv) == 0) &&
@@ -941,11 +949,10 @@ main_reestimate(model_inventory_t *inv,
 		    }
 		}
 		sleep(DUMP_RETRY_PERIOD);
-
 	    }
 	}
     }
-    
+
     printf("overall> stats %u (-%u) %e %e",
 	   total_frames,
 	   n_frame_skipped,
@@ -955,10 +962,8 @@ main_reestimate(model_inventory_t *inv,
 	printf(" %4.3fx %4.3fe",
 	       (total_frames > 0 ? timers->utt_timer.t_tot_cpu/(total_frames*0.01) : 0.0),
 	       (timers->utt_timer.t_tot_cpu > 0 ? timers->utt_timer.t_tot_elapsed / timers->utt_timer.t_tot_cpu : 0.0));
-    }
-    
+    }    
     printf("\n");
-    
     fflush(stdout);
 
     no_retries=0;
@@ -1789,23 +1794,18 @@ main_mmi_reestimate(model_inventory_t *inv,
     free(trans);
       
     seq_no++;
+    n_utt++;
 
     printf("\n");
-    fflush(stdout);
-      
-    ++n_utt;
   }
     
   printf ("overall> stats %u (-%u) %e %e",
 	  n_utt-n_utt_fail,
 	  n_utt_fail,
 	  (n_utt-n_utt_fail>0 ? total_log_postprob/(n_utt-n_utt_fail) : 0.0),
-	  total_log_postprob);
-  
+	  total_log_postprob);  
   printf("\n");
     
-  fflush(stdout);
-
   no_retries=0;
   /* dump the accumulators to a file system */
   while (cmd_ln_str("-accumdir") != NULL &&
