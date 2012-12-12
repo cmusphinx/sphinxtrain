@@ -99,8 +99,8 @@ build_kd_tree(const vector_t *means, const vector_t *variances,
 	node->n_level = n_levels;
 
 	/* Initialize projection for root node. */
-	node->upper = vector_alloc(n_comp);
-	node->lower = vector_alloc(n_comp);
+	node->upper = (vector_t)ckd_calloc(n_comp, sizeof(float32));
+	node->lower = (vector_t)ckd_calloc(n_comp, sizeof(float32));
 	for (j = 0; j < n_comp; ++j) {
 		/* BIG NUMBERS */
 		node->upper[j] = 1e-50;
@@ -240,8 +240,8 @@ build_kdtree_level(kd_tree_node_t *node, uint32 n_levels)
 	memcpy(node->left, node, sizeof(*node->left));
 	node->left->left = node->left->right = NULL;
 	node->left->n_level = 0; /* Mark it as non-root */
-	node->left->lower = vector_alloc(node->n_comp);
-	node->left->upper = vector_alloc(node->n_comp);
+	node->left->lower = (vector_t)ckd_calloc(node->n_comp, sizeof(float32));
+	node->left->upper = (vector_t)ckd_calloc(node->n_comp, sizeof(float32));
 	memcpy(node->left->lower, node->lower, sizeof(*node->left->lower) * node->n_comp);
 	memcpy(node->left->upper, node->upper, sizeof(*node->left->upper) * node->n_comp);
 	node->left->upper[node->split_comp] = node->split_plane;
@@ -250,8 +250,8 @@ build_kdtree_level(kd_tree_node_t *node, uint32 n_levels)
 	memcpy(node->right, node, sizeof(*node->right));
 	node->right->left = node->right->right = NULL;
 	node->right->n_level = 0; /* Mark it as non-root */
-	node->right->lower = vector_alloc(node->n_comp);
-	node->right->upper = vector_alloc(node->n_comp);
+	node->right->lower = (vector_t)ckd_calloc(node->n_comp, sizeof(float32));
+	node->right->upper = (vector_t)ckd_calloc(node->n_comp, sizeof(float32));
 	memcpy(node->right->lower, node->lower, sizeof(*node->right->lower) * node->n_comp);
 	memcpy(node->right->upper, node->upper, sizeof(*node->right->upper) * node->n_comp);
 	node->right->lower[node->split_comp] = node->split_plane;
