@@ -140,14 +140,14 @@ print_all_timers(bw_timers_t *timers, int32 n_frame)
 	timers->gau_timer.t_cpu/(n_frame*0.01),
 	(timers->gau_timer.t_cpu > 0 ? timers->gau_timer.t_elapsed / timers->gau_timer.t_cpu : 0.0),
 
-        timers->rsts_timer.t_cpu/(n_frame*0.01),
-        (timers->rsts_timer.t_cpu > 0 ? timers->rsts_timer.t_elapsed / timers->rsts_timer.t_cpu : 0.0),
+	timers->rsts_timer.t_cpu/(n_frame*0.01),
+	(timers->rsts_timer.t_cpu > 0 ? timers->rsts_timer.t_elapsed / timers->rsts_timer.t_cpu : 0.0),
 
-        timers->rstf_timer.t_cpu/(n_frame*0.01),
-        (timers->rstf_timer.t_cpu > 0 ? timers->rstf_timer.t_elapsed / timers->rstf_timer.t_cpu : 0.0),
-    
-        timers->rstu_timer.t_cpu/(n_frame*0.01),
-        (timers->rstu_timer.t_cpu > 0 ? timers->rstu_timer.t_elapsed / timers->rstu_timer.t_cpu : 0.0));
+	timers->rstf_timer.t_cpu/(n_frame*0.01),
+	(timers->rstf_timer.t_cpu > 0 ? timers->rstf_timer.t_elapsed / timers->rstf_timer.t_cpu : 0.0),
+
+	timers->rstu_timer.t_cpu/(n_frame*0.01),
+	(timers->rstu_timer.t_cpu > 0 ? timers->rstu_timer.t_elapsed / timers->rstu_timer.t_cpu : 0.0));
     printf("\n");
 }
 
@@ -225,13 +225,13 @@ main_initialize(int argc,
        done externally by mllr_transform. */
     float32 ****sxfrm_a = NULL;
     float32 ***sxfrm_b = NULL;
-    
+
     E_INFO("Compiled on %s at %s\n", __DATE__, __TIME__);
 
     /* define, parse and (partially) validate the command line */
     train_cmd_ln_parse(argc, argv);
 
-    feat = 
+    feat =
         feat_init(cmd_ln_str("-feat"),
                   cmn_type_from_str(cmd_ln_str("-cmn")),
                   cmd_ln_boolean("-varnorm"),
@@ -643,7 +643,7 @@ main_reestimate(model_inventory_t *inv,
     FILE *pdumpfh;
     uint32 in_veclen;
 
-    bw_timers_t* timers;
+    bw_timers_t* timers = NULL;
     int32 profile;
 
     int32 pass2var;
@@ -663,11 +663,11 @@ main_reestimate(model_inventory_t *inv,
     uint32 fullsuffixmatch = 0;
 
     E_INFO("Reestimation: %s\n",
-	   (viterbi ? "Viterbi" : "Baum-Welch"));
-    
+	(viterbi ? "Viterbi" : "Baum-Welch"));
+
     profile = cmd_ln_int32("-timing");
     if (profile) {
-        E_INFO("Generating profiling information consumes significant CPU resources.\n");
+	E_INFO("Generating profiling information consumes significant CPU resources.\n");
 	E_INFO("If you are not interested in profiling, use -timing no\n");
     }
     outputfullpath = cmd_ln_int32("-outputfullpath");
@@ -678,12 +678,12 @@ main_reestimate(model_inventory_t *inv,
     if (profile) {
 	timers = ckd_calloc(1, sizeof(bw_timers_t));
 	ptmr_init(&timers->utt_timer);
-        ptmr_init(&timers->upd_timer);
+	ptmr_init(&timers->upd_timer);
 	ptmr_init(&timers->fwd_timer);
-        ptmr_init(&timers->bwd_timer);
-        ptmr_init(&timers->gau_timer);
+	ptmr_init(&timers->bwd_timer);
+	ptmr_init(&timers->gau_timer);
 	ptmr_init(&timers->rsts_timer);
-        ptmr_init(&timers->rstf_timer);
+	ptmr_init(&timers->rstf_timer);
 	ptmr_init(&timers->rstu_timer);
     }
 
@@ -794,14 +794,14 @@ main_reestimate(model_inventory_t *inv,
 	 * Pretty useless thing to be honest, what to do with CMN after that for example?
 	 */
         if (cmd_ln_boolean("-ldaaccum")) {
-    	    float32 ***lda = feat->lda;
+	    float32 ***lda = feat->lda;
 	    feat->lda = NULL;
 	    f = feat_array_alloc(feat, n_frame + feat_window_size(feat));
-    	    feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
+	    feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
 	    feat->lda = lda;
 	} else {
 	    f = feat_array_alloc(feat, n_frame + feat_window_size(feat));
-    	    feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
+	    feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
 	}
 
 	printf(" %4u", n_frame - svd_n_frame);
@@ -832,7 +832,7 @@ main_reestimate(model_inventory_t *inv,
 		pdumpfh = NULL;
 
         if (timers)
-    	    ptmr_start(&timers->upd_timer);
+	    ptmr_start(&timers->upd_timer);
 	/* create a sentence HMM */
 	state_seq = next_utt_states(&n_state, lex, inv, mdef, trans);
 	printf(" %5u", n_state);
@@ -1040,17 +1040,16 @@ lat_fwd_bwd(s3lattice_t *lat)
   int i, j;
   uint32 id;
   float64 ac_score, lm_score;
-  
+
   /* step forward */
   for (i=0; i<lat->n_arcs; i++) {
     /* initialise alpha */
     lat->arc[i].alpha = LOG_ZERO;
-    
     if (lat->arc[i].good_arc == 1) {
       /* get the acoustic and lm socre for a word hypothesis */
       ac_score = lat->arc[i].ac_score / lm_scale;
       lm_score = lat->arc[i].lm_score;
-      
+
       /* compute alpha */
       for (j=0; j<lat->arc[i].n_prev_arcs; j++) {
 	id = lat->arc[i].prev_arcs[j];
@@ -1067,20 +1066,20 @@ lat_fwd_bwd(s3lattice_t *lat)
       lat->arc[i].alpha += ac_score + lm_score;
     }
   }
-  
+
   /* initialise overall log-likelihood */
   lat->prob = LOG_ZERO;
-  
+
   /* step backward */
   for (i=lat->n_arcs-1; i>=0 ;i--) {
     /* initialise beta */
     lat->arc[i].beta = LOG_ZERO;
-    
+
     if (lat->arc[i].good_arc == 1) {
       /* get the acoustic and lm socre for a word hypothesis */
       ac_score = lat->arc[i].ac_score / lm_scale;
       lm_score = lat->arc[i].lm_score;
-      
+
       /* compute beta */
       for (j=0; j<lat->arc[i].n_next_arcs; j++) {
 	id = lat->arc[i].next_arcs[j];
@@ -1093,13 +1092,13 @@ lat_fwd_bwd(s3lattice_t *lat)
 	}
       }
       lat->arc[i].beta += ac_score + lm_score;
-      
+
       /* compute overall log-likelihood loglid=beta(1)=alpha(Q) */
       if (lat->arc[i].sf == 1)
 	lat->prob = log_add(lat->prob, lat->arc[i].beta);
     }
   }
-  
+
   /* compute gamma */
   for (i=0; i<lat->n_arcs; i++)
     {
