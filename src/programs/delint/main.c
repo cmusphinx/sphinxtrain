@@ -368,7 +368,7 @@ smooth_mixw(float32 ****out_mixw,
 		    lambda_acc[i][j] = 0.0;
 
 		    if (fabs(prior_lambda - lambda[i][j]) > CON_TH) {
-			state_converged = converged = FALSE;
+			state_converged = FALSE;
 		    }
 		}
 		    
@@ -383,6 +383,9 @@ smooth_mixw(float32 ****out_mixw,
 	    if (state_converged) {
 		conv_flag[i] = TRUE;
 		++n_conv_state;
+		if (n_conv_state == n_cd_state) {
+		    converged = TRUE;
+		}
 	    }
 	}
 
