@@ -2,27 +2,46 @@
 
 import getopt, sys, os
 
-sphinxpath = "@prefix@"
-sphinxlibpath = "@libdir@/sphinxtrain".replace("${exec_prefix}", sphinxpath)
 
+# Find the location of the files
+currentpath = os.path.dirname(os.path.abspath(__file__))
+
+sphinxbinpath = os.path.abspath(currentpath + "/../libexec/sphinxtrain")
+if os.path.exists(currentpath + "/../bin/Release"):
+    sphinxbinpath = os.path.abspath(currentpath + "/../bin/Release")
+
+sphinxpath = os.path.abspath(currentpath + "/../lib/sphinxtrain")
+if os.path.exists(currentpath + "/../scripts/00.verify"):
+    sphinxpath = os.path.abspath(currentpath + "/..")
+
+
+# Perl script want forward slashes
+training_basedir = os.getcwd().replace('\\', '/');
+sphinxpath = sphinxpath.replace('\\','/')
+sphinxbinpath = sphinxbinpath.replace('\\','/')
+
+print "Sphinxtrain path:", sphinxpath
+print "Sphinxtrain binaries path:", sphinxbinpath
+
+#Proceed
 def setup(task):
     if not os.path.exists("etc"):
         os.mkdir("etc")
-    
+
     print "Setting up the database " + task
 
     out_cfg = open("etc/sphinx_train.cfg", "w")
-    for line in open(sphinxlibpath + "/sphinxtrain/etc/sphinx_train.cfg", "r"):
-	line = line.replace("___DB_NAME___", task)
-	line = line.replace("___BASE_DIR___", os.getcwd())
-	line = line.replace("___SPHINXTRAIN_DIR___", sphinxlibpath)
-	line = line.replace("___SPHINXTRAIN_BIN_DIR___", sphinxpath + "/libexec/sphinxtrain")
-	out_cfg.write(line)
+    for line in open(sphinxpath + "/etc/sphinx_train.cfg", "r"):
+        line = line.replace("___DB_NAME___", task)
+        line = line.replace("___BASE_DIR___", training_basedir)
+        line = line.replace("___SPHINXTRAIN_DIR___", sphinxpath)
+        line = line.replace("___SPHINXTRAIN_BIN_DIR___", sphinxbinpath)
+        out_cfg.write(line)
     out_cfg.close()
 
     out_cfg = open("etc/feat.params", "w")
-    for line in open(sphinxlibpath + "/etc/feat.params", "r"):
-	out_cfg.write(line)
+    for line in open(sphinxpath + "/etc/feat.params", "r"):
+        out_cfg.write(line)
     out_cfg.close()
 
 steps = [
@@ -51,14 +70,14 @@ steps = [
 def run_stages(stages):
     for stage in stages.split(","):
         for step in steps:
-    	    name = step.split("/")[0].split(".")[-1]
-    	    if name == stage:
-		os.system(sphinxlibpath + "/scripts/" + step)
+                name = step.split("/")[0].split(".")[-1]
+                if name == stage:
+                    os.system(sphinxpath + "/scripts/" + step)
 
 def run():
     print "Running the training"
     for step in steps:
-	os.system(sphinxlibpath + "/scripts/" + step)
+        os.system(sphinxpath + "/scripts/" + step)
 
 def usage():
     print ""
@@ -81,36 +100,36 @@ def main():
         print str(err)
         usage()
         sys.exit(-1)
-        
+
     task = None
     stages = None
-        
+
     for o, a in opts:
-	if o in ("-t", "--task"):
-	    task = a
-	if o in ("-s", "--stages"):
-	    stages = a
-	if o in ("-h", "--help"):
-    	    usage()
-    
+        if o in ("-t", "--task"):
+            task = a
+        if o in ("-s", "--stages"):
+            stages = a
+        if o in ("-h", "--help"):
+                usage()
+
     if len(args) == 0:
-	usage()
-	sys.exit(-1)
-    
+        usage()
+        sys.exit(-1)
+
     command = args[0]
-    
+
     if command == "setup":
-	if task == None:
-	    print "No task name defined"
-	    sys.exit(-1)	
-	setup(task)
+        if task == None:
+            print "No task name defined"
+            sys.exit(-1)        
+        setup(task)
     elif command == "run":
-	if stages == None:
-	    run()
-	else:
-	    run_stages(stages)
+        if stages == None:
+            run()
+        else:
+            run_stages(stages)
     else:
-	run()
-    	    
+        run()
+
 if __name__ == "__main__":
     main()

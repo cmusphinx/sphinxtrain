@@ -83,4 +83,5 @@ nobase_scripts_SCRIPTS = \
 	prepare/make_phoneset.pl \
 	prepare/maketopology.pl
 
-EXTRA_DIST = $(nobase_scripts_SCRIPTS) sphinxtrain.in
+EXTRA_DIST = $(nobase_scripts_SCRIPTS) sphinxtrain
+

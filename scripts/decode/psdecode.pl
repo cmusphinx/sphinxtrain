@@ -81,7 +81,7 @@ mkdir ($result_dir,0777) unless -d $result_dir;
 $logfile = "$log_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.log";
 $matchfile = "$result_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.match";
 
-$hmm_dir = "$ST::DEC_CFG_BASE_DIR/model_parameters/$modelname";
+$hmm_dir = "$ST::CFG_BASE_DIR/model_parameters/$modelname";
 
 $nlines = 0;
 open INPUT, "${ST::DEC_CFG_LISTOFFILES}";
@@ -122,6 +122,6 @@ my $rv = RunTool('pocketsphinx_batch', $logfile, $ctlcount,
 		 @ST::DEC_CFG_EXTRA_ARGS);
 
 if ($rv) {
-  LogError("Failed to start ${ST::DEC_CFG_BIN_DIR}/pocketsphinx_batch \n");
+  LogError("Failed to start pocketsphinx_batch\n");
 }
 exit ($rv);

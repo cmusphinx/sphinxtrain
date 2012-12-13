@@ -80,6 +80,12 @@ the Unix installation.
 
 Also, check the section title "All Platforms" above.
 
+Once you finished with compilation, copy the pocketsphinx and sphinxbase
+tools and dlls from sphinxbase\bin\Releae and pocketsphinx\bin\Release to
+sphinxtrain\bin\Release folder. This will enable you to run the 
+training process which expects to see all the tools and libraries in
+sphinxtrain\bin\Release.
+
 Acknowldegments
 ^^^^^^^^^^^^^^^
 

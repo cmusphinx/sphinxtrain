@@ -195,7 +195,6 @@ etc/Makefile
 include/Makefile
 python/Makefile
 scripts/Makefile
-scripts/sphinxtrain
 src/Makefile
 src/programs/Makefile
 src/libs/Makefile
