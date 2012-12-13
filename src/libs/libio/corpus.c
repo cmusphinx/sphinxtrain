@@ -163,7 +163,17 @@ static uint32 cur_ctl_ef = NO_FRAME;
 /* The current utt id (NULL indicates NONE) from a control file */
 static char *cur_ctl_utt_id = NULL;
 
+/* The next path from a control file */
 static char *next_ctl_path = NULL;
+
+/* The next start frame ( < 0 indicates NONE) from a control file */
+static uint32 next_ctl_sf = NO_FRAME;
+
+/* The next end frame ( < 0 indicates NONE) from a control file */
+static uint32 next_ctl_ef = NO_FRAME;
+
+/* The next utt id (NULL indicates NONE) from a control file */
+static char *next_ctl_utt_id = NULL;
 
 /* Flag to indicate whether the application requires MFCC data */
 static int32 requires_mfcc = FALSE;
@@ -339,9 +349,9 @@ corpus_set_ctl_filename(const char *ctl_filename)
 
     parse_ctl_line(li->buf,
 		   &next_ctl_path,
-		   NULL,
-		   NULL,
-		   NULL);
+		   &next_ctl_sf,
+		   &next_ctl_ef,
+		   &next_ctl_utt_id);
     lineiter_free (li);
     
     return S3_SUCCESS;
@@ -450,9 +460,9 @@ corpus_reset()
 
     parse_ctl_line(li->buf,
 		   &next_ctl_path,
-		   NULL,
-		   NULL,
-		   NULL);
+		   &next_ctl_sf,
+		   &next_ctl_ef,
+		   &next_ctl_utt_id);
     lineiter_free (li);
 
 
@@ -1096,6 +1106,10 @@ corpus_next_utt()
 	free(cur_ctl_utt_id);
 	cur_ctl_utt_id = NULL;
     }
+    cur_ctl_utt_id = next_ctl_utt_id;
+    
+    cur_ctl_sf = next_ctl_sf;
+    cur_ctl_ef = next_ctl_ef;
 
     if (n_run != UNTIL_EOF) {
 	if (n_run == 0) return FALSE;
@@ -1128,13 +1142,16 @@ corpus_next_utt()
 
     if (li != NULL) {
         parse_ctl_line(li->buf,
-		       &next_ctl_path,
-		       NULL,
-		       NULL,
-		       NULL);
+                       &next_ctl_path,
+                       &next_ctl_sf,
+                       &next_ctl_ef,
+                       &next_ctl_utt_id);
         lineiter_free (li);
     } else {
-	next_ctl_path = NULL;
+        next_ctl_path = NULL;
+        next_ctl_sf = NO_FRAME;
+        next_ctl_ef = NO_FRAME;
+        next_ctl_utt_id = NULL;
     }
 
     return TRUE;
@@ -1460,7 +1477,7 @@ corpus_read_next_transcription_line(char **trans)
 		/* check LSN utt id (if any) against ctl file utt id */
 		if (!fullsuffixmatch) {
 		    if (strcmp_ci(utt_id, corpus_utt()) != 0) {
-		        E_WARN("Utterance id in the transcriptoin file, '%s', does not match id in the control file, '%s'.\n",
+		        E_WARN("Utterance id in the transcription file, '%s', does not match id in the control file, '%s'.\n",
 			       utt_id, corpus_utt());
 		    }
 		}
