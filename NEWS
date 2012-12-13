@@ -1,5 +1,23 @@
-SphinxTrain 1.1
-^^^^^^^^^^^^^^^
+SphinxTrain 1.0.8
+^^^^^^^^^^^^^^^^^
+
+New features:
+
+    * New openfst-based G2P trainer and decoder, supported by Sphinx4 too.
+    * Parallel feature extraction
+    * Package can be installed now just like any application
+    * Single 'sphinxtrain' command to access all training process
+    * Increased reuse of sphinxbase functions
+
+Fixes:
+    * Memory leaks and build issues
+
+Thanks: Lionel Koenig, Peter Grasch, John Salatas, Alexandru-Dan Tomescu, Yuri Orlov,
+Michal Krajnansky, Jidong Tao, Tanel Alumae, Vassil Panayotov, Vijay Abharadwaj,
+Melmahdy
+
+SphinxTrain 1.0.7
+^^^^^^^^^^^^^^^^^
 That was two years, time to release this stuff
 
 New features:

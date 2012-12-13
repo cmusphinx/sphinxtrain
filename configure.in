@@ -1,6 +1,6 @@
 # Automake-based build system
 
-AC_INIT(SphinxTrain, 1.0.99)
+AC_INIT(SphinxTrain, 1.0.8)
 AM_INIT_AUTOMAKE([no-define])
 AC_CONFIG_MACRO_DIR([m4])
 
