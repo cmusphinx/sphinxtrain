@@ -69,3 +69,4 @@ EXTRA_DIST = \
 
 ACLOCAL_AMFLAGS = -I m4
 
+DISTCHECK_CONFIGURE_FLAGS = --enable-g2p-decoder

@@ -7,10 +7,15 @@ import getopt, sys, os
 currentpath = os.path.dirname(os.path.abspath(__file__))
 
 sphinxbinpath = os.path.abspath(currentpath + "/../libexec/sphinxtrain")
+
 if os.path.exists(currentpath + "/../bin/Release"):
     sphinxbinpath = os.path.abspath(currentpath + "/../bin/Release")
 
 sphinxpath = os.path.abspath(currentpath + "/../lib/sphinxtrain")
+
+if os.path.exists(currentpath + "/../lib64/sphinxtrain/scripts/00.verify"):
+    sphinxpath = os.path.abspath(currentpath + "/../lib64/sphinxtrain")
+
 if os.path.exists(currentpath + "/../scripts/00.verify"):
     sphinxpath = os.path.abspath(currentpath + "/..")
 
