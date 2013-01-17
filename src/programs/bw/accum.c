@@ -208,11 +208,6 @@ accum_gauden(float32 ***denacc,
     float32 diff;
     float32 obs_cnt;
 
-    /* Apply LDA if desired. */
-    if (fcb->lda && cmd_ln_boolean("-ldaaccum")) {
-        feat_lda_transform(fcb, &frame, 1);
-    }
-
     /* for each density family found in the utterance */
     for (i = 0; i < n_lcl2gbl; i++) {
 

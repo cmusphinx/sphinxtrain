@@ -516,16 +516,11 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  ARG_BOOLEAN,
 	  "no",
 	  "Output full path of utterance to bw log output" },
-	
+
 	{ "-fullsuffixmatch",
 	  ARG_BOOLEAN,
 	  "no",
 	  "Expect utterance id in transcript to be a suffix of the partial path in the control file" },
-
-	{ "-ldaaccum",
-	  ARG_BOOLEAN,
-	  "no",
-	  "Apply LDA in accumulation of statistics only (NOTE: no dimensionality reduction will be done)."},
 
 	{ "-pdumpdir",
 	  ARG_STRING,

@@ -790,19 +790,8 @@ main_reestimate(model_inventory_t *inv,
 
 	svd_n_frame = n_frame;
 
-	/* Hack to not apply the LDA, it will be applied later during accum_dir
-	 * Pretty useless thing to be honest, what to do with CMN after that for example?
-	 */
-        if (cmd_ln_boolean("-ldaaccum")) {
-	    float32 ***lda = feat->lda;
-	    feat->lda = NULL;
-	    f = feat_array_alloc(feat, n_frame + feat_window_size(feat));
-	    feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
-	    feat->lda = lda;
-	} else {
-	    f = feat_array_alloc(feat, n_frame + feat_window_size(feat));
-	    feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
-	}
+	f = feat_array_alloc(feat, n_frame + feat_window_size(feat));
+	feat_s2mfc2feat_live(feat, mfcc, &n_frame, TRUE, TRUE, f);
 
 	printf(" %4u", n_frame - svd_n_frame);
 
