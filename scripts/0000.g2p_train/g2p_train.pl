@@ -65,7 +65,7 @@ my $g2p_prefix = "$ST::CFG_BASE_DIR/g2p/$ST::CFG_EXPTNAME";
 my $dict = "$ST::CFG_DICTIONARY";
 my $g2p_model = "$ST::CFG_BASE_DIR/g2p/$ST::CFG_EXPTNAME.fst";
 my $test_file = "$ST::CFG_BASE_DIR/g2p/$ST::CFG_EXPTNAME.test";
-my $decoder_path = "$ST::CFG_SPHINXTRAIN_DIR";
+my $decoder_path = "$ST::CFG_BIN_DIR";
 
 mkdir ($g2p_dir,0777);
 
