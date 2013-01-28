@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ## ====================================================================
 ##
-## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
+## Copyright (c) 1996-2000 Carnegie Mellon University.  All rights
 ## reserved.
 ##
 ## Redistribution and use in source and binary forms, with or without
@@ -9,27 +9,27 @@
 ## are met:
 ##
 ## 1. Redistributions of source code must retain the above copyright
-##    notice, this list of conditions and the following disclaimer. 
+##    notice, this list of conditions and the following disclaimer.
 ##
 ## 2. Redistributions in binary form must reproduce the above copyright
 ##    notice, this list of conditions and the following disclaimer in
 ##    the documentation and/or other materials provided with the
 ##    distribution.
 ##
-## This work was supported in part by funding from the Defense Advanced 
-## Research Projects Agency and the National Science Foundation of the 
+## This work was supported in part by funding from the Defense Advanced
+## Research Projects Agency and the National Science Foundation of the
 ## United States of America, and the CMU Sphinx Speech Consortium.
 ##
-## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
-## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+## THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+## ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 ## THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
 ## PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
 ## NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-## SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
-## LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-## DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
-## THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-## (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+## SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+## LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+## DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+## THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+## (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ## OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ##
 ## ====================================================================
@@ -54,7 +54,7 @@ if ($ST::CFG_G2P_MODEL ne "yes") {
     exit(0);
 }
 my $logdir = "$ST::CFG_LOG_DIR/0000.g2p_train";
-my $logfile = "$logdir/$ST::CFG_EXPTNAME.g2p.log";
+my $logfile = "$logdir/$ST::CFG_EXPTNAME.g2p";
 
 Log ("Phase 1: Cleaning up directories: logs...\n");
 rmtree($logdir, 0, 1);
@@ -70,28 +70,28 @@ my $decoder_path = "$ST::CFG_BIN_DIR";
 mkdir ($g2p_dir,0777);
 
 Log ("Phase 2: Training g2p model...\n");
-my $rv = RunTool('g2p_train', $logfile, 0, 
-		 -ifile => $dict, 
+my $rv = RunTool('g2p_train', $logfile . ".training.log", 0,
+		 -ifile => $dict,
 		 -prefix => $g2p_prefix);
 return $rv if $rv;
-#Log("$rv\n");
 
 Log ("Phase 3: Evaluating g2p model...\n");
-system(catfile($ST::CFG_SCRIPT_DIR, '0000.g2p_train', 'evaluate.py'),
-                 $decoder_path,
-                 $g2p_model, 
-                 $test_file,
-                 $g2p_prefix);
+my @script_args = (catfile($ST::CFG_SCRIPT_DIR, '0000.g2p_train', 'evaluate.py'),
+                $decoder_path,
+                $g2p_model,
+                $test_file,
+                $g2p_prefix);
+my $rv = RunTool(shift @script_args, $logfile . ".evaluate.log", 0, @script_args);
 
 Log ("Phase 4: Creating pronunciations for OOV words...\n");
 my @wordsflag = (-words => 'yes');
 my @isfileflag = (-isfile => 'yes');
-my $rv = RunTool('phonetisaurus-g2p', $logfile, 0, 
-		 -model => $g2p_model, 
-		 -nbest => 1, 
+my $rv = RunTool('phonetisaurus-g2p', $logfile . ".make_dict.log", 0,
+		 -model => $g2p_model,
+		 -nbest => 1,
 		 @wordsflag,
-		 -input => "$ST::CFG_TRANSCRIPTFILE.oov", 
-		 @isfileflag, 
+		 -input => "$ST::CFG_TRANSCRIPTFILE.oov",
+		 @isfileflag,
 		 -output => "$ST::CFG_TRANSCRIPTFILE.oov.dic");
 
 Log ("Phase 5: Merging primary and OOV dictionaries...\n");
