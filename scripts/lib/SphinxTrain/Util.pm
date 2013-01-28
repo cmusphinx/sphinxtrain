@@ -602,13 +602,26 @@ sub WaitForMMIEConverge {
   return 0;
 }
 
+=head2 GetDict
+
+Select and return the appropriate dictionary depending on predefined variables.
+
+=cut
+
 sub GetDict {
     if ($ST::CFG_FORCE_ALIGN_SPD eq "yes") {
 	return File::Spec->catfile($ST::CFG_BASE_DIR, "falignout",
 				   "${ST::CFG_EXPTNAME}.spdict");
     }
     else {
-      return $ST::CFG_DICTIONARY;
+        my $dictfn;
+        if (defined $ST::CFG_G2P_MODEL && $ST::CFG_G2P_MODEL eq "yes") {
+            $dictfn = "$ST::CFG_DICTIONARY.full"
+        }
+        else {
+            $dictfn = "$ST::CFG_DICTIONARY"
+        }
+        return $dictfn;
     }
 }
 

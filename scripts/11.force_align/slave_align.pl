@@ -144,10 +144,7 @@ my %silences = ();
 unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN_FILLERDICT)) {
     my $dict = "$outdir/$ST::CFG_EXPTNAME.falign.dict";
     my $fdict = "$outdir/$ST::CFG_EXPTNAME.falign.fdict";
-    my $dictfn = "$ST::CFG_DICTIONARY";
-    if ($ST::CFG_G2P_MODEL eq "yes") {
-        $dictfn = "$ST::CFG_DICTIONARY.full";
-    }
+    my $dictfn = GetDict();
 
     Log("Phase 3: Creating dictionary for alignment...");
     open INFDICT, "<$ST::CFG_FILLERDICT" or die "Failed to open $ST::CFG_FILLERDICT: $!";
@@ -257,7 +254,7 @@ foreach my $job (@jobs) {
     ++$i;
 }
 
-# Save these in the list directory (if possible) 
+# Save these in the list directory (if possible)
 copy($listoffiles, catfile($ST::CFG_LIST_DIR, "${ST::CFG_EXPTNAME}.alignedfiles"));
 copy($transcriptfile, catfile($ST::CFG_LIST_DIR, "${ST::CFG_EXPTNAME}.alignedtranscripts"));
 

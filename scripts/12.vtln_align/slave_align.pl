@@ -117,10 +117,7 @@ unless (defined($ST::CFG_FORCE_ALIGN_DICTIONARY) or defined($ST::CFG_FORCE_ALIGN
     }
     close INFDICT;
     close OUTFDICT;
-my $dictfn = "$ST::CFG_DICTIONARY";
-if ($ST::CFG_G2P_MODEL eq "yes") {
-    $dictfn = "$ST::CFG_DICTIONARY.full";
-}
+my $dictfn = GetDict();
 
     # Add the extra fillers to the main dictionary
     open INDICT, "<$dictfn" or die "Failed to open $dictfn: $!";
@@ -171,7 +168,7 @@ for (my $warp = $ST::CFG_VTLN_START;
     Log("Phase 4: Running force alignment in  $n_parts parts\n");
     my @jobs;
     for (my $i = 1; $i <= $n_parts; ++$i) {
-    	
+
 	push @jobs, LaunchScript("falign.$warp.$i", ['vtln_align.pl', $warp, $i, $n_parts]);
     }
 
