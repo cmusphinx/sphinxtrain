@@ -235,13 +235,11 @@ relabel(StdMutableFst * fst, StdMutableFst * out, string prefix,
     osyms->WriteText(prefix + ".output.syms");
 
     string dest = prefix + ".fst.txt";
-    ostream *ostrm = new fst::ofstream(dest.c_str());
-    ostrm->precision(9);
-    s::FstClass * fstc = new s::FstClass(out);
-    s::PrintFst(*fstc, *ostrm, dest, isyms, osyms, NULL, acceptor,
-                show_weight_one);
-    ostrm->flush();
-    delete ostrm;
+    fst::ofstream ostrm(dest.c_str());
+    ostrm.precision(9);
+    s::FstClass fstc(*out);
+    s::PrintFst(fstc, ostrm, dest, isyms, osyms, NULL, acceptor, show_weight_one);
+    ostrm.flush();
 }
 
 void
@@ -409,7 +407,7 @@ train_model(string eps, string s1s2_sep, string skip, int order,
     }
 
     cout << "Minimizing model..." << endl;
-    MutableFstClass *minimized = new s::MutableFstClass(fst);
+    MutableFstClass *minimized = new s::MutableFstClass(*fst);
     Minimize(minimized, 0, fst::kDelta);
     fst = minimized->GetMutableFst<StdArc>();
 
