@@ -8,24 +8,24 @@
   modification, are permitted #provided that the following conditions
   are met:
 
-  * Redistributions of source code must retain the above copyright 
+  * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
-  * Redistributions in binary form must reproduce the above 
-    copyright notice, this list of #conditions and the following 
-    disclaimer in the documentation and/or other materials provided 
+  * Redistributions in binary form must reproduce the above
+    copyright notice, this list of #conditions and the following
+    disclaimer in the documentation and/or other materials provided
     with the distribution.
 
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
- FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
- COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
- INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
- STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  OF THE POSSIBILITY OF SUCH DAMAGE.
   ----------------
     Original author: Chris Taylor
@@ -35,10 +35,10 @@
 
   ----------------
 
-    2011-04-07: Modified by Josef Novak 
+    2011-04-07: Modified by Josef Novak
 
     Modified to build a 'paths' object to store the individual paths
-    and associated weights, rather than just print them out from 
+    and associated weights, rather than just print them out from
     inside the class.  Useful if you want to return the paths for further
     processing.
 *
@@ -50,41 +50,37 @@
 
 using namespace fst;
 
-struct PathData{
+struct PathData {
     vector<string> path;
     float pathcost;
 };
 
-class FstPathFinder{
-    
+class FstPathFinder {
+
 public:
-    
+
     vector<PathData> paths;
-    
+
     set<string> skipSeqs;
-    
-    set< vector<string> > uniqueStrings;
-    
-    SymbolTable *isyms; 
-    
-    FstPathFinder( );
-    
-    FstPathFinder( set<string> skipset );
 
-    void findAllStrings( StdVectorFst&  fst );
-    
+    set<vector <string> > uniqueStrings;
+
+    SymbolTable *isyms;
+
+    FstPathFinder();
+
+    FstPathFinder(set<string> skipset);
+
+    void findAllStrings(StdVectorFst & fst);
+
 private:
-    
-    void addOrDiscardPath( PathData pdata );
 
-    void findAllStringsHelper( 
-                StdVectorFst&   fst, 
-			    int             state, 
-			    vector<string>& str, 
-			    TropicalWeight  cost 
-              ); 
+    void addOrDiscardPath(PathData pdata);
 
-}; // end class
+    void findAllStringsHelper(StdVectorFst & fst,
+                              int state,
+                              vector<string> &str, TropicalWeight cost);
+
+};                              // end class
 
 #endif
-

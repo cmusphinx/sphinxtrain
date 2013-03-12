@@ -36,22 +36,27 @@ def process_testset( testfile, wordlist_out, reference_out, verbose=False ):
       and a reference file for results evaluation.  Handles cases where a single
       word has multiple pronunciations.
     """
-    
+
     if verbose: print "Preprocessing the testset dictionary file..."
     test_dict = defaultdict(list)
-    for entry in open(testfile,"r"):
+    for entry in open(testfile):
         try:
-            word, pron = re.split(r' {2,}', entry.strip())
+            items = entry.split()
+            word = items[0]
+            if word[-1] == ')':
+                word = word[:-3]
+            pron = " ".join(items[1:])
         except:
-    	    continue
+            continue
         test_dict[word].append(pron)
 
     wordlist_ofp  = open(wordlist_out,"w")
     reference_ofp = open(reference_out,"w")
     test_list = sorted(test_dict.iteritems(), key=operator.itemgetter(0))
     for entry in test_list:
-        wordlist_ofp.write("%s\n"%entry[0])
-        reference_ofp.write("%s  %s\n"%(entry[0],"  ".join(entry[1])))
+        wordlist_ofp.write("%s\n" % entry[0])
+        for p in entry[1]:
+            reference_ofp.write("%s %s\n" % (entry[0], p))
     wordlist_ofp.close()
     reference_ofp.close()
     return
@@ -89,8 +94,8 @@ def evaluate_testset(
     PERcalculator.compute_PER_phonetisaurus( hypothesisfile, referencefile, verbose=verbose )
 
     return
-    
-    
+
+
 if __name__=="__main__":
     import sys, argparse
 
@@ -98,8 +103,10 @@ if __name__=="__main__":
     g2p_model = sys.argv[2]
     test_file = sys.argv[3]
     prefix = sys.argv[4]
-    
-    wordlist = "%s.words"%( prefix ); hyp_file = "%s.hyp"%(prefix); ref_file = "%s.ref"%(prefix)
+
+    wordlist = "%s.words" % ( prefix )
+    hyp_file = "%s.hyp" % (prefix)
+    ref_file = "%s.ref" % (prefix)
 
     process_testset( test_file, wordlist, ref_file )
     evaluate_testset(

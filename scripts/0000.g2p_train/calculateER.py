@@ -33,7 +33,7 @@ class ErrorRater( ):
       This class provides tools suitable for computing the Word Error Rate (WER)
        or Pronunciation Error Rate (PER) of one or more hypothesis-reference
        transcription pairs.
-       
+
       Specifically it provides functions to compute Levenshtein penalty matrix,
        a non-recursive traceback function, WER/PER computation function, and 
        several formatting convenience functions.
@@ -52,7 +52,7 @@ class ErrorRater( ):
         #For ASR this corresponds to SENTENCE ERRORS, for G2P this corresponds to WORD ERRORS
         self.sequence_errors = 0.
         self.total_sequences = 0.
-        
+
     def compute_penalty_matrix( self, hyp, ref ):
         """
           Compute the penalty matrix using the levenshtein algorithm.  
@@ -86,7 +86,7 @@ class ErrorRater( ):
         alignment = []
         # [ TotalChars, Match, Substitution, Insertion, Deletion ]
         scores    = [0.,0.,0.,0.,0.]
-    
+
         i = len(hyp); j = len(ref)
         while i>0 and j>0:
             if hyp[i-1]==ref[j-1]:
@@ -110,7 +110,7 @@ class ErrorRater( ):
 
         alignment.reverse()
         scores[0] = len(ref)
-        
+
         return alignment, scores
 
     def _normalize( self, units ):
@@ -125,7 +125,7 @@ class ErrorRater( ):
         for i,unit in enumerate(units):
             diff = len(max_unit) - len(unit)
             units[i] = unit.center(len(unit)+diff, " ")
-        
+
         return units
 
     def print_alignment( self, alignment, scores ):
@@ -136,7 +136,7 @@ class ErrorRater( ):
           These sequences will be printed out in reverse order so that the 
            reference sequence is on top.
         """
-        
+
         print " ".join([ x[2] for x in alignment ])
         print " ".join([ x[1] for x in alignment ])
         print " ".join([ x[0] for x in alignment ])
@@ -150,7 +150,7 @@ class ErrorRater( ):
           Filter out any unwanted characters as specified 
            in the ignore values.
         """
-        
+
         if type(flist[0]).__name__=="str":
             for ig in self.ignore:
                 flist = filter(lambda ch: ch!=ig, flist)
@@ -229,7 +229,7 @@ class ErrorRater( ):
                 [ self.compute_penalty_matrix( hyp, refs ) for hyp in hyps ],
                 key=lambda mat:mat[0][-1][-1]
                 )
-            
+
         alignment, scores = self.compute_traceback( matrix, hyp, ref )
         self.total_sequences += 1
         if matrix[-1][-1]>0: 
@@ -238,9 +238,9 @@ class ErrorRater( ):
             self.print_alignment( alignment, scores )
 
         self.totals = [ scores[i]+self.totals[i] for i in xrange(len(scores)) ]
-    
+
         return alignment, scores
-    
+
     def split_sequence( self, sequence, usep=" ", fsep="" ):
         """
           Split an input string into one or more sequences, and return a 
@@ -249,7 +249,7 @@ class ErrorRater( ):
 
         if not type(sequence).__name__=="str":
             raise TypeError, "Input sequence must be of type string ('str')!"
-        
+
         if usep=="":
             sequences = [
                   [ unit for unit in list(seq) ] 
@@ -275,7 +275,7 @@ class ErrorRater( ):
              WORD PRON1, ..., PRONn
           Fields are separated by 'tab', and phoneme tokens in each PRON are 
            separated by a single space, ' '.
-          
+
           PER is computed in the standard manner:
               (S+I+D)/(T)
            where T=TotalTokens, S=Substitutions, I=Insertions, D=Deletions
@@ -307,17 +307,17 @@ class ErrorRater( ):
         for line in open(reffile,"r"):
             #There should be at least 2 fields.  
             # Word, Hyp1, ..., HypN
-            fields = re.split(r' {2,}', line.strip())
-            refs.append( [ re.split(usep, field) for field in fields[1:] ] )
-            
+            fields = line.split()
+            refs.append(fields[1:])
+
         #Make sure we have the same number of entries
         print "    Words:", len(words), " Hyps:", len(hyps), "Refs:", len(refs)
         assert len(words)==len(hyps) and len(hyps)==len(refs)
-        
+
         for i, word in enumerate(words):
             if verbose: print word
             self.align_sequences( hyps[i], refs[i], verbose=verbose )
-            
+
         self.print_ER(self.totals)
 
         return
@@ -379,7 +379,7 @@ if __name__=="__main__":
         else:
             print "--format must be one of 'g2p', 'cmu' or 'htk'."
     else:
-        error_rater.align_sequences( 
+        error_rater.align_sequences(
             error_rater.split_sequence( args.hyp, usep=args.usep, fsep=args.fsep ), 
             error_rater.split_sequence( args.ref, usep=args.usep, fsep=args.fsep ),
             verbose=True
