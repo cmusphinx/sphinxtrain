@@ -233,7 +233,7 @@ printPath(PathData * path, string onepath, int k, ofstream * hypfile,
 {
     if (word != "") {
         if (k != 0) {
-            *hypfile << word << "(" << k << ")" << "  ";
+            *hypfile << word << "(" << (k + 1) << ")" << "  ";
         }
         else {
             *hypfile << word << "  ";
