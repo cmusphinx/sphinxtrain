@@ -56,20 +56,13 @@ my $out_dir = catdir("$ST::CFG_BASE_DIR/vtlnout", $warp);
 my $hmm_dir = defined($ST::CFG_FORCE_ALIGN_MODELDIR)
     ? $ST::CFG_FORCE_ALIGN_MODELDIR
     : "$ST::CFG_MODEL_DIR/$ST::CFG_EXPTNAME.ci_$ST::CFG_DIRLABEL";
-my $mdef = defined($ST::CFG_FORCE_ALIGN_MDEF)
-    ? $ST::CFG_FORCE_ALIGN_MDEF
-    : "$ST::CFG_BASE_DIR/model_architecture/$ST::CFG_EXPTNAME.ci.mdef";
 my $logdir = "$ST::CFG_LOG_DIR/12.vtln_align";
 my $indir = "$ST::CFG_BASE_DIR/vtlnout";
 my $outdir = "$ST::CFG_BASE_DIR/vtlnout/$warp";
 my $outfile = "$outdir/$ST::CFG_EXPTNAME.alignedtranscripts.$part";
 
 my $statepdeffn = $ST::CFG_HMM_TYPE; # indicates the type of HMMs
-my $mixwfn  = "$hmm_dir/mixture_weights";
 my $mwfloor = 1e-8;
-my $tmatfn  = "$hmm_dir/transition_matrices";
-my $meanfn  = "$hmm_dir/means";
-my $varfn   = "$hmm_dir/variances";
 my $minvar  = 1e-4;
 my $listoffiles = $ST::CFG_LISTOFFILES;
 my $transcriptfile = "$indir/$ST::CFG_EXPTNAME.aligninput";
@@ -121,13 +114,9 @@ Log("Force alignment starting: ($part of $npart) ", 'result');
 
 my $return_value = RunTool
     ('sphinx3_align', $logfile, $ctl_counter,
-     -mdef => $mdef,
      -senmgau => $statepdeffn,
-     -mixw => $mixwfn,
      -mixwfloor => $mwfloor,
-     -tmat => $tmatfn,
-     -mean => $meanfn,
-     -var => $varfn,
+     -hmm => $hmm_dir,
      -varfloor => $minvar,
      -dict => $dict,
      -fdict => $fdict,
