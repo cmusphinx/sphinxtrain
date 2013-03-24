@@ -42,7 +42,7 @@ use constant MATCH => 3;
 use constant SUBST => 4;
 use constant BIG_NUMBER => 1e50;
 
-my ($total_words, $total_match, $total_cost);
+my ($total_words, $total_match, $total_cost, $total_hyp);
 my ($total_ins, $total_del, $total_subst);
 while (defined(my $ref_utt = <REF>)) {
     my $hyp_utt;
@@ -94,13 +94,17 @@ while (defined(my $ref_utt = <REF>)) {
 	my $width = 0;
 
 	if (defined($ref) and defined($hyp)) {
-	    # If there's Hanzi then put * around errors
-	    if (($ref =~ /\p{Han}/ or $hyp =~ /\p{Han}/)and $ref ne $hyp) {
-		$ref = "*$ref*";
-		$hyp = "*$hyp*";
-	    }
-	    # Otherwise lowercase matches
-	    elsif ($ref eq $hyp) {
+	    if ($CER or
+		($ref =~ /\p{InCJKUnifiedIdeographs}/ or
+		 $ref =~ /\p{Han}/ or
+		 $hyp =~ /\p{Han}/)) {
+		# Assume this is Chinese, no capitalization so put ** around errors
+		if ($ref ne $hyp) {
+		    $ref = "*$ref*";
+	    	    $hyp = "*$hyp*";
+		}
+	    } elsif ($ref eq $hyp) {
+		# Capitalize errors (they already are...), lowercase matches
 		$ref = lc $ref;
 		$hyp = lc $hyp;
 	    }
@@ -117,6 +121,7 @@ while (defined(my $ref_utt = <REF>)) {
 	$ref_align .= sprintf("%-*s ", $width, $ref);
 	$hyp_align .= sprintf("%-*s ", $width, $hyp);
     }
+    $ref_uttid = "" unless defined $ref_uttid; # avoid warnings
     print "$ref_align ($ref_uttid)\n$hyp_align ($hyp_uttid)\n";
 
     # Print out the word error and accuracy rates
@@ -129,13 +134,21 @@ while (defined(my $ref_utt = <REF>)) {
     $total_cost += $cost;
     $total_match += $match;
     $total_words += @ref_words;
+    $total_hyp += @hyp_words;
     $total_ins += $ins;
     $total_del += $del;
     $total_subst += $subst;
 }
 # Print out the total word error and accuracy rates
-my $error = $total_cost/$total_words;
-my $acc = $total_match/$total_words;
+my ($error, $acc);
+if ($total_words == 0) {
+    $error = $total_cost/$total_hyp;
+    $acc = $total_match/$total_hyp;
+}
+else {
+    $error = $total_cost/$total_words;
+    $acc = $total_match/$total_words;
+}
 printf("TOTAL Words: %d Correct: %d Errors: %d\nTOTAL Percent correct = %.2f%% Error = %.2f%% Accuracy = %.2f%%\n",
        $total_words, $total_match, $total_cost, $acc*100, $error*100, 100-$error*100);
 print "TOTAL Insertions: $total_ins Deletions: $total_del Substitutions: $total_subst\n";
@@ -143,9 +156,15 @@ print "TOTAL Insertions: $total_ins Deletions: $total_del Substitutions: $total_
 # This function normalizes a line of a match file. 
 sub s3_magic_norm{
     my ($word)=@_;
+    my $uttid;
 
     # Remove line endings
-    chomp  $word;
+    $word =~ s/[\n\r]+$//;  # the agnostic way...
+
+    # This computes the uttid and remove it from a line.
+    $word =~ s/\(([^) ]+)[^)]*\)$// ;
+    $uttid = $1;
+
     # Normalize case
     $word = uc $word;   
     # Remove filler words and context cues
@@ -159,13 +178,10 @@ sub s3_magic_norm{
     # Remove class tags
     $word =~ s/:\S+//g;
 
-    # This compute the uttid and remove it from a line.
-    $word =~ s/\(([^) ]+)[^)]*\)$// ;
-
     # Split apart compound words and acronyms
     $word =~ tr/-_./  /;
 
-    return ($word,$1);
+    return ($word,$uttid);
 }
 
 sub initialize {
