@@ -32,9 +32,6 @@ nobase_scripts_SCRIPTS = \
 	11.force_align/slave_align.pl \
 	12.vtln_align/slave_align.pl \
 	12.vtln_align/vtln_align.pl \
-	15.pforce_align/force_align.pl \
-	15.pforce_align/make_spd.pl \
-	15.pforce_align/slave_align.pl \
 	20.ci_hmm/baum_welch.pl \
 	20.ci_hmm/norm_and_launchbw.pl \
 	20.ci_hmm/norm.pl \
@@ -74,10 +71,6 @@ nobase_scripts_SCRIPTS = \
 	decode/slave.pl \
 	decode/verify_dec.pl \
 	decode/word_align.pl \
-	pdecode/psdecode.pl \
-	pdecode/slave.pl \
-	pdecode/verify_dec.pl \
-	pdecode/word_align.pl \
 	lib/Queue/Job.pm \
 	lib/Queue/PBS.pm \
 	lib/Queue.pm \

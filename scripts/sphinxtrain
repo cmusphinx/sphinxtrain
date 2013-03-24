@@ -59,7 +59,6 @@ steps = [
 "10.falign_ci_hmm/slave_convg.pl",
 "11.force_align/slave_align.pl",
 "12.vtln_align/slave_align.pl",
-"15.pforce_align/slave_align.pl",
 "20.ci_hmm/slave_convg.pl",
 "30.cd_hmm_untied/slave_convg.pl",
 "40.buildtrees/slave.treebuilder.pl",
@@ -71,7 +70,6 @@ steps = [
 "65.mmie_train/slave_convg.pl",
 "90.deleted_interpolation/deleted_interpolation.pl",
 "decode/slave.pl",
-"pdecode/slave.pl"
 ]
 
 def run_stages(stages):
