@@ -157,7 +157,7 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 
     lex_fp = fopen(filename, "r");
     if (lex_fp == NULL) {
-	E_FATAL_SYSTEM("Unable to open lexicon %s for reading\n",
+	E_FATAL_SYSTEM("Unable to open dictionary file '%s' for reading\n",
 		       filename);
     }
 
@@ -173,7 +173,7 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
     for (line = lineiter_start_clean(lex_fp); line; line = lineiter_next(line)) {
 
 	if (line->buf[0] == 0) {
-	    E_WARN("Lexicon %s has a blank line at line %d\n",
+	    E_WARN("Dictionary file '%s' has a blank line at line %d\n",
 		   filename, lineno);
 	    continue;
 	}

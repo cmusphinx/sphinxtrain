@@ -139,7 +139,7 @@ initialize(lexicon_t **out_lex,
     dictfn = cmd_ln_str("-dictfn");
     lex = NULL;
     if (dictfn) {
-	E_INFO("Reading lexicon %s.\n", dictfn);
+	E_INFO("Reading dictionary %s.\n", dictfn);
 
 	lex = lexicon_read(NULL,	/* no lexicon to start */
 			   dictfn,
@@ -150,7 +150,7 @@ initialize(lexicon_t **out_lex,
     
     fdictfn = cmd_ln_str("-fdictfn");
     if (fdictfn) {
-	E_INFO("Reading filler lexicon %s.\n", fdictfn);
+	E_INFO("Reading filler dictionary %s.\n", fdictfn);
 	
 	(void)lexicon_read(lex,	/* add filler words to content lexicon */
 			   fdictfn,

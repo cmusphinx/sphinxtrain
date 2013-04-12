@@ -146,11 +146,11 @@ ctl -cepdir cepdir -cepext mfc -ceplen 13 -stride 10 ";
 	{ "-dictfn",
 	  ARG_STRING,
 	  NULL,
-	  "Lexicon containing all the words in the lexical transcripts."},
+	  "Dictionary containing pronunciations for the words."},
 	{ "-fdictfn",
 	  ARG_STRING,
 	  NULL,
-	  "Lexicon containing all the filler words in the lexical transcripts."},
+	  "Dictionary containing pronunciations for the fillers."},
 
 	{ "-segdir",
 	  ARG_STRING,

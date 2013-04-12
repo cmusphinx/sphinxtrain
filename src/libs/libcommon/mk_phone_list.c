@@ -175,7 +175,7 @@ acmod_id_t *mk_phone_list(char **btw_mark,
     for (i = 0, n_p = 0; i < n_word; i++) {
 	e = lexicon_lookup(lex, word[i]);
 	if (e == NULL) {
-	    E_WARN("Unable to lookup word '%s' in the lexicon\n", word[i]);
+	    E_WARN("Unable to lookup word '%s' in the dictionary\n", word[i]);
 
 	    return NULL;
 	}
@@ -233,7 +233,7 @@ mk_word_phone_list(char **btw_mark,
   
   e = lexicon_lookup(lex, word);
   if (e == NULL) {
-    E_WARN("Unable to lookup word '%s' in the lexicon\n", word);
+    E_WARN("Unable to lookup word '%s' in the dictionary\n", word);
     
     return NULL;
   }
@@ -276,7 +276,7 @@ mk_boundary_phone(char *word,
   
   e = lexicon_lookup(lex, word);
   if (e == NULL) {
-    E_WARN("Unable to lookup word '%s' in the lexicon\n", word);
+    E_WARN("Unable to lookup word '%s' in the dictionary\n", word);
     
     return NULL;
   }

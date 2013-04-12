@@ -525,7 +525,7 @@ main_initialize(int argc,
 
     fn = cmd_ln_str("-dictfn");
     if (fn) {
-	E_INFO("Reading main lexicon: %s\n", fn);
+	E_INFO("Reading main dictionary: %s\n", fn);
 	     
 
 	lex = lexicon_read(NULL,
@@ -537,7 +537,7 @@ main_initialize(int argc,
     
     fn = cmd_ln_str("-fdictfn");
     if (fn) {
-	E_INFO("Reading filler lexicon: %s\n", fn);
+	E_INFO("Reading filler dictionary: %s\n", fn);
 	(void)lexicon_read(lex,
 			   fn,
 			   omdef->acmod_set);

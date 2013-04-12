@@ -452,7 +452,7 @@ main_initialize(int argc,
 	    return S3_ERROR;
     }
 
-    E_INFO("Reading main lexicon: %s\n",
+    E_INFO("Reading main dictionary: %s\n",
 	   cmd_ln_str("-dictfn"));
 
     lex = lexicon_read(NULL,
@@ -462,7 +462,7 @@ main_initialize(int argc,
 	return S3_ERROR;
     
     if (fdictfn) {
-	E_INFO("Reading filler lexicon: %s\n",
+	E_INFO("Reading filler dictionary: %s\n",
 	       fdictfn);
 	(void)lexicon_read(lex,
 			   fdictfn,
