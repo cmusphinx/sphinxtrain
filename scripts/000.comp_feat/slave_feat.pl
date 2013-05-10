@@ -82,7 +82,7 @@ if ($ST::CFG_VTLN eq "yes") {
     $ST::CFG_VTLN_END = 1.45 unless defined($ST::CFG_VTLN_END);
     $ST::CFG_VTLN_STEP = 0.05 unless defined($ST::CFG_VTLN_STEP);
 
-    my $vtlnctl = catfile($outdit, "${ST::CFG_EXPTNAME}.vtlnctl");
+    my $vtlnctl = catfile($outdir, "${ST::CFG_EXPTNAME}.vtlnctl");
     my $vtlnlsn = catfile($outdir, "${ST::CFG_EXPTNAME}.vtlnlsn");
     for (my $warp = $ST::CFG_VTLN_START; 
          $warp <= $ST::CFG_VTLN_END; $warp += $ST::CFG_VTLN_STEP) {
