@@ -87,7 +87,7 @@ s3lamb_read(const char *fn,
 		  &n_lambda,
 		  fp,
 		  swap,
-		  &rd_chksum) != S3_SUCCESS)
+		  &rd_chksum) < 0)
 	return S3_ERROR;
 
     if (do_chk) {
@@ -188,7 +188,7 @@ s3lambcnt_read(const char *fn,
 		  &n_lambda_cnt,
 		  fp,
 		  swap,
-		  &rd_chksum) != S3_SUCCESS)
+		  &rd_chksum) < 0)
 	return S3_ERROR;
 
     if (do_chk) {
@@ -234,7 +234,7 @@ s3lambcnt_write(const char *fn,
     if (fp == NULL)
 	return S3_ERROR;
 
-    if (bio_fwrite_1d((void *)lambda_cnt, sizeof(uint32), n_lambda_cnt, fp, &chksum) != S3_SUCCESS) {
+    if (bio_fwrite_1d((void *)lambda_cnt, sizeof(uint32), n_lambda_cnt, fp, &chksum) < 0) {
 	s3close(fp);
 	return S3_ERROR;
     }
@@ -251,25 +251,3 @@ s3lambcnt_write(const char *fn,
 
     return S3_SUCCESS;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/03/17  15:01:49  eht
- * Initial revision
- * 
- *
- */

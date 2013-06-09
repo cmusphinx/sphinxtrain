@@ -92,7 +92,7 @@ s3mixw_read(const char *fn,
 		  out_n_density,
 		  fp,
 		  swap,
-		  &rd_chksum) != S3_SUCCESS) {
+		  &rd_chksum) < 0) {
 	s3close(fp);
 	return S3_ERROR;
     }
@@ -216,12 +216,12 @@ s3mixw_write(const char *fn,
 		   n_feat,
 		   n_density,
 		   fp,
-		   &chksum) != S3_SUCCESS) {
+		   &chksum) < 0) {
 	s3close(fp);
 	return S3_ERROR;
     }
 	
-    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, 0, &ignore) != 1) {
 	s3close(fp);
 
 	return S3_ERROR;

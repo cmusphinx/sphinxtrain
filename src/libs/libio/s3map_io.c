@@ -101,7 +101,7 @@ s3map_read(const char *fn,
 		  out_n_dom,
 		  fp,
 		  swap,
-		  &rd_chksum) != S3_SUCCESS) {
+		  &rd_chksum) < 0) {
 	s3close(fp);
 
 	return S3_ERROR;
@@ -153,7 +153,7 @@ s3map_write(const char *fn,
 		   map_elem_size,
 		   n_dom,
 		   fp,
-		   &chksum) != S3_SUCCESS) {
+		   &chksum) < 0) {
 	s3close(fp);
 
 	return S3_ERROR;

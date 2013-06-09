@@ -115,7 +115,7 @@ s3gau_read(const char *fn,
 	goto error;
     }
 
-    if (bio_fread_1d((void **)&raw, sizeof(float32), &n, fp, swap, &chksum) != S3_SUCCESS) {
+    if (bio_fread_1d((void **)&raw, sizeof(float32), &n, fp, swap, &chksum) < 0) {
 	ckd_free(veclen);
 
 	goto error;
@@ -215,7 +215,7 @@ s3gau_write(const char *fn,
     for (blk = 0, i = 0; i < n_feat; i++)
 	blk += veclen[i];
 
-    if (bio_fwrite_1d(out[0][0][0], sizeof(float32), n_mgau*n_density*blk, fp, &chksum) != S3_SUCCESS) {
+    if (bio_fwrite_1d(out[0][0][0], sizeof(float32), n_mgau*n_density*blk, fp, &chksum) < 0) {
 	goto error;
     }
 
@@ -305,12 +305,12 @@ s3gaucnt_read(const char *fn,
 	return S3_ERROR;
     }
 
-    if (bio_fread_1d((void **)&veclen, sizeof(uint32), &n_feat, fp, swap, &rd_chksum) != S3_SUCCESS) {
+    if (bio_fread_1d((void **)&veclen, sizeof(uint32), &n_feat, fp, swap, &rd_chksum) < 0) {
 	return S3_ERROR;
     }
 
     if (has_means) {
-	if (bio_fread_1d((void *)&buf, sizeof(float32), &n, fp, swap, &rd_chksum) != S3_SUCCESS) {
+	if (bio_fread_1d((void *)&buf, sizeof(float32), &n, fp, swap, &rd_chksum) < 0) {
 	    return S3_ERROR;
 	}
 	
@@ -328,7 +328,7 @@ s3gaucnt_read(const char *fn,
     }
 
     if (has_vars) {
-	if (bio_fread_1d((void *)&buf, sizeof(float32), &n, fp, swap, &rd_chksum) != S3_SUCCESS) {
+	if (bio_fread_1d((void *)&buf, sizeof(float32), &n, fp, swap, &rd_chksum) < 0) {
 	    return S3_ERROR;
 	}
 	
@@ -345,7 +345,7 @@ s3gaucnt_read(const char *fn,
 	}
     }
 
-    if (bio_fread_3d((void ****)&dnom, sizeof(float32), &d1, &d2, &d3, fp, swap, &rd_chksum) != S3_SUCCESS) {
+    if (bio_fread_3d((void ****)&dnom, sizeof(float32), &d1, &d2, &d3, fp, swap, &rd_chksum) < 0) {
 	return S3_ERROR;
     }
 
@@ -438,7 +438,7 @@ s3gaucnt_write(const char *fn,
 	return S3_ERROR;
     }
 
-    if (bio_fwrite_1d((void *)veclen, sizeof(uint32), n_feat, fp, &chksum) != S3_SUCCESS) {
+    if (bio_fwrite_1d((void *)veclen, sizeof(uint32), n_feat, fp, &chksum) < 0) {
 	return S3_ERROR;
     }
     
@@ -450,14 +450,14 @@ s3gaucnt_write(const char *fn,
     if (has_means) {
 	band_nz_1d(wt_mean[0][0][0], n_elem, MIN_POS_FLOAT32);
 	
-	if (bio_fwrite_1d((void *)wt_mean[0][0][0], sizeof(float32), n_elem, fp, &chksum) != S3_SUCCESS)
+	if (bio_fwrite_1d((void *)wt_mean[0][0][0], sizeof(float32), n_elem, fp, &chksum) < 0)
 	    return S3_ERROR;
     }
 
     if (has_vars) {
 	floor_nz_1d(wt_var[0][0][0], n_elem, MIN_POS_FLOAT32);
 
-	if (bio_fwrite_1d((void *)wt_var[0][0][0], sizeof(float32), n_elem, fp, &chksum) != S3_SUCCESS)
+	if (bio_fwrite_1d((void *)wt_var[0][0][0], sizeof(float32), n_elem, fp, &chksum) < 0)
 	    return S3_ERROR;
     }
 
@@ -465,7 +465,7 @@ s3gaucnt_write(const char *fn,
        that results are compatible between machines */
     floor_nz_3d(dnom, n_cb, n_feat, n_density, MIN_POS_FLOAT32);
 
-    if (bio_fwrite_3d((void ***)dnom, sizeof(float32), n_cb, n_feat, n_density, fp, &chksum) != S3_SUCCESS) {
+    if (bio_fwrite_3d((void ***)dnom, sizeof(float32), n_cb, n_feat, n_density, fp, &chksum) < 0) {
 	return S3_ERROR;
     }
 
@@ -528,7 +528,7 @@ s3gaudnom_read(const char *fn,
 		  out_n_feat,
 		  out_n_density,
 		  fp,
-		  swap, &rd_chksum) != S3_SUCCESS) {
+		  swap, &rd_chksum) < 0) {
 	s3close(fp);
 	return S3_ERROR;
     }
@@ -580,7 +580,7 @@ s3gaudnom_write(const char *fn,
 		   n_feat,
 		   n_density,
 		   fp,
-		   &chksum) != S3_SUCCESS) {
+		   &chksum) < 0) {
 	s3close(fp);
 	return S3_ERROR;
     }
@@ -598,38 +598,3 @@ s3gaudnom_write(const char *fn,
 
     return S3_SUCCESS;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.7  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.6  2004/07/17 08:00:23  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.4  2003/07/16 00:25:35  egouvea
- * s3 now ignores checksum when reading a density, if checksum is not
- * part of the density file header.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.1  97/03/17  15:01:49  eht
- * Initial revision
- * 
- *
- */
-
-
-

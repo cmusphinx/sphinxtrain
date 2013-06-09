@@ -94,7 +94,7 @@ s3tmat_read(const char *fn,
 		  out_n_state,
 		  fp,
 		  swap,
-		  &rd_chksum) != S3_SUCCESS) {
+		  &rd_chksum) < 0) {
 	s3close(fp);
 
 	return S3_ERROR;
@@ -160,7 +160,7 @@ s3tmat_write(const char *fn,
 		   n_state-1,
 		   n_state,
 		   fp,
-		   &chksum) != S3_SUCCESS) {
+		   &chksum) < 0) {
 	s3close(fp);
 
 	return S3_ERROR;
