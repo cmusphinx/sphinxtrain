@@ -85,7 +85,7 @@ s3mixw_read(const char *fn,
     do_chk = s3get_gvn_fattr("chksum0");
 
     /* Read the mixing weight array */
-    if (s3read_3d((void ****)out_mixw,
+    if (bio_fread_3d((void ****)out_mixw,
 		  sizeof(float32),
 		  out_n_mixw,
 		  out_n_feat,
@@ -101,7 +101,7 @@ s3mixw_read(const char *fn,
 	/* See if the checksum in the file matches that which
 	   was computed from the read data */
 
-	if (s3read(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
+	if (bio_fread(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
 	    s3close(fp);
 	    return S3_ERROR;
 	}
@@ -154,7 +154,7 @@ s3mixw_intv_read(const char *fn,
     do_chk = s3get_gvn_fattr("chksum0");
 
     /* Read the mixing weight array */
-    if (s3read_intv_3d((void ****)out_mixw,
+    if (bio_fread_intv_3d((void ****)out_mixw,
 		       sizeof(float32),
 		       mixw_s,
 		       mixw_e,
@@ -210,7 +210,7 @@ s3mixw_write(const char *fn,
        that results are compatible between machines */
     floor_nz_3d(mixw, n_mixw, n_feat, n_density, MIN_POS_FLOAT32);
 
-    if (s3write_3d((void ***)mixw,
+    if (bio_fwrite_3d((void ***)mixw,
 		   sizeof(float32),
 		   n_mixw,
 		   n_feat,
@@ -221,7 +221,7 @@ s3mixw_write(const char *fn,
 	return S3_ERROR;
     }
 	
-    if (s3write(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
 	s3close(fp);
 
 	return S3_ERROR;
@@ -234,31 +234,3 @@ s3mixw_write(const char *fn,
 
     return S3_SUCCESS;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.5  2004/07/17 08:00:23  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.1  97/03/17  15:01:49  eht
- * Initial revision
- * 
- *
- */

@@ -85,7 +85,7 @@ s3map_read(const char *fn,
 
     do_chk = s3get_gvn_fattr("chksum0");
 
-    if (s3read(out_n_rng,
+    if (bio_fread(out_n_rng,
 	       sizeof(uint32),
 	       1,
 	       fp,
@@ -96,7 +96,7 @@ s3map_read(const char *fn,
 	return S3_ERROR;
     }
 
-    if (s3read_1d(out_map,
+    if (bio_fread_1d(out_map,
 		  map_elem_size,
 		  out_n_dom,
 		  fp,
@@ -108,7 +108,7 @@ s3map_read(const char *fn,
     }
 
     if (do_chk) {
-	if (s3read(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
+	if (bio_fread(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
 	    s3close(fp);
 	    
 	    return S3_ERROR;
@@ -143,13 +143,13 @@ s3map_write(const char *fn,
     if (fp == NULL)
 	return S3_ERROR;
 
-    if (s3write(&n_rng, sizeof(uint32), 1, fp, &chksum) != 1) {
+    if (bio_fwrite(&n_rng, sizeof(uint32), 1, fp, &chksum) != 1) {
 	s3close(fp);
 
 	return S3_ERROR;
     }
 
-    if (s3write_1d(map,
+    if (bio_fwrite_1d(map,
 		   map_elem_size,
 		   n_dom,
 		   fp,
@@ -159,7 +159,7 @@ s3map_write(const char *fn,
 	return S3_ERROR;
     }
 
-    if (s3write(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
 	s3close(fp);
 
 	return S3_ERROR;
@@ -171,25 +171,3 @@ s3map_write(const char *fn,
 
     return S3_SUCCESS;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/03/17  15:01:49  eht
- * Initial revision
- * 
- *
- */

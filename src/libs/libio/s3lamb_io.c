@@ -82,7 +82,7 @@ s3lamb_read(const char *fn,
     /* if do_chk is non-NULL, there is a checksum after the data in the file */
     do_chk = s3get_gvn_fattr("chksum0");
 
-    if (s3read_1d((void **)&lambda,
+    if (bio_fread_1d((void **)&lambda,
 		  sizeof(float32),
 		  &n_lambda,
 		  fp,
@@ -94,7 +94,7 @@ s3lamb_read(const char *fn,
 	/* See if the checksum in the file matches that which
 	   was computed from the read data */
 
-	if (s3read(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
+	if (bio_fread(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
 	    s3close(fp);
 
 	    return S3_ERROR;
@@ -133,12 +133,12 @@ s3lamb_write(const char *fn,
     if (fp == NULL)
 	return S3_ERROR;
 
-    if (s3write_1d((void *)lambda, sizeof(float32), n_lambda, fp, &chksum) != S3_SUCCESS) {
+    if (bio_fwrite_1d((void *)lambda, sizeof(float32), n_lambda, fp, &chksum) != S3_SUCCESS) {
 	s3close(fp);
 	return S3_ERROR;
     }
 
-    if (s3write(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
 	s3close(fp);
 
 	return S3_ERROR;
@@ -183,7 +183,7 @@ s3lambcnt_read(const char *fn,
     /* if do_chk is non-NULL, there is a checksum after the data in the file */
     do_chk = s3get_gvn_fattr("chksum0");
 
-    if (s3read_1d((void **)&lambda_cnt,
+    if (bio_fread_1d((void **)&lambda_cnt,
 		  sizeof(uint32),
 		  &n_lambda_cnt,
 		  fp,
@@ -195,7 +195,7 @@ s3lambcnt_read(const char *fn,
 	/* See if the checksum in the file matches that which
 	   was computed from the read data */
 
-	if (s3read(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
+	if (bio_fread(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
 	    s3close(fp);
 
 	    return S3_ERROR;
@@ -234,12 +234,12 @@ s3lambcnt_write(const char *fn,
     if (fp == NULL)
 	return S3_ERROR;
 
-    if (s3write_1d((void *)lambda_cnt, sizeof(uint32), n_lambda_cnt, fp, &chksum) != S3_SUCCESS) {
+    if (bio_fwrite_1d((void *)lambda_cnt, sizeof(uint32), n_lambda_cnt, fp, &chksum) != S3_SUCCESS) {
 	s3close(fp);
 	return S3_ERROR;
     }
 
-    if (s3write(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
 	s3close(fp);
 
 	return S3_ERROR;

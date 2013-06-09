@@ -50,6 +50,7 @@
 #include <sys_compat/file.h>
 
 #include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/bio.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -311,146 +312,9 @@ error_loc:
 
     return NULL;
 }
-
-size_t
-s3read(void *pointer,
-       size_t size,
-       size_t num_items,
-       FILE *stream,
-       uint32 swap,
-       uint32 *chksum)
-{
-    size_t ret;
-    size_t i;
-    unsigned char  *i8;
-    uint16 *i16;
-    uint32 *i32;
-    uint32 sum;
-    int q,d,r;
-	char *char_pointer = (char *) pointer;
 
-    /* big reads accross NFS may fail to allow increment reads */
-    for (d=0,q=num_items; d < num_items; d+=r,q-=r)
-    {
-	r = fread(char_pointer+(d*size), size, (q > 256) ? 256 : q, stream);
-	if (r <= 0) return r;
-    }
-    ret = d;
-
-    if (swap) {
-	switch (size) {
-	case 1:
-	    /* nothing to do */
-	    break;
-
-	case 2:
-	    for (i = 0, i16 = (uint16 *)pointer; i < ret; i++)
-		SWAP_INT16(&i16[i]);
-	    break;
-
-	case 4:
-	    for (i = 0, i32 = (uint32 *)pointer; i < ret; i++)
-		SWAP_INT32(&i32[i]);
-	    break;
-
-	default:
-	    E_FATAL("Unimplemented size %u for swapping\n", size);
-	}
-    }
-    
-    sum = *chksum;
-
-    /* update checksum */
-    switch (size) {
-    case 1:
-	for (i = 0, i8 = (unsigned char *)pointer; i < ret; i++) {
-	    sum = (sum << 5 | sum >> 27) + i8[i];
-	}
-	break;
-    case 2:
-	for (i = 0, i16 = (uint16 *)pointer; i < ret; i++) {
-	    sum = (sum << 10 | sum >> 22) + i16[i];
-	}
-	break;
-    case 4:
-	for (i = 0, i32 = (uint32 *)pointer; i < ret; i++) {
-	    sum = (sum << 20 | sum >> 12) + i32[i];
-	}
-	break;
-
-    default:
-	E_WARN("Unimplemented size %u for checksum\n", size);
-    }
-    
-    *chksum = sum;
-
-    return ret;
-}
-
 int
-s3read_3d(void ****arr,
-	  size_t e_sz,
-	  uint32 *d1,
-	  uint32 *d2,
-	  uint32 *d3,
-	  FILE *fp,
-	  uint32 swap,
-	  uint32 *chksum)
-{
-    uint32 l_d1;
-    uint32 l_d2;
-    uint32 l_d3;
-    uint32 n;
-    void *raw;
-    size_t ret;
-
-    ret = s3read(&l_d1, sizeof(uint32), 1, fp, swap, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to read complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3read_3d");
-	}
-	return S3_ERROR;
-    }
-    ret = s3read(&l_d2, sizeof(uint32), 1, fp, swap, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to read complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3read_3d");
-	}
-	return S3_ERROR;
-    }
-    ret = s3read(&l_d3, sizeof(uint32), 1, fp, swap, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to read complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3read_3d");
-	}
-	return S3_ERROR;
-    }
-
-    if (s3read_1d(&raw, e_sz, &n, fp, swap, chksum) != S3_SUCCESS) {
-	return S3_ERROR;
-    }
-
-    assert(n == l_d1 * l_d2 * l_d3);
-
-    *arr = ckd_alloc_3d_ptr(l_d1, l_d2, l_d3, raw, e_sz);
-    *d1 = l_d1;
-    *d2 = l_d2;
-    *d3 = l_d3;
-    
-    return S3_SUCCESS;
-}
-
-int
-s3read_intv_3d(void ****arr,
+bio_fread_intv_3d(void ****arr,
 	       size_t e_sz,
 	       uint32 s,
 	       uint32 e,
@@ -469,13 +333,13 @@ s3read_intv_3d(void ****arr,
     void *raw;
     size_t ret;
 
-    ret = s3read(&l_d1, sizeof(uint32), 1, fp, swap, chksum);
+    ret = bio_fread(&l_d1, sizeof(uint32), 1, fp, swap, chksum);
     if (ret != 1) {
 	if (ret == 0) {
 	    E_ERROR_SYSTEM("Unable to read complete data");
 	}
 	else {
-	    E_ERROR_SYSTEM("OS error in s3read_3d");
+	    E_ERROR_SYSTEM("OS error in bio_fread_3d");
 	}
 	return S3_ERROR;
     }
@@ -493,23 +357,23 @@ s3read_intv_3d(void ****arr,
 	exit(-1);
     }
 
-    ret = s3read(&l_d2, sizeof(uint32), 1, fp, swap, chksum);
+    ret = bio_fread(&l_d2, sizeof(uint32), 1, fp, swap, chksum);
     if (ret != 1) {
 	if (ret == 0) {
 	    E_ERROR_SYSTEM("Unable to read complete data");
 	}
 	else {
-	    E_ERROR_SYSTEM("OS error in s3read_3d");
+	    E_ERROR_SYSTEM("OS error in bio_fread_3d");
 	}
 	return S3_ERROR;
     }
-    ret = s3read(&l_d3, sizeof(uint32), 1, fp, swap, chksum);
+    ret = bio_fread(&l_d3, sizeof(uint32), 1, fp, swap, chksum);
     if (ret != 1) {
 	if (ret == 0) {
 	    E_ERROR_SYSTEM("Unable to read complete data");
 	}
 	else {
-	    E_ERROR_SYSTEM("OS error in s3read_3d");
+	    E_ERROR_SYSTEM("OS error in bio_fread_3d");
 	}
 	return S3_ERROR;
     }
@@ -523,7 +387,7 @@ s3read_intv_3d(void ****arr,
 
     n = s_d1 * l_d2 * l_d3;
     raw = ckd_calloc(n, sizeof(float32));
-    if (s3read(raw, e_sz, n, fp, swap, chksum) != n) {
+    if (bio_fread(raw, e_sz, n, fp, swap, chksum) != n) {
 	E_FATAL_SYSTEM("Can't read");
     }
 
@@ -534,328 +398,6 @@ s3read_intv_3d(void ****arr,
     *d3 = l_d3;
     
     return S3_SUCCESS;
-}
-
-int
-s3read_2d(void ***arr,
-	  size_t e_sz,
-	  uint32 *d1,
-	  uint32 *d2,
-	  FILE *fp,
-	  uint32 swap,
-	  uint32 *chksum)
-{
-    uint32 l_d1, l_d2;
-    uint32 n;
-    size_t ret;
-    void *raw;
-    
-    ret = s3read(&l_d1, sizeof(uint32), 1, fp, swap, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to read complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3read_2d");
-	}
-	return S3_ERROR;
-    }
-    ret = s3read(&l_d2, sizeof(uint32), 1, fp, swap, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to read complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3read_2d");
-	}
-	return S3_ERROR;
-    }
-    if (s3read_1d(&raw, e_sz, &n, fp, swap, chksum) != S3_SUCCESS)
-	return S3_ERROR;
-
-    assert(n == l_d1*l_d2);
-
-    *d1 = l_d1;
-    *d2 = l_d2;
-    *arr = ckd_alloc_2d_ptr(l_d1, l_d2, raw, e_sz);
-
-    return S3_SUCCESS;
-}
-
-int
-s3read_1d(void **arr,
-	  size_t e_sz,
-	  uint32 *d1,
-	  FILE *fp,
-	  uint32 swap,
-	  uint32 *chksum)
-{
-    uint32 l_d1;
-    size_t ret;
-    void *raw;
-
-    ret = s3read(&l_d1, sizeof(uint32), 1, fp, swap, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR("Unable to read complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3read_1d");
-	}
-	return S3_ERROR;
-    }
-
-    raw = ckd_calloc(l_d1, e_sz);
-    ret = s3read(raw, e_sz, l_d1, fp, swap, chksum);
-    if (ret != l_d1) {
-	if (ret == 0) {
-	    E_ERROR("Unable to read complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3read_1d");
-	}
-	return S3_ERROR;
-    }
-
-    *d1 = l_d1;
-    *arr = raw;
-
-    return S3_SUCCESS;
-}
-
-size_t
-s3write(const void *pointer,
-	size_t size,
-	size_t num_items,
-	FILE *stream,
-	uint32 *chksum)
-{
-    uint32 sum;
-    unsigned char *i8;
-    uint16 *i16;
-    uint32 *i32;
-    size_t i;
-    size_t q,r,d;
-	char *char_pointer = (char *)pointer;
-
-    sum = *chksum;
-
-    /* update checksum over the given data items */
-    switch (size) {
-    case 1:
-	for (i = 0, i8 = (unsigned char *)pointer; i < num_items; i++) {
-	    /* rotate prior checksum by 5 bits and add data */
-	    sum = (sum << 5 | sum >> 27) + i8[i];
-	}
-	break;
-    case 2:
-	for (i = 0, i16 = (uint16 *)pointer; i < num_items; i++) {
-	    /* rotate prior checksum by 10 bits and add data */
-	    sum = (sum << 10 | sum >> 22) + i16[i];
-	}
-	break;
-    case 4:
-	for (i = 0, i32 = (uint32 *)pointer; i < num_items; i++) {
-	    /* rotate prior checksum by 20 bits and add data */
-	    sum = (sum << 20 | sum >> 12) + i32[i];
-	}
-	break;
-
-    default:
-	E_WARN("Unimplemented size %u for checksum\n", size);
-    }
-
-    *chksum = sum;
-
-    /* big writes may not work across NFS so allow for them incrementally */
-    for (q=num_items,d=0; q > 0; d+=r,q-=r)
-    {
-	r = fwrite(char_pointer+(d*size), size, 
-		   (q > 256) ? 256 : q, stream);
-	if (r <= 0)
-	    return r;
-    }
-
-    return num_items;
-}
-
-
-int
-s3write_3d(void ***arr,
-	   size_t e_sz,
-	   uint32 d1,
-	   uint32 d2,
-	   uint32 d3,
-	   FILE *fp,
-	   uint32 *chksum)
-{
-    size_t ret;
-
-    /* write out first dimension 1 */
-    ret = s3write(&d1, sizeof(uint32), 1, fp, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to write complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3write_3d");
-	}
-	return S3_ERROR;
-    }
-
-    /* write out first dimension 2 */
-    ret = s3write(&d2, sizeof(uint32), 1, fp, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to write complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3write_3d");
-	}
-	return S3_ERROR;
-    }
-
-    /* write out first dimension 3 */
-    ret = s3write(&d3, sizeof(uint32), 1, fp, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to write complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3write_3d");
-	}
-	return S3_ERROR;
-    }
-
-    /* write out the data in the array as one big block */
-    if (s3write_1d(arr[0][0], e_sz, d1*d2*d3, fp, chksum) != S3_SUCCESS) {
-	return S3_ERROR;
-    }
-
-    return S3_SUCCESS;
-}
-
-int
-s3write_2d(void **arr,
-	   size_t e_sz,
-	   uint32 d1,
-	   uint32 d2,
-	   FILE *fp,
-	   uint32 *chksum)
-{
-    size_t ret;
-
-    ret = s3write(&d1, sizeof(uint32), 1, fp, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to write complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3write_2d");
-	}
-	return S3_ERROR;
-    }
-
-    ret = s3write(&d2, sizeof(uint32), 1, fp, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to write complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3write_2d");
-	}
-	return S3_ERROR;
-    }
-
-    if (s3write_1d(arr[0], e_sz, d1*d2, fp, chksum) != S3_SUCCESS) {
-	return S3_ERROR;
-    }
-
-    return S3_SUCCESS;
-}
-
-int
-s3write_1d(void *arr,
-	   size_t e_sz,
-	   uint32 d1,
-	   FILE *fp,
-	   uint32 *chksum)
-{
-    size_t ret;
-
-    ret = s3write(&d1, sizeof(uint32), 1, fp, chksum);
-    if (ret != 1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to write complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3write_1d");
-	}
-
-	return S3_ERROR;
-    }
-
-    ret = s3write(arr, e_sz, d1, fp, chksum);
-    if (ret != d1) {
-	if (ret == 0) {
-	    E_ERROR_SYSTEM("Unable to write complete data");
-	}
-	else {
-	    E_ERROR_SYSTEM("OS error in s3write_1d");
-	}
-
-	return S3_ERROR;
-    }
-
-    return S3_SUCCESS;
-}
-
-
-int
-areadchar (char *file,
-	   char **data_ref,
-	   int *length_ref)
-{
-  int             fd;
-  int             length;
-  char           *data;
-
-  if ((fd = open (file, O_RDONLY | O_BINARY, 0644)) < 0)
-  {
-    fprintf (stderr, "areadchar: %s: can't open\n", file);
-    return -1;
-  }
-  if (read (fd, (char *) &length, 4) != 4)
-  {
-    fprintf (stderr, "areadchar: %s: can't read length (empty file?)\n", file);
-    close (fd);
-    return -1;
-  }
-  SWAP_INT32(&length);
-  /* Just get the file size if we were not given a buffer. */
-  if (data_ref == NULL) {
-	  close(fd);
-	  if (length_ref)
-	    *length_ref = length;
-	  return length;
-  }
-  if (!(data = malloc ((unsigned) length)))
-  {
-    fprintf (stderr, "areadchar: %s: can't alloc data\n", file);
-    close (fd);
-    return -1;
-  }
-  if (read (fd, data, length) != length)
-  {
-    fprintf (stderr, "areadchar: %s: can't read data\n", file);
-    close (fd);
-    free (data);
-    return -1;
-  }
-  close (fd);
-  *data_ref = data;
-  *length_ref = length;
-  return length;
 }
 
 /* Macro to byteswap an int variable.  x = ptr to variable */

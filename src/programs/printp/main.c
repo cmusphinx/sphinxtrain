@@ -48,6 +48,7 @@
 #include "parse_cmd_ln.h"
 
 #include <sphinxbase/err.h>
+#include <sphinxbase/bio.h>
 
 #include <s3/common.h>
 #include <s3/model_inventory.h>
@@ -136,7 +137,7 @@ print_lda(const char *fn)
     
     if ((fh = s3open(fn, "rb", &swap)) == NULL)
 	return S3_ERROR;
-    if (s3read_3d((void ****)&lda, sizeof(float32),
+    if (bio_fread_3d((void ****)&lda, sizeof(float32),
 		  &n_lda, &m, &n, fh, swap, &chksum) < 0)
 	return S3_ERROR;
 

@@ -79,36 +79,9 @@ s3add_fattr(char *attrib,
 	    char *value,
 	    int dup);
 
-/* read/write calls.  Patterned after fread/fwrite */
-size_t
-s3read(void *pointer,
-       size_t size,
-       size_t num_items,
-       FILE *stream,
-       uint32 swap,
-       uint32 *chksum);
-
-size_t
-s3write(const void *pointer,
-	size_t size,
-	size_t num_items,
-	FILE *stream,
-	uint32 *chksum);
-
-
 int
 s3close(FILE *fp);
 
-/* Array read/write calls */
-int32
-s3read_3d(void ****arr,
-	  size_t e_sz,
-	  uint32 *d1,
-	  uint32 *d2,
-	  uint32 *d3,
-	  FILE *fp,
-	  uint32 swap,
-	  uint32 *chksum);
 int32
 s3read_intv_3d(void ****arr,
 	       size_t e_sz,
@@ -120,52 +93,6 @@ s3read_intv_3d(void ****arr,
 	       FILE *fp,
 	       uint32 swap,
 	       uint32 *chksum);
-
-int32
-s3write_3d(void ***arr,
-	   size_t e_sz,
-	   uint32 d1,
-	   uint32 d2,
-	   uint32 d3,
-	   FILE *fp,
-	   uint32 *chksum);
-
-int32
-s3read_2d(void ***arr,
-	  size_t e_sz,
-	  uint32 *d1,
-	  uint32 *d2,
-	  FILE *fp,
-	  uint32 swap,
-	  uint32 *chksum);
-
-int32
-s3write_2d(void **arr,
-	   size_t e_sz,
-	   uint32 d1,
-	   uint32 d2,
-	   FILE *fp,
-	   uint32 *chksum);
-
-int32
-s3read_1d(void **arr,
-	  size_t e_sz,
-	  uint32 *d1,
-	  FILE *fp,
-	  uint32 swap,
-	  uint32 *chksum);
-
-int32
-s3write_1d(void *arr,
-	   size_t e_sz,
-	   uint32 d1,
-	   FILE *fp,
-	   uint32 *chksum);
-
-int
-areadchar (char *file,
-	   char **data_ref,
-	   int *length_ref);
 
 int
 areadfloat (char *file,

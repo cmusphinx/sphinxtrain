@@ -44,8 +44,10 @@
  *     Eric Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
-#include <s3/s3tmat_io.h>
 #include <sphinxbase/matrix.h>
+#include <sphinxbase/bio.h>
+
+#include <s3/s3tmat_io.h>
 #include <s3/s3io.h>
 #include <s3/s3.h>
 
@@ -85,7 +87,7 @@ s3tmat_read(const char *fn,
     /* if do_chk is non-NULL, there is a checksum after the data in the file */
     do_chk = s3get_gvn_fattr("chksum0");
 
-    if (s3read_3d((void ****)out_tmat,
+    if (bio_fread_3d((void ****)out_tmat,
 		  sizeof(float32),
 		  out_n_tmat,
 		  &tmp,
@@ -99,7 +101,7 @@ s3tmat_read(const char *fn,
     }
 
     if (do_chk) {
-	if (s3read(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
+	if (bio_fread(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
 	    s3close(fp);
 	    
 	    return S3_ERROR;
@@ -152,7 +154,7 @@ s3tmat_write(const char *fn,
        that results are compatible between machines */
     floor_nz_3d(tmat, n_tmat, n_state-1, n_state, MIN_POS_FLOAT32);
 
-    if (s3write_3d((void ***)tmat,
+    if (bio_fwrite_3d((void ***)tmat,
 		   sizeof(float32),
 		   n_tmat,
 		   n_state-1,
@@ -163,9 +165,8 @@ s3tmat_write(const char *fn,
 
 	return S3_ERROR;
     }
-    if (s3write(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, 0, &ignore) != 1) {
 	s3close(fp);
-
 	return S3_ERROR;
     }
 
@@ -176,32 +177,3 @@ s3tmat_write(const char *fn,
 
     return S3_SUCCESS;
 }
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2004/11/29  01:11:17  egouvea
- * Fixed license terms in some new files.
- * 
- * Revision 1.5  2004/07/17 08:00:23  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.1  97/03/17  15:01:49  eht
- * Initial revision
- * 
- *
- */

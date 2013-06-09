@@ -45,11 +45,13 @@
  *     David Huggins-Daines (dhuggins@cs.cmu.edu)
  *********************************************************************/
 
-#include <s3/s3gau_io.h>
-#include <s3/s3io.h>
 
 #include <sphinxbase/matrix.h>
 #include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/bio.h>
+
+#include <s3/s3gau_io.h>
+#include <s3/s3io.h>
 #include <s3/s3.h>
 
 #include <assert.h>
@@ -99,24 +101,24 @@ s3gau_read_maybe_full(const char *fn,
         do_chk = NULL;
     }
     
-    if (s3read(&n_mgau, sizeof(uint32), 1, fp, swap, &chksum) != 1) {
+    if (bio_fread(&n_mgau, sizeof(uint32), 1, fp, swap, &chksum) != 1) {
 	goto error;
     }
 
-    if (s3read(&n_feat, sizeof(uint32), 1, fp, swap, &chksum) != 1) {
+    if (bio_fread(&n_feat, sizeof(uint32), 1, fp, swap, &chksum) != 1) {
 	goto error;
     }
 
-    if (s3read(&n_density, sizeof(uint32), 1, fp, swap, &chksum) != 1) {
+    if (bio_fread(&n_density, sizeof(uint32), 1, fp, swap, &chksum) != 1) {
 	goto error;
     }
 
     veclen = ckd_calloc(n_feat, sizeof(uint32));
-    if (s3read(veclen, sizeof(uint32), n_feat, fp, swap, &chksum) != n_feat) {
+    if (bio_fread(veclen, sizeof(uint32), n_feat, fp, swap, &chksum) != n_feat) {
 	goto error;
     }
 
-    if (s3read_1d((void **)&raw, sizeof(float32), &n, fp, swap, &chksum) != S3_SUCCESS) {
+    if (bio_fread_1d((void **)&raw, sizeof(float32), &n, fp, swap, &chksum) != S3_SUCCESS) {
 	ckd_free(veclen);
 
 	goto error;
@@ -152,7 +154,7 @@ s3gau_read_maybe_full(const char *fn,
 	/* See if the checksum in the file matches that which
 	   was computed from the read data */
 
-	if (s3read(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
+	if (bio_fread(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
             goto error;
 	}
 
@@ -213,31 +215,31 @@ s3gau_write_full(const char *fn,
     if (fp == NULL)
 	return S3_ERROR;
 
-    if (s3write(&n_mgau, sizeof(uint32), 1, fp, &chksum) != 1) {
+    if (bio_fwrite(&n_mgau, sizeof(uint32), 1, fp, 0, &chksum) != 1) {
 	goto error;
     }
 
-    if (s3write(&n_feat, sizeof(uint32), 1, fp, &chksum) != 1) {
+    if (bio_fwrite(&n_feat, sizeof(uint32), 1, fp, 0, &chksum) != 1) {
 	goto error;
     }
 
-    if (s3write(&n_density, sizeof(uint32), 1, fp, &chksum) != 1) {
+    if (bio_fwrite(&n_density, sizeof(uint32), 1, fp, 0, &chksum) != 1) {
 	goto error;
     }
 
-    if (s3write(veclen, sizeof(uint32), n_feat, fp, &chksum) != n_feat) {
+    if (bio_fwrite(veclen, sizeof(uint32), n_feat, fp, 0, &chksum) != n_feat) {
 	goto error;
     }
 
     for (blk = 0, i = 0; i < n_feat; i++)
 	blk += veclen[i] * veclen[i];
 
-    if (s3write_1d(out[0][0][0][0], sizeof(float32),
+    if (bio_fwrite_1d(out[0][0][0][0], sizeof(float32),
 		   n_mgau*n_density*blk, fp, &chksum) != S3_SUCCESS) {
 	goto error;
     }
 
-    if (s3write(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, 0, &ignore) != 1) {
 	goto error;
     }
 
@@ -304,32 +306,32 @@ s3gaucnt_read_full(const char *fn,
     /* if do_chk is non-NULL, there is a checksum after the data in the file */
     do_chk = s3get_gvn_fattr("chksum0");
 
-    if (s3read((void *)&has_means, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
+    if (bio_fread((void *)&has_means, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
 	return S3_ERROR;
     }
 
-    if (s3read((void *)&has_vars, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
+    if (bio_fread((void *)&has_vars, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
 	return S3_ERROR;
     }
 
-    if (s3read((void *)&pass2var, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
+    if (bio_fread((void *)&pass2var, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
 	return S3_ERROR;
     }
 
-    if (s3read((void *)&n_cb, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
+    if (bio_fread((void *)&n_cb, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
 	return S3_ERROR;
     }
 
-    if (s3read((void *)&n_density, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
+    if (bio_fread((void *)&n_density, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
 	return S3_ERROR;
     }
 
-    if (s3read_1d((void **)&veclen, sizeof(uint32), &n_feat, fp, swap, &rd_chksum) != S3_SUCCESS) {
+    if (bio_fread_1d((void **)&veclen, sizeof(uint32), &n_feat, fp, swap, &rd_chksum) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
     if (has_means) {
-	if (s3read_1d((void *)&buf, sizeof(float32), &n, fp, swap, &rd_chksum) != S3_SUCCESS) {
+	if (bio_fread_1d((void *)&buf, sizeof(float32), &n, fp, swap, &rd_chksum) != S3_SUCCESS) {
 	    return S3_ERROR;
 	}
 	
@@ -354,7 +356,7 @@ s3gaucnt_read_full(const char *fn,
 	    if (veclen[i] > maxveclen) maxveclen = veclen[i];
 	}
 
-	if (s3read_1d((void *)&buf, sizeof(float32), &n, fp, swap, &rd_chksum) != S3_SUCCESS) {
+	if (bio_fread_1d((void *)&buf, sizeof(float32), &n, fp, swap, &rd_chksum) != S3_SUCCESS) {
 	    return S3_ERROR;
 	}
 	assert(n == n_cb * n_density * blk * blk);
@@ -375,7 +377,7 @@ s3gaucnt_read_full(const char *fn,
 	}
     }
 
-    if (s3read_3d((void ****)&dnom, sizeof(float32), &d1, &d2, &d3, fp, swap, &rd_chksum) != S3_SUCCESS) {
+    if (bio_fread_3d((void ****)&dnom, sizeof(float32), &d1, &d2, &d3, fp, swap, &rd_chksum) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
@@ -387,7 +389,7 @@ s3gaucnt_read_full(const char *fn,
 	/* See if the checksum in the file matches that which
 	   was computed from the read data */
 	
-	if (s3read(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
+	if (bio_fread(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
 	    s3close(fp);
 	    return S3_ERROR;
 	}
@@ -430,8 +432,8 @@ s3gaucnt_write_full(const char *fn,
 		    const uint32 *veclen)
 {
     FILE *fp;
-    uint32 chksum = 0;
-    uint32 ignore = 0;
+    int32 chksum = 0;
+    int32 ignore = 0;
     uint32 n_elem, blk, j, has_means, has_vars;
 
     s3clr_fattr();
@@ -447,7 +449,7 @@ s3gaucnt_write_full(const char *fn,
 	has_means = TRUE;
     else
 	has_means = FALSE;
-    if (s3write((void *)&has_means, sizeof(uint32), 1, fp, &chksum) != 1) {
+    if (bio_fwrite((void *)&has_means, sizeof(uint32), 1, fp, 0, &chksum) != 1) {
 	return S3_ERROR;
     }
 
@@ -455,20 +457,20 @@ s3gaucnt_write_full(const char *fn,
 	has_vars = TRUE;
     else
 	has_vars = FALSE;
-    if (s3write((void *)&has_vars, sizeof(uint32), 1, fp, &chksum) != 1) {
+    if (bio_fwrite((void *)&has_vars, sizeof(uint32), 1, fp, 0, &chksum) != 1) {
 	return S3_ERROR;
     }
-    if (s3write((void *)&pass2var, sizeof(uint32), 1, fp, &chksum) != 1) {
+    if (bio_fwrite((void *)&pass2var, sizeof(uint32), 1, fp, 0, &chksum) != 1) {
 	return S3_ERROR;
     }
-    if (s3write((void *)&n_cb, sizeof(uint32), 1, fp, &chksum) != 1) {
+    if (bio_fwrite((void *)&n_cb, sizeof(uint32), 1, fp, 0, &chksum) != 1) {
 	return S3_ERROR;
     }
-    if (s3write((void *)&n_density, sizeof(uint32), 1, fp, &chksum) != 1) {
+    if (bio_fwrite((void *)&n_density, sizeof(uint32), 1, fp, 0, &chksum) != 1) {
 	return S3_ERROR;
     }
 
-    if (s3write_1d((void *)veclen, sizeof(uint32), n_feat, fp, &chksum) != S3_SUCCESS) {
+    if (bio_fwrite_1d((void *)veclen, sizeof(uint32), n_feat, fp, &chksum) != S3_SUCCESS) {
 	return S3_ERROR;
     }
     
@@ -480,13 +482,13 @@ s3gaucnt_write_full(const char *fn,
     if (has_means) {
 	band_nz_1d(wt_mean[0][0][0], n_elem, MIN_POS_FLOAT32);
 	
-	if (s3write_1d((void *)wt_mean[0][0][0], sizeof(float32), n_elem, fp, &chksum) != S3_SUCCESS)
+	if (bio_fwrite_1d((void *)wt_mean[0][0][0], sizeof(float32), n_elem, fp, &chksum) != S3_SUCCESS)
 	    return S3_ERROR;
     }
 
     if (has_vars) {
 	/* Don't floor full variances!!! */
-	if (s3write_1d((void *)wt_var[0][0][0][0], sizeof(float32),
+	if (bio_fwrite_1d((void *)wt_var[0][0][0][0], sizeof(float32),
 		       n_elem * blk, fp, &chksum) != S3_SUCCESS)
 	    return S3_ERROR;
     }
@@ -495,14 +497,13 @@ s3gaucnt_write_full(const char *fn,
        that results are compatible between machines */
     floor_nz_3d(dnom, n_cb, n_feat, n_density, MIN_POS_FLOAT32);
 
-    if (s3write_3d((void ***)dnom, sizeof(float32),
+    if (bio_fwrite_3d((void ***)dnom, sizeof(float32),
 		   n_cb, n_feat, n_density, fp, &chksum) != S3_SUCCESS) {
 	return S3_ERROR;
     }
 
-    if (s3write(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, 0, &ignore) != 1) {
 	s3close(fp);
-	
 	return S3_ERROR;
     }
 	
@@ -517,13 +518,3 @@ s3gaucnt_write_full(const char *fn,
 
     return S3_SUCCESS;
 }
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * 
- *
- */
-
-
-

@@ -105,7 +105,7 @@ agg_all_seg(feat_t *fcb,
 
     start = ftell(fp);
 
-    if (s3write(&i, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&i, sizeof(uint32), 1, fp, 0, &ignore) != 1) {
 	E_ERROR_SYSTEM("Unable to write to dmp file");
 
 	return S3_ERROR;
@@ -149,10 +149,10 @@ agg_all_seg(feat_t *fcb,
 
 	    for (t = feat_window_size(fcb); t < n_frame - feat_window_size(fcb); t++, j++) {
 		if ((j % stride) == 0) {
-		    while (s3write(&feat[t][0][0],
+		    while (bio_fwrite(&feat[t][0][0],
 				   sizeof(float32),
 				   blksz,
-				   fp, &ignore) != blksz) {
+				   fp, 0, &ignore) != blksz) {
 			static int rpt = 0;
 
 			if (!rpt) {
@@ -179,7 +179,7 @@ agg_all_seg(feat_t *fcb,
 
     E_INFO("Wrote %u frames to %s\n", n_out_frame, fn);
 
-    if (s3write((void *)&n_out_frame, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite((void *)&n_out_frame, sizeof(uint32), 1, fp, 0, &ignore) != 1) {
 	E_ERROR_SYSTEM("Unable to write to dmp file");
 	
 	return S3_ERROR;

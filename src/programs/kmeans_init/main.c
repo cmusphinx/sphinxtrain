@@ -259,7 +259,7 @@ setup_obs_1class(uint32 strm, uint32 n_frame, uint32 n_stream, uint32 *veclen, u
     }
 
     for (i = 0, o = 0; i < n_frame; i++) {
-	if (s3read(buf, sizeof(float32), blksize, dmp_fp, dmp_swp, &ignore) != blksize) {
+	if (bio_fread(buf, sizeof(float32), blksize, dmp_fp, dmp_swp, &ignore) != blksize) {
 	    E_ERROR_SYSTEM("Can't read dump file\n");
 
 	    return 0;
@@ -1355,7 +1355,7 @@ init_state(const char *obsdmp,
 	    return S3_ERROR;
 	}
 
-	if (s3read(&n_frame, sizeof(uint32), 1, dmp_fp, dmp_swp, &ignore) != 1) {
+	if (bio_fread(&n_frame, sizeof(uint32), 1, dmp_fp, dmp_swp, &ignore) != 1) {
 	    E_ERROR_SYSTEM("Unable to open dump file %s for reading\n",
 			   cmd_ln_str("-segdmpfn"));
 
