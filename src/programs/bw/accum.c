@@ -207,6 +207,8 @@ accum_gauden(float32 ***denacc,
 
     float32 diff;
     float32 obs_cnt;
+    
+    int n_top = gauden_n_top(g);
 
     /* for each density family found in the utterance */
     for (i = 0; i < n_lcl2gbl; i++) {
@@ -216,6 +218,8 @@ accum_gauden(float32 ***denacc,
 	/* for each feature */
 	for (j = 0; j < gauden_n_feat(g); j++) {
 	    vector_t feat = frame[j];
+	    uint32* den_idx_row = den_idx[i][j];
+	    float32* denacc_row = denacc[i][j];
 
 	    if (var_is_full) {
 		ckd_free_2d((void **)cov);
@@ -223,13 +227,14 @@ accum_gauden(float32 ***denacc,
 		ckd_free(dvec);
 		dvec = ckd_calloc(g->veclen[j], sizeof(float32));
 	    }
+	    
 
 	    /* for each density in the mixture density */
-	    for (kk = 0; kk < gauden_n_top(g); kk++) {
+	    for (kk = 0; kk < n_top; kk++) {
 		
-		k = den_idx[i][j][kk];	/* i.e. density k is one of the n_top densities */
+		k = den_idx_row[kk];	/* i.e. density k is one of the n_top densities */
 		
-		obs_cnt = denacc[i][j][k];	/* observation count for density (k) at this time frame
+		obs_cnt = denacc_row[k];	/* observation count for density (k) at this time frame
 						   given the model */
 		
 		/* don't bother adding a bunch of
@@ -268,24 +273,29 @@ accum_gauden(float32 ***denacc,
 		    scalarmultiply(cov, obs_cnt, g->veclen[j]);
 		    matrixadd(fv, cov, g->veclen[j]);
 		}
-		for (l = 0; l < g->veclen[j]; l++) {
-		    if (mean_reest) {
+
+    	        if (mean_reest) {
+		    for (l = 0; l < g->veclen[j]; l++) {
 			m[l] += obs_cnt * feat[l];
 		    }
-
-		    if (var_reest && !var_is_full) {
-			/* Always reest vars on untransformed features for now */
-		        /* This does NOT work with -2passvar no (for pretty obvious reasons) */
-			if (!pass2var)
+		}
+		
+		if (var_reest && !var_is_full) {
+		    if (!pass2var) {
+			for (l = 0; l < g->veclen[j]; l++) {
+			    /* Always reest vars on untransformed features for now */
+			    /* This does NOT work with -2passvar no (for pretty obvious reasons) */
 			    v[l] += obs_cnt * feat[l] * feat[l];
-			else {
-			    diff = feat[l] - pm[l];
-			    
+			}
+		    } else {
+			for (l = 0; l < g->veclen[j]; l++) {
+			    diff = feat[l] - pm[l];    
 			    diff *= diff;
 			    v[l] += obs_cnt * diff;
 			}
 		    }
 		}
+
 		/* accumulate observation count for all densities */
 		dnom[i][j][k] += obs_cnt;
 	    }

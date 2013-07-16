@@ -78,13 +78,6 @@ static float32 min_var = 1e38;	/* just a big num */
 #undef M_PI
 #define M_PI       3.1415926535897932385E0
 
-/* On the Alphas, we can have this nice fast routine */
-#if __alpha
-#define	EXPF	expf
-#else
-#define EXPF	exp
-#endif
-
 #if defined (WIN32)
 #define finite(x)    _finite(x)
 #endif
@@ -847,9 +840,23 @@ log_diag_eval(vector_t obs,
     float64 d = 0.0, diff;
     uint32 l;
 
-    for (l = 0; l < veclen; l++) {
-	diff = obs[l] - mean[l];
-	d += var_fact[l] * diff * diff;	/* compute -1 / (2 sigma ^2) * (x - m) ^ 2 terms */
+    if (veclen == 39) {
+	/* Most common case, optimized for loop unrolling */
+        for (l = 0; l < 39; l++) {
+	    diff = obs[l] - mean[l];
+	    d += var_fact[l] * diff * diff;	/* compute -1 / (2 sigma ^2) * (x - m) ^ 2 terms */
+	}
+    } else if (veclen == 30) {
+	/* Most common case, optimized for loop unrolling */
+        for (l = 0; l < 30; l++) {
+	    diff = obs[l] - mean[l];
+	    d += var_fact[l] * diff * diff;	/* compute -1 / (2 sigma ^2) * (x - m) ^ 2 terms */
+	}
+    } else {
+        for (l = 0; l < veclen; l++) {
+	    diff = obs[l] - mean[l];
+	    d += var_fact[l] * diff * diff;	/* compute -1 / (2 sigma ^2) * (x - m) ^ 2 terms */
+	}
     }
     
     return norm - d;	/* log (1 / 2 pi |sigma^2|) */
@@ -1149,7 +1156,7 @@ gauden_compute(float64 **den,		/* density array for a mixture Gaussian */
 			       g->norm[mgau][j]);
 
 	    for (k = 0; k < g->n_density; k++) {
-		den[j][k] = EXPF( den[j][k] );
+		den[j][k] = exp( den[j][k] );
 	    }
 	}
     }
@@ -1165,7 +1172,7 @@ gauden_compute(float64 **den,		/* density array for a mixture Gaussian */
 			       g->norm[mgau][j]);
 
 	    for (k = 0; k < g->n_density; k++) {
-		den[j][k] = EXPF( den[j][k] );
+		den[j][k] = exp( den[j][k] );
 	    }
 	}
     }
@@ -1185,7 +1192,7 @@ gauden_compute(float64 **den,		/* density array for a mixture Gaussian */
 			       prev_den_idx ? prev_den_idx[j] : NULL);
 
 	    for (k = 0; k < g->n_top; k++) {
-		den[j][k] = EXPF( den[j][k] );
+		den[j][k] = exp( den[j][k] );
 	    }
 	}
     }
@@ -1307,7 +1314,7 @@ gauden_scale_densities_fwd(float64 ***den,		/* density array for a mixture Gauss
 	c = cb[i];
 	for (j = 0; j < g->n_feat; j++) {
 	    for (k = 0; k < g->n_top; k++) {
-		den[c][j][k] = EXPF(den[c][j][k] - max_den[j]);
+		den[c][j][k] = exp(den[c][j][k] - max_den[j]);
 	    }
 	}
     }
@@ -1343,7 +1350,7 @@ gauden_scale_densities_bwd(float64 ***den,		/* density array for a mixture Gauss
 		scl[j] = MINUS_LOG_INFINITY + MAX_LOG_DEN;
 	    }
 	    for (k = 0; k < g->n_top; k++) {
-		den[c][j][k] = EXPF(den[c][j][k] - scl[j]);
+		den[c][j][k] = exp(den[c][j][k] - scl[j]);
 		assert(finite(den[c][j][k]));
 	    }
 	}
