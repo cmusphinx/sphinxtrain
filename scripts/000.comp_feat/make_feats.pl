@@ -112,9 +112,11 @@ my $rv = RunTool('sphinx_fe', $logfile, $ctlcount,
 		  -raw => $raw,
 		  -mswav => $mswav,
 		  -samprate => $ST::CFG_WAVFILE_SRATE,
-		  -nfilt => $ST::CFG_NUM_FILT,
 		  -lowerf => $ST::CFG_LO_FILT,
 		  -upperf => $ST::CFG_HI_FILT,
+		  -nfilt => $ST::CFG_NUM_FILT,
+		  -transform => $ST::CFG_TRANSFORM,
+		  -lifter => $ST::CFG_LIFTER,
 	          @warp_args);
 
 if ($rv) {
