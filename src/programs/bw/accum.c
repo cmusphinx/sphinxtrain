@@ -209,6 +209,7 @@ accum_gauden(float32 ***denacc,
     float32 obs_cnt;
     
     int n_top = gauden_n_top(g);
+    int n_density = gauden_n_density(g);
 
     /* for each density family found in the utterance */
     for (i = 0; i < n_lcl2gbl; i++) {
@@ -232,7 +233,10 @@ accum_gauden(float32 ***denacc,
 	    /* for each density in the mixture density */
 	    for (kk = 0; kk < n_top; kk++) {
 		
-		k = den_idx_row[kk];	/* i.e. density k is one of the n_top densities */
+		if (n_top == n_density)
+		    k = kk;
+		else
+		    k = den_idx_row[kk];	/* i.e. density k is one of the n_top densities */
 		
 		obs_cnt = denacc_row[k];	/* observation count for density (k) at this time frame
 						   given the model */

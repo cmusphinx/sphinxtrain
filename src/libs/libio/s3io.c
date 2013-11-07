@@ -256,9 +256,8 @@ s3open(const char *file_name,
 
 	fp = fopen(file_name, mode);
 	if (fp == NULL) {
-	    E_WARN_SYSTEM("Unable to open %s for reading",
+	    E_ERROR_SYSTEM("Unable to open %s for reading",
 			  file_name);
-
 	    return NULL;
 	}
 
@@ -275,7 +274,7 @@ s3open(const char *file_name,
 
 	fp = fopen(file_name, mode);
 	if (fp == NULL) {
-	    E_WARN_SYSTEM("Unable to open %s for writing", file_name);
+	    E_ERROR_SYSTEM("Unable to open %s for writing", file_name);
 	    
 	    goto error_loc;
 	}
@@ -291,7 +290,7 @@ s3open(const char *file_name,
 
 	fp = fopen(file_name, mode);
 	if (fp == NULL) {
-	    E_WARN_SYSTEM("Unable to open %s for appending", file_name);
+	    E_ERROR_SYSTEM("Unable to open %s for appending", file_name);
 	    
 	    goto error_loc;
 	}

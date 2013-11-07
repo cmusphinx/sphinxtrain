@@ -409,7 +409,7 @@ model_def_read(model_def_t **out_model_def,
 
     fp = fopen(file_name, "r");
     if (fp == NULL) {
-	E_WARN_SYSTEM("Unable to open %s for reading",
+	E_ERROR_SYSTEM("Unable to open %s for reading",
 		      file_name);
 
 	return S3_ERROR;

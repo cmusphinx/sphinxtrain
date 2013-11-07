@@ -846,9 +846,9 @@ log_diag_eval(vector_t obs,
 	    diff = obs[l] - mean[l];
 	    d += var_fact[l] * diff * diff;	/* compute -1 / (2 sigma ^2) * (x - m) ^ 2 terms */
 	}
-    } else if (veclen == 30) {
+    } else if (veclen == 32) {
 	/* Most common case, optimized for loop unrolling */
-        for (l = 0; l < 30; l++) {
+        for (l = 0; l < 32; l++) {
 	    diff = obs[l] - mean[l];
 	    d += var_fact[l] * diff * diff;	/* compute -1 / (2 sigma ^2) * (x - m) ^ 2 terms */
 	}

@@ -97,7 +97,7 @@ initialize(lexicon_t **out_lex,
     if (cmd_ln_str("-moddeffn")) {
 	if (model_def_read(&mdef,
 			   cmd_ln_str("-moddeffn")) != S3_SUCCESS) {
-	    E_WARN_SYSTEM("Unable to open model def file");
+	    E_ERROR_SYSTEM("Unable to open model def file");
 	    return S3_ERROR;
 	}
     } else {

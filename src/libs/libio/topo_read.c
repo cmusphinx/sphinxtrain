@@ -115,7 +115,7 @@ topo_read(float32 ***tmat,
 
     fp = fopen(topo_file_name, "r");
     if (fp == NULL) {
-	E_WARN_SYSTEM("Unable to open %s for reading\n", topo_file_name);
+	E_ERROR_SYSTEM("Unable to open %s for reading\n", topo_file_name);
 
 	goto error;
     }

@@ -1278,7 +1278,7 @@ open_file_for_reading(uint32 type)
 
     out = fopen(fn, "r");
     if (out == NULL) {
-	E_WARN_SYSTEM("Unable to open %s for reading\n", fn);
+	E_ERROR_SYSTEM("Unable to open %s for reading\n", fn);
     }
     
     return out;
