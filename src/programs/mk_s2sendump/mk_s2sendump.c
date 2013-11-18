@@ -82,7 +82,7 @@ static char *fmtdesc[] = {
 
 static void fwrite_int32 (FILE *fp, int32 val)
 {
-    SWAP_LE_32(val);
+    SWAP_LE_32(&val);
     fwrite (&val, sizeof(int), 1, fp);
 }
 
