@@ -185,7 +185,7 @@ for (my $warp = $ST::CFG_VTLN_START;
 
 	# Look in the logfile to make sure it succeeded, and to find the
 	# offset and length of this part in the original control file.
-	my $logfile = catfile($logdir, "${ST::CFG_EXPTNAME}.$i.vtln.log");
+	my $logfile = catfile($logdir, "${ST::CFG_EXPTNAME}.$warp.$i.vtln.log");
 	open LOG, "<$logfile" or die "Failed to open $logfile: $!";
 	my $success = 0;
 	my ($ctlcount, $ctloffset);

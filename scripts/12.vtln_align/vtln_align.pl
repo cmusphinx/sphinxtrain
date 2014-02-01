@@ -74,7 +74,7 @@ my $fdict = defined($ST::CFG_FORCE_ALIGN_FILLERDICT)
     ? $ST::CFG_FORCE_ALIGN_FILLERDICT
     : "$indir/$ST::CFG_EXPTNAME.falign.fdict";
 my $beam = defined($ST::CFG_FORCE_ALIGN_BEAM) ? $ST::CFG_FORCE_ALIGN_BEAM : 1e-100;
-my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$part.vtln.log";
+my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$warp.$part.vtln.log";
 
 # if there is an MLLT transformation, use it
 my $mllt_file = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
