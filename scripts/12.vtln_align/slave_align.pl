@@ -323,8 +323,7 @@ while (<VTLNCTL>) {
     my @fields = split " ", $inline;
     die "Utterance ID mismatch: $fileid != $fields[0], shouldn't happen!"
 	unless $fileid eq $fields[0];
-    $fields[0] = "$fileid.$warp";
-    $vtlntrans =~ s/\)\s*$/.$warp)/;
+    $fields[0] = catdir("$warp","$fileid");
     print OUTCTL "@fields\n";
     print OUTLSN "$vtlntrans\n";
 }

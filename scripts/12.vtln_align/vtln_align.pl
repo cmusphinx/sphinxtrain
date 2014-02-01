@@ -51,7 +51,7 @@ use SphinxTrain::Util;
 die "Usage: $0 <warp> <part> <nparts>\n" unless @ARGV == 3;
 my ($warp, $part, $npart) = @ARGV;
 
-my $out_dir = catdir("$ST::CFG_BASE_DIR/vtlnout", $warp);
+my $featdir = catdir("$ST::CFG_FEATFILES_DIR", $warp);
 
 my $hmm_dir = defined($ST::CFG_FORCE_ALIGN_MODELDIR)
     ? $ST::CFG_FORCE_ALIGN_MODELDIR
@@ -59,6 +59,7 @@ my $hmm_dir = defined($ST::CFG_FORCE_ALIGN_MODELDIR)
 my $logdir = "$ST::CFG_LOG_DIR/12.vtln_align";
 my $indir = "$ST::CFG_BASE_DIR/vtlnout";
 my $outdir = "$ST::CFG_BASE_DIR/vtlnout/$warp";
+mkdir($outdir,0777);
 my $outfile = "$outdir/$ST::CFG_EXPTNAME.alignedtranscripts.$part";
 
 my $statepdeffn = $ST::CFG_HMM_TYPE; # indicates the type of HMMs
@@ -123,7 +124,7 @@ my $return_value = RunTool
      -ctl => $ST::CFG_LISTOFFILES,
      -ctloffset => $ctl_counter * ($part-1),
      -ctlcount => $ctl_counter,
-     -cepdir => $out_dir,
+     -cepdir => $featdir,
      -cepext => ".$ST::CFG_FEATFILE_EXTENSION",
      -insent => $transcriptfile,
      -outsent => $outfile,
