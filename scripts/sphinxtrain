@@ -19,6 +19,9 @@ if os.path.exists(currentpath + "/../lib64/sphinxtrain/scripts/00.verify"):
 if os.path.exists(currentpath + "/../scripts/00.verify"):
     sphinxpath = os.path.abspath(currentpath + "/..")
 
+if not os.path.exists(sphinxbinpath + "/bw"):
+    print "Failed to find sphinxtrain binaries. Check your installation"
+    exit(1)
 
 # Perl script want forward slashes
 training_basedir = os.getcwd().replace('\\', '/');
