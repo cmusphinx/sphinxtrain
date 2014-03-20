@@ -867,8 +867,8 @@ class Dag(object):
             for vx in wx.src.entries:
                 # Get unscaled language model score P(w|v) (bigrams only for now...)
                 if lm:
-                    lscr = lm.prob(baseword(wx.src.sym),
-                                   baseword(vx.src.sym))[0] * lw
+                    lscr = lm.prob([baseword(wx.src.sym),
+                                    baseword(vx.src.sym)]) * lw
                 else:
                     lscr = 0
                 # Accumulate alpha for this arc
@@ -889,8 +889,8 @@ class Dag(object):
                 beta = LOGZERO
                 # Get unscaled language model probability P(w|v) (bigrams only for now...)
                 if lm:
-                    lscr = lm.prob(baseword(vx.dest.sym),
-                                   baseword(vx.src.sym))[0] * lw
+                    lscr = lm.prob([baseword(vx.dest.sym),
+                                    baseword(vx.src.sym)]) * lw
                 else:
                     lscr = 0
                 # For each outgoing arc from vx.dest
@@ -1189,5 +1189,5 @@ class Dag(object):
         # assign unigram lm score to edge
         for n in self.nodes:
             for e in n.exits:
-                e.lscr = lm.prob(baseword(e.src.sym))[0] * lw
+                e.lscr = lm.prob([baseword(e.src.sym)]) * lw
 

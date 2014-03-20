@@ -132,7 +132,7 @@ def conv_lat_format(key, lat, filler, lm):
         if word in filler:
             score = math.log(0.1)
         else:
-            score = lm.prob(baseword(word))[0]
+            score = lm.prob([baseword(word)])
         
         left = []
         for context in lat[(sf, word, ef)][0]:
