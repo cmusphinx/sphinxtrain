@@ -117,6 +117,7 @@ my $rv = RunTool('sphinx_fe', $logfile, $ctlcount,
 		  -nfilt => $ST::CFG_NUM_FILT,
 		  -transform => $ST::CFG_TRANSFORM,
 		  -lifter => $ST::CFG_LIFTER,
+		  -ncep => $ST::CFG_VECTOR_LENGTH,
 	          @warp_args);
 
 if ($rv) {
