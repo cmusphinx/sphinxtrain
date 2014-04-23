@@ -62,6 +62,7 @@
 #include <sys_compat/file.h>
 #include <sys_compat/misc.h>
 
+#include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
