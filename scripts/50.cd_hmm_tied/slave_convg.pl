@@ -48,6 +48,11 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
+if ($ST::CFG_CD_TRAIN eq 'no') {
+    Log("Skipped (set \$CFG_CD_TRAIN = 'yes' to enable)\n");
+    exit 0;
+}
+
 # For the first iteration, we initialize the number of gaussian
 # components to $ST::CFG_INITIAL_NUM_DENSITIES. That's how we start with continuous models, and
 # it is irrelevant for semi continuous

@@ -48,6 +48,11 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
+if ($ST::CFG_CD_TRAIN eq 'no') {
+    Log("Skipped (set \$CFG_CD_TRAIN = 'yes' to enable)\n");
+    exit 0;
+}
+
 #***************************************************************************
 # This script launches all the ci - continuous training jobs in the proper
 # order. First it cleans up the directories, then launches the

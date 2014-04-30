@@ -48,8 +48,11 @@ use SphinxTrain::Config;
 use SphinxTrain::Util;
 
 # If this is being run with an MLLT transformation keep the models and logs separate.
-use vars qw($MLLT_FILE);
-$MLLT_FILE = catfile($ST::CFG_MODEL_DIR, "${ST::CFG_EXPTNAME}.mllt");
+
+if ($ST::CFG_CD_TRAIN eq 'no') {
+    Log("Skipped (set \$CFG_CD_TRAIN = 'yes' to enable)\n");
+    exit 0;
+}
 
 my $return_value = 0;
 my $logdir = "${ST::CFG_LOG_DIR}/45.prunetree";
