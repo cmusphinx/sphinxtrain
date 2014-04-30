@@ -99,6 +99,12 @@ if (defined($ST::DEC_CFG_SVSPEC)) {
     push(@ST::DEC_CFG_EXTRA_ARGS, -svspec => $ST::DEC_CFG_SVSPEC);
 }
 
+if (defined($ST::DEC_CFG_GRAMMAR)) {
+    push(@ST::DEC_CFG_EXTRA_ARGS, -jsgf => $ST::DEC_CFG_GRAMMAR);
+} else {
+    push(@ST::DEC_CFG_EXTRA_ARGS, -lm => $ST::DEC_CFG_LANGUAGEMODEL);
+}
+
 Log("Decoding $ctlcount segments starting at $ctloffset (part $part of $npart) ", 'result');
 
 my $rv = RunTool('pocketsphinx_batch', $logfile, $ctlcount,
@@ -118,7 +124,6 @@ my $rv = RunTool('pocketsphinx_batch', $logfile, $ctlcount,
 		 -lponlybeam => $ST::DEC_CFG_BEAMWIDTH,
 
 		 -dict => GetDict(),
-		 -lm => $ST::DEC_CFG_LANGUAGEMODEL,
 		 -wip => $ST::DEC_CFG_WORDPENALTY,
 		 -ctl => $ST::DEC_CFG_LISTOFFILES,
 		 -ctloffset => $ctloffset,
