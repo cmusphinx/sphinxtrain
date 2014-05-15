@@ -446,10 +446,10 @@ corpus_reset()
     n_run = UNTIL_EOF;
 
     assert(ctl_fp);
-    rewind(ctl_fp);
+    fseek(ctl_fp, 0L, SEEK_SET);
 
     if (transcription_fp)
-	rewind(transcription_fp);
+        fseek(transcription_fp, 0L, SEEK_SET);
 
     li = lineiter_start_clean(ctl_fp);
 
@@ -569,7 +569,7 @@ corpus_set_partition(uint32 part,
 	lineno++;
     }
 
-    rewind(ctl_fp);
+    fseek(ctl_fp, 0L, SEEK_SET);
     
     li = lineiter_start(ctl_fp);
     lineiter_free(li);

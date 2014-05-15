@@ -81,7 +81,7 @@ read_pset_file(const char *file_name,
     out = ckd_calloc(lc, sizeof(pset_t));
     *n_pset = lc;
 
-    rewind(fp);
+    fseek(fp, 0L, SEEK_SET);
 
     n_ci = acmod_set_n_ci(acmod_set);
 

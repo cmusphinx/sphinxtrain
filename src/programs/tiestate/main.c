@@ -56,6 +56,7 @@
 #include <s3/s3.h>
 #include <sys_compat/file.h>
 
+#include <string.h>
 #include <assert.h>
 
 
