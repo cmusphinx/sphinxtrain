@@ -447,7 +447,7 @@ int get_length(char *file,
       length = n;
       *byterev = 1;
   }
-  if (length <= 0) {
+  if (length < 0) {
       printf("Header size field: %d\n",  length); fflush(stdout);
       fclose (fp);
       return -1;
