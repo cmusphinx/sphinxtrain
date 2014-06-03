@@ -257,20 +257,27 @@ my @uttids;
 	my $total_training_hours = ($estimated_training_data / 3600)/100;
 	Log("Estimated Total Hours Training: $total_training_hours", 'result');
 	my $estimated_n_tied_states = 1000;
-	if ($total_training_hours < 10) {
-	    $status = 'WARNING';
-	    Log("This is a small amount of data, no comment at this time", 'result');
+	
+	if ($total_training_hours < 0.5) {
+	    $status = 'FAILED';
+	    $ret_value = -5;
+	    LogWarning("Not enough data for the training");
 	} else {
-	    if ($total_training_hours < 100) {
+	    if ($total_training_hours < 10) {
 		$status = 'WARNING';
-		$estimated_n_tied_states = 3000 if ($ST::CFG_HMM_TYPE eq '.cont.'); # Likely bogus 
-		$estimated_n_tied_states = 4000 if ($ST::CFG_HMM_TYPE eq '.semi.'); # 
-		Log("Rule of thumb suggests $estimated_n_tied_states, however there is no correct answer", 'result');
+		Log("This is a small amount of data, no comment at this time", 'result');
 	    } else {
-		$estimated_n_tied_states = 8000;
-		$status = 'passed';
-		Log("100+ hours of training data is goodly amount of data.", 'result');
-		Log("Rule of thumb suggests $estimated_n_tied_states for 100 hours, you can adjust accordingly.", 'result');
+		if ($total_training_hours < 100) {
+		    $status = 'WARNING';
+		    $estimated_n_tied_states = 3000 if ($ST::CFG_HMM_TYPE eq '.cont.'); # Likely bogus 
+		    $estimated_n_tied_states = 4000 if ($ST::CFG_HMM_TYPE eq '.semi.'); # 
+		    Log("Rule of thumb suggests $estimated_n_tied_states, however there is no correct answer", 'result');
+		} else {
+		    $estimated_n_tied_states = 8000;
+		    $status = 'passed';
+		    Log("100+ hours of training data is goodly amount of data.", 'result');
+		    Log("Rule of thumb suggests $estimated_n_tied_states for 100 hours, you can adjust accordingly.", 'result');
+		}
 	    }
 	}
     }
