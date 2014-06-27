@@ -110,11 +110,11 @@ Log("Decoding $ctlcount segments starting at $ctloffset (part $part of $npart) "
 my $rv = RunTool('pocketsphinx_batch', $logfile, $ctlcount,
 		 -hmm => $hmm_dir,
 		 -feat => $ST::CFG_FEATURE,
-		 -ceplen => $ST::CFG_VECTOR_LENGTH;
+		 -ceplen => $ST::CFG_VECTOR_LENGTH,
 
-		 -lw => $ST::DEC_CFG_LANGUAGEWEIGHT ,
-		 -fwdflatlw => $ST::DEC_CFG_LANGUAGEWEIGHT ,
-		 -bestpathlw => $ST::DEC_CFG_LANGUAGEWEIGHT ,
+		 -lw => $ST::DEC_CFG_LANGUAGEWEIGHT,
+		 -fwdflatlw => $ST::DEC_CFG_LANGUAGEWEIGHT,
+		 -bestpathlw => $ST::DEC_CFG_LANGUAGEWEIGHT,
 
 		 -beam => $ST::DEC_CFG_BEAMWIDTH,
 		 -wbeam => $ST::DEC_CFG_WORDBEAM,
