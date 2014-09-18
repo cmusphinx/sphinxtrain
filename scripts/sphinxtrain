@@ -2,36 +2,46 @@
 
 import getopt, sys, os
 
+training_basedir = ""
+sphinxbinpath = ""
+sphinxpath = ""
 
-# Find the location of the files
-currentpath = os.path.dirname(os.path.abspath(__file__))
+def find_paths():
+    global training_basedir
+    global sphinxbinpath
+    global sphinxpath
+    # Find the location of the files, it can be libexec or lib or lib64
+    currentpath = os.path.dirname(os.path.abspath(__file__))
 
-sphinxbinpath = os.path.abspath(currentpath + "/../libexec/sphinxtrain")
+    sphinxbinpath = os.path.abspath(currentpath + "/../libexec/sphinxtrain")
 
-if os.path.exists(currentpath + "/../bin/Release"):
-    sphinxbinpath = os.path.abspath(currentpath + "/../bin/Release")
+    if os.path.exists(currentpath + "/../lib/sphinxtrain/bw"):
+        sphinxbinpath = os.path.abspath(currentpath + "/../lib/sphinxtrain/bw")
 
-sphinxpath = os.path.abspath(currentpath + "/../lib/sphinxtrain")
+    if os.path.exists(currentpath + "/../bin/Release"):
+        sphinxbinpath = os.path.abspath(currentpath + "/../bin/Release")
 
-if os.path.exists(currentpath + "/../lib64/sphinxtrain/scripts/00.verify"):
-    sphinxpath = os.path.abspath(currentpath + "/../lib64/sphinxtrain")
+    # Find the location for the libraries
+    sphinxpath = os.path.abspath(currentpath + "/../lib/sphinxtrain")
 
-if os.path.exists(currentpath + "/../scripts/00.verify"):
-    sphinxpath = os.path.abspath(currentpath + "/..")
+    if os.path.exists(currentpath + "/../lib64/sphinxtrain/scripts/00.verify"):
+        sphinxpath = os.path.abspath(currentpath + "/../lib64/sphinxtrain")
 
-if not (os.path.exists(sphinxbinpath + "/bw") or os.path.exists(sphinxbinpath + "/bw.exe")):
-    print "Failed to find sphinxtrain binaries. Check your installation"
-    exit(1)
+    if os.path.exists(currentpath + "/../scripts/00.verify"):
+        sphinxpath = os.path.abspath(currentpath + "/..")
 
-# Perl script want forward slashes
-training_basedir = os.getcwd().replace('\\', '/');
-sphinxpath = sphinxpath.replace('\\','/')
-sphinxbinpath = sphinxbinpath.replace('\\','/')
+    if not (os.path.exists(sphinxbinpath + "/bw") or os.path.exists(sphinxbinpath + "/bw.exe")):
+        print "Failed to find sphinxtrain binaries. Check your installation"
+        exit(1)
 
-print "Sphinxtrain path:", sphinxpath
-print "Sphinxtrain binaries path:", sphinxbinpath
+    # Perl script want forward slashes
+    training_basedir = os.getcwd().replace('\\', '/');
+    sphinxpath = sphinxpath.replace('\\','/')
+    sphinxbinpath = sphinxbinpath.replace('\\','/')
 
-#Proceed
+    print "Sphinxtrain path:", sphinxpath
+    print "Sphinxtrain binaries path:", sphinxbinpath
+    
 def setup(task):
     if not os.path.exists("etc"):
         os.mkdir("etc")
@@ -129,6 +139,8 @@ def main():
         sys.exit(-1)
 
     command = args[0]
+
+    find_paths()
 
     if command == "setup":
         if task == None:
