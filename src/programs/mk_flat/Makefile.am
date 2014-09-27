@@ -10,5 +10,5 @@ LDADD = \
 	$(top_builddir)/src/libs/libclust/libclust.la \
 	$(top_builddir)/src/libs/libmllr/libmllr.la
 
-INCLUDES = -I$(top_srcdir)/include
+AM_CFLAGS =-I$(top_srcdir)/include
 

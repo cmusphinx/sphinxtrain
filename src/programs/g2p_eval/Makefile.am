@@ -17,4 +17,4 @@ phonetisaurus_g2p_SOURCES = \
 
 phonetisaurus_g2p_LDADD = @OPENFST_LIBS@
 
-INCLUDES = @OPENFST_CFLAGS@
+AM_CFLAGS =@OPENFST_CFLAGS@

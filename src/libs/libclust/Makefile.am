@@ -6,4 +6,4 @@ libclust_la_SOURCES = \
 	kmeans.c \
 	metric.c
 
-INCLUDES = -I$(top_srcdir)/include
+AM_CFLAGS =-I$(top_srcdir)/include

@@ -21,6 +21,6 @@ libcommon_la_SOURCES = \
 	 vector.c \
 	 was_added.c
 
-INCLUDES = -I$(top_srcdir)/include
+AM_CFLAGS =-I$(top_srcdir)/include
 
 libcommon_la_LIBADD = $(top_builddir)/src/libs/libclust/libclust.la

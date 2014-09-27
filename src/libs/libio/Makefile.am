@@ -19,7 +19,7 @@ libio_la_SOURCES = \
 	 swap.c \
 	 topo_read.c
 
-INCLUDES = -I$(top_srcdir)/include
+AM_CFLAGS =-I$(top_srcdir)/include
 
 libio_la_LIBADD = $(top_builddir)/src/libs/libcommon/libcommon.la
 

@@ -4,4 +4,4 @@ libmllr_la_SOURCES = \
 	mllr.c \
 	mllr_io.c
 
-INCLUDES = -I$(top_srcdir)/include
+AM_CFLAGS =-I$(top_srcdir)/include
