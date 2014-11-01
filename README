@@ -48,8 +48,8 @@ This distribution now uses GNU autoconf to find out basic information
 about your system, and should compile on most Unix and Unix-like
 systems, and certainly on Linux.  To build, simply run
 
+    ./autogen.sh
     ./configure
-    make
     make install
 
 This should configure everything automatically. The code has been tested with gcc.
