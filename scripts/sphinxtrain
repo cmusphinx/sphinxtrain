@@ -94,6 +94,16 @@ def run_stages(stages):
                     if ret != 0:
                 	exit(ret)
 
+def run_from(stage):
+    found = False
+    for step in steps:
+        name = step.split("/")[0].split(".")[-1]
+        if name == stage or found:
+            found = True
+            ret = os.system(sphinxpath + "/scripts/" + step)
+            if ret != 0:
+                exit(ret)
+
 def run():
     print "Running the training"
     for step in steps:
@@ -112,12 +122,12 @@ def usage():
     print ""
     print "Commands:"
     print "     -t <task> setup - copy configuration into database"
-    print "     [-s <stage1,stage2,stage3>] run - run the training or just selected stages"
+    print "     [-s <stage1,stage2,stage3>] [-f <stage>] run - run the training or just selected stages"
 
 def main():
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ht:s:", ["help", "task", "stages"])
+        opts, args = getopt.getopt(sys.argv[1:], "ht:s:f:", ["help", "task", "stages", "from"])
     except getopt.GetoptError, err:
         print str(err)
         usage()
@@ -125,10 +135,13 @@ def main():
 
     task = None
     stages = None
+    from_stage = None
 
     for o, a in opts:
         if o in ("-t", "--task"):
             task = a
+        if o in ("-f", "--from"):
+            from_stage = a
         if o in ("-s", "--stages"):
             stages = a
         if o in ("-h", "--help"):
@@ -148,10 +161,12 @@ def main():
             sys.exit(-1)        
         setup(task)
     elif command == "run":
-        if stages == None:
-            run()
-        else:
+        if stages != None:
             run_stages(stages)
+        elif from_stage != None:
+            run_from(from_stage)
+        else:
+            run()
     else:
         run()
 
