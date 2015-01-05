@@ -11,7 +11,7 @@ def find_paths():
     global sphinxbinpath
     global sphinxpath
     # Find the location of the files, it can be libexec or lib or lib64
-    currentpath = os.path.dirname(os.path.abspath(__file__))
+    currentpath = os.path.dirname(os.path.realpath(__file__))
 
     sphinxbinpath = os.path.abspath(currentpath + "/../libexec/sphinxtrain")
 
