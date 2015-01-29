@@ -57,6 +57,12 @@ if ($ST::CFG_NUM_STREAMS != 1) {
     exit 0;
 }
 
+if ($ST::CFG_LDA_MLLT ne 'yes') {
+    Log("MODULE: 01 Train LDA transformation\n");
+    Log("Skipped (set \$CFG_LDA_MLLT = 'yes' to enable)\n");
+    exit 0;
+}
+
 my $iter = 1;
 if (@ARGV) {
     $iter = shift;

@@ -50,10 +50,16 @@ use SphinxTrain::Util;
 
 # LDA/MLLT doesn't really have sense with multistream
 if ($ST::CFG_NUM_STREAMS != 1) {
-    Log("MODULE: 01 Train LDA transformation\n");
+    Log("MODULE: 02 Train MLLT transformation\n");
     Log("Skipped for multistream setup, see CFG_NUM_STREAMS configuration\n");
     Log("LDA/MLLT only has sense for single stream features");
-    Log("Skipping LDA training");
+    Log("Skipping MLLT training");
+    exit 0;
+}
+
+if ($ST::CFG_LDA_MLLT ne 'yes') {
+    Log("MODULE: 02 Train MLLT transformation\n");
+    Log("Skipped (set \$CFG_LDA_MLLT = 'yes' to enable)\n");
     exit 0;
 }
 
@@ -74,7 +80,7 @@ $| = 1; # Turn on autoflushing
 my $logdir = "$ST::CFG_LOG_DIR/02.mllt_train";
 
 if ($iter == 1) {
-    Log("MODULE: 06 Train MLLT transformation\n");
+    Log("MODULE: 02 Train MLLT transformation\n");
     Log("Phase 1: Cleaning up directories:");
     # Don't do this on a queue, because of NFS bugs
     unless ($ST::CFG_QUEUE_TYPE eq 'Queue::PBS') {
