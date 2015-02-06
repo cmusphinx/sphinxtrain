@@ -2,7 +2,7 @@ This is SphinxTrain, Carnegie Mellon University's open source acoustic
 model trainer. This directory contains the scripts and instructions
 necessary for building models for the CMU Sphinx Recognizer.
 
-This distribution is free software, see COPYING for licence.
+This distribution is free software, see LICENSE for licence.
 
 For up-to-date information, please see the web site at
 
