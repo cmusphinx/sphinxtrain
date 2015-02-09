@@ -101,6 +101,8 @@ if (defined($ST::DEC_CFG_SVSPEC)) {
 
 if (defined($ST::DEC_CFG_GRAMMAR)) {
     push(@ST::DEC_CFG_EXTRA_ARGS, -jsgf => $ST::DEC_CFG_GRAMMAR);
+} elsif (defined($ST::DEC_CFG_FSG)) {
+    push(@ST::DEC_CFG_EXTRA_ARGS, -fsg => $ST::DEC_CFG_FSG);
 } else {
     push(@ST::DEC_CFG_EXTRA_ARGS, -lm => $ST::DEC_CFG_LANGUAGEMODEL);
 }
