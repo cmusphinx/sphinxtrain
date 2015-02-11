@@ -101,6 +101,8 @@ if (defined($ST::DEC_CFG_SVSPEC)) {
 
 if (defined($ST::DEC_CFG_GRAMMAR)) {
     push(@ST::DEC_CFG_EXTRA_ARGS, -jsgf => $ST::DEC_CFG_GRAMMAR);
+} elsif (defined($ST::DEC_CFG_FSG)) {
+    push(@ST::DEC_CFG_EXTRA_ARGS, -fsg => $ST::DEC_CFG_FSG);
 } else {
     push(@ST::DEC_CFG_EXTRA_ARGS, -lm => $ST::DEC_CFG_LANGUAGEMODEL);
 }
@@ -111,6 +113,7 @@ my $rv = RunTool('pocketsphinx_batch', $logfile, $ctlcount,
 		 -hmm => $hmm_dir,
 		 -feat => $ST::CFG_FEATURE,
 		 -ceplen => $ST::CFG_VECTOR_LENGTH,
+		 -ncep => $ST::CFG_VECTOR_LENGTH,
 
 		 -lw => $ST::DEC_CFG_LANGUAGEWEIGHT,
 		 -fwdflatlw => $ST::DEC_CFG_LANGUAGEWEIGHT,
