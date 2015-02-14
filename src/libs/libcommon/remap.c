@@ -187,48 +187,3 @@ remap_free(map_t *m)
 
     return S3_SUCCESS;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.6  2005/08/26  20:34:15  egouvea
- * Removed unused variables from the scripts
- * 
- * Revision 1.5  2004/07/21 18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.4  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.3  2000/11/17 12:42:53  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.6  1995/10/10  18:43:22  eht
- * Got rid of bcopy() in favor of memcpy() since bcopy is non-ANSI
- *
- * Revision 1.5  1995/10/10  18:39:32  eht
- * got rid of an unused local variable
- *
- * Revision 1.4  1995/10/09  20:56:36  eht
- * Changes needed for prim_type.h
- *
- * Revision 1.3  1995/10/09  15:02:03  eht
- * Changed ckd_alloc interface to get rid of __FILE__, __LINE__ arguments
- *
- * Revision 1.2  1995/08/24  20:05:52  eht
- * Changed a sqrt(n) where n is int to sqrt((double)n) for
- * the case of non-ANSI or hosed /usr/include/math.h files.
- *
- * Revision 1.1  1995/06/02  14:52:54  eht
- * Initial revision
- *
- *
- */
-

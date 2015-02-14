@@ -48,7 +48,6 @@
 
 #include <sphinxbase/prim_type.h>
 
-
 void
 interp_counts_3d_uniform(float32 ***cnt_buf,	/* count of events in
 						   observation space (i, j) where
@@ -60,7 +59,7 @@ interp_counts_3d_uniform(float32 ***cnt_buf,	/* count of events in
 						     spaces (i, j) */
 			 float32 cnt_lambda);	/* weight of event distributions (i, j)
 						   relative to uniform probability */
-
+
 void
 interp_mixw(float32 ****out_mixw,
 	    
@@ -88,34 +87,5 @@ typedef enum {
     DIST_CI=1,
     DIST_CD=2
 } dist_type_t;
-
 
 #endif /* INTERP_FN_H */ 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.3  1995/10/10  12:53:26  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.2  1995/08/15  13:39:10  eht
- * Change interface
- *
- * Revision 1.1  1995/08/09  00:38:37  eht
- * Initial revision
- *
- *
- */

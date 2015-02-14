@@ -73,34 +73,3 @@ swap_little_endian(void);
 #endif
 #endif /* SWAP_H */ 
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  17:46:10  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.4  96/03/25  15:52:35  eht
- * Added more functions
- * 
- * Revision 1.3  1995/10/18  11:26:34  eht
- * Include missing prototype for swap_stamp()
- *
- * Revision 1.2  1995/10/10  13:10:34  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.1  1995/08/15  13:46:15  eht
- * Initial revision
- *
- *
- */

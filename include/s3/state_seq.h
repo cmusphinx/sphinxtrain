@@ -77,31 +77,4 @@ state_seq_print(state_t *state,
 }
 #endif
 #endif /* STATE_SEQ_H */ 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.7  2004/07/21  17:46:10  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.6  2004/07/17 08:00:22  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.4  2004/06/17 19:17:12  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.1  1996/06/17  14:29:21  eht
- * Initial revision
- *
- *
- */
+

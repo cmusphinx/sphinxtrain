@@ -658,44 +658,3 @@ state_seq_make(uint32 *n_state,
 
     return state;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.8  2006/03/27  04:08:57  dhdfu
- * Optionally use a set of phoneme segmentations to constrain Baum-Welch
- * training.
- * 
- * Revision 1.7  2004/07/21 18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.6  2004/07/17 08:00:23  arthchan2003
- * deeply regretted about one function prototype, now revert to the state where multiple pronounciations code doesn't exist
- *
- * Revision 1.4  2004/06/17 19:17:12  arthchan2003
- * Code Update for silence deletion and standardize the name for command -line arguments
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.5  97/07/17  07:10:53  eht
- * Added CI codebook fields to state structures to allow concurrent
- * reestimation of CI and CD parameter values.
- * 
- * Revision 1.4  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.3  1996/07/29  16:36:56  eht
- * include headers to define prototypes
- *
- * Revision 1.2  1996/06/17  14:27:23  eht
- * Moved to libcommon from bw
- *
- */

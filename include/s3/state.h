@@ -103,48 +103,3 @@ typedef struct state_s {
 #endif
 #endif /* STATE_H */ 
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2006/03/27  04:08:57  dhdfu
- * Optionally use a set of phoneme segmentations to constrain Baum-Welch
- * training.
- * 
- * Revision 1.4  2004/07/21 17:46:10  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.4  97/07/17  07:04:53  eht
- * Added CI codebook fields
- * 
- * Revision 1.3  97/07/16  11:39:10  eht
- * *** empty log message ***
- * 
- * Revision 1.2  97/01/07  11:50:00  eht
- * Collapsed mean/var fields into one field.
- * 
- * Revision 1.1  1996/06/17  14:51:49  eht
- * Initial revision
- *
- * Revision 1.3  1996/02/02  17:43:06  eht
- * Deal w/ CI mean and var as well.
- *
- * Revision 1.2  1996/01/30  17:12:27  eht
- * Include the mixture Gaussian index of the CI m. Gau. associated
- * with each state.
- *
- * Revision 1.1  1995/10/23  20:52:51  eht
- * Initial revision
- *
- *
- */

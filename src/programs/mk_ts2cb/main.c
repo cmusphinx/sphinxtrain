@@ -110,28 +110,4 @@ main(int argc, char *argv[])
 
     return 0;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  19:17:25  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.4  97/03/07  08:54:27  eht
- * - deal w/ new i/o routines
- * 
- * Revision 1.3  1995/12/01  16:59:18  eht
- * Add the SPHINX-III standard comments
- *
- *
- */
+

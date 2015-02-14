@@ -239,40 +239,3 @@ interp_mixw(float32 ****out_mixw,
     
     ckd_free_3d((void ***)mixw_acc_a);
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:34  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.6  97/07/16  11:36:22  eht
- * *** empty log message ***
- * 
- * Revision 1.5  1995/10/10  12:53:35  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.4  1995/10/05  12:55:06  eht
- * Deal w/ untrained tied states and change in acmod_set interface
- *
- * Revision 1.3  1995/08/15  13:38:38  eht
- * weight interpolated probabilities as sphinx-ii does
- *
- * Revision 1.2  1995/08/10  20:29:40  eht
- * Yet another development version
- *
- * Revision 1.1  1995/08/09  00:38:05  eht
- * Initial revision
- *
- *
- */

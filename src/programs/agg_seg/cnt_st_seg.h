@@ -55,28 +55,5 @@ uint32 *
 cnt_st_seg(model_def_t *mdef,
 	   lexicon_t *lex);
 
-
 #endif /* CNT_ST_SEG_H */ 
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:30:32  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:38:16  eht
- * Initial revision
- * 
- *
- */

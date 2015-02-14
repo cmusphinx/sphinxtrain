@@ -59,34 +59,3 @@ param_cnt(FILE *out_fp,
 
 #endif /* PARAM_CNT_H */ 
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.5  2006/02/03  18:53:07  eht
- * Added -outputfn to the command line.
- * 
- * When -outputfn <somefile> is present on the command line, the
- * parameter counts are written to the specified file <somefile>.
- * When no -outputfn argument is present on the command line, the
- * parameter counts are written to standard output as before this
- * change.
- * 
- * Revision 1.4  2004/07/21 19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- *
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:32  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:38:16  eht
- * Initial revision
- * 
- *
- */

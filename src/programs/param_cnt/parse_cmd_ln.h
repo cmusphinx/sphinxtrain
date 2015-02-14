@@ -46,34 +46,9 @@
 #ifndef PARSE_CMD_LN_H
 #define PARSE_CMD_LN_H
 
-
 #include <sphinxbase/cmd_ln.h>
 
 int
 parse_cmd_ln(int argc, char *argv[]);
 
-
 #endif /* PARSE_CMD_LN_H */ 
-
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  19:17:26  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:32  awb
- * *** empty log message ***
- *
- * Revision 1.1  97/07/16  11:38:16  eht
- * Initial revision
- * 
- *
- */

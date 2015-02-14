@@ -176,40 +176,4 @@ vector_dot(const vector_t a, const vector_t b, uint32 dim)
 		p += a[i] * b[i];
 	return p;
 }
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  18:05:40  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:13  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.6  96/10/30  07:43:33  eht
- * Removed warning message that was just cluttering up the output
- * 
- * Revision 1.5  95/10/10  17:37:33  eht
- * Fixed some bogus return values
- * 
- * Revision 1.4  1995/10/09  20:56:36  eht
- * Changes needed for prim_type.h
- *
- * Revision 1.3  1995/10/09  15:02:03  eht
- * Changed ckd_alloc interface to get rid of __FILE__, __LINE__ arguments
- *
- * Revision 1.2  1995/06/02  14:52:54  eht
- * Use PWP's error package
- *
- * Revision 1.1  1995/02/13  15:48:25  eht
- * Initial revision
- *
- *
- */
+

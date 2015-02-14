@@ -54,31 +54,3 @@ parse_cmd_ln(int argc,
 
 #endif /* PARSE_CMDLN_H */ 
 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  19:17:25  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:31  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:14  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:31  awb
- * *** empty log message ***
- *
- * Revision 1.1  1996/01/30  17:09:16  eht
- * Initial revision
- *
- * Revision 1.2  1995/10/10  13:10:11  eht
- * Changed to use <sphinxbase/prim_type.h>
- *
- * Revision 1.1  1995/06/02  20:31:53  eht
- * Initial revision
- *
- *
- */

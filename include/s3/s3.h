@@ -92,37 +92,4 @@ extern "C" {
 }
 #endif
 #endif /* S3_H */ 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.4  2004/07/21  17:46:10  egouvea
- * Changed the license terms to make it the same as sphinx2 and sphinx3.
- * 
- * Revision 1.3  2001/04/05 20:02:30  awb
- * *** empty log message ***
- *
- * Revision 1.2  2000/09/29 22:35:12  awb
- * *** empty log message ***
- *
- * Revision 1.1  2000/09/24 21:38:30  awb
- * *** empty log message ***
- *
- * Revision 1.5  97/07/16  11:39:10  eht
- * *** empty log message ***
- * 
- * Revision 1.4  96/07/29  16:40:50  eht
- * Make some of the constants less long winded.
- * 
- * Revision 1.3  1996/01/26  18:29:54  eht
- * Added some floating point MIN and MAX constants
- *
- * Revision 1.2  1995/10/10  12:25:04  eht
- * Add TYING_NO_ID to the set of symbolic constants defined.
- *
- * Revision 1.1  1995/10/09  21:17:24  eht
- * Initial revision
- *
- *
- */
+
