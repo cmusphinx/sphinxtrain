@@ -55,7 +55,7 @@
 #include <s3/vector.h>
 #include <s3/swap.h>
 #include <sys_compat/file.h>
-#include <sys_compat/misc.h>		/* for sleep() on WIN32 */
+#include <sys_compat/misc.h>		/* for sleep() on _WIN32 */
 
 #include <stdio.h>
 #include <assert.h>

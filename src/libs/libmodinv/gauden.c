@@ -78,7 +78,7 @@ static float32 min_var = 1e38;	/* just a big num */
 #undef M_PI
 #define M_PI       3.1415926535897932385E0
 
-#if defined (WIN32)
+#if defined (_WIN32)
 #define finite(x)    _finite(x)
 #endif
 

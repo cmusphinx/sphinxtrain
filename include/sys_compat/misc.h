@@ -51,7 +51,7 @@
 #define M_PI       (3.14159265358979323846)
 #endif
 
-#if (defined(WIN32) && !defined(__CYGWIN__))
+#if (defined(_WIN32) && !defined(__CYGWIN__))
 
 #include <windows.h>
 
@@ -69,6 +69,6 @@
 #include <netdb.h>
 #endif
 
-#endif /* WIN32 */
+#endif /* _WIN32 */
 
 #endif /* MISC_H */ 

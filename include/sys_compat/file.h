@@ -47,7 +47,7 @@
 #define FILE_H
 
 
-#if (defined(WIN32) && !defined(__CYGWIN__))
+#if (defined(_WIN32) && !defined(__CYGWIN__))
 
 #include <io.h>
 #include <fcntl.h>
@@ -59,7 +59,7 @@
 
 #else
 
-/* !WIN32 */
+/* !_WIN32 */
 #include <sys/file.h>
 #include <sys/param.h>
 #include <sys/stat.h>

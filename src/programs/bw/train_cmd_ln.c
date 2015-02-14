@@ -61,7 +61,7 @@
 int
 validate_writeable_dir(char *switch_name, void *arg)
 {
-#ifndef WIN32
+#ifndef _WIN32
     char *path = arg;
     struct stat s;
 
@@ -94,9 +94,9 @@ validate_writeable_dir(char *switch_name, void *arg)
 	return FALSE;
     }
 #else
-    /* WIN32 */
+    /* _WIN32 */
 
-    /* Do no validation for now.  Need to figure out WIN32 compatible way */
+    /* Do no validation for now.  Need to figure out _WIN32 compatible way */
 
     return TRUE;
 #endif
@@ -104,7 +104,7 @@ validate_writeable_dir(char *switch_name, void *arg)
 int
 validate_opt_writeable_dir(char *switch_name, void *arg)
 {
-#ifndef WIN32
+#ifndef _WIN32
     char *path = arg;
     struct stat s;
 
@@ -135,9 +135,9 @@ validate_opt_writeable_dir(char *switch_name, void *arg)
 	return FALSE;
     }
 #else
-    /* WIN32 */
+    /* _WIN32 */
 
-    /* Do no validation for now.  Need to figure out WIN32 compatible way */
+    /* Do no validation for now.  Need to figure out _WIN32 compatible way */
 
     return TRUE;
 #endif
@@ -146,7 +146,7 @@ validate_opt_writeable_dir(char *switch_name, void *arg)
 int
 validate_readable_dir(char *switch_name, void *arg)
 {
-#ifndef WIN32
+#ifndef _WIN32
     char *path = arg;
     struct stat s;
 
@@ -179,9 +179,9 @@ validate_readable_dir(char *switch_name, void *arg)
 	return FALSE;
     }
 #else
-    /* WIN32 */
+    /* _WIN32 */
 
-    /* Do no validation for now.  Need to figure out a WIN32 compatible
+    /* Do no validation for now.  Need to figure out a _WIN32 compatible
        way */
 
     return TRUE;

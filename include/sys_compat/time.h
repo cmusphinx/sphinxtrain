@@ -37,7 +37,7 @@
 #define TIME_H
 
 #include <time.h>
-#ifndef WIN32
+#ifndef _WIN32
 #include <sys/time.h>
 #include <unistd.h>
 #endif

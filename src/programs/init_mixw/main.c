@@ -65,7 +65,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#if (!defined(WIN32) || defined(__CYGWIN__))
+#if (!defined(_WIN32) || defined(__CYGWIN__))
 #include <sys/param.h>
 #endif
 #include <assert.h>
@@ -73,7 +73,6 @@
 
 static int init_mixw(void);
 
-
 static int
 initialize(int argc,
 	   char *argv[])
@@ -84,7 +83,7 @@ initialize(int argc,
 
     return S3_SUCCESS;
 }
-
+
 static int
 init_uniform(float32 ***dest_mixw,
 	     model_def_entry_t *dest,
@@ -111,7 +110,7 @@ init_uniform(float32 ***dest_mixw,
 static pair_t **mixw_dest_list = NULL;
 static pair_t **cb_dest_list = NULL;
 static pair_t **tmat_dest_list = NULL;
-
+
 static int
 init_model(float32 ***dest_mixw,
 	   vector_t ***dest_mean,
@@ -213,7 +212,7 @@ init_model(float32 ***dest_mixw,
 
     return S3_SUCCESS;
 }
-
+
 static int
 init_mixw()
 {
@@ -583,7 +582,7 @@ init_mixw()
     ckd_free(veclen);    
     return S3_SUCCESS;
 }
-
+
 int
 main(int argc, char *argv[])
 {
