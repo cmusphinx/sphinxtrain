@@ -63,22 +63,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-static int
-ck_readable(const char *fn)
-{
-    FILE *fp;
-
-    fp = fopen(fn, "rb");
-    if (fp != NULL) {
-        fclose(fp);
-        return TRUE;
-    }
-    else {
-        return FALSE;
-    }
-}
-
-
 int
 rdacc_tmat(const char *dir,
            float32 **** inout_tmat_acc,
@@ -92,46 +76,39 @@ rdacc_tmat(const char *dir,
 
     sprintf(fn, "%s/tmat_counts", dir);
 
-    if (ck_readable(fn)) {
-        if (s3tmat_read(fn,
-                        &in_tmat_acc,
-                        &n_tmat, &n_state_pm) != S3_SUCCESS) {
-            return S3_ERROR;
-        }
-        tmat_acc = *inout_tmat_acc;
+    if (s3tmat_read(fn,
+                    &in_tmat_acc,
+                    &n_tmat, &n_state_pm) != S3_SUCCESS) {
+        return S3_ERROR;
+    }
+    tmat_acc = *inout_tmat_acc;
 
-        if (tmat_acc == NULL) {
-            *inout_tmat_acc = tmat_acc = in_tmat_acc;
-            *inout_n_tmat = n_tmat;
-            *inout_n_state_pm = n_state_pm;
-        }
-        else {
-            int err = FALSE;
-
-            if (*inout_n_tmat != n_tmat) {
-                E_ERROR("# tmat in, %u != prior # tmat, %u\n",
-                        n_tmat, *inout_n_tmat);
-                err = TRUE;
-            }
-            if (*inout_n_state_pm != n_state_pm) {
-                E_ERROR("# tmat in, %u != prior # tmat, %u\n",
-                        n_state_pm, *inout_n_state_pm);
-                err = TRUE;
-            }
-
-            if (err)
-                return S3_ERROR;
-
-            accum_3d(tmat_acc, in_tmat_acc,
-                     n_tmat, n_state_pm - 1, n_state_pm);
-
-            ckd_free_3d((void ***) in_tmat_acc);
-        }
+    if (tmat_acc == NULL) {
+        *inout_tmat_acc = tmat_acc = in_tmat_acc;
+        *inout_n_tmat = n_tmat;
+        *inout_n_state_pm = n_state_pm;
     }
     else {
-        E_ERROR("Unable to access %s\n", fn);
+        int err = FALSE;
 
-        return S3_ERROR;
+        if (*inout_n_tmat != n_tmat) {
+            E_ERROR("# tmat in, %u != prior # tmat, %u\n",
+                    n_tmat, *inout_n_tmat);
+            err = TRUE;
+        }
+        if (*inout_n_state_pm != n_state_pm) {
+            E_ERROR("# tmat in, %u != prior # tmat, %u\n",
+                    n_state_pm, *inout_n_state_pm);
+            err = TRUE;
+        }
+
+        if (err)
+            return S3_ERROR;
+
+        accum_3d(tmat_acc, in_tmat_acc,
+                 n_tmat, n_state_pm - 1, n_state_pm);
+
+        ckd_free_3d((void ***) in_tmat_acc);
     }
 
     return S3_SUCCESS;
@@ -152,57 +129,45 @@ rdacc_mixw(const char *dir,
 
     sprintf(fn, "%s/mixw_counts", dir);
 
-    if (ck_readable(fn)) {
-        if (s3mixw_read(fn,
-                        &in_mixw_acc,
-                        &n_mixw, &n_stream, &n_density) != S3_SUCCESS) {
+    if (s3mixw_read(fn,
+                    &in_mixw_acc,
+                    &n_mixw, &n_stream, &n_density) != S3_SUCCESS) {
+        return S3_ERROR;
+    }
+
+    mixw_acc = *inout_mixw_acc;
+
+    if (mixw_acc == NULL) {
+        *inout_mixw_acc = mixw_acc = in_mixw_acc;
+        *inout_n_mixw = n_mixw;
+        *inout_n_stream = n_stream;
+        *inout_n_density = n_density;
+    }
+    else {
+        if (*inout_n_mixw != n_mixw) {
+            E_ERROR
+                ("# mixw in file %s (== %u) != prior # mixw (== %u)\n",
+                 fn, n_mixw, *inout_n_mixw);
             return S3_ERROR;
         }
 
-        mixw_acc = *inout_mixw_acc;
-
-        if (mixw_acc == NULL) {
-            *inout_mixw_acc = mixw_acc = in_mixw_acc;
-            *inout_n_mixw = n_mixw;
-            *inout_n_stream = n_stream;
-            *inout_n_density = n_density;
+        if (*inout_n_stream != n_stream) {
+            E_ERROR
+                ("# stream in file %s (== %u) != prior # stream (== %u)\n",
+                 fn, n_stream, *inout_n_stream);
+            return S3_ERROR;
         }
-        else {
-            int err = FALSE;
 
-            if (*inout_n_mixw != n_mixw) {
-                E_ERROR
-                    ("# mixw in file %s (== %u) != prior # mixw (== %u)\n",
-                     fn, n_mixw, *inout_n_mixw);
-                err = TRUE;
-            }
-
-            if (*inout_n_stream != n_stream) {
-                E_ERROR
-                    ("# stream in file %s (== %u) != prior # stream (== %u)\n",
-                     fn, n_stream, *inout_n_stream);
-                err = TRUE;
-            }
-
-            if (*inout_n_density != n_density) {
-                E_ERROR
-                    ("# density comp/mix in file %s (== %u) != prior # density (== %u)\n",
-                     fn, n_density, *inout_n_density);
-                err = TRUE;
-            }
-
-            if (err)
-                return S3_ERROR;
-
-            accum_3d(mixw_acc, in_mixw_acc, n_mixw, n_stream, n_density);
-
-            ckd_free_3d((void ***) in_mixw_acc);
+        if (*inout_n_density != n_density) {
+            E_ERROR
+                ("# density comp/mix in file %s (== %u) != prior # density (== %u)\n",
+                 fn, n_density, *inout_n_density);
+            return S3_ERROR;
         }
-    }
-    else {
-        E_ERROR("Unable to access %s\n", fn);
 
-        return S3_ERROR;
+        accum_3d(mixw_acc, in_mixw_acc, n_mixw, n_stream, n_density);
+
+        ckd_free_3d((void ***) in_mixw_acc);
     }
 
     return S3_SUCCESS;
@@ -234,11 +199,6 @@ rdacc_den(const char *dir,
     uint32 *in_veclen;
 
     sprintf(fn, "%s/gauden_counts", dir);
-
-    if (!ck_readable(fn)) {
-        E_ERROR("Unable to access %s\n", fn);
-        return S3_ERROR;
-    }
 
     if (s3gaucnt_read(fn,
                       &in_wt_mean,
@@ -363,12 +323,6 @@ rdacc_den_full(const char *dir,
     int i;
 
     sprintf(fn, "%s/gauden_counts", dir);
-
-    if (ck_readable(fn)) {
-        E_ERROR("Unable to access %s\n", fn);
-        return S3_ERROR;
-    }
-
 
     if (s3gaucnt_read_full(fn,
                            &in_wt_mean,
@@ -495,11 +449,6 @@ rdacc_mmie_den(const char *dir,
 
     sprintf(fn, "%s/%s_gauden_counts", dir, lat_name);
 
-    if (!ck_readable(fn)) {
-        E_ERROR("Unable to access %s\n", fn);
-
-        return S3_ERROR;
-    }
     if (s3gaucnt_read(fn,
                       &in_wt_mean,
                       &in_wt_var,
