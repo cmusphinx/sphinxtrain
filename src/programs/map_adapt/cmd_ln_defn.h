@@ -121,6 +121,17 @@ const char examplestr[] =
           NULL,
           "The output MAP transition matrix file"},
 
+	{ "-ts2cbfn",
+	  ARG_STRING,
+	  NULL,
+	  "Tied-state-to-codebook mapping file name" },
+
+        { "-moddeffn",
+          ARG_STRING,
+          NULL,
+          "The model definition file for the model inventory to train" },
+                                      
+                                      
 	{NULL, 0, NULL, NULL},
     };
 

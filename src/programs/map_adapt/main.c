@@ -33,6 +33,7 @@
 #include <s3/s3tmat_io.h>
 #include <s3/s3acc_io.h>
 #include <s3/s3.h>
+#include <s3/ts2cb.h>
 
 #include <sphinxbase/matrix.h>
 #include <sphinxbase/err.h>
@@ -75,8 +76,8 @@ estimate_tau(vector_t ***si_mean, vector_t ***si_var, float32 ***si_mixw,
     uint32 i, j, k, m;
 
     E_INFO("Estimating tau hyperparameter from variances and observations\n");
-    map_tau = (float32 ***)ckd_calloc_3d(n_mixw, n_stream, n_density, sizeof(float32));
-    for (i = 0; i < n_mixw; ++i) {
+    map_tau = (float32 ***)ckd_calloc_3d(n_cb, n_stream, n_density, sizeof(float32));
+    for (i = 0; i < n_cb; ++i) {
 	for (j = 0; j < n_stream; ++j) {
 	    for (k = 0; k < n_density; ++k) {
 		float32 tau_nom, tau_dnom;
@@ -86,19 +87,11 @@ estimate_tau(vector_t ***si_mean, vector_t ***si_var, float32 ***si_mixw,
 		for (m = 0; m < veclen[j]; ++m) {
 		    float32 ydiff, wvar, dnom, ml_mu, si_mu, si_sigma;
 
-		    if (n_mixw != n_cb && n_cb == 1) {/* Semi-continuous. */
-			dnom = wt_dcount[0][j][k];
-			si_mu = si_mean[0][j][k][m];
-			si_sigma = si_var[0][j][k][m];
-			ml_mu = dnom ? wt_mean[0][j][k][m] / dnom : si_mu;
-		    }
-		    else { /* Continuous. */
-			dnom = wt_dcount[i][j][k];
-			si_mu = si_mean[i][j][k][m];
-			si_sigma = si_var[i][j][k][m];
-			ml_mu = dnom ? wt_mean[i][j][k][m] / dnom : si_mu;
-		    }
-
+		    dnom = wt_dcount[i][j][k];
+		    si_mu = si_mean[i][j][k][m];
+		    si_sigma = si_var[i][j][k][m];
+		    ml_mu = dnom ? wt_mean[i][j][k][m] / dnom : si_mu;
+		    
 		    ydiff = ml_mu - si_mu;
 		    /* Gauvain/Lee's estimation of this makes no
 		     * sense as I read it, it seems to simply
@@ -130,20 +123,34 @@ estimate_tau(vector_t ***si_mean, vector_t ***si_var, float32 ***si_mixw,
 }
 
 static int
-map_mixw_reest(float32 ***map_tau, float32 fixed_tau,
+map_mixw_reest(model_def_t *mdef, float32 ***map_tau, float32 fixed_tau,
 	       float32 ***si_mixw, float32 ***wt_mixw, float32 ***map_mixw,
-	       float32 mwfloor, uint32 n_mixw, uint32 n_stream, uint32 n_density)
+	       float32 mwfloor, uint32 n_cb, uint32 n_mixw, uint32 n_stream, uint32 n_density)
 {
-    uint32 i, j, k;
+    uint32 i, j, k, cb;
 
     E_INFO("Re-estimating mixture weights using MAP\n");
     for (i = 0; i < n_mixw; ++i) {
+
+        if (n_mixw == n_cb) {
+	    cb = i;
+	} else if (n_cb == 1) {
+	    cb = 0;
+	} else {
+	    if (mdef == NULL) {
+		E_ERROR("Failed to adapt mixtures. Please specify -moddeffn and -ts2cbfn\n");
+		return S3_ERROR;
+	    }
+	    cb = mdef->cb[i];
+	}
+
 	for (j = 0; j < n_stream; ++j) {
 	    float32 sum_tau, sum_nu, sum_wt_mixw;
+	    
 
 	    sum_tau = sum_nu = sum_wt_mixw = 0.0f;
 	    for (k = 0; k < n_density; ++k)
-		sum_tau += (map_tau != NULL) ? map_tau[i][j][k] : fixed_tau;
+		sum_tau += (map_tau != NULL) ? map_tau[cb][j][k] : fixed_tau;
 	    for (k = 0; k < n_density; ++k) {
 		float32 nu;
 
@@ -160,7 +167,7 @@ map_mixw_reest(float32 ***map_tau, float32 fixed_tau,
 	    for (k = 0; k < n_density; ++k) {
 		float32 tau, nu;
 
-		tau = (map_tau != NULL) ? map_tau[i][j][k] : fixed_tau;
+		tau = (map_tau != NULL) ? map_tau[cb][j][k] : fixed_tau;
 		nu = si_mixw[i][j][k] * sum_tau + 1;
 
 		map_mixw[i][j][k] = (nu - 1 + wt_mixw[i][j][k])
@@ -481,9 +488,40 @@ map_update(void)
 
     /* Re-estimate mixture weights. */
     if (map_mixw) {
-	map_mixw_reest(map_tau, fixed_tau,
+	model_def_t *mdef = NULL;
+	
+	if (cmd_ln_str("-moddeffn")) {
+	    const char *ts2cbfn;
+
+	    E_INFO("Reading %s\n", cmd_ln_str("-moddeffn"));
+	    if (model_def_read(&mdef,
+	    	   cmd_ln_str("-moddeffn")) != S3_SUCCESS) {
+		return S3_ERROR;
+	    }
+    	    ts2cbfn = cmd_ln_str("-ts2cbfn");
+	    if (strcmp(SEMI_LABEL, ts2cbfn) == 0) {
+		mdef->cb = semi_ts2cb(mdef->n_tied_state);
+	    }
+	    else if (strcmp(CONT_LABEL, ts2cbfn) == 0) {
+		mdef->cb = cont_ts2cb(mdef->n_tied_state);
+	    }
+	    else if (strcmp(PTM_LABEL, ts2cbfn) == 0) {
+	        mdef->cb = ptm_ts2cb(mdef);
+	    }
+	    else if (s3ts2cb_read(ts2cbfn,
+			      &mdef->cb,
+			      NULL,
+			      NULL) != S3_SUCCESS) {
+		return S3_ERROR;
+	    }
+	}
+
+	map_mixw_reest(mdef, map_tau, fixed_tau,
 		       si_mixw, wt_mixw, map_mixw, mwfloor,
-		       n_mixw, n_stream, n_density);
+		       n_cb, n_mixw, n_stream, n_density);
+		      
+	if (mdef)
+	    model_def_free(mdef);
     }
 
     /* Re-estimate transition matrices. */
@@ -498,6 +536,8 @@ map_update(void)
 	E_INFO("Re-estimating means using MAP\n");
     if (n_mixw != n_cb && n_cb == 1)
 	E_INFO("Interpolating tau hyperparameter for semi-continuous models\n");
+    if (n_mixw != n_cb && n_cb != 1)
+	E_INFO("Interpolating tau hyperparameter for PTM models\n");
     if (map_var)
 	E_INFO("Re-estimating variances using MAP\n");
 
@@ -509,20 +549,7 @@ map_update(void)
 		if (map_tau == NULL)
 		    tau = fixed_tau;
 		else {
-		    /* Interpolate tau for semi-continuous models. */
-		    if (n_mixw != n_cb && n_cb == 1) {
-			int m;
-
-			tau = 0.0f;
-			for (m = 0; m < n_mixw; ++m)
-			    tau += map_tau[m][j][k];
-			tau /= n_mixw;
-#if 0
-			printf("SC tau[%d][%d] = %f\n", j, k, tau);
-#endif
-		    }
-		    else /* Continuous. */
-			tau = map_tau[i][j][k];
+		    tau = map_tau[i][j][k];
 		}
 
 		/* Means re-estimation. */
