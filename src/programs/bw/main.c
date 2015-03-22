@@ -414,12 +414,12 @@ main_initialize(int argc,
     
     if (gauden_eval_precomp(inv->gauden) != S3_SUCCESS) {
 	E_ERROR("Problems precomputing values used during Gaussian density evaluation\n");
-
 	return S3_ERROR;
     }
 
     if (inv->gauden->n_mgau != n_cb) {
-	printf("# of codebooks in mean/var files, %u, inconsistent with ts2cb mapping %u\n", inv->gauden->n_mgau, n_cb);
+	E_ERROR("# of codebooks in mean/var files, %u, inconsistent with ts2cb mapping %u\n", inv->gauden->n_mgau, n_cb);
+	return S3_ERROR;
     }
 
     mixw_reest = cmd_ln_int32("-mixwreest");
