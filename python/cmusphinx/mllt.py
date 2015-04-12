@@ -19,7 +19,7 @@ __version__ = "$Revision$"
 import sys
 
 try:
-    from numpy import dot, prod, diag, log, eye, sqrt, newaxis, concatenate
+    from numpy import sum, dot, prod, diag, log, eye, sqrt, newaxis, concatenate
     from numpy.random import random
     from numpy.linalg import det, inv
     from scipy.optimize import fmin_l_bfgs_b
@@ -79,7 +79,7 @@ class MLLTModel(object):
         for j, nj in enumerate(self.count):
             C = self.cov[j]
             cl = diag(dot(dot(A, C), A.T))
-            ll = ll - (float(nj) / 2) * log(prod(cl))
+            ll = ll - (float(nj) / 2) * sum(log(cl))
             lg = lg - float(nj) * dot(dot(inv(diag(cl)), A), C)
         print "likelihood: %f" % ll
         # Flatten out the gradient
