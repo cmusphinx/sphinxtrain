@@ -94,8 +94,9 @@ if ($iter == 1 and $n_gau == $ST::CFG_INITIAL_NUM_DENSITIES) {
     # If we previously force aligned with single-Gaussian models, use
     # them for initialization to save some time.
     if (($ST::CFG_FORCEDALIGN eq 'yes' or $ST::CFG_VTLN eq 'yes')
-	and $ST::CFG_FALIGN_CI_MGAU ne 'yes'
-	and -e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means')) {
+	and -e catfile($ST::CFG_FORCE_ALIGN_MODELDIR, 'means')
+	and ($ST::CFG_FALIGN_CI_MGAU ne 'yes' or $ST::CFG_HMM_TYPE ne '.cont.')
+	) {
 	$return_value = CopyInitialize();
 	exit ($return_value) if ($return_value);
     }
