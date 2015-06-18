@@ -258,10 +258,10 @@ my @uttids;
 	Log("Estimated Total Hours Training: $total_training_hours", 'result');
 	my $estimated_n_tied_states = 1000;
 	
-	if ($total_training_hours < 0.5) {
+	if ($total_training_hours < 0.5 and $ST::CFG_CD_TRAIN eq 'yes') {
 	    $status = 'FAILED';
 	    $ret_value = -5;
-	    LogWarning("Not enough data for the training");
+	    LogError("Not enough data for the training, we can only train CI models (set CFG_CD_TRAIN to \"no\")");
 	} else {
 	    if ($total_training_hours < 10) {
 		$status = 'WARNING';

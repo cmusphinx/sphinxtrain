@@ -245,12 +245,12 @@ sub LogError
 
     chomp ($message);		# remove \n if it exists
 
-    print "$message\n" if $ST::CFG_VERBOSE;
+    print "ERROR: $message\n" if $ST::CFG_VERBOSE;
     if (! -s $logfile) {
         CreateHeader($logfile);
     }
     open HTML_LOG,">>$logfile";
-    print HTML_LOG "<p class='error'>$message</p>\n";
+    print HTML_LOG "<p class='error'>ERROR: $message</p>\n";
     close HTML_LOG;
 }
 
