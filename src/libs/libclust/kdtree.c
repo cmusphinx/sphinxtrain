@@ -472,12 +472,12 @@ read_kd_trees(const char *infile, kd_tree_node_t ***out_trees, uint32 *out_n_tre
 		E_ERROR_SYSTEM("Failed to open %s", infile);
 		return -1;
 	}
-	n = fscanf(fp, "%256s", line);
+	n = fscanf(fp, "%255s", line);
 	if (n != 1 || strcmp(line, "KD-TREES")) {
 		E_ERROR("Doesn't appear to be a kd-tree file: %s\n");
 		return -1;
 	}
-	n = fscanf(fp, "%256s %d", line, &version);
+	n = fscanf(fp, "%255s %d", line, &version);
 	if (n != 2 || strcmp(line, "version") || version > KDTREE_VERSION) {
 		E_ERROR("Unsupported kd-tree file format %s %d\n", line, version);
 		return -1;
