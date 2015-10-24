@@ -492,7 +492,7 @@ def lm_eval(lm, sent):
     for i in xrange(len(sent)):
         if sent[i] == '<s>':
             continue
-        prob = lm.prob([*sent[i::-1]])
+        prob = lm.prob(sent[i::-1])
         #print sent[i::-1], prob / math.log(10), bo
         ll += prob
     return ll
