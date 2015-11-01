@@ -58,7 +58,7 @@
 #include <sphinxbase/feat.h>
 
 static void
-xfrm_feat(float32 ***ainv,
+xfrm_feat(float32 ***a,
 	  float32 **b,
 	  float32 **f,
 	  uint32 n_stream,
@@ -76,7 +76,7 @@ xfrm_feat(float32 ***ainv,
 
 	for (i = 0; i < veclen[s]; i++) {
 	    for (j = 0; j < veclen[s]; j++) {
-		o[i] += ainv[s][i][j] * f[s][j];
+		o[i] += a[s][i][j] * f[s][j];
 	    }
 	}
 
@@ -149,7 +149,6 @@ agg_st_seg(model_def_t *mdef,
     uint32 *veclen_tmp;
     uint32 n_mllr_cls;
     float32 ****a = NULL;
-    float32 ****ainv = NULL;
     float32 ***b = NULL;
     uint32 mcls;
     int32 mfc_veclen = cmd_ln_int32("-ceplen");
@@ -237,23 +236,9 @@ agg_st_seg(model_def_t *mdef,
 			    n_stream, n_stream_tmp);
 		}
 
-		/* Free the prior A^(-1) if any */
-		if (ainv) {
-		    for (i = 0; i < n_mllr_cls; i++) {
-			for (j = 0; j < n_stream; j++) {
-			    ckd_free_2d((void **)ainv[i][j]);
-			}
-		    }
-		    ckd_free_2d((void **)ainv);
-		}
-
-		/* Compute A^(-1) for the current transform */
-		ainv = (float32 ****)ckd_calloc_2d(n_mllr_cls, n_stream, sizeof(float32 **));
 		for (i = 0; i < n_mllr_cls; i++) {
 		    for (j = 0; j < n_stream; j++) {
-			ainv[i][j] = (float32 **)ckd_calloc_2d(veclen[j], veclen[j], sizeof(float32));
-
-			invert(ainv[i][j], a[i][j], veclen[j]);
+			invert(a[i][j], a[i][j], veclen[j]);
 		    }
 		}
 	    }
@@ -264,7 +249,7 @@ agg_st_seg(model_def_t *mdef,
 		    mcls = cb2mllr[ts2cb[sseq[t]]];
 
 		    /* Transform the feature space using the inverse MLLR transform */
-		    xfrm_feat(ainv[mcls], b[mcls], feat[t], n_stream, veclen);
+		    xfrm_feat(a[mcls], b[mcls], feat[t], n_stream, veclen);
 		}
 		segdmp_add_feat(sseq[t], &feat[t], 1);
 	    }

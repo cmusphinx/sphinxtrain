@@ -81,19 +81,11 @@ read_mllr_files(const char *mllrmatfn,
     E_INFO("n_mllr_class = %d\n", *out_n_mllr_class);
 
     if (inverse) {
-	float32 **** ainv;
-
-	ainv = (float32 ****)ckd_calloc_2d((*out_n_mllr_class),
-					   (*out_n_feat), sizeof(float32 **));
 	for (m = 0; m < *out_n_mllr_class; ++m) {
 	    for (j = 0; j < *out_n_feat; ++j) {
-		ainv[m][j] = (float32 **)ckd_calloc_2d((*out_veclen)[j],
-						       (*out_veclen)[j], sizeof(float32));
-		invert(ainv[m][j], (*out_A)[m][j], (*out_veclen)[j]);
+		invert((*out_A)[m][j], (*out_A)[m][j], (*out_veclen)[j]);
 	    }
 	}
-	free_mllr_A(*out_A, *out_n_mllr_class, *out_n_feat);
-	*out_A = ainv;
     }
 
     if (strcmp(cb2mllrfn, ".1cls.") == 0) {
