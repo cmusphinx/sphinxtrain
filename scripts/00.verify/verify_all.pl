@@ -98,9 +98,11 @@ my %phonelist_hash;
     # Read the phonelist and stick phones into phonelist_hash
     open PHONE,"$ST::CFG_RAWPHONEFILE" or die "Can not open phone list ($ST::CFG_RAWPHONEFILE)\n";
     my $has_SIL = 0;
+    my $has_DUP = 0;
     while (<PHONE>) {
 	my $line = Trim($_);
 	$has_SIL = 1 if ($line =~ m/^SIL$/);
+	$has_DUP = 1 if (exists $phonelist_hash{$line});
 	$phonelist_hash{$line} = 0;
     }
     close PHONE;
@@ -110,6 +112,13 @@ my %phonelist_hash;
 	$ret_value = -1;
 	LogWarning("The phonelist ($ST::CFG_RAWPHONEFILE) does not define the phone SIL (required!)");
       }
+
+    if ($has_DUP) {
+	my $status = 'FAILED';
+	$ret_value = -1;
+	LogWarning("The phonelist ($ST::CFG_RAWPHONEFILE) has duplicated phones");
+    }
+
     
     my $nkeys = keys %dict_phone_hash;
     Log("Found $counter words using $nkeys phones", 'result');
