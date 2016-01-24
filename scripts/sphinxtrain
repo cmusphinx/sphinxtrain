@@ -18,8 +18,8 @@ def find_paths():
     if os.path.exists(currentpath + "/../lib/sphinxtrain/bw"):
         sphinxbinpath = os.path.realpath(currentpath + "/../lib/sphinxtrain/bw")
 
-    if os.path.exists(currentpath + "/../bin/Release"):
-        sphinxbinpath = os.path.realpath(currentpath + "/../bin/Release")
+    if os.path.exists(currentpath + "/../bin/Release/Win32"):
+        sphinxbinpath = os.path.realpath(currentpath + "/../bin/Release/Win32")
 
     # Find the location for the libraries
     sphinxpath = os.path.realpath(currentpath + "/../lib/sphinxtrain")
