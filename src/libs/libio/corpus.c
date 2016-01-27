@@ -127,9 +127,6 @@ static int is_flat[N_DATA_TYPE];
 /* The name of an LSN file containing all transcripts for the corpus */
 static const char *transcription_filename = NULL;
 
-/* Match flag for the utterance id */
-static uint32 fullsuffixmatch = 0;
-
 /* Standard I/O file pointer for the control file */
 static FILE *ctl_fp = NULL;
 
@@ -1440,12 +1437,6 @@ corpus_get_phseg(acmod_set_t *acmod_set,
     return S3_SUCCESS;
 }
 
-void
-corpus_set_full_suffix_match(uint32 state)
-{
-    fullsuffixmatch = state;
-}
-
 static int
 corpus_read_next_transcription_line(char **trans)
 {
@@ -1474,19 +1465,12 @@ corpus_read_next_transcription_line(char **trans)
 
 		strcpy(utt_id, s+1);
 
-		/* check LSN utt id (if any) against ctl file utt id */
-		if (!fullsuffixmatch) {
-		    if (strcmp_ci(utt_id, corpus_utt()) != 0) {
-		        E_WARN("Utterance id in the transcription file, '%s', does not match id in the control file, '%s'.\n",
-			       utt_id, corpus_utt());
-		    }
-		}
-		else {
-		    char * uttfullname = corpus_utt_full_name();
+		if (strcmp_ci(utt_id, corpus_utt()) != 0) {
+		    char *uttfullname = corpus_utt_full_name();
 		    int suffpos = strlen(uttfullname) - strlen(utt_id);
 
 		    if (suffpos >= 0 && strlen(utt_id) > 0 && strcmp_ci(&uttfullname[suffpos], utt_id) != 0) {
-		        E_WARN("Utterance id in transcription flie, '%s', is not a suffix of control file sub-path %s.\n",
+		        E_WARN("Utterance id in transcription file, '%s', does not match filename in control path '%s'.\n",
 			       utt_id, uttfullname);
 		    }
 		}
@@ -1495,7 +1479,7 @@ corpus_read_next_transcription_line(char **trans)
 		   the open paren */
 		for (--s; (s >= transcription_line) && isspace((unsigned char)*s); s--);
 		if (s < transcription_line) {
-		  E_FATAL("Utterance transcription is empty: %s\n", transcription_line);
+		    E_FATAL("Utterance transcription is empty: %s\n", transcription_line);
 		}
 		++s;
 		*s = '\0';	/* terminate the string at the first whitespace character

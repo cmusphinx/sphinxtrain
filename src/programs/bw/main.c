@@ -660,7 +660,6 @@ main_reestimate(model_inventory_t *inv,
     uint32 no_retries = 0;
 
     uint32 outputfullpath = 0;
-    uint32 fullsuffixmatch = 0;
 
     E_INFO("Reestimation: %s\n",
 	(viterbi ? "Viterbi" : "Baum-Welch"));
@@ -671,9 +670,6 @@ main_reestimate(model_inventory_t *inv,
 	E_INFO("If you are not interested in profiling, use -timing no\n");
     }
     outputfullpath = cmd_ln_int32("-outputfullpath");
-    fullsuffixmatch = cmd_ln_int32("-fullsuffixmatch");
-
-    corpus_set_full_suffix_match(fullsuffixmatch);
 
     if (profile) {
 	timers = ckd_calloc(1, sizeof(bw_timers_t));
@@ -1588,9 +1584,6 @@ main_mmi_reestimate(model_inventory_t *inv,
   }
   if (cmd_ln_int32("-outputfullpath")) {
     E_FATAL("current MMIE training don't support outputfullpath, set -outputfullpath to no\n");
-  }
-  if (cmd_ln_int32("-fullsuffixmatch")) {
-    E_FATAL("current MMIE training don't support fullsuffixmatch, set -fullsuffixmatch to no\n");
   }
   if (cmd_ln_str("-ckptintv")) {
     E_FATAL("current MMIE training don't support ckptintv, remove -ckptintv\n");

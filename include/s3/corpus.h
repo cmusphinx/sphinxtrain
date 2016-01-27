@@ -116,9 +116,6 @@ corpus_set_ddcode_dir(const char *root);
 int
 corpus_set_ddcode_ext(const char *ext);
 
-void
-corpus_set_full_suffix_match(uint32 state);
-
 /* Corpus LSN file configuration functions */
 int
 corpus_set_lsn_filename(const char *fn);

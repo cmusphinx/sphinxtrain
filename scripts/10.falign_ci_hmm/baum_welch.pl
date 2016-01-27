@@ -167,7 +167,6 @@ my $return_value = RunTool
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
      -outputfullpath => "yes",
-     -fullsuffixmatch => "yes",
      @feat_args,
      -timing => "no");
 

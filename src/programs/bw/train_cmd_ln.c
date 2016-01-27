@@ -517,11 +517,6 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  "no",
 	  "Output full path of utterance to bw log output" },
 
-	{ "-fullsuffixmatch",
-	  ARG_BOOLEAN,
-	  "no",
-	  "Expect utterance id in transcript to be a suffix of the partial path in the control file" },
-
 	{ "-pdumpdir",
 	  ARG_STRING,
 	  NULL,
