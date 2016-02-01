@@ -67,6 +67,7 @@
 
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/pio.h>
+#include <sphinxbase/case.h>
 
 #include <sys_compat/file.h>
 #include <sys_compat/misc.h>
@@ -84,9 +85,6 @@
 /*
  * Private functions to corpus
  */
-
-static
-int strcmp_ci(const char *a, const char *b);
 
 static char *
 mk_filename(uint32 type, char *rel_path);
@@ -196,25 +194,6 @@ static uint32 n_run = UNTIL_EOF;
 static uint32 n_proc = 0;
 
 static uint32 begin;
-
-static
-int strcmp_ci(const char *a, const char *b)
-{
-    char a_lc[1024];
-    char b_lc[1024];
-    int i;
-
-    strcpy(a_lc, a);
-    strcpy(b_lc, b);
-    
-    for (i = 0; i < strlen(a_lc); i++)
-	a_lc[i] = tolower((int)a_lc[i]);
-
-    for (i = 0; i < strlen(b_lc); i++)
-	b_lc[i] = tolower((int)b_lc[i]);
-
-    return strcmp(a_lc, b_lc);
-}
 
 int32
 corpus_provides_mfcc()
@@ -1465,11 +1444,11 @@ corpus_read_next_transcription_line(char **trans)
 
 		strcpy(utt_id, s+1);
 
-		if (strcmp_ci(utt_id, corpus_utt()) != 0) {
+		if (strcmp_nocase(utt_id, corpus_utt()) != 0) {
 		    char *uttfullname = corpus_utt_full_name();
 		    int suffpos = strlen(uttfullname) - strlen(utt_id);
 
-		    if (suffpos >= 0 && strlen(utt_id) > 0 && strcmp_ci(&uttfullname[suffpos], utt_id) != 0) {
+		    if (suffpos >= 0 && strlen(utt_id) > 0 && strcmp_nocase(&uttfullname[suffpos], utt_id) != 0) {
 		        E_WARN("Utterance id in transcription file, '%s', does not match filename in control path '%s'.\n",
 			       utt_id, uttfullname);
 		    }
