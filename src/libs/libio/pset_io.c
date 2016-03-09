@@ -77,7 +77,6 @@ read_pset_file(const char *file_name,
 
     for (lc = 0, li = lineiter_start(fp); li; li = lineiter_next(li), lc++);
 
-    printf("!!!!!!!!Allocated %d lines\n", lc);
     out = ckd_calloc(lc, sizeof(pset_t));
     *n_pset = lc;
 
