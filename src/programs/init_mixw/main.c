@@ -451,7 +451,7 @@ init_mixw()
     dest_mixw = (float32 ***)ckd_calloc_3d(n_mixw_dest, n_feat, n_gau, sizeof(float32));
 
     for (i = 0, n_cb_dest = 0; i < n_mixw_dest; i++) {
-	if (dest_mdef->cb[i] > n_cb_dest) {
+	if (dest_mdef->cb[i] != -1 && dest_mdef->cb[i] > n_cb_dest) {
 	    n_cb_dest = dest_mdef->cb[i];
 	}
     }
@@ -579,7 +579,27 @@ init_mixw()
 	    return S3_ERROR;
 	}
     }
-    ckd_free(veclen);    
+    ckd_free(veclen);
+    if (src_mean)
+        gauden_free_param(src_mean);
+    if (src_var)
+        gauden_free_param(src_var);
+    if (dest_mean)
+        gauden_free_param(dest_mean);
+    if (dest_var)
+        gauden_free_param(dest_var);
+    if (src_mdef)
+        model_def_free(src_mdef);
+    if (dest_mdef)
+        model_def_free(dest_mdef);
+    if (src_mixw)
+	ckd_free_3d(src_mixw);
+    if (dest_mixw)
+	ckd_free_3d(dest_mixw);
+    if (src_tmat)
+	ckd_free_3d(src_tmat);
+    if (dest_tmat)
+	ckd_free_3d(dest_tmat);
     return S3_SUCCESS;
 }
 
