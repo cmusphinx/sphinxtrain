@@ -2,6 +2,7 @@
 SUBDIRS = etc include python scripts src test
 
 EXTRA_DIST = \
+	LICENSE \
 	autogen.sh \
 	SphinxTrain.sln \
 	m4/pkg.m4 \
