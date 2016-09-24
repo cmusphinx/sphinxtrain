@@ -1,6 +1,7 @@
 # Automake-based build system
 
 AC_INIT(SphinxTrain, 5prealpha)
+AC_CONFIG_HEADERS([include/config.h])
 AM_INIT_AUTOMAKE([no-define foreign])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -156,7 +157,6 @@ dnl
 dnl ###############################
 if   test "x$g2p_decoder" = "xyes" ; then
 
-AC_DEFINE([G2P_DECODER])
 AC_LANG([C++])
 
 # Get openfst and opengrm library and include locations
