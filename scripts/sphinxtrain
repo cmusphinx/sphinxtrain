@@ -94,7 +94,7 @@ def run_stages(stages):
                 if name == stage:
                     ret = os.system(sphinxpath + "/scripts/" + step)
                     if ret != 0:
-                	exit(ret)
+                         exit(ret)
 
 def run_from(stage):
     found = False
@@ -109,9 +109,9 @@ def run_from(stage):
 def run():
     print("Running the training")
     for step in steps:
-	ret = os.system(sphinxpath + "/scripts/" + step)
-	if ret != 0:
-	    exit(ret)
+        ret = os.system(sphinxpath + "/scripts/" + step)
+        if ret != 0:
+           exit(ret)
 
 def usage():
     print ("")
