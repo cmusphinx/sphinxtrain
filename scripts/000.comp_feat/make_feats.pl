@@ -48,7 +48,7 @@ use File::Spec::Functions;
 use File::Path;
 
 use lib catdir(dirname($0), updir(), 'lib');
-use SphinxTrain::Config cfg => 'etc/sphinx_train.cfg';
+use SphinxTrain::Config;
 use SphinxTrain::Util;
 
 #************************************************************************
