@@ -78,7 +78,7 @@ open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES:
 my $line = <INPUT>;
 my $ctlext;
 if (split(" ", $line) == 1 or $line =~ m,/,) {
-    # Use full file path
+    # Use full file path1
     $ctlext = ",CTL";
 }
 else {
@@ -131,6 +131,10 @@ my $return_value = RunTool
 if ($return_value) {
   LogError("Failed to run sphinx3_align");
 }
+
+my $return_value = RunTool("gcc -o stseg-read $ST::CFG_SPHINXTRAIN_DIR/src/libs/libcommon/stseg-read.c")
+my $return_value = RunTool("$ST::CFG_SPHINXTRAIN_DIR/python/DNN_training/readStSeg.sh $ST::CFG_STSEG_DIR"
+
 $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_SPHINXTRAIN_DIR, 'python');
 
 my $return_value = RunTool(catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'DNN_training', 'runDatasetGen.py'),
