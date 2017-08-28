@@ -94,19 +94,20 @@ def genDataset(train_flist, dev_flist, test_flist, n_feats,
 		test_files = []
 	phone2state = read_sen_labels_from_mdef(mdef_fname)
 
+	print len(train_files)
 	stseg_files_train = map(lambda x: x.split('/')[-1]+stseg_ext,train_files)
 	stseg_files_test = map(lambda x: x.split('/')[-1]+stseg_ext,test_files)
 	stseg_files_dev = map(lambda x: x.split('/')[-1]+stseg_ext,dev_files)
-	stseg_files_train = filter(lambda x: os.path.exists(stseg_path + x), stseg_files_train)
-	stseg_files_test = filter(lambda x: os.path.exists(stseg_path + x), stseg_files_test)
-	stseg_files_dev = filter(lambda x: os.path.exists(stseg_path + x), stseg_files_dev)
+	stseg_files_train = filter(lambda x: os.path.exists(stseg_path + '/' + x), stseg_files_train)
+	stseg_files_test = filter(lambda x: os.path.exists(stseg_path + '/' + x), stseg_files_test)
+	stseg_files_dev = filter(lambda x: os.path.exists(stseg_path + '/' + x), stseg_files_dev)
 
 	stseg_files = stseg_files_train + stseg_files_dev + stseg_files_test
 	print "Training Files: %d 	Dev Files: %d	Testing Files: %d" % (len(stseg_files_train), len(stseg_files_dev), len(stseg_files_test))
 
-	train_files = map(lambda x: feat_path+x+feat_ext,train_files)
-	dev_files = map(lambda x: feat_path+x+feat_ext,dev_files)
-	test_files = map(lambda x: feat_path+x+feat_ext,test_files)
+	train_files = map(lambda x: feat_path+'/'+x+feat_ext,train_files)
+	dev_files = map(lambda x: feat_path+'/'+x+feat_ext,dev_files)
+	test_files = map(lambda x: feat_path+'/'+x+feat_ext,test_files)
 
 	X_Train = []
 	Y_Train = []
@@ -177,7 +178,7 @@ def genDataset(train_flist, dev_flist, test_flist, n_feats,
 		else:
 			data = utils.readMFC(data_file,n_feats).astype('float32')
 		data = scaler.fit_transform(data)
-		labels = frame2state(stseg_path + f, phone2state)
+		labels = frame2state(stseg_path + '/' + f, phone2state)
 		nFrames = min(len(labels), data.shape[0])
 		sys.stdout.write('(%d,%d) (%d,)' % (data.shape + np.array(labels).shape))
 		data = data[:nFrames]

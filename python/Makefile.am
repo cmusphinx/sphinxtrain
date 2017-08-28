@@ -72,6 +72,13 @@ nobase_scripts_SCRIPTS = \
 	cmusphinx/prune_mixw.py \
 	cmusphinx/quantize_mixw.py \
 	cmusphinx/lat2dot.py \
-	cmusphinx/qmwx.pyx
+	cmusphinx/qmwx.pyx \
+	cmusphinx/readSen.py \
+	cmusphinx/runDatasetGen.py \
+	cmusphinx/runNNPredict.py \
+	cmusphinx/runNNTrain.py \
+	cmusphinx/genLabels.py \
+	cmusphinx/utils.py \
+	cmusphinx/NNTrain.py
 
 EXTRA_DIST = $(nobase_scripts_SCRIPTS)
