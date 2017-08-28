@@ -48,15 +48,16 @@ use lib catdir(dirname($0), updir(), 'lib');
 use SphinxTrain::Config;
 use SphinxTrain::Util;
 
-die "Usage: $0 <part> <nparts>\n" unless @ARGV == 2;
-my ($part, $npart) = @ARGV;
-
+# die "Usage: $0 <part> <nparts>\n" unless @ARGV == 2;
+# my ($part, $npart) = @ARGV;
+#my $part=0;
+#my $npart=0;
 my $hmm_dir = defined($ST::CFG_FORCE_ALIGN_MODELDIR)
     ? $ST::CFG_FORCE_ALIGN_MODELDIR
     : "$ST::CFG_MODEL_DIR/$ST::CFG_EXPTNAME.ci_$ST::CFG_DIRLABEL";
-my $logdir = "$ST::CFG_LOG_DIR/11.force_align";
+my $logdir = "$ST::CFG_LOG_DIR/19.nn_train";
 my $outdir = "$ST::CFG_BASE_DIR/falignout";
-my $outfile = "$outdir/$ST::CFG_EXPTNAME.alignedtranscripts.$part";
+my $outfile = "$outdir/$ST::CFG_EXPTNAME.alignedtranscripts.d";
 
 my $statepdeffn = $ST::CFG_HMM_TYPE; # indicates the type of HMMs
 my $mwfloor = 1e-8;
@@ -70,7 +71,7 @@ my $fdict = defined($ST::CFG_FORCE_ALIGN_FILLERDICT)
     ? $ST::CFG_FORCE_ALIGN_FILLERDICT
     : "$outdir/$ST::CFG_EXPTNAME.falign.fdict";
 my $beam = defined($ST::CFG_FORCE_ALIGN_BEAM) ? $ST::CFG_FORCE_ALIGN_BEAM : 1e-100;
-my $logfile  = "$logdir/${ST::CFG_EXPTNAME}.$part.falign.log";
+my $logfile  = "$logdir/${ST::CFG_EXPTNAME}..falign.log";
 
 # Get the number of utterances
 open INPUT,"${ST::CFG_LISTOFFILES}" or die "Failed to open $ST::CFG_LISTOFFILES: $!";
@@ -90,10 +91,9 @@ while (<INPUT>) {
     $ctl_counter++;
 }
 close INPUT;
-$ctl_counter = int ($ctl_counter / $npart) if $npart;
 $ctl_counter = 1 unless ($ctl_counter);
 
-Log("Force alignment starting: ($part of $npart) ", 'result');
+#Log("Force alignment starting: ($part of $npart) ", 'result');
 
 my @phsegdir;
 
@@ -103,41 +103,23 @@ if (defined($ST::CFG_STSEG_DIR)) {
 else{
   LogError("Please specity CFG_STSEG_DIR")
 }
+Log('Compiling stseg-read');
+my $logfile  = catfile($logdir, "${ST::CFG_EXPTNAME}.stseg_compile.log");
+my $return_value = RunTool("gcc",
+			$logfile,0, 
+			-o => "$ST::CFG_SPHINXTRAIN_DIR/src/libs/libcommon/stseg-read", 
+			"$ST::CFG_SPHINXTRAIN_DIR/src/libs/libcommon/stseg-read.c");
+Log('converting stseg files to ASCII');
+my $logfile  = catfile($logdir, "${ST::CFG_EXPTNAME}.stseg2ascii.log");
 
-my $return_value = RunTool
-    ('sphinx3_align', $logfile, $ctl_counter,
-     -hmm => $hmm_dir,
-     -senmgau => $statepdeffn,
-     -mixwfloor => $mwfloor,
-     -varfloor => $minvar,
-     -dict => $dict,
-     -fdict => $fdict,
-     -ctl => $ST::CFG_LISTOFFILES,
-     -ctloffset => $ctl_counter * ($part-1),
-     -ctlcount => $ctl_counter,
-     -cepdir => $ST::CFG_FEATFILES_DIR,
-     -cepext => ".$ST::CFG_FEATFILE_EXTENSION",
-     -insent => $transcriptfile,
-     -outsent => $outfile,
-     @phsegdir,
-     -beam => $beam,
-     -agc => $ST::CFG_AGC,
-     -cmn => $ST::CFG_CMN,
-     -varnorm => $ST::CFG_VARNORM,
-     -feat => $ST::CFG_FEATURE,
-     -ceplen => $ST::CFG_VECTOR_LENGTH,
-     );
-
-if ($return_value) {
-  LogError("Failed to run sphinx3_align");
-}
-
-my $return_value = RunTool("gcc -o stseg-read $ST::CFG_SPHINXTRAIN_DIR/src/libs/libcommon/stseg-read.c")
-my $return_value = RunTool("$ST::CFG_SPHINXTRAIN_DIR/python/DNN_training/readStSeg.sh $ST::CFG_STSEG_DIR"
-
+my $return_value = RunTool("$ST::CFG_SPHINXTRAIN_DIR/python/DNN_training/readStSeg.sh $ST::CFG_STSEG_DIR",
+				$logfile, 0);
+Log('generating dataset');
+my $logfile  = catfile($logdir, "${ST::CFG_EXPTNAME}.gendataset.log");
 $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_SPHINXTRAIN_DIR, 'python');
 
 my $return_value = RunTool(catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'DNN_training', 'runDatasetGen.py'),
+			$logfile,0,
 			-train_fileids => $ST::CFG_LISTOFFILES,
 			-val_fileids => $ST::CFG_LISTOFFILES,
 			-n_filts => $ST::CFG_VECTOR_LENGTH,
@@ -152,15 +134,17 @@ my $return_value = RunTool(catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'DNN_trai
 if ($return_value) {
   LogError("Failed to run runDatasetGen.py");
 }
-
+Log('training nn');
+my $logfile  = catfile($logdir, "${ST::CFG_EXPTNAME}.training.log");
 my $return_value = RunTool(catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'DNN_training', 'runNNTrain.py'),
+			$logfile,0,
 			-train_data => catfile("$ST::CFG_BASE_DIR","train.py"),
 			-train_label => catfile("$ST::CFG_BASE_DIR","train_labels.py"),
 			-val_data => catfile("$ST::CFG_BASE_DIR","dev.py"),
 			-val_labels => catfile("$ST::CFG_BASE_DIR","dev_labels.py")
 			-nn_config => catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'DNN_training', 'sample_nn.cfg')
 			-config_win => "4",
-			-model_name => catfile("$ST::CFG_BASE_DIR","nn","keras_mode.h5")
+			-model_name => catfile("$ST::CFG_BASE_DIR","nn","keras_mode.h5"));
 if ($return_value) {
   LogError("Failed to run runNNTrain.py");
 }
