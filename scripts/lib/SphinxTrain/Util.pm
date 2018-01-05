@@ -52,7 +52,7 @@ use File::Basename;
 use File::Spec;
 use Queue;
 
-die "Configuration (e.g. etc/sphinx_train.cfg) not defined\n" unless defined ($ST::CFG_DONE);
+die "Configuration (e.g. ./etc/sphinx_train.cfg) not defined\n" unless defined ($ST::CFG_DONE);
 
 $ST::CFG_OKAY_COLOR = '00D000';
 $ST::CFG_WARNING_COLOR = '555500';

@@ -48,7 +48,7 @@ sub import {
     } else {
 	$ST::CFG_FILE = $args{-cfg} if (defined($args{-cfg}));
 	$ST::CFG_FILE = $args{cfg} if (defined($args{cfg}));
-	$ST::CFG_FILE = "etc/sphinx_train.cfg" unless defined $ST::CFG_FILE;
+	$ST::CFG_FILE = "./etc/sphinx_train.cfg" unless defined $ST::CFG_FILE;
     }
 
     if (-r $ST::CFG_FILE) {
@@ -78,7 +78,7 @@ SphinxTrain::Config - Configuration management for Sphinx Training
 
   use SphinxTrain::Config;
   # -cfg specifies the default configuration if nothing was passed on the command-line
-  use SphinxTrain::Config -cfg => "etc/sphinx_train.cfg";
+  use SphinxTrain::Config -cfg => "./etc/sphinx_train.cfg";
   # -ns specifies the namespace to load the configuration file in
   use SphinxTrain::Config -pkg => 'ST';
   # $ST::CFG_FOO is now defined
