@@ -20,7 +20,7 @@ import sys, os
 try:
     import numpy
 except ImportError:
-    print "FATAL: Failed to import numpy modules. Check that numpy and scipy are installed"
+    print("FATAL: Failed to import numpy modules. Check that numpy and scipy are installed")
     sys.exit(1)
 
 import s3lda
@@ -49,8 +49,8 @@ def makelda(gauden_counts):
         diff = m / d - globalmean
         sb += d * numpy.outer(diff, diff)
 
-    print "Sw:\n", sw
-    print "Sb:\n", sb
+    print("Sw:\n", sw)
+    print("Sb:\n", sb)
     BinvA = numpy.dot(numpy.linalg.inv(sw), sb)
     u, v = numpy.linalg.eig(BinvA)
     
@@ -61,8 +61,8 @@ def makelda(gauden_counts):
     # them to be in the rows.
     v = v.T.take(top, 0)
 
-    print "u:\n", u
-    print "v:\n", v
+    print("u:\n", u)
+    print("v:\n", v)
 
     return v
 

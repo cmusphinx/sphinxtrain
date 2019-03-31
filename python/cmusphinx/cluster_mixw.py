@@ -93,7 +93,7 @@ def prunetree(tree, nleaves):
                 for branch in subtree:
                     subtree2, centroid2 = branch
                     newleafnodes.append((subtree2, centroid2))
-        print "Number of leafnodes", len(newleafnodes)
+        print("Number of leafnodes", len(newleafnodes))
         leafnodes = newleafnodes
     # Now flatten out the leafnodes to their component distributions
     for i, leaf in enumerate(leafnodes):
@@ -214,7 +214,7 @@ def cluster_merged(mixw, dfunc=multi_js):
             q = centroids[best]
             # Merge these two
             newcentroid = (p + q) * 0.5
-            print "Merging", i, best, dist[best], len(centroids)
+            print("Merging", i, best, dist[best], len(centroids))
             newtree = ((trees[i], p), (trees[best], q))
             centroids[i] = newcentroid
             trees[i] = newtree
@@ -287,12 +287,12 @@ def write_senmgau(outfile, tree, mixw, nclust):
         big = clusters[0]
         del clusters[0:1]
         clusters.extend((big[0][0], big[0][1]))
-    print "cluster sizes:", [len(leaves(x)) for x in clusters]
+    print("cluster sizes:", [len(leaves(x)) for x in clusters])
     mixwmap = numpy.zeros(len(mixw), 'int32')
     for i, c in enumerate(clusters):
         for mixwid in leaves(c):
             mixwmap[mixwid] = i
-    print "writing %d senone mappings" % len(mixwmap)
+    print("writing %d senone mappings" % len(mixwmap))
     s3senmgau.open(outfile, "wb").write_mapping(mixwmap)
 
 if __name__ == '__main__':

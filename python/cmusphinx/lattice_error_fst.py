@@ -165,14 +165,14 @@ if __name__ == '__main__':
         nwords = len(r) - 2
         refid = '(%s)' % refid
         c = '(%s)' % c
-        print " ".join(["%*s" % (m, x[0]) for m, x in izip(maxlen, bt)]), refid
-        print " ".join(["%*s" % (m, x[1]) for m, x in izip(maxlen, bt)]), c
+        print(" ".join(["%*s" % (m, x[0]) for m, x in izip(maxlen, bt)]), refid)
+        print(" ".join(["%*s" % (m, x[1]) for m, x in izip(maxlen, bt)]), c)
         if nwords:
-            print "Error: %.2f%%" % (float(err) / nwords * 100)
+            print("Error: %.2f%%" % (float(err) / nwords * 100))
         else:
-            print "Error: %.2f%%" % (float(err) * 100)
-        print
+            print("Error: %.2f%%" % (float(err) * 100))
+        print()
         wordcount += nwords
         errcount += err
 
-    print "TOTAL Error: %.2f%%" % (float(errcount) / wordcount * 100)
+    print("TOTAL Error: %.2f%%" % (float(errcount) / wordcount * 100))

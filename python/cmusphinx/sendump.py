@@ -61,7 +61,7 @@ class Sendump():
             # Number of codewords and pdfs
             model_count = self.unpack_endian(sendump.read(4))
             mixture_count = self.unpack_endian(sendump.read(4))
-        print "rows (model_count): %d, columns (mixture_count): %d, features (feature_count): %d" % (model_count, mixture_count, feature_count)
+        print("rows (model_count): %d, columns (mixture_count): %d, features (feature_count): %d" % (model_count, mixture_count, feature_count))
         
         # Now read the stuff
         self.opdf = numpy.empty((mixture_count, feature_count, model_count))
@@ -73,7 +73,7 @@ class Sendump():
                 self.opdf[:,i,j] = numpy.power(1.0001, -mixw)
 
 def usage():
-    print "Usage: %s IN_SENDUMP OUT_MIXW" % sys.argv[0]
+    print("Usage: %s IN_SENDUMP OUT_MIXW" % sys.argv[0])
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:

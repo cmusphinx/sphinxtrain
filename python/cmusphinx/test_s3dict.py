@@ -17,7 +17,7 @@ class TestS3Dict(unittest.TestCase):
         self.assertEquals(foodict.get_phones('ZSWANG'), ['S', 'W', 'AE', 'NG'])
         try:
             foo = foodict.get_phones('QRXG')
-            print foo
+            print(foo)
         except KeyError:
             pass # Expected fail
         else:

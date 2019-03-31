@@ -218,52 +218,52 @@ def write_lat(lm, filler, filelist, filecount, fileoffset, denlatdir, numlatdir,
         alignfile = "%s/%s.wdseg" % (numlatdir, fileid)
         latfile = "%s/%s.lat.gz" % (denlatdir, fileid)
 
-        print "process sent: %s" % fileid
+        print("process sent: %s" % fileid)
         
-        print "\t load numerator lattice %s ... " % alignfile
+        print("\t load numerator lattice %s ... " % alignfile)
         try:
             numlat = load_numlat(alignfile)
         except IOError:
-            print "\t can't open numerator lattice %s to read" % alignfile
+            print("\t can't open numerator lattice %s to read" % alignfile)
             continue
 
-        print "\t load denominator lattice %s ..." % latfile
+        print("\t load denominator lattice %s ..." % latfile)
         try:
             den_wordseg = load_denlat(latfile)
         except IOError:
-            print "\t can't open denominator lattice %s to read" % latfile
+            print("\t can't open denominator lattice %s to read" % latfile)
             continue
 
-        print "\t convert numerator lattice ..."
+        print("\t convert numerator lattice ...")
         numkeys = numlat.keys()
         numkeys.sort()
         conv_numlat = conv_lat_format(numkeys, numlat, filler, lm)
 
-        print "\t convert denominator lattice ..."
+        print("\t convert denominator lattice ...")
         denkeys = den_wordseg.keys()
         denkeys.sort()
         denlat = conv_lat_format(denkeys, den_wordseg, filler, lm)
 
-        print"\t add numerator lattice into denominator lattice ..."
+        print("\t add numerator lattice into denominator lattice ...")
         conv_denlat = add_numlat_into_denlat(conv_numlat, denlat)
 
         numlatfile = "%s/%s.numlat" % (outdir, fileid)
         denlatfile = "%s/%s.denlat" % (outdir, fileid)
 
-        print "\t write numerator lattice to %s ..." % numlatfile
+        print("\t write numerator lattice to %s ..." % numlatfile)
         try:
             output_lattice(conv_numlat, len(conv_numlat), numlatfile)
         except IOErro:
-            print "\t can't write numerator lattice to %s" % numlatfile
+            print("\t can't write numerator lattice to %s" % numlatfile)
             continue
 
-        print "\t write denominator lattice to %s ...\n" % denlatfile
+        print("\t write denominator lattice to %s ...\n" % denlatfile)
         try:
             output_lattice(conv_denlat, len(conv_numlat), denlatfile)
         except IOError:
-            print "\t can't write denominator lattice to %s" % denlatfile
+            print("\t can't write denominator lattice to %s" % denlatfile)
 
-    print "ALL DONE\n"
+    print("ALL DONE\n")
 
 
 
@@ -276,7 +276,7 @@ if __name__ == '__main__':
     command = ''
     for argv in sys.argv:
         command += argv + ' '
-    print "%s\n" % command
+    print("%s\n" % command)
     
     lmfile, fillerfile, filelist, filecount, fileoffset, denlatdir, numlatdir, outdir = sys.argv[1:]
 

@@ -34,14 +34,14 @@ for c,r in izip(ctl, ref):
         l.posterior_prune(-prune)
     err, bt = l.minimum_error(r)
     maxlen = [max([len(y) for y in x]) for x in bt]
-    print " ".join(["%*s" % (m, x[0]) for m, x in izip(maxlen, bt)])
-    print " ".join(["%*s" % (m, x[1]) for m, x in izip(maxlen, bt)])
+    print(" ".join(["%*s" % (m, x[0]) for m, x in izip(maxlen, bt)]))
+    print(" ".join(["%*s" % (m, x[1]) for m, x in izip(maxlen, bt)]))
     if nw:
-        print "Error: %.2f%%" % (float(err) / nw * 100)
+        print("Error: %.2f%%" % (float(err) / nw * 100))
     else:
-        print "Error: %.2f%%" % 0
-    print
+        print("Error: %.2f%%" % 0)
+    print()
     wordcount += nw
     errcount += err
 
-print "TOTAL Error: %.2f%%" % (float(errcount) / wordcount * 100)
+print("TOTAL Error: %.2f%%" % (float(errcount) / wordcount * 100))

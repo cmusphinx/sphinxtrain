@@ -259,5 +259,5 @@ if __name__ == '__main__':
     for spam in file(ctlfile):
         latfile = os.path.join(latdir, spam.strip() + ".slf")
         fsgfile = os.path.join(latdir, spam.strip() + opts.outext)
-        print spam,
+        print(spam, end=' ')
         ofst = lat2fsg_posterior(latfile, fsgfile, opts.prune, errfst)

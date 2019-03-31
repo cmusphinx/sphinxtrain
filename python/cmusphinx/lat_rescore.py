@@ -34,4 +34,4 @@ if __name__ == '__main__':
     for spam in file(ctlfile):
         latfile = os.path.join(latdir, spam.strip() + ".lat.gz")
         words, score = lat_rescore(latfile, lm)
-        print " ".join(words), "(%s %f)" % (spam.strip(), score)
+        print(" ".join(words), "(%s %f)" % (spam.strip(), score))

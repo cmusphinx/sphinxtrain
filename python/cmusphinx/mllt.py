@@ -24,7 +24,7 @@ try:
     from numpy.linalg import det, inv
     from scipy.optimize import fmin_l_bfgs_b
 except ImportError:
-    print "FATAL: Failed to import numpy modules. Check that numpy and scipy are installed"
+    print("FATAL: Failed to import numpy modules. Check that numpy and scipy are installed")
     sys.exit(1)
 
 import s3gaucnt
@@ -81,10 +81,10 @@ class MLLTModel(object):
             cl = diag(dot(dot(A, C), A.T))
             ll = ll - (float(nj) / 2) * sum(log(cl))
             lg = lg - float(nj) * dot(dot(inv(diag(cl)), A), C)
-        print "likelihood: %f" % ll
+        print("likelihood: %f" % ll)
         # Flatten out the gradient
         lg = lg.ravel()
-        print "gradient L2: %f" % sqrt(sum(lg*lg))
+        print("gradient L2: %f" % sqrt(sum(lg*lg)))
         # Note: we negate these to maximize likelihood
         return -ll, -lg
 
@@ -110,7 +110,7 @@ class MLLTModel(object):
         # Flatten out the matrix so scipy.optimize can handle it
         AA, f, d = fmin_l_bfgs_b(self.objective, A.ravel(), args=A.shape, factr=10)
         if d['warnflag']:
-            print "WARNING! MLLT optimization failed to converge"
+            print("WARNING! MLLT optimization failed to converge")
         # Unflatten the return matrix
         return AA.reshape(A.shape)
 

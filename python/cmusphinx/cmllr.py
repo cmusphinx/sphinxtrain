@@ -51,7 +51,7 @@ def estimate_cmllr(stats, inmean, invar, mdef):
     cofact = np.zeros(ndim+1)
     # Beta
     B = 0
-    print 'Get statistics & sum it'
+    print('Get statistics & sum it')
     # CD only : just sum over all CD densities
     for j in range(mdef.n_ci_sen, inmean.n_mgau):
 #        print 'state = %i' % j
@@ -102,7 +102,7 @@ def estimate_cmllr(stats, inmean, invar, mdef):
             cofact = get_cofact(A,i)
             # Get alpha
             alpha  = get_alpha(Ginv,K[i],B,cofact)
-            print "alpha : %f" % alpha
+            print("alpha : %f" % alpha)
             W = np.zeros(ndim+1)
             tvec = alpha * cofact + K[i]
             W = np.dot(Ginv,tvec)
@@ -112,7 +112,7 @@ def estimate_cmllr(stats, inmean, invar, mdef):
                 A[i,:] = W[0:ndim]
                 bias[i] = W[ndim]
             else:
-                print 'NOT updating row %i, iter %i,( %f > %f )' % ( i , niter, like_old, like_new )
+                print('NOT updating row %i, iter %i,( %f > %f )' % ( i , niter, like_old, like_new ))
     #to preserve compatibility with write_mllr
     Wi = np.c_[bias,A]
     Ws.append(Wi)
@@ -142,7 +142,7 @@ def get_alpha(Ginv,K,B,cofact):
     d = b * b - 4 * a * c
     if ( d < 0 ) :
         #solutions must be real
-        print 'Warning : determinant < 0'
+        print('Warning : determinant < 0')
         d = 0
     d = math.sqrt(d)
     alpha1 = (- b + d ) / ( 2 * a )
