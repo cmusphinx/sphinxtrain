@@ -38,11 +38,11 @@ def lattice_htk_wordnode(latfile):
         items = line.strip().split()
 	if items[0].startswith("I="):
 	    dct = create_map(items)
-    	    if dct.has_key("W"):
+    	    if "W" in dct:
     		print(dct["J"] + " [label = \"" + dct[W] + "\"];")
         if items[0].startswith("J="):
 	    dct = create_map(items)
-    	    if dct.has_key("W"):
+    	    if "W" in dct:
         	print(dct["S"] + " -> " + dct["E"] + " [label = \"" + dct["W"] + "," + dct["a"] + "," + dct["l"] + "\"];")
     	    else:
         	print(dct["S"] + " -> " + dct["E"] + " [label = \"" + dct["a"] + "," + dct["l"] + "\"];")
