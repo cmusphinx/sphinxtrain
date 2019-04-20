@@ -258,7 +258,7 @@ class Dag(object):
         # Ensure some header fields are there
         if 'VERSION' not in self.header:
             self.header['VERSION'] = '1.0'
-        for k,v in self.header.iteritems():
+        for k,v in self.header.items():
             # Skip Sphinx stuff
             if k[0] == '-':
                 continue
@@ -309,7 +309,7 @@ class Dag(object):
         fh.write("%d 0" % idmap[self.end])
         fh.close()
         if symfile:
-            for k, v in symmap.iteritems():
+            for k, v in symmap.items():
                 sfh.write("%s %d\n" % (k, v))
             sfh.close()
 
@@ -394,7 +394,7 @@ class Dag(object):
                 fh = open(outfile, "w")
         fh.write("# getcwd: %s\n" % self.getcwd)
         fh.write("# -logbase %e\n" % logbase)
-        for arg, val in self.header.iteritems():
+        for arg, val in self.header.items():
             if arg != '-logbase':
                 fh.write("# %s %s\n" % (arg,val))
         fh.write("#\n")

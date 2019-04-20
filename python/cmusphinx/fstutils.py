@@ -270,7 +270,7 @@ class SphinxProbdef(object):
         Normalize probabilities.
         """
         for c in self.classes:
-            t = sum(self.classes[c].itervalues())
+            t = sum(self.classes[c].values())
             if t != 0:
                 for w in self.classes[c]:
                     self.classes[c][w] /= t
@@ -300,7 +300,7 @@ def build_classfst(probdef, isyms=None):
         fst.AddArc(st, label, label, 0, st)
     for c in probdef.classes:
         clabel = symtab.AddSymbol(c)
-        for word, prob in probdef.classes[c].iteritems():
+        for word, prob in probdef.classes[c].items():
             wlabel = symtab.AddSymbol(word)
             fst.AddArc(st, wlabel, clabel, -math.log(prob), st)
     fst.SetOutputSymbols(symtab)

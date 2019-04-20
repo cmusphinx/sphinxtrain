@@ -143,7 +143,7 @@ class SphinxProbdef(object):
         Normalize probabilities.
         """
         for c in self.classes:
-            t = sum(self.classes[c].itervalues())
+            t = sum(self.classes[c].values())
             if t != 0:
                 for w in self.classes[c]:
                     self.classes[c][w] /= t
@@ -307,7 +307,7 @@ class ArpaLM(object):
             fh.write("ngram %d=%d\n" % (n, self.ng_counts[n]))
         for n in range(1, self.n+1):
             fh.write("\n\\%d-grams:\n" % n)
-            ngrams = self.ngmap[n-1].keys()
+            ngrams = list(self.ngmap[n-1].keys())
             ngrams.sort()
             if '<UNK>' in self.ngmap[n-1]:
                 ngid = self.ngmap[n-1]['<UNK>']
@@ -356,7 +356,7 @@ class ArpaLM(object):
         @return: Iterator over N-Grams
         @rtype: generator(NGram)
         """
-        for ng, ngid in self.ngmap[m].iteritems():
+        for ng, ngid in self.ngmap[m].items():
             if isinstance(ng, str):
                 ng = (ng,)
             yield self.NGram(ng, *self.ngrams[m][ngid,:])
@@ -478,7 +478,7 @@ class ArpaLM(object):
             # Rescaled total probabilities
             newtprob = numpy.zeros(self.ngrams[n-1].shape[0], 'd')
             # For each N-gram, accumulate and rescale
-            for ng,idx in self.ngmap[n].iteritems():
+            for ng,idx in self.ngmap[n].items():
                 h = ng[0:-1]
                 if n == 1: # Quirk of unigrams
                     h = h[0]
@@ -491,7 +491,7 @@ class ArpaLM(object):
                 self.ngrams[n][idx,0] = numpy.log(prob)
             # Now renormalize everything
             norm = tprob / newtprob
-            for ng,idx in self.ngmap[n].iteritems():
+            for ng,idx in self.ngmap[n].items():
                 h = ng[0:-1]
                 if n == 1: # Quirk of unigrams
                     h = h[0]

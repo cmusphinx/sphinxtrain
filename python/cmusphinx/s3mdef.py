@@ -104,7 +104,7 @@ class S3Mdef:
         
         sseqid = 0
         self.pidmap = []
-        for sseq, phones in ssidmap.iteritems():
+        for sseq, phones in ssidmap.items():
             sids = map(int, sseq.split(','))
             self.sseq[sseqid,0:len(sids)] = sids
             self.pidmap.append(phones)
@@ -122,7 +122,7 @@ class S3Mdef:
         if wpos == None:
             if lc != '-':
                 # Try all word positions to find one that matches
-                for new_wpos, pmap in self.phonemap.iteritems():
+                for new_wpos, pmap in self.phonemap.items():
                     if ci in pmap and lc in pmap[ci] and rc in pmap[ci][lc]:
                         wpos = new_wpos
                         break
@@ -139,7 +139,7 @@ class S3Mdef:
             return self.phone_id(ci, lc, rc, wpos)
         else:
             # First try to back off to a different word position
-            for new_wpos, pmap in self.phonemap.iteritems():
+            for new_wpos, pmap in self.phonemap.items():
                 if ci in pmap and lc in pmap[ci] and rc in pmap[ci][lc]:
                     return self.phonemap[new_wpos][ci][lc][rc]
             # If not, try using silence in the left/right context

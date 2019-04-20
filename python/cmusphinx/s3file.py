@@ -145,7 +145,7 @@ class S3File_write:
 
     def writeheader(self):
         self.fh.write("s3\n")
-        for k,v in self.fileattr.iteritems():
+        for k,v in self.fileattr.items():
             self.fh.write("%s %s\n" % (k,v))
         # Make sure the binary data lives on a 4-byte boundary
         lsb = (self.fh.tell() + len("endhdr\n")) & 3

@@ -125,12 +125,12 @@ class CorpusIterator(object):
         if npart > 1:
             pass
         else:
-            for k, v in corpus.resources.iteritems():
+            for k, v in corpus.resources.items():
                 self.iters[k] = iter(v)
 
     def next(self):
         utt = {}
-        for k,v in self.iters.iteritems():
+        for k,v in self.iters.items():
             utt[k] = v.next()
         return utt
 
