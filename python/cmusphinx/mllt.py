@@ -47,7 +47,7 @@ class MLLTModel(object):
         @type ldadim: int
         """
         if not gauden_counts.pass2var:
-            raise Exception, "Please re-run bw with '-2passvar yes'"
+            raise Exception("Please re-run bw with '-2passvar yes'")
         if ldadim == None:
             ldadim = gauden_counts.veclen[0]
         self.cov = concatenate([x[0] for x in gauden_counts.var])

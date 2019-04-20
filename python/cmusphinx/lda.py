@@ -36,7 +36,7 @@ def makelda(gauden_counts):
     @type gauden_counts: cmusphinx.s3gaucnt.S3FullGauCntFile
     """
     if not gauden_counts.pass2var:
-        raise Exception, "Please re-run bw with '-2passvar yes'"
+        raise Exception("Please re-run bw with '-2passvar yes'")
     mean = numpy.concatenate([x[0] for x in gauden_counts.mean])
     var = numpy.concatenate([x[0] for x in gauden_counts.var])
     dnom = gauden_counts.dnom.ravel()

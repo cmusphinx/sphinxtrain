@@ -22,7 +22,7 @@ def open(filename, mode="rb", attr={"version":1.0}):
     elif mode in ("w", "wb"):
         return S3GauFile_write(filename, mode, attr)
     else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
 
 def open_full(filename, mode="rb", attr={"version":1.0}):
     if mode in ("r", "rb"):
@@ -30,7 +30,7 @@ def open_full(filename, mode="rb", attr={"version":1.0}):
     elif mode in ("w", "wb"):
         return S3FullGauFile_write(filename, mode, attr)
     else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
 
 class S3GauFile(S3File):
     "Read Sphinx-III format Gaussian parameter files"
@@ -147,7 +147,7 @@ class S3FullGauFile_write(S3GauFile_write):
         # This will break for multi-stream files
         n_mgau, n_feat, density, veclen, veclen2 = shape(stuff)
         if n_feat != 1:
-            raise Exception, "Multi-stream files not supported"
+            raise Exception("Multi-stream files not supported")
         # Write the header
         self.fh.seek(self.data_start, 0)
         self.fh.write(pack("=IIIII",

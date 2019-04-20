@@ -47,8 +47,7 @@ class MFCC(object):
         self.filters = numpy.zeros((nfft/2+1,nfilt), 'd')
         dfreq = float(samprate) / nfft
         if upperf > samprate/2:
-            raise(Exception,
-                   "Upper frequency %f exceeds Nyquist %f" % (upperf, samprate/2))
+            raise Exception
         melmax = mel(upperf)
         melmin = mel(lowerf)
         dmelbw = (melmax - melmin) / (nfilt + 1)

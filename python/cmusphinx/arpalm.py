@@ -52,7 +52,7 @@ class SphinxLMCtl(object):
                 for x in spam.strip().split():
                     yield x
         def fail(msg):
-            raise RuntimeError, msg
+            raise RuntimeError(msg)
         t = tokenize()
         if t.next() != '{':
             fail("Expected {")
@@ -228,7 +228,7 @@ class ArpaLM(object):
         # Read unigrams and create word id list
         spam = fh.readline().rstrip()
         if spam != "\\1-grams:":
-            raise Exception, "1-grams marker not found"
+            raise Exception("1-grams marker not found")
         # ID to word mapping
         self.widmap = []
         wordid = 0
@@ -268,7 +268,7 @@ class ArpaLM(object):
                     ng = tuple(spam[1:])
                     b = 0.0
                 else:
-                    raise RuntimeError, "Found %d-gram in %d-gram section" % (len(spam)-1, n)
+                    raise RuntimeError("Found %d-gram in %d-gram section" % (len(spam)-1, n))
                 # N-Gram info
                 self.ngrams[n-1][ngramid,:] = p, b
                 self.ngmap[n-1][ng] = ngramid
@@ -418,7 +418,7 @@ class ArpaLM(object):
                 # Use <UNK>
                 return self.ngrams[0][self.ngmap[0]['<UNK>']][0]
             else:
-                raise IndexError, "Unknown unigram %s" % syms[0]
+                raise IndexError("Unknown unigram %s" % syms[0])
         else:
             # Forward N-gram (since syms is reversed)
             fsyms = tuple(reversed(syms))

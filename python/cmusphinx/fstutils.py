@@ -158,7 +158,7 @@ def add_ngram_arcs(fst, symtab, lm, n, sidtab):
         while tuple(ng.words[spos:]) not in sidtab:
             spos += 1
             if spos == n:
-                raise RuntimeError, "Unable to find suffix N-gram for", ng.wids
+                raise RuntimeError("Unable to find suffix N-gram for").with_traceback(ng.wids)
         dest = sidtab[tuple(ng.words[spos:])]
         fst.AddArc(src, openfst.StdArc(wsym, wsym, -ng.log_prob, dest))
         #print "Adding %d-gram arc %d => %d %s/%.4f" % (n, src, dest, ng.words[n-1], -ng.log_prob)

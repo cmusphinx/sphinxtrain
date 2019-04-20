@@ -21,7 +21,7 @@ def open(filename, mode="rb"):
     elif mode in ("w", "wb"):
         return S3MixwFile_write(filename, mode)
     else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
 
 class S3MixwFile(S3File):
     "Read Sphinx-III format mixture weight files"

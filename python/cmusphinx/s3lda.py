@@ -44,5 +44,5 @@ def open(filename, mode="rb"):
     elif mode in ("w", "wb"):
         return S3LDAFile_write(filename, mode)
     else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
 

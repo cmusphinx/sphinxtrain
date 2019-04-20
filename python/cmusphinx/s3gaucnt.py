@@ -22,7 +22,7 @@ def open(filename, mode="rb", attr={"version":1.0}):
     if mode in ("r", "rb"):
         return S3GauCntFile(filename, mode)
     else:
-        raise Exception, "mode must be 'r' or 'rb'"
+        raise Exception("mode must be 'r' or 'rb'")
 
 def accumdirs(accumdirs):
     "Read and accumulate counts from several directories"
@@ -66,7 +66,7 @@ def open_full(filename, mode="rb", attr={"version":1.0}):
     if mode in ("r", "rb"):
         return S3FullGauCntFile(filename, mode)
     else:
-        raise Exception, "mode must be 'r', 'rb'"
+        raise Exception("mode must be 'r', 'rb'")
 
 class S3GauCntFile(S3File):
     "Read Sphinx-III format Gaussian count files"
