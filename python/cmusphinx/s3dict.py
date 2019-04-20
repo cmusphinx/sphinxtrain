@@ -100,8 +100,7 @@ class S3Dict(dict):
             fh = outfile
         else:
             fh = file(outfile, 'w')
-        wlist = list(self.keys())
-        wlist.sort()
+        wlist = sorted(self.keys())
         for k in wlist:
             word = word_to_str(k)
             fh.write("%s\t%s\n" % (word.encode('utf8'), " ".join(self[k])))

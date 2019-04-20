@@ -307,8 +307,7 @@ class ArpaLM(object):
             fh.write("ngram %d=%d\n" % (n, self.ng_counts[n]))
         for n in range(1, self.n+1):
             fh.write("\n\\%d-grams:\n" % n)
-            ngrams = list(self.ngmap[n-1].keys())
-            ngrams.sort()
+            ngrams = sorted(self.ngmap[n-1].keys())
             if '<UNK>' in self.ngmap[n-1]:
                 ngid = self.ngmap[n-1]['<UNK>']
                 score, bowt = self.ngrams[n-1][ngid]

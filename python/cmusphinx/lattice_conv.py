@@ -235,8 +235,7 @@ def write_lat(lm, filler, filelist, filecount, fileoffset, denlatdir, numlatdir,
             continue
 
         print("\t convert numerator lattice ...")
-        numkeys = list(numlat.keys())
-        numkeys.sort()
+        numkeys = sorted(numlat.keys())
         conv_numlat = conv_lat_format(numkeys, numlat, filler, lm)
 
         print("\t convert denominator lattice ...")
