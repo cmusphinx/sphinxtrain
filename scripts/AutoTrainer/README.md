@@ -1,8 +1,6 @@
 # Sphinx Training Helper
 A Bash script designed to make training sphinx4 and pocketsphinx acoustic libraries faster and easier.
 
-This script is not created by the authors of Sphinx CMU or related software and assets.
-
 # Installation
 Sphinx Training Helper uses the `arecord` command during Readings Mode. Please ensure that ALSA is installed on your machine and configured properly in order to use Readings.  
 
@@ -90,3 +88,6 @@ The above example command will scrape a website for 21 random sentences and gene
 ### `-i` Option
 By default, before running the adaptation commands, the trainer script will test the initial acoustic model. This is to show the user in the end how much accuracy has (or hasn't) increased. This is useful to monitor that adaptation is working, however it is also a very long process, and is sometimes uncessesary (sometimes you know that your initial accuracy is terrible, so why test it again?). To save some time, pass the trainer script the `-i no` option.  
 Example: `./trainer.sh -i no -p yes -r no --transcript arctic20.trans -f arctic20.fileids --type c input-model/ output-model/`
+
+
+Author: Tyler Sengia (ExpandingDev, tylersengia@gmail.com)
