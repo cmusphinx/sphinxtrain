@@ -166,7 +166,7 @@ def estimate_mllr_variance(stats, inmean, invar, Ws):
     @rtype: list(numpy.ndarray)
     """
     if stats.pass2var:
-        raise RuntimeException, "Statistics using -2passvar yes are not allowed"
+        raise RuntimeException("Statistics using -2passvar yes are not allowed")
     Hs = []
     for i, W in enumerate(Ws):
         ndim = inmean.veclen[i]

@@ -57,15 +57,15 @@ def quantize_mixw_kmeans(mixw, k, zero=0.0):
     mmw = lmw.min()
     xmw = lmw.max()
     rmw = xmw - mmw
-    print "min log mixw: %f range: %f" % (mmw, rmw)
+    print("min log mixw: %f range: %f" % (mmw, rmw))
     cb = numpy.random.random(k) * rmw + mmw
     pdist = 1e+50
     for i in range(0,10):
         tdist = mixw_kmeans_iter(lmw, cb)
         conv = (pdist - tdist) / pdist
-        print "Total distortion: %e convergence ratio: %e" % (tdist, conv)
+        print("Total distortion: %e convergence ratio: %e" % (tdist, conv))
         if conv < 0.01:
-            print "Training has converged, stopping"
+            print("Training has converged, stopping")
             break
         pdist = tdist
     return cb

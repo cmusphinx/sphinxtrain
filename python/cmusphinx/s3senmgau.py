@@ -53,7 +53,7 @@ def open(filename, mode="rb"):
     elif mode in ("w", "wb"):
         return S3SenmgauFile_write(filename, mode)
     else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
 
 class S3SenmgauFile(S3File):
     "Read Sphinx-III format senone mapping files"

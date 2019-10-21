@@ -11,13 +11,13 @@ class TestS3Dict(unittest.TestCase):
 
     def testRead(self):
         foodict = s3dict.open(os.path.join(self.basedir, "test", "foo.dict"))
-        self.assert_('AH' in foodict.phoneset)
-        self.assertEquals(foodict.get_phones('A'), ['AH'])
-        self.assertEquals(foodict.get_alt_phones('A', 2), ['EY'])
-        self.assertEquals(foodict.get_phones('ZSWANG'), ['S', 'W', 'AE', 'NG'])
+        self.assertTrue('AH' in foodict.phoneset)
+        self.assertEqual(foodict.get_phones('A'), ['AH'])
+        self.assertEqual(foodict.get_alt_phones('A', 2), ['EY'])
+        self.assertEqual(foodict.get_phones('ZSWANG'), ['S', 'W', 'AE', 'NG'])
         try:
             foo = foodict.get_phones('QRXG')
-            print foo
+            print(foo)
         except KeyError:
             pass # Expected fail
         else:
@@ -34,10 +34,10 @@ class TestS3Dict(unittest.TestCase):
             pass # Expected fail
         else:
             self.fail()
-        self.assertEquals(foodict['A'], ['AH'])
-        self.assertEquals(foodict['A',2], ['EY'])
-        self.assertEquals(foodict['A(2)'], ['EY'])
-        self.assertEquals(foodict['ZSWANG'], ['S', 'W', 'AE', 'NG'])
+        self.assertEqual(foodict['A'], ['AH'])
+        self.assertEqual(foodict['A',2], ['EY'])
+        self.assertEqual(foodict['A(2)'], ['EY'])
+        self.assertEqual(foodict['ZSWANG'], ['S', 'W', 'AE', 'NG'])
 
     def testCreate(self):
         mydict = s3dict.S3Dict()
@@ -51,24 +51,24 @@ class TestS3Dict(unittest.TestCase):
             pass # Expected fail
         else:
             self.fail()
-        self.assertEquals(mydict.get_phones('A'), ['AH'])
-        self.assertEquals(mydict.get_alt_phones('A', 2), ['EY'])
-        self.assertEquals(mydict.get_phones('ZSWANG'), ['S', 'W', 'AE', 'NG'])
+        self.assertEqual(mydict.get_phones('A'), ['AH'])
+        self.assertEqual(mydict.get_alt_phones('A', 2), ['EY'])
+        self.assertEqual(mydict.get_phones('ZSWANG'), ['S', 'W', 'AE', 'NG'])
         mydict.set_alt_phones('A', 2, ['AA'])
-        self.assertEquals(mydict.get_alt_phones('A', 2), ['AA'])
-        self.assert_('ZSWANG' in mydict)
+        self.assertEqual(mydict.get_alt_phones('A', 2), ['AA'])
+        self.assertTrue('ZSWANG' in mydict)
         mydict.del_phones('ZSWANG')
-        self.assert_('ZSWANG' not in mydict)
-        self.assert_('NG' not in mydict.phoneset)
+        self.assertTrue('ZSWANG' not in mydict)
+        self.assertTrue('NG' not in mydict.phoneset)
 
     def testUnion(self):
         foodict = s3dict.open(os.path.join(self.basedir, "test", "foo.dict"))
         bardict = s3dict.open(os.path.join(self.basedir, "test", "bar.dict"))
         bazdict = s3dict.union(foodict, bardict)
-        self.assertEquals(foodict['ACTUALLY'], bazdict['ACTUALLY'])
-        self.assert_('ABANDONED' in bazdict)
-        self.assert_('ZONES' in bazdict)
-        self.assert_('ZSWANG' in bazdict)
+        self.assertEqual(foodict['ACTUALLY'], bazdict['ACTUALLY'])
+        self.assertTrue('ABANDONED' in bazdict)
+        self.assertTrue('ZONES' in bazdict)
+        self.assertTrue('ZSWANG' in bazdict)
 
 if __name__ == '__main__':
     unittest.main()

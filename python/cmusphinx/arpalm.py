@@ -52,7 +52,7 @@ class SphinxLMCtl(object):
                 for x in spam.strip().split():
                     yield x
         def fail(msg):
-            raise RuntimeError, msg
+            raise RuntimeError(msg)
         t = tokenize()
         if t.next() != '{':
             fail("Expected {")
@@ -143,7 +143,7 @@ class SphinxProbdef(object):
         Normalize probabilities.
         """
         for c in self.classes:
-            t = sum(self.classes[c].itervalues())
+            t = sum(self.classes[c].values())
             if t != 0:
                 for w in self.classes[c]:
                     self.classes[c][w] /= t
@@ -228,7 +228,7 @@ class ArpaLM(object):
         # Read unigrams and create word id list
         spam = fh.readline().rstrip()
         if spam != "\\1-grams:":
-            raise Exception, "1-grams marker not found"
+            raise Exception("1-grams marker not found")
         # ID to word mapping
         self.widmap = []
         wordid = 0
@@ -268,7 +268,7 @@ class ArpaLM(object):
                     ng = tuple(spam[1:])
                     b = 0.0
                 else:
-                    raise RuntimeError, "Found %d-gram in %d-gram section" % (len(spam)-1, n)
+                    raise RuntimeError("Found %d-gram in %d-gram section" % (len(spam)-1, n))
                 # N-Gram info
                 self.ngrams[n-1][ngramid,:] = p, b
                 self.ngmap[n-1][ng] = ngramid
@@ -307,8 +307,7 @@ class ArpaLM(object):
             fh.write("ngram %d=%d\n" % (n, self.ng_counts[n]))
         for n in range(1, self.n+1):
             fh.write("\n\\%d-grams:\n" % n)
-            ngrams = self.ngmap[n-1].keys()
-            ngrams.sort()
+            ngrams = sorted(self.ngmap[n-1].keys())
             if '<UNK>' in self.ngmap[n-1]:
                 ngid = self.ngmap[n-1]['<UNK>']
                 score, bowt = self.ngrams[n-1][ngid]
@@ -356,7 +355,7 @@ class ArpaLM(object):
         @return: Iterator over N-Grams
         @rtype: generator(NGram)
         """
-        for ng, ngid in self.ngmap[m].iteritems():
+        for ng, ngid in self.ngmap[m].items():
             if isinstance(ng, str):
                 ng = (ng,)
             yield self.NGram(ng, *self.ngrams[m][ngid,:])
@@ -418,7 +417,7 @@ class ArpaLM(object):
                 # Use <UNK>
                 return self.ngrams[0][self.ngmap[0]['<UNK>']][0]
             else:
-                raise IndexError, "Unknown unigram %s" % syms[0]
+                raise IndexError("Unknown unigram %s" % syms[0])
         else:
             # Forward N-gram (since syms is reversed)
             fsyms = tuple(reversed(syms))
@@ -478,7 +477,7 @@ class ArpaLM(object):
             # Rescaled total probabilities
             newtprob = numpy.zeros(self.ngrams[n-1].shape[0], 'd')
             # For each N-gram, accumulate and rescale
-            for ng,idx in self.ngmap[n].iteritems():
+            for ng,idx in self.ngmap[n].items():
                 h = ng[0:-1]
                 if n == 1: # Quirk of unigrams
                     h = h[0]
@@ -491,7 +490,7 @@ class ArpaLM(object):
                 self.ngrams[n][idx,0] = numpy.log(prob)
             # Now renormalize everything
             norm = tprob / newtprob
-            for ng,idx in self.ngmap[n].iteritems():
+            for ng,idx in self.ngmap[n].items():
                 h = ng[0:-1]
                 if n == 1: # Quirk of unigrams
                     h = h[0]

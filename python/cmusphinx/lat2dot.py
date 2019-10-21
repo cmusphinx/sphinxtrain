@@ -19,12 +19,12 @@ def lattice_s3(latfile):
         items = line.strip().split(" ")
 	if mode == "node":
 	    if items[1] != "":
-		print items[0] + " [label = \"" + items[1] + " " + items[2] + " " + items[3] + " " + items[4] + "\"];"
+		print(items[0] + " [label = \"" + items[1] + " " + items[2] + " " + items[3] + " " + items[4] + "\"];")
 	    else:
-		print "node " + items[0] + ";"
+		print("node " + items[0] + ";")
         if mode == "edge":
-    	    print items[0] + " -> " + items[1] + " [label = \"" + items[2] + "\"];"
-    print "}"
+    	    print(items[0] + " -> " + items[1] + " [label = \"" + items[2] + "\"];")
+    print("}")
 
 def create_map(items):
     dct = {}
@@ -38,24 +38,24 @@ def lattice_htk_wordnode(latfile):
         items = line.strip().split()
 	if items[0].startswith("I="):
 	    dct = create_map(items)
-    	    if dct.has_key("W"):
-    		print dct["J"] + " [label = \"" + dct[W] + "\"];"
+    	    if "W" in dct:
+    		print(dct["J"] + " [label = \"" + dct[W] + "\"];")
         if items[0].startswith("J="):
 	    dct = create_map(items)
-    	    if dct.has_key("W"):
-        	print dct["S"] + " -> " + dct["E"] + " [label = \"" + dct["W"] + "," + dct["a"] + "," + dct["l"] + "\"];"
+    	    if "W" in dct:
+        	print(dct["S"] + " -> " + dct["E"] + " [label = \"" + dct["W"] + "," + dct["a"] + "," + dct["l"] + "\"];")
     	    else:
-        	print dct["S"] + " -> " + dct["E"] + " [label = \"" + dct["a"] + "," + dct["l"] + "\"];"
-    print "}"
+        	print(dct["S"] + " -> " + dct["E"] + " [label = \"" + dct["a"] + "," + dct["l"] + "\"];")
+    print("}")
 
 if __name__ == '__main__':
     latfilename = sys.argv[1]
     latfile = open(latfilename, "r")
 
-    print """
+    print("""
     digraph lattice {
 	rankdir=LR;
-    """
+    """)
 
     if latfilename.endswith("slf"):
 	lattice_htk_wordnode(latfile)

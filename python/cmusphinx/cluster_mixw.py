@@ -9,27 +9,27 @@
 # are met:
 #
 # 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer. 
+#    notice, this list of conditions and the following disclaimer.
 #
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in
 #    the documentation and/or other materials provided with the
 #    distribution.
 #
-# This work was supported in part by funding from the Defense Advanced 
-# Research Projects Agency and the National Science Foundation of the 
+# This work was supported in part by funding from the Defense Advanced
+# Research Projects Agency and the National Science Foundation of the
 # United States of America, and the CMU Sphinx Speech Consortium.
 #
-# THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
-# ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+# THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+# ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 # THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
 # PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
 # NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # ====================================================================
@@ -93,14 +93,13 @@ def prunetree(tree, nleaves):
                 for branch in subtree:
                     subtree2, centroid2 = branch
                     newleafnodes.append((subtree2, centroid2))
-        print "Number of leafnodes", len(newleafnodes)
+        print("Number of leafnodes", len(newleafnodes))
         leafnodes = newleafnodes
     # Now flatten out the leafnodes to their component distributions
     for i, leaf in enumerate(leafnodes):
         subtree, centroid = leaf
-        senones = list(leaves(leaf))
         # Sort senones for each leafnode
-        senones.sort()
+        senones = sorted(leaves(leaf))
         leafnodes[i] = (senones, centroid)
     # Sort leafnodes by senone ID
     leafnodes.sort(lambda x,y: cmp(x[0][0],y[0][0]))
@@ -214,7 +213,7 @@ def cluster_merged(mixw, dfunc=multi_js):
             q = centroids[best]
             # Merge these two
             newcentroid = (p + q) * 0.5
-            print "Merging", i, best, dist[best], len(centroids)
+            print("Merging", i, best, dist[best], len(centroids))
             newtree = ((trees[i], p), (trees[best], q))
             centroids[i] = newcentroid
             trees[i] = newtree
@@ -287,12 +286,12 @@ def write_senmgau(outfile, tree, mixw, nclust):
         big = clusters[0]
         del clusters[0:1]
         clusters.extend((big[0][0], big[0][1]))
-    print "cluster sizes:", [len(leaves(x)) for x in clusters]
+    print("cluster sizes:", [len(leaves(x)) for x in clusters])
     mixwmap = numpy.zeros(len(mixw), 'int32')
     for i, c in enumerate(clusters):
         for mixwid in leaves(c):
             mixwmap[mixwid] = i
-    print "writing %d senone mappings" % len(mixwmap)
+    print("writing %d senone mappings" % len(mixwmap))
     s3senmgau.open(outfile, "wb").write_mapping(mixwmap)
 
 if __name__ == '__main__':

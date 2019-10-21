@@ -158,7 +158,7 @@ def add_ngram_arcs(fst, symtab, lm, n, sidtab):
         while tuple(ng.words[spos:]) not in sidtab:
             spos += 1
             if spos == n:
-                raise RuntimeError, "Unable to find suffix N-gram for", ng.wids
+                raise RuntimeError("Unable to find suffix N-gram for").with_traceback(ng.wids)
         dest = sidtab[tuple(ng.words[spos:])]
         fst.AddArc(src, openfst.StdArc(wsym, wsym, -ng.log_prob, dest))
         #print "Adding %d-gram arc %d => %d %s/%.4f" % (n, src, dest, ng.words[n-1], -ng.log_prob)
@@ -270,7 +270,7 @@ class SphinxProbdef(object):
         Normalize probabilities.
         """
         for c in self.classes:
-            t = sum(self.classes[c].itervalues())
+            t = sum(self.classes[c].values())
             if t != 0:
                 for w in self.classes[c]:
                     self.classes[c][w] /= t
@@ -300,7 +300,7 @@ def build_classfst(probdef, isyms=None):
         fst.AddArc(st, label, label, 0, st)
     for c in probdef.classes:
         clabel = symtab.AddSymbol(c)
-        for word, prob in probdef.classes[c].iteritems():
+        for word, prob in probdef.classes[c].items():
             wlabel = symtab.AddSymbol(word)
             fst.AddArc(st, wlabel, clabel, -math.log(prob), st)
     fst.SetOutputSymbols(symtab)

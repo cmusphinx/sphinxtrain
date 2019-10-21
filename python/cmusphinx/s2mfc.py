@@ -28,7 +28,7 @@ def open(f, mode=None, veclen=13):
     elif mode in ('w', 'wb'):
         return S2Feat_write(f,veclen)
     else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
 
 class S2Feat_read(object):
     "Read Sphinx-II format feature files"

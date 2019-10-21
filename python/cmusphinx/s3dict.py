@@ -100,8 +100,7 @@ class S3Dict(dict):
             fh = outfile
         else:
             fh = file(outfile, 'w')
-        wlist = self.keys()
-        wlist.sort()
+        wlist = sorted(self.keys())
         for k in wlist:
             word = word_to_str(k)
             fh.write("%s\t%s\n" % (word.encode('utf8'), " ".join(self[k])))
@@ -126,7 +125,7 @@ class S3Dict(dict):
         if not dict.__contains__(self, (word, 1)):
             raise KeyError
         elif not dict.__contains__(self, (word, alt)):
-            raise IndexError, "Alternate pronunciation index %d does not exist" % alt
+            raise IndexError("Alternate pronunciation index %d does not exist" % alt)
         return dict.__getitem__(self, (word, alt))
 
     def set_phones(self, word, phones):
@@ -147,7 +146,7 @@ class S3Dict(dict):
 
         """
         if alt > self.maxalt[word] + 1:
-            raise IndexError, "Alternate pronunciation index %d too high" % alt
+            raise IndexError("Alternate pronunciation index %d too high" % alt)
         dict.__setitem__(self, (word, alt), phones)
         self.maxalt[word] = max(alt, self.maxalt[word])
         for ph in phones:
@@ -175,7 +174,7 @@ class S3Dict(dict):
 
         """
         if not dict.__contains__(self, (word, alt)):
-            raise IndexError, "Alternate pronunciation index %d does not exist" % alt
+            raise IndexError("Alternate pronunciation index %d does not exist" % alt)
         for ph in self[word, alt]:
             self.phoneset[ph] -= 1
             if self.phoneset[ph] == 0: # FIXME: make a class

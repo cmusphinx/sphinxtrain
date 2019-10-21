@@ -77,4 +77,4 @@ if __name__ == '__main__':
             except IOError:
                 dag = lattice.Dag(htk_file=os.path.join(latdir, spam.strip() + ".slf"))
         words, score = lat_rescore(dag, lmfst, opts.lw)
-        print " ".join(words), "(%s %f)" % (spam.strip(), score)
+        print(" ".join(words), "(%s %f)" % (spam.strip(), score))

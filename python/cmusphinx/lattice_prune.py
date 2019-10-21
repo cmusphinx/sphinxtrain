@@ -16,7 +16,7 @@ if __name__ == '__main__':
     command = ''
     for argv in sys.argv:
         command += argv + ' '
-    print "%s\n" % command
+    print("%s\n" % command)
 
     abeam, nbeam, lw, lmfile, denlatdir, pruned_denlatdir, ctlfile, transfile, filecount, fileoffset = sys.argv[1:]
 
@@ -53,10 +53,10 @@ if __name__ == '__main__':
         if r[-1] != '</s>': r.append('</s>')
         r = filter(lambda x: not lattice.is_filler(x), r)
 
-        print "process sent: %s" % c
+        print("process sent: %s" % c)
         
         # load lattice
-        print "\t load lattice ..."
+        print("\t load lattice ...")
         dag = lattice.Dag(os.path.join(denlatdir, c + ".lat.gz"))
         dag.bypass_fillers()
         dag.remove_unreachable()
@@ -66,13 +66,13 @@ if __name__ == '__main__':
         dag.dt_posterior()
 
         # edge pruning
-        print "\t edge pruning ..."
+        print("\t edge pruning ...")
         dag.forward_edge_prune(abeam)
         dag.backward_edge_prune(abeam)
         dag.remove_unreachable()
 
         # node pruning
-        print "\t node pruning ..."
+        print("\t node pruning ...")
         dag.post_node_prune(nbeam)
         dag.remove_unreachable()
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
         err, bt = dag.minimum_error(r)
 
         # save pruned lattice
-        print "\t saving pruned lattice ...\n"
+        print("\t saving pruned lattice ...\n")
         dag.dag2sphinx(os.path.join(pruned_denlatdir, c + ".lat.gz"))
 
         sentcount += 1
@@ -89,8 +89,8 @@ if __name__ == '__main__':
         wer += float(err) / len(r)
         density += float(dag.n_edges())/len(r)
 
-    print "Average Lattice Word Error Rate: %.2f%%" % (wer / sentcount * 100)
-    print "Average Lattice Density: %.2f" % (float(density) / sentcount)
-    print "Average Number of Node: %.2f" % (float(nodecount) / sentcount)
-    print "Average Number of Arc: %.2f" % (float(edgecount) / sentcount)
-    print "ALL DONE"
+    print("Average Lattice Word Error Rate: %.2f%%" % (wer / sentcount * 100))
+    print("Average Lattice Density: %.2f" % (float(density) / sentcount))
+    print("Average Number of Node: %.2f" % (float(nodecount) / sentcount))
+    print("Average Number of Arc: %.2f" % (float(edgecount) / sentcount))
+    print("ALL DONE")

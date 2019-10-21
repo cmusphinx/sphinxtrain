@@ -50,7 +50,7 @@ def open(f, mode=None, veclen=13):
     elif mode in ('w', 'wb'):
         return HTKFeat_write(f, veclen)
     else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
 
 class HTKFeat_read(object):
     "Read HTK format feature files"

@@ -32,8 +32,8 @@ def prune_mixw_entropy(mixw, avgn):
             if top < mintop: mintop = top
             if top > maxtop: maxtop = top
             f.put(f.argsort()[:-top], 0)
-    print "Average #mixw: %.2f" % (float(avgtop) / count)
-    print "Min #mixw: %d Max #mixw: %d" % (mintop, maxtop)
+    print("Average #mixw: %.2f" % (float(avgtop) / count))
+    print("Min #mixw: %d Max #mixw: %d" % (mintop, maxtop))
     return histo
 
 def prune_mixw_entropy_min(mixw, avgn, minn):
@@ -62,8 +62,8 @@ def prune_mixw_entropy_min(mixw, avgn, minn):
             if top < mintop: mintop = top
             if top > maxtop: maxtop = top
             f.put(f.argsort()[:-top], 0)
-    print "Average #mixw: %.2f" % (float(avgtop) / count)
-    print "Min #mixw: %d Max #mixw: %d" % (mintop, maxtop)
+    print("Average #mixw: %.2f" % (float(avgtop) / count))
+    print("Min #mixw: %d Max #mixw: %d" % (mintop, maxtop))
     return histo
 
 def prune_mixw_pplx_hist(mixw):
@@ -87,8 +87,8 @@ def prune_mixw_pplx_hist(mixw):
             if top > maxtop: maxtop = top
             f.put(f.argsort()[:-top], 0)
     count = mixw.shape[0] * mixw.shape[1]
-    print "Average #mixw: %.2f" % (float(avgtop) / count)
-    print "Min #mixw: %d Max #mixw: %d" % (mintop, maxtop)
+    print("Average #mixw: %.2f" % (float(avgtop) / count))
+    print("Min #mixw: %d Max #mixw: %d" % (mintop, maxtop))
     return histo
 
 def prune_mixw_topn(mixw, n):
@@ -111,8 +111,8 @@ def prune_mixw_thresh(mixw, thresh):
             if top > maxtop: maxtop = top
             f.put(toprune, 0)
     count = mixw.shape[0] * mixw.shape[1]
-    print "Average #mixw: %.2f" % (float(avgtop) / count)
-    print "Min #mixw: %d Max #mixw: %d" % (mintop, maxtop)
+    print("Average #mixw: %.2f" % (float(avgtop) / count))
+    print("Min #mixw: %d Max #mixw: %d" % (mintop, maxtop))
     return histo
 
 def norm_floor_mixw(mixw, floor=1e-7):

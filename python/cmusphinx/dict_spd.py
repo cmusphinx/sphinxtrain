@@ -19,7 +19,7 @@ import sys
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print>>sys.stderr, "Usage: %s INDICT FALIGNOUT [OUTDICT]" % sys.argv[0]
+        print("Usage: %s INDICT FALIGNOUT [OUTDICT]" % sys.argv[0], file=sys.stderr)
         sys.exit(1)
     indict = s3dict.open(sys.argv[1])
     counts = defaultdict(int)
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     for w in words:
         alts = sum(1 for x in indict.alts(w))
         if alts == 1:
-            print>>outfh, "%s\t\t%s" % (w, " ".join(indict[w]))
+            print("%s\t\t%s" % (w, " ".join(indict[w])), file=outfh)
         else:
             bestalt = None
             bestcount = 0
@@ -50,7 +50,7 @@ if __name__ == "__main__":
                     bestcount = counts[wstr]
                     bestalt = wstr
             if bestalt == None:
-                print>>outfh, "%s\t\t%s" % (w, " ".join(indict[w]))
+                print("%s\t\t%s" % (w, " ".join(indict[w])), file=outfh)
             else:
-                print>>outfh, "%s\t\t%s" % (w, " ".join(indict[bestalt]))
+                print("%s\t\t%s" % (w, " ".join(indict[bestalt])), file=outfh)
 
