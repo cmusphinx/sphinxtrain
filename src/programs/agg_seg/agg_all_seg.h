@@ -50,6 +50,7 @@
 
 #include <sphinxbase/prim_type.h>
 #include <sphinxbase/feat.h>
+#include <sphinxbase/bio.h>
 
 int
 agg_all_seg(feat_t *fcb,

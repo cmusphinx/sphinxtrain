@@ -53,6 +53,7 @@ extern "C" {
 #endif
 
 #include <sphinxbase/prim_type.h>
+#include <sphinxbase/bio.h>
 
 #include <stdlib.h>
 

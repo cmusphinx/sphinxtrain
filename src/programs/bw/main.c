@@ -86,7 +86,7 @@
 static float32 lm_scale = 11.5;
 
 /* FIXME: Should go in libutil */
-static char *
+char *
 string_join(const char *base, ...)
 {
     va_list args;
@@ -1072,7 +1072,8 @@ lat_fwd_bwd(s3lattice_t *lat)
 	  lat->arc[i].beta = log_add(lat->arc[i].beta, 0);
 	}
 	else {
-	  if (lat->arc[id-1].good_arc == 1);
+	  if (lat->arc[id-1].good_arc == 1)
+        ;
 	  lat->arc[i].beta = log_add(lat->arc[i].beta, lat->arc[id-1].beta);
 	}
       }

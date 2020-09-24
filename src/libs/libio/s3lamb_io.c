@@ -138,7 +138,7 @@ s3lamb_write(const char *fn,
 	return S3_ERROR;
     }
 
-    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, 0, &ignore) != 1) {
 	s3close(fp);
 
 	return S3_ERROR;
@@ -239,7 +239,7 @@ s3lambcnt_write(const char *fn,
 	return S3_ERROR;
     }
 
-    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, 0, &ignore) != 1) {
 	s3close(fp);
 
 	return S3_ERROR;

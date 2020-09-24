@@ -143,7 +143,7 @@ s3map_write(const char *fn,
     if (fp == NULL)
 	return S3_ERROR;
 
-    if (bio_fwrite(&n_rng, sizeof(uint32), 1, fp, &chksum) != 1) {
+    if (bio_fwrite(&n_rng, sizeof(uint32), 1, fp, 0, &chksum) != 1) {
 	s3close(fp);
 
 	return S3_ERROR;
@@ -159,7 +159,7 @@ s3map_write(const char *fn,
 	return S3_ERROR;
     }
 
-    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, &ignore) != 1) {
+    if (bio_fwrite(&chksum, sizeof(uint32), 1, fp, 0, &ignore) != 1) {
 	s3close(fp);
 
 	return S3_ERROR;

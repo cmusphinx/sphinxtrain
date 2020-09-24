@@ -34,7 +34,7 @@
 #include <s3/s3acc_io.h>
 #include <s3/s3.h>
 #include <s3/ts2cb.h>
-
+#include <s3/s3ts2cb_io.h>
 #include <sphinxbase/matrix.h>
 #include <sphinxbase/err.h>
 
