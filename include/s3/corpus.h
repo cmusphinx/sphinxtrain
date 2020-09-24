@@ -58,6 +58,7 @@ extern "C" {
 #include <s3/vector.h>
 #include <s3/acmod_set.h>
 #include <s3/s3phseg_io.h>
+#include <s3/s3io.h>
 
 #include <stdio.h>
 #include <stddef.h>

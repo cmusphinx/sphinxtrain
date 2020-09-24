@@ -49,6 +49,7 @@
 #include <sphinxbase/ckd_alloc.h>
 #include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/err.h>
+#include <sphinxbase/bio.h>
 
 #include <s3/segdmp.h>
 #include <s3/s3io.h>
@@ -132,7 +133,7 @@ write_seg_inorder(FILE *fp,
 
     for (cur = s; cur;) {
 	l = frame_sz * cur->len;
-	if (bio_fwrite((void *)&frm_buf[cur->idx], 1, l, fp, &ignore) != l) {
+	if (bio_fwrite((void *)&frm_buf[cur->idx], 1, l, fp, 0, &ignore) != l) {
 	    E_ERROR_SYSTEM("Unable to write to dump file\n");
 	    
 	    return S3_ERROR;
@@ -294,7 +295,7 @@ write_idx(uint32 part)
     uint32 onefrm;
     uint32 i, j, ttt, n;
 
-    if (bio_fwrite(&n_id, sizeof(uint32), 1, idx_fp[part], &ignore) != 1) {
+    if (bio_fwrite(&n_id, sizeof(uint32), 1, idx_fp[part], 0, &ignore) != 1) {
 	E_FATAL_SYSTEM("Unable to write index file");
 
 	return S3_ERROR;
@@ -306,13 +307,13 @@ write_idx(uint32 part)
 	onefrm = FALSE;
 
     /* Write one frame per segment flag */
-    if (bio_fwrite(&onefrm, sizeof(uint32), 1, idx_fp[part], &ignore) != 1) {
+    if (bio_fwrite(&onefrm, sizeof(uint32), 1, idx_fp[part], 0, &ignore) != 1) {
 	E_FATAL_SYSTEM("Unable to write index file");
 
 	return S3_ERROR;
     }
 
-    if (bio_fwrite(&frame_sz, sizeof(uint32), 1, idx_fp[part], &ignore) != 1) {
+    if (bio_fwrite(&frame_sz, sizeof(uint32), 1, idx_fp[part], 0, &ignore) != 1) {
 	E_FATAL_SYSTEM("Unable to write index file");
 
 	return S3_ERROR;
@@ -328,31 +329,31 @@ write_idx(uint32 part)
 
     i = ttt;
 
-    if (bio_fwrite(&i, sizeof(uint32), 1, idx_fp[part], &ignore) != 1) {
+    if (bio_fwrite(&i, sizeof(uint32), 1, idx_fp[part], 0, &ignore) != 1) {
 	E_FATAL_SYSTEM("Unable to write index file");
 
 	return S3_ERROR;
     }
-    if (bio_fwrite(&n, sizeof(uint32), 1, idx_fp[part], &ignore) != 1) {
+    if (bio_fwrite(&n, sizeof(uint32), 1, idx_fp[part], 0, &ignore) != 1) {
 	E_FATAL_SYSTEM("Unable to write index file");
 
 	return S3_ERROR;
     }
 
     for (; (i < n_id) && (id_part[i] == part); i++) {
-	if (bio_fwrite(&n_seg[i], sizeof(uint32), 1, idx_fp[part], &ignore) != 1) {
+	if (bio_fwrite(&n_seg[i], sizeof(uint32), 1, idx_fp[part], 0, &ignore) != 1) {
 	    E_FATAL_SYSTEM("Unable to write index file");
 	    
 	    return S3_ERROR;
 	}
-	if (bio_fwrite(&id_off[i], sizeof(uint32), 1, idx_fp[part], &ignore) != 1) {
+	if (bio_fwrite(&id_off[i], sizeof(uint32), 1, idx_fp[part], 0, &ignore) != 1) {
 	    E_FATAL_SYSTEM("Unable to write index file");
 	    
 	    return S3_ERROR;
 	}
 	if (!onefrm) {
 	    for (j = 0; j < n_seg[i]; j++) {
-		if (bio_fwrite(&n_frame[i][j], sizeof(uint32), 1, idx_fp[part], &ignore) != 1) {
+		if (bio_fwrite(&n_frame[i][j], sizeof(uint32), 1, idx_fp[part], 0, &ignore) != 1) {
 		    E_FATAL_SYSTEM("Unable to write index file");
 		    
 		    return S3_ERROR;
@@ -589,7 +590,7 @@ segdmp_open_write(const char **dirs,		/* directories available for dump files */
 	    
 	    idx_fp[i] = s3open(idx_fn, "wb", NULL);
 	    
-	    if (bio_fwrite((int *)&data_type, sizeof(int), 1, idx_fp[i], &ignore) != 1) {
+	    if (bio_fwrite((int *)&data_type, sizeof(int), 1, idx_fp[i], 0, &ignore) != 1) {
 		E_FATAL_SYSTEM("unable to write seg dmp file");
 	    }
 	    if (write_idx(i) == S3_SUCCESS) {

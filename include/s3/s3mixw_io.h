@@ -56,6 +56,7 @@ extern "C" {
 
 #include <sphinxbase/prim_type.h>
 #include <s3/s3.h>
+#include <sphinxbase/bio.h>
 
 int
 s3mixw_read(const char *fn,

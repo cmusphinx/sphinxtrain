@@ -55,6 +55,7 @@ extern "C" {
 #include <sphinxbase/prim_type.h>
 #include <s3/acmod_set.h>
 #include <s3/vector.h>
+#include "segdmp.h"
 
 typedef enum {
     SEGDMP_TYPE_VQ,

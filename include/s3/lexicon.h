@@ -57,6 +57,7 @@ extern "C" {
 #include <s3/acmod_set.h>
 #include <sphinxbase/prim_type.h>
 #include <sphinxbase/hash_table.h>
+#include <sphinxbase/strfuncs.h>
 
 typedef uint32 word_id_t;
 #define WORD_NO_ID	(0xffffffff)
