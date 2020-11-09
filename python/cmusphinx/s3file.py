@@ -17,7 +17,7 @@ from struct import unpack, pack
 from numpy import reshape, shape, frombuffer
 
 
-class S3File(object):
+class S3File:
     "Read Sphinx-III binary files"
     def __init__(self, filename=None, mode="rb"):
         self.fh = None
@@ -112,7 +112,7 @@ class S3File(object):
                              self.d1 * self.d2 * self.d3,
                              self.d1, self.d2, self.d3))
         spam = self.fh.read(self._nfloats * 4)
-        params = frombuffer(spam, 'f')
+        params = frombuffer(spam, 'f').copy()
         if self.otherend:
             params = params.byteswap()
         return reshape(params, (self.d1, self.d2, self.d3)).astype('d')
@@ -129,7 +129,7 @@ class S3File(object):
                              self.d1 * self.d2,
                              self.d1, self.d2))
         spam = self.fh.read(self._nfloats * 4)
-        params = frombuffer(spam, 'f')
+        params = frombuffer(spam, 'f').copy()
         if self.otherend:
             params = params.byteswap()
         return reshape(params, (self.d1, self.d2)).astype('d')
@@ -143,7 +143,7 @@ class S3File(object):
                             %
                             (self._nfloats, self.d1))
         spam = self.fh.read(self._nfloats * 4)
-        params = frombuffer(spam, 'f')
+        params = frombuffer(spam, 'f').copy()
         if self.otherend:
             params = params.byteswap()
         return params.astype('d')
