@@ -2,17 +2,17 @@
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-
 """Corpus classes for acoustic model training.
 
 This module provides classes for representing a corpus of utterances
 for acoustic modeling.  The Corpus class implements the iterator
 protocol, acting as a list of Utterance objects.
 """
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
 import os
+
 
 class Resource(object):
     """Resource associated with an utterance in a speech corpus.
@@ -23,6 +23,7 @@ class Resource(object):
     """
     pass
 
+
 class FileResourceIterator(object):
     """
     Iterator over items in a FileResource.
@@ -31,17 +32,19 @@ class FileResourceIterator(object):
         self.res = resource
         self.ctl = iter(resource.ctl_file)
 
-    def next(self):
+    def __next__(self):
         # This will raise StopIteration for us at EOF
-        entry = self.ctl.next()
+        entry = next(self.ctl)
         if isinstance(entry, CtlEntry):
-            path = os.path.join(self.res.base_dir, entry.fileid + self.res.file_ext)
+            path = os.path.join(self.res.base_dir,
+                                entry.fileid + self.res.file_ext)
         else:
             path = os.path.join(self.res.base_dir, entry + self.res.file_ext)
         if self.res.data_type:
             return self.res.data_type(path)
         else:
             return path
+
 
 class FileResource(Resource):
     def __init__(self, ctl_file, base_dir, file_ext, data_type=None):
@@ -62,6 +65,7 @@ class FileResource(Resource):
     def __iter__(self):
         return FileResourceIterator(self)
 
+
 class CtlEntry(object):
     """Entry in a control file"""
     def __init__(self, str):
@@ -75,6 +79,7 @@ class CtlEntry(object):
             self.sf = 0
             self.ef = -1
 
+
 class ListResourceIterator(object):
     """
     Iterator over items in a ListResource.
@@ -83,7 +88,12 @@ class ListResourceIterator(object):
         self.fh = open(resource.file_name)
         self.data_type = resource.data_type
 
-    def next(self):
+    def __del__(self):
+        if self.fh is not None:
+            self.fh.close()
+            self.fh = None
+
+    def __next__(self):
         spam = self.fh.readline()
         if spam == "":
             raise StopIteration
@@ -91,6 +101,7 @@ class ListResourceIterator(object):
             return self.data_type(spam.rstrip())
         else:
             return spam.rstrip()
+
 
 class ListResource(Resource):
     """
@@ -103,7 +114,7 @@ class ListResource(Resource):
 
         If no data_type argument is specified, each item in the list
         will be returned as a string.
-        
+
         @param file_name: File to read resource from
         @ptype file_name: string
         @param data_type: Class implementing the data type of each item
@@ -115,6 +126,7 @@ class ListResource(Resource):
     def __iter__(self):
         return ListResourceIterator(self)
 
+
 class CorpusIterator(object):
     """
     Iterator over elements in a Corpus.
@@ -125,20 +137,21 @@ class CorpusIterator(object):
         if npart > 1:
             pass
         else:
-            for k, v in corpus.resources.iteritems():
+            for k, v in corpus.resources.items():
                 self.iters[k] = iter(v)
 
-    def next(self):
+    def __next__(self):
         utt = {}
-        for k,v in self.iters.iteritems():
-            utt[k] = v.next()
+        for k, v in self.iters.items():
+            utt[k] = next(v)
         return utt
+
 
 class Corpus(object):
     """Corpus of speech data."""
     def __init__(self, ctl_file):
         self.ctl = ListResource(ctl_file, CtlEntry)
-        self.resources = { 'ctl' : self.ctl }
+        self.resources = {'ctl': self.ctl}
 
     def __iter__(self):
         return CorpusIterator(self)
