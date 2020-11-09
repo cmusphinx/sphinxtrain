@@ -9,7 +9,7 @@ This module provides a class for reading, writing, and using ARPA
 format statistical language model files.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
 from collections import defaultdict
