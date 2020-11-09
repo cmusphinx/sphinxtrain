@@ -4,26 +4,26 @@
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-
 """
 Generate a single-pronunciation dictionary from an input dictionary
 and the output of force alignment.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision $"
 
 from collections import defaultdict
-import s3dict
+from cmusphinx import s3dict
 import sys
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print>>sys.stderr, "Usage: %s INDICT FALIGNOUT [OUTDICT]" % sys.argv[0]
+        print("Usage: %s INDICT FALIGNOUT [OUTDICT]" % sys.argv[0],
+              file=sys.stderr)
         sys.exit(1)
     indict = s3dict.open(sys.argv[1])
     counts = defaultdict(int)
-    falignout = file(sys.argv[2])
+    falignout = open(sys.argv[2])
     for spam in falignout:
         for word in spam.split()[:-1]:
             if word in indict:
@@ -31,17 +31,17 @@ if __name__ == "__main__":
     words = list(indict.words())
     words.sort()
     if len(sys.argv) > 3:
-        outfh = file(sys.argv[3], "w")
+        outfh = open(sys.argv[3], "w")
     else:
         outfh = sys.stdout
     for w in words:
         alts = sum(1 for x in indict.alts(w))
         if alts == 1:
-            print>>outfh, "%s\t\t%s" % (w, " ".join(indict[w]))
+            print("%s\t\t%s" % (w, " ".join(indict[w])), file=outfh)
         else:
             bestalt = None
             bestcount = 0
-            for a in range(1, alts+1):
+            for a in range(1, alts + 1):
                 if a == 1:
                     wstr = w
                 else:
@@ -50,7 +50,6 @@ if __name__ == "__main__":
                     bestcount = counts[wstr]
                     bestalt = wstr
             if bestalt == None:
-                print>>outfh, "%s\t\t%s" % (w, " ".join(indict[w]))
+                print("%s\t\t%s" % (w, " ".join(indict[w])), file=outfh)
             else:
-                print>>outfh, "%s\t\t%s" % (w, " ".join(indict[bestalt]))
-
+                print("%s\t\t%s" % (w, " ".join(indict[bestalt])), file=outfh)
