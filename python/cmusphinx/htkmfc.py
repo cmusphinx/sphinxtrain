@@ -2,13 +2,12 @@
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-
 """Read and write HTK feature files.
 
 This module reads and writes the acoustic feature files used by HTK
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision $"
 
 from struct import unpack, pack
@@ -26,16 +25,17 @@ USER = 9
 DISCRETE = 10
 PLP = 11
 
-_E = 0000100 # has energy
-_N = 0000200 # absolute energy supressed
-_D = 0000400 # has delta coefficients
-_A = 0001000 # has acceleration (delta-delta) coefficients
-_C = 0002000 # is compressed
-_Z = 0004000 # has zero mean static coefficients
-_K = 0010000 # has CRC checksum
-_O = 0020000 # has 0th cepstral coefficient
-_V = 0040000 # has VQ data
-_T = 0100000 # has third differential coefficients
+_E = 0o000100  # has energy
+_N = 0o000200  # absolute energy supressed
+_D = 0o000400  # has delta coefficients
+_A = 0o001000  # has acceleration (delta-delta) coefficients
+_C = 0o002000  # is compressed
+_Z = 0o004000  # has zero mean static coefficients
+_K = 0o010000  # has CRC checksum
+_O = 0o020000  # has 0th cepstral coefficient
+_V = 0o040000  # has VQ data
+_T = 0o100000  # has third differential coefficients
+
 
 def open(f, mode=None, veclen=13):
     """Open an HTK format feature file for reading or writing.
@@ -46,33 +46,35 @@ def open(f, mode=None, veclen=13):
         else:
             mode = 'rb'
     if mode in ('r', 'rb'):
-        return HTKFeat_read(f) # veclen is ignored since it's in the file
+        return HTKFeat_read(f)  # veclen is ignored since it's in the file
     elif mode in ('w', 'wb'):
         return HTKFeat_write(f, veclen)
     else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
 
-class HTKFeat_read(object):
+
+class HTKFeat_read:
     "Read HTK format feature files"
+
     def __init__(self, filename=None):
         self.swap = (unpack('=i', pack('>i', 42))[0] != 42)
-        if (filename != None):
+        if filename is not None:
             self.open(filename)
 
     def __iter__(self):
-        self.fh.seek(12,0)
+        self.fh.seek(12, 0)
         return self
 
     def open(self, filename):
         self.filename = filename
-        self.fh = file(filename, "rb")
+        self.fh = open(filename, "rb")
         self.readheader()
 
     def readheader(self):
-        self.fh.seek(0,0)
+        self.fh.seek(0, 0)
         spam = self.fh.read(12)
         self.nSamples, self.sampPeriod, self.sampSize, self.parmKind = \
-                       unpack(">IIHH", spam)
+            unpack(">IIHH", spam)
         # Get coefficients for compressed data
         if self.parmKind & _C:
             self.dtype = 'h'
@@ -87,14 +89,14 @@ class HTKFeat_read(object):
                     self.A = self.A.byteswap()
                     self.B = self.B.byteswap()
         else:
-            self.dtype = 'f'    
+            self.dtype = 'f'
             self.veclen = self.sampSize / 4
         self.hdrlen = self.fh.tell()
 
     def seek(self, idx):
         self.fh.seek(self.hdrlen + idx * self.sampSize, 0)
 
-    def next(self):
+    def __next__(self):
         vec = numpy.fromfile(self.fh, self.dtype, self.veclen)
         if len(vec) == 0:
             raise StopIteration
@@ -106,14 +108,14 @@ class HTKFeat_read(object):
         return vec
 
     def readvec(self):
-        return self.next()
+        return next(self)
 
     def getall(self):
         self.seek(0)
         data = numpy.fromfile(self.fh, self.dtype)
-        if self.parmKind & _K: # Remove and ignore checksum
+        if self.parmKind & _K:  # Remove and ignore checksum
             data = data[:-1]
-        data = data.reshape(len(data)/self.veclen, self.veclen)
+        data = data.reshape(len(data) / self.veclen, self.veclen)
         if self.swap:
             data = data.byteswap()
         # Uncompress data to floats if required
@@ -121,11 +123,15 @@ class HTKFeat_read(object):
             data = (data.astype('f') + self.B) / self.A
         return data
 
-class HTKFeat_write(object):
+
+class HTKFeat_write:
     "Write HTK format feature files"
-    def __init__(self, filename=None,
-                 veclen=13, sampPeriod=100000,
-                 paramKind = (MFCC | _O)):
+
+    def __init__(self,
+                 filename=None,
+                 veclen=13,
+                 sampPeriod=100000,
+                 paramKind=(MFCC | _O)):
         self.veclen = veclen
         self.sampPeriod = sampPeriod
         self.sampSize = veclen * 4
@@ -133,7 +139,7 @@ class HTKFeat_write(object):
         self.dtype = 'f'
         self.filesize = 0
         self.swap = (unpack('=i', pack('>i', 42))[0] != 42)
-        if (filename != None):
+        if filename is not None:
             self.open(filename)
 
     def __del__(self):
@@ -141,18 +147,17 @@ class HTKFeat_write(object):
 
     def open(self, filename):
         self.filename = filename
-        self.fh = file(filename, "wb")
+        self.fh = open(filename, "wb")
         self.writeheader()
 
     def close(self):
         self.writeheader()
 
     def writeheader(self):
-        self.fh.seek(0,0)
-        self.fh.write(pack(">IIHH", self.filesize,
-                           self.sampPeriod,
-                           self.sampSize,
-                           self.paramKind))
+        self.fh.seek(0, 0)
+        self.fh.write(
+            pack(">IIHH", self.filesize, self.sampPeriod, self.sampSize,
+                 self.paramKind))
 
     def writevec(self, vec):
         if len(vec) != self.veclen:
