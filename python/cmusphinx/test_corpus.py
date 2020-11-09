@@ -9,7 +9,7 @@ import sys
 
 class TestFileResource(unittest.TestCase):
     def setUp(self):
-        thisdir = os.path.dirname(sys.argv[0])
+        thisdir = os.path.dirname(__file__)
         self.testdir = os.path.join(thisdir, 'test')
         self.testfile = os.path.join(thisdir, 'test', 'test.ctl')
 
@@ -27,7 +27,7 @@ class TestFileResource(unittest.TestCase):
 
 class TestListResource(unittest.TestCase):
     def setUp(self):
-        thisdir = os.path.dirname(sys.argv[0])
+        thisdir = os.path.dirname(__file__)
         self.testfile = os.path.join(thisdir, 'test', 'test.ctl')
 
     def test_string(self):
