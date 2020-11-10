@@ -5,7 +5,7 @@ from cmusphinx import s3gaucnt, s3mixw
 import os
 
 
-class TestS3Model(unittest.TestCase):
+class TestS3GauCnt(unittest.TestCase):
     def setUp(self):
         thisdir = os.path.dirname(__file__)
         self.testdir = os.path.join(thisdir, 'test', 'bwaccumdir')
