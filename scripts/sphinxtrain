@@ -99,7 +99,8 @@ def run_stages(stages):
     for stage in stages.split(","):
         for step in steps:
             name = step.split("/")[0].split(".")[-1]
-            if name == stage:
+            number = step.split("/")[0].split(".")[0]
+            if name == stage or number == stage:
                 ret = os.system(sphinxpath + "/scripts/" + step)
                 if ret != 0:
                     exit(ret)
@@ -109,7 +110,8 @@ def run_from(stage):
     found = False
     for step in steps:
         name = step.split("/")[0].split(".")[-1]
-        if name == stage or found:
+        number = step.split("/")[0].split(".")[0]
+        if name == stage or number == stage or found:
             found = True
             ret = os.system(sphinxpath + "/scripts/" + step)
             if ret != 0:
