@@ -75,7 +75,7 @@ def open_full(filename, mode="rb", attr={"version": 1.0}):
 class S3GauCntFile(S3File):
     "Read Sphinx-III format Gaussian count files"
 
-    def __init__(self, file, mode):
+    def __init__(self, file, mode="rb"):
         S3File.__init__(self, file, mode)
         self._load()
 
