@@ -80,6 +80,7 @@ mkdir ($result_dir,0777) unless -d $result_dir;
 
 $logfile = "$log_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.log";
 $matchfile = "$result_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.match";
+$matchsegfile = "$result_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.matchseg";
 
 $hmm_dir = "$ST::CFG_BASE_DIR/model_parameters/$modelname";
 
@@ -135,6 +136,7 @@ my $rv = RunTool('pocketsphinx_batch', $logfile, $ctlcount,
 		 -cepdir => $ST::DEC_CFG_FEATFILES_DIR,
 		 -cepext => $ST::DEC_CFG_FEATFILE_EXTENSION,
 		 -hyp => $matchfile,
+		 -hypseg => $matchsegfile,
 		 -agc => $ST::DEC_CFG_AGC,
 		 -varnorm => $ST::DEC_CFG_VARNORM,
 		 -cmn => $ST::DEC_CFG_CMN,
