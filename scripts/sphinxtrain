@@ -139,9 +139,9 @@ def usage():
     print("")
     print("Commands:")
     print("     -t <task> setup - copy configuration into database")
-    print(
-        "     [-s <stage1,stage2,stage3>] [-f <stage>] run - run the training or just selected stages"
-    )
+    print("     -s <stage1,stage2,stage3> run - run selected stages")
+    print("     -f <stage> run - run from selected stage")
+    print("     run - run all training")
 
 
 def main():
