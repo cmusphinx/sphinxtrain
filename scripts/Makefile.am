@@ -32,6 +32,11 @@ nobase_scripts_SCRIPTS = \
 	11.force_align/slave_align.pl \
 	12.vtln_align/slave_align.pl \
 	12.vtln_align/vtln_align.pl \
+	19.nn_train/nn_train.pl \
+	19.nn_train/readStSegs.sh \
+	19.nn_train/stseg-read.c \
+	19.nn_train/stseg-read \
+	19.nn_train/sample_nn.cfg \
 	20.ci_hmm/baum_welch.pl \
 	20.ci_hmm/norm_and_launchbw.pl \
 	20.ci_hmm/norm.pl \
