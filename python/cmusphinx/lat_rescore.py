@@ -12,7 +12,7 @@ __author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision $"
 
 import sphinxbase
-from . import lattice
+from cmusphinx import lattice
 import sys
 import os
 
