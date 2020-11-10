@@ -2,11 +2,14 @@
 
 from __future__ import print_function
 
-import getopt, sys, os
+import getopt
+import sys
+import os
 
 training_basedir = ""
 sphinxbinpath = ""
 sphinxpath = ""
+
 
 def find_paths():
     global training_basedir
@@ -18,7 +21,8 @@ def find_paths():
     sphinxbinpath = os.path.realpath(currentpath + "/../libexec/sphinxtrain")
 
     if os.path.exists(currentpath + "/../lib/sphinxtrain/bw"):
-        sphinxbinpath = os.path.realpath(currentpath + "/../lib/sphinxtrain/bw")
+        sphinxbinpath = os.path.realpath(currentpath +
+                                         "/../lib/sphinxtrain/bw")
 
     if os.path.exists(currentpath + "/../bin/Release/Win32"):
         sphinxbinpath = os.path.realpath(currentpath + "/../bin/Release/Win32")
@@ -32,18 +36,20 @@ def find_paths():
     if os.path.exists(currentpath + "/../scripts/00.verify"):
         sphinxpath = os.path.realpath(currentpath + "/..")
 
-    if not (os.path.exists(sphinxbinpath + "/bw") or os.path.exists(sphinxbinpath + "/bw.exe")):
+    if not (os.path.exists(sphinxbinpath + "/bw")
+            or os.path.exists(sphinxbinpath + "/bw.exe")):
         print("Failed to find sphinxtrain binaries. Check your installation")
         exit(1)
 
     # Perl script want forward slashes
-    training_basedir = os.getcwd().replace('\\', '/');
-    sphinxpath = sphinxpath.replace('\\','/')
-    sphinxbinpath = sphinxbinpath.replace('\\','/')
+    training_basedir = os.getcwd().replace('\\', '/')
+    sphinxpath = sphinxpath.replace('\\', '/')
+    sphinxbinpath = sphinxbinpath.replace('\\', '/')
 
     print("Sphinxtrain path:", sphinxpath)
     print("Sphinxtrain binaries path:", sphinxbinpath)
-    
+
+
 def setup(task):
     if not os.path.exists("etc"):
         os.mkdir("etc")
@@ -64,37 +70,40 @@ def setup(task):
         out_cfg.write(line)
     out_cfg.close()
 
+
 steps = [
-"000.comp_feat/slave_feat.pl",
-"00.verify/verify_all.pl",
-"0000.g2p_train/g2p_train.pl",
-"01.lda_train/slave_lda.pl",
-"02.mllt_train/slave_mllt.pl",
-"05.vector_quantize/slave.VQ.pl",
-"10.falign_ci_hmm/slave_convg.pl",
-"11.force_align/slave_align.pl",
-"12.vtln_align/slave_align.pl",
-"20.ci_hmm/slave_convg.pl",
-"30.cd_hmm_untied/slave_convg.pl",
-"40.buildtrees/slave.treebuilder.pl",
-"45.prunetree/slave.state-tying.pl",
-"50.cd_hmm_tied/slave_convg.pl",
-"60.lattice_generation/slave_genlat.pl",
-"61.lattice_pruning/slave_prune.pl",
-"62.lattice_conversion/slave_conv.pl",
-"65.mmie_train/slave_convg.pl",
-"90.deleted_interpolation/deleted_interpolation.pl",
-"decode/slave.pl",
+    "000.comp_feat/slave_feat.pl",
+    "00.verify/verify_all.pl",
+    "0000.g2p_train/g2p_train.pl",
+    "01.lda_train/slave_lda.pl",
+    "02.mllt_train/slave_mllt.pl",
+    "05.vector_quantize/slave.VQ.pl",
+    "10.falign_ci_hmm/slave_convg.pl",
+    "11.force_align/slave_align.pl",
+    "12.vtln_align/slave_align.pl",
+    "20.ci_hmm/slave_convg.pl",
+    "30.cd_hmm_untied/slave_convg.pl",
+    "40.buildtrees/slave.treebuilder.pl",
+    "45.prunetree/slave.state-tying.pl",
+    "50.cd_hmm_tied/slave_convg.pl",
+    "60.lattice_generation/slave_genlat.pl",
+    "61.lattice_pruning/slave_prune.pl",
+    "62.lattice_conversion/slave_conv.pl",
+    "65.mmie_train/slave_convg.pl",
+    "90.deleted_interpolation/deleted_interpolation.pl",
+    "decode/slave.pl",
 ]
+
 
 def run_stages(stages):
     for stage in stages.split(","):
         for step in steps:
-                name = step.split("/")[0].split(".")[-1]
-                if name == stage:
-                    ret = os.system(sphinxpath + "/scripts/" + step)
-                    if ret != 0:
-                         exit(ret)
+            name = step.split("/")[0].split(".")[-1]
+            if name == stage:
+                ret = os.system(sphinxpath + "/scripts/" + step)
+                if ret != 0:
+                    exit(ret)
+
 
 def run_from(stage):
     found = False
@@ -106,30 +115,38 @@ def run_from(stage):
             if ret != 0:
                 exit(ret)
 
+
 def run():
     print("Running the training")
     for step in steps:
         ret = os.system(sphinxpath + "/scripts/" + step)
         if ret != 0:
-           exit(ret)
+            exit(ret)
+
 
 def usage():
-    print ("")
-    print ("Sphinxtrain processes the audio files and creates and acoustic model ")
-    print ("for CMUSphinx toolkit. The data needs to have a certain layout ")
-    print ("See the tutorial http://cmusphinx.sourceforge.net/wiki/tutorialam ")
-    print ("for details")
-    print ("")
-    print ("Usage: sphinxtrain [options] <command>")
-    print ("")
-    print ("Commands:")
-    print ("     -t <task> setup - copy configuration into database")
-    print ("     [-s <stage1,stage2,stage3>] [-f <stage>] run - run the training or just selected stages")
+    print("")
+    print(
+        "Sphinxtrain processes the audio files and creates and acoustic model "
+    )
+    print("for CMUSphinx toolkit. The data needs to have a certain layout ")
+    print("See the tutorial http://cmusphinx.sourceforge.net/wiki/tutorialam ")
+    print("for details")
+    print("")
+    print("Usage: sphinxtrain [options] <command>")
+    print("")
+    print("Commands:")
+    print("     -t <task> setup - copy configuration into database")
+    print(
+        "     [-s <stage1,stage2,stage3>] [-f <stage>] run - run the training or just selected stages"
+    )
+
 
 def main():
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ht:s:f:", ["help", "task", "stages", "from"])
+        opts, args = getopt.getopt(sys.argv[1:], "ht:s:f:",
+                                   ["help", "task", "stages", "from"])
     except getopt.GetoptError as err:
         print(str(err))
         usage()
@@ -147,7 +164,7 @@ def main():
         if o in ("-s", "--stages"):
             stages = a
         if o in ("-h", "--help"):
-                usage()
+            usage()
 
     if len(args) == 0:
         usage()
@@ -158,19 +175,20 @@ def main():
     find_paths()
 
     if command == "setup":
-        if task == None:
+        if task is None:
             print("No task name defined")
-            sys.exit(-1)        
+            sys.exit(-1)
         setup(task)
     elif command == "run":
-        if stages != None:
+        if stages is not None:
             run_stages(stages)
-        elif from_stage != None:
+        elif from_stage is not None:
             run_from(from_stage)
         else:
             run()
     else:
         run()
+
 
 if __name__ == "__main__":
     main()
