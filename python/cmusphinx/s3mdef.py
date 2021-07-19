@@ -10,34 +10,37 @@ to senone mapping) files used by SphinxTrain, Sphinx-III, and
 PocketSphinx.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
 from numpy import ones, empty
+import io
+
 
 def open(file):
     return S3Mdef(file)
+
 
 class S3Mdef:
     "Read Sphinx-III format model definition files"
     def __init__(self, filename=None):
         self.info = {}
         self.phoneset = {}
-        if filename != None:
+        if filename is not None:
             self.read(filename)
 
     def read(self, filename):
-        self.fh = file(filename)
+        fh = io.open(filename, "r")
 
         while True:
-            version = self.fh.readline().rstrip()
+            version = fh.readline().rstrip()
             if not version.startswith("#"):
                 break
         if version != "0.3":
             raise Exception("Model definition version %s is not 0.3" % version)
         info = {}
         while True:
-            spam = self.fh.readline().rstrip()
+            spam = fh.readline().rstrip()
             if spam.startswith("#"):
                 break
             val, key = spam.split()
@@ -50,9 +53,9 @@ class S3Mdef:
         self.n_tmat = info['n_tied_tmat']
 
         # Skip field description lines
-        spam = self.fh.readline().rstrip()
-        spam = self.fh.readline().rstrip()
-        
+        spam = fh.readline()
+        spam = fh.readline()
+
         ssidmap = {}
         self.phonemap = {}
         self.trimap = []
@@ -63,7 +66,7 @@ class S3Mdef:
         phoneid = 0
         self.max_emit_state = 0
         while True:
-            spam = self.fh.readline().rstrip()
+            spam = fh.readline().rstrip()
             if spam == "":
                 break
             fields = spam.split()
@@ -84,7 +87,7 @@ class S3Mdef:
             self.trimap.append((base, lc, rc, wpos))
             self.fillermap[phoneid] = (attrib == 'filler')
             self.tmatmap[phoneid] = int(tmat)
-            
+
             # Build senone sequence mapping
             sseq = ",".join(sids)
             if sseq not in ssidmap:
@@ -101,16 +104,17 @@ class S3Mdef:
         # Fill an array with -1 (which is the ID for non-emitting
         # states)
         self.sseq = -1 * ones((len(ssidmap), self.max_emit_state+1), 'i')
-        
+
         sseqid = 0
         self.pidmap = []
-        for sseq, phones in ssidmap.iteritems():
-            sids = map(int, sseq.split(','))
-            self.sseq[sseqid,0:len(sids)] = sids
+        for sseq, phones in ssidmap.items():
+            sids = list(map(int, sseq.split(',')))
+            self.sseq[sseqid, 0:len(sids)] = sids
             self.pidmap.append(phones)
             for p in phones:
                 self.sseqmap[p] = sseqid
             sseqid = sseqid + 1
+        fh.close()
 
     def is_ciphone(self, sid):
         return sid >= 0 and sid < self.n_ci
@@ -119,15 +123,15 @@ class S3Mdef:
         return sid >= 0 and sid < self.n_ci_sen
 
     def phone_id(self, ci, lc='-', rc='-', wpos=None):
-        if wpos == None:
+        if wpos is None:
             if lc != '-':
                 # Try all word positions to find one that matches
-                for new_wpos, pmap in self.phonemap.iteritems():
+                for new_wpos, pmap in self.phonemap.items():
                     if ci in pmap and lc in pmap[ci] and rc in pmap[ci][lc]:
                         wpos = new_wpos
                         break
             else:
-                wpos = '-' # context-independent phones have no wpos
+                wpos = '-'  # context-independent phones have no wpos
         if wpos == '-':
             # It's context-indepedent so ignore lc, rc
             return self.phonemap[wpos][ci]['-']['-']
@@ -135,16 +139,16 @@ class S3Mdef:
             return self.phonemap[wpos][ci][lc][rc]
 
     def phone_id_nearest(self, ci, lc='-', rc='-', wpos=None):
-        if wpos == None or wpos == '-':
+        if wpos is None or wpos == '-':
             return self.phone_id(ci, lc, rc, wpos)
         else:
             # First try to back off to a different word position
-            for new_wpos, pmap in self.phonemap.iteritems():
+            for new_wpos, pmap in self.phonemap.items():
                 if ci in pmap and lc in pmap[ci] and rc in pmap[ci][lc]:
                     return self.phonemap[new_wpos][ci][lc][rc]
             # If not, try using silence in the left/right context
             if wpos == 'e' and 'SIL' in self.phonemap[wpos][ci][lc]:
-                    return self.phonemap[wpos][ci][lc]['SIL']
+                return self.phonemap[wpos][ci][lc]['SIL']
             if wpos == 'b' \
                and 'SIL' in self.phonemap[wpos][ci] \
                and rc in self.phonemap[wpos][ci]['SIL']:
@@ -156,15 +160,15 @@ class S3Mdef:
         return self.trimap[pid]
 
     # FIXME: This may be bogus, see def. of sidmap above
-    def phone_id_from_senone_id(self,sid):
+    def phone_id_from_senone_id(self, sid):
         return self.sidmap[sid]
-    
+
     # FIXME: This may be bogus, see def. of sidmap above
     def phone_from_senone_id(self, sid):
         return self.trimap[int(self.sidmap[sid])]
 
     # FIXME: This may be bogus, see def. of sidmap above
-    def ciphone_id_from_senone_id(self,sid):
+    def ciphone_id_from_senone_id(self, sid):
         return self.cisidmap[sid]
 
     # FIXME: This may be bogus, see def. of sidmap above
@@ -172,7 +176,7 @@ class S3Mdef:
         return self.trimap[int(self.cisidmap[sid])][0]
 
     def triphones(self, ci, lc, wpos=None):
-        if wpos == None:
+        if wpos is None:
             out = []
             for wpos in self.phonemap:
                 out.extend(self.triphones(ci, lc, wpos))

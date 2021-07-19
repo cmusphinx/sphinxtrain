@@ -8,5 +8,5 @@ __all__ = ['arpalm', 'mfcc', 'mllt', 's2mfc', 's3file',
            'feat', 'gmm', 'divergence', 'hypseg', 'lattice',
            'hmm', 'htkmfc', 'mllt']
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"

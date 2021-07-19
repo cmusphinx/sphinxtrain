@@ -9,33 +9,36 @@ This module reads and writes the mean and variance parameter files
 used by SphinxTrain, Sphinx-III, and PocketSphinx.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
 from struct import unpack, pack
-from numpy import array, reshape, shape, fromstring
-from s3file import S3File, S3File_write
+from numpy import reshape, shape, frombuffer
+from .s3file import S3File, S3File_write
 
-def open(filename, mode="rb", attr={"version":1.0}):
-    if mode in ("r", "rb"):
-        return S3GauFile(filename, mode)
-    elif mode in ("w", "wb"):
-        return S3GauFile_write(filename, mode, attr)
-    else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
 
-def open_full(filename, mode="rb", attr={"version":1.0}):
+def open(filename, mode="rb", attr={"version": 1.0}):
     if mode in ("r", "rb"):
-        return S3FullGauFile(filename, mode)
+        return S3GauFile(filename)
     elif mode in ("w", "wb"):
-        return S3FullGauFile_write(filename, mode, attr)
+        return S3GauFile_write(filename, attr=attr)
     else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
+
+
+def open_full(filename, mode="rb", attr={"version": 1.0}):
+    if mode in ("r", "rb"):
+        return S3FullGauFile(filename)
+    elif mode in ("w", "wb"):
+        return S3FullGauFile_write(filename, attr=attr)
+    else:
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
+
 
 class S3GauFile(S3File):
     "Read Sphinx-III format Gaussian parameter files"
-    def __init__(self, filename, mode):
-        S3File.__init__(self, filename, mode)
+    def __init__(self, filename, mode="rb"):
+        super().__init__(filename=filename, mode=mode)
         self._load()
 
     def readgauheader(self):
@@ -62,7 +65,7 @@ class S3GauFile(S3File):
                              self.n_mgau, self.density, self.blk))
         # First load everything into a really big Numeric array.
         spam = self.fh.read(self._nfloats * 4)
-        data = fromstring(spam, 'f')
+        data = frombuffer(spam, 'f').copy()
         if self.otherend:
             data = data.byteswap()
         # The on-disk layout is bogus so we have to slice and dice it.
@@ -80,6 +83,7 @@ class S3GauFile(S3File):
                 r = rnext
         self._params = params
 
+
 class S3FullGauFile(S3GauFile):
     "Read Sphinx-III format Gaussian full covariance matrix files"
     def _load(self):
@@ -94,7 +98,7 @@ class S3FullGauFile(S3GauFile):
         # First load everything into a really big Numeric array.
         # This is inefficient, but in the absence of fromfile()...
         spam = self.fh.read(self._nfloats * 4)
-        data = fromstring(spam, 'f')
+        data = frombuffer(spam, 'f').copy()
         if self.otherend:
             data = data.byteswap()
         # The on-disk layout is bogus so we have to slice and dice it.
@@ -113,6 +117,7 @@ class S3FullGauFile(S3GauFile):
                 mgau.append(gmm)
                 r = rnext
         self._params = params
+
 
 class S3GauFile_write(S3File_write):
     "Write Sphinx-III format Gaussian parameter files"
@@ -141,13 +146,14 @@ class S3GauFile_write(S3File_write):
                 for f in m:
                     f.ravel().astype('f').tofile(self.fh)
 
+
 class S3FullGauFile_write(S3GauFile_write):
     "Write Sphinx-III format Gaussian full covariance matrix files"
     def writeall(self, stuff):
         # This will break for multi-stream files
         n_mgau, n_feat, density, veclen, veclen2 = shape(stuff)
         if n_feat != 1:
-            raise Exception, "Multi-stream files not supported"
+            raise Exception("Multi-stream files not supported")
         # Write the header
         self.fh.seek(self.data_start, 0)
         self.fh.write(pack("=IIIII",

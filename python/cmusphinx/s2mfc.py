@@ -9,13 +9,15 @@ This module reads and writes the acoustic feature files used by all
 Sphinx speech recognition systems.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
 from struct import unpack, pack
 from numpy import array, reshape
+import io
 
-def open(f, mode=None, veclen=13):
+
+def open(f, mode="rb", veclen=13):
     """Open a Sphinx-II format feature file for reading or writing.
     The mode parameter is 'rb' (reading) or 'wb' (writing)."""
     if mode is None:
@@ -24,16 +26,18 @@ def open(f, mode=None, veclen=13):
         else:
             mode = 'rb'
     if mode in ('r', 'rb'):
-        return S2Feat_read(f,veclen)
+        return S2Feat_read(f, veclen)
     elif mode in ('w', 'wb'):
-        return S2Feat_write(f,veclen)
+        return S2Feat_write(f, veclen)
     else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
+
 
 class S2Feat_read(object):
     "Read Sphinx-II format feature files"
     def __init__(self, filename=None, veclen=13):
         self.veclen = veclen
+        self.fh = None
         if (filename != None):
             self.open(filename)
 
@@ -43,12 +47,27 @@ class S2Feat_read(object):
 
     def open(self, filename):
         self.filename = filename
-        self.fh = file(filename, "rb")
+        self.fh = io.open(filename, "rb")
         self.readheader()
+
+    def close(self):
+        if self.fh is not None:
+            self.fh.close()
+        self.fh = None
+
+    def __del__(self):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.close()
+        return False
 
     def readheader(self):
         self.fh.seek(0,2)
-        self.filesize = (self.fh.tell() / 4 - 1);
+        self.filesize = (self.fh.tell() // 4 - 1);
         self.fh.seek(0,0)
         hdrint = self.fh.read(4)
         self.hdrsize = unpack(">I", hdrint)[0]
@@ -64,26 +83,28 @@ class S2Feat_read(object):
     def seek(self, idx):
         self.fh.seek(4 + idx * self.veclen * 4, 0)
 
-    def next(self):
+    def __next__(self):
         vec = self.fh.read(self.veclen * 4)
-        if vec == "":
+        if vec == b"":
             raise StopIteration
         return unpack(self.swap + str(self.veclen) + "f", vec)
 
     def readvec(self):
-        return self.next()
+        return next(self)
 
     def getall(self):
         self.fh.seek(4,0)
         self._mfc = reshape(
             array(unpack(self.swap + str(self.hdrsize) + "f",
                          self.fh.read(self.hdrsize * 4))),
-            (self.hdrsize/self.veclen, self.veclen))
+            (self.hdrsize // self.veclen, self.veclen))
         return self._mfc
+
 
 class S2Feat_write(object):
     "Write Sphinx-II format feature files"
     def __init__(self, filename=None, veclen=13):
+        self.fh = None
         self.veclen = veclen
         self.filesize = 0
         if (filename != None):
@@ -92,13 +113,23 @@ class S2Feat_write(object):
     def __del__(self):
         self.close()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.close()
+        return False
+
     def open(self, filename):
         self.filename = filename
-        self.fh = file(filename, "wb")
+        self.fh = io.open(filename, "wb")
         self.writeheader()
 
     def close(self):
-        self.writeheader()
+        if self.fh is not None:
+            self.writeheader()
+            self.fh.close()
+        self.fh = None
 
     def writeheader(self):
         self.fh.seek(0,0)

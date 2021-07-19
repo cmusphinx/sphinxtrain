@@ -4,7 +4,6 @@
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-
 """
 Word lattices for speech recognition.
 
@@ -12,22 +11,22 @@ Includes routines for loading lattices in Sphinx3 and HTK format,
 searching them, and calculating word posterior probabilities.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
-import sphinxbase
 import gzip
 import re
 import math
 import os
 try:
     import numpy
-except:
+except ImportError:
     pass
 
 LOGZERO = -10000000
 
-def logadd(x,y):
+
+def logadd(x, y):
     """
     For M{x=log(a)} and M{y=log(b)}, return M{z=log(a+b)}.
 
@@ -39,11 +38,12 @@ def logadd(x,y):
     @rtype: float
     """
     if x < y:
-        return logadd(y,x)
+        return logadd(y, x)
     if y == LOGZERO:
         return x
     else:
-        return x + math.log(1 + math.exp(y-x))
+        return x + math.log(1 + math.exp(y - x))
+
 
 def is_filler(sym):
     """
@@ -53,23 +53,31 @@ def is_filler(sym):
     @return: True if C{sym} is a filler word (but not <s> or </s>)
     @rtype: boolean
     """
-    if sym == '<s>' or sym == '</s>': return False
-    return ((sym[0] == '<' and sym[-1] == '>') or
-            (sym[0] == '+' and sym[-1] == '+'))
+    if sym == '<s>' or sym == '</s>':
+        return False
+    return ((sym[0] == '<' and sym[-1] == '>')
+            or (sym[0] == '+' and sym[-1] == '+'))
+
 
 basere = re.compile(r"(?::.*)?(?:\(\d+\))?$")
+
+
 def baseword_noclass(sym):
     """
     Returns base word (no pronunciation variant or class tag) for sym.
     """
     return basere.sub("", sym)
 
+
 basere2 = re.compile(r"(?:\(\d+\))?$")
+
+
 def baseword(sym):
     """
     Returns base word (no pronunciation variant) for sym.
     """
     return basere2.sub("", sym)
+
 
 class Dag(object):
     """
@@ -101,6 +109,7 @@ class Dag(object):
         @type fan: int
         """
         __slots__ = 'sym', 'entry', 'exits', 'entries', 'score', 'post', 'prev', 'fan'
+
         def __init__(self, sym, entry):
             self.sym = sym
             self.entry = entry
@@ -141,10 +150,17 @@ class Dag(object):
         """
         __slots__ = ('src', 'dest', 'ascr', 'lscr', 'pscr', 'alpha', 'beta',
                      'post', 'lback', 'prev')
-        def __init__(self, src, dest, ascr,
-                     lscr=LOGZERO, pscr=LOGZERO,
-                     alpha=LOGZERO, beta=LOGZERO,
-                     post=LOGZERO, lback=0):
+
+        def __init__(self,
+                     src,
+                     dest,
+                     ascr,
+                     lscr=LOGZERO,
+                     pscr=LOGZERO,
+                     alpha=LOGZERO,
+                     beta=LOGZERO,
+                     post=LOGZERO,
+                     lback=0):
             self.src = src
             self.dest = dest
             self.ascr = ascr
@@ -157,9 +173,9 @@ class Dag(object):
             self.prev = None
 
         def __str__(self):
-            return "<Link: %s/%d => %s/%d P = %f>" % (self.src.sym, self.src.entry,
-                                                     self.dest.sym, self.dest.entry,
-                                                     self.post)
+            return "<Link: %s/%d => %s/%d P = %f>" % (
+                self.src.sym, self.src.entry, self.dest.sym, self.dest.entry,
+                self.post)
 
     def __init__(self, sphinx_file=None, htk_file=None, frate=100):
         """
@@ -178,27 +194,28 @@ class Dag(object):
         @type htk_file: string
         """
         self.frate = frate
-        if sphinx_file != None:
+        if sphinx_file is not None:
             self.sphinx2dag(sphinx_file)
-        elif htk_file != None:
+        elif htk_file is not None:
             self.htk2dag(htk_file)
 
     fieldre = re.compile(r'(\S+)=(?:"((?:[^\\"]+|\\.)*)"|(\S+))')
+
     def htk2dag(self, htkfile):
         """Read an HTK-format lattice file to populate a DAG."""
-        if htkfile.endswith('.gz'): # DUMB
-            fh = gzip.open(htkfile)
+        if htkfile.endswith('.gz'):  # DUMB
+            fh = gzip.open(htkfile, "rt")
         else:
             fh = open(htkfile)
         self.header = {}
         self.n_frames = 0
-        state='header'
+        state = 'header'
         # Read everything
         for spam in fh:
             if spam.startswith('#'):
                 continue
-            fields = dict(map(lambda (x,y,z): (x, y or z),
-                              self.fieldre.findall(spam.rstrip())))
+            fields = dict([(x_y_z[0], x_y_z[1] or x_y_z[2])
+                           for x_y_z in self.fieldre.findall(spam.rstrip())])
             # Number of nodes and links
             if 'N' in fields:
                 nnodes = int(fields['N'])
@@ -235,7 +252,7 @@ class Dag(object):
                     if 'p' in fields and float(fields['p']) != 0:
                         link.post = math.log(float(fields['p']))
                     self.nodes[int(fromnode)].exits.append(link)
-                        
+
         # FIXME: Not sure if the first and last nodes are always the start and end?
         if 'start' in self.header:
             self.start = self.nodes[int(self.header['start'])]
@@ -251,18 +268,18 @@ class Dag(object):
         self.sort_nodes_forward()
 
     def dag2htk(self, htkfile, lm=None):
-        if htkfile.endswith('.gz'): # DUMB
-            fh = gzip.open(htkfile, 'w')
+        if htkfile.endswith('.gz'):  # DUMB
+            fh = gzip.open(htkfile, 'wt')
         else:
             fh = open(htkfile, 'w')
         # Ensure some header fields are there
         if 'VERSION' not in self.header:
             self.header['VERSION'] = '1.0'
-        for k,v in self.header.iteritems():
+        for k, v in self.header.items():
             # Skip Sphinx stuff
             if k[0] == '-':
                 continue
-            fh.write("%s=%s\n" % (k,v))
+            fh.write("%s=%s\n" % (k, v))
         fh.write("N=%d\tL=%d\n" % (self.n_nodes(), self.n_edges()))
         idmap = {}
         i = 0
@@ -274,10 +291,10 @@ class Dag(object):
         for l in self.edges():
             if l.lscr != LOGZERO:
                 fh.write("J=%d\tS=%d\tE=%d\ta=%f\tl=%f\n" %
-                              (j, idmap[l.src], idmap[l.dest], l.ascr, l.lscr))
+                         (j, idmap[l.src], idmap[l.dest], l.ascr, l.lscr))
             else:
                 fh.write("J=%d\tS=%d\tE=%d\ta=%f\n" %
-                              (j, idmap[l.src], idmap[l.dest], l.ascr))
+                         (j, idmap[l.src], idmap[l.dest], l.ascr))
             j += 1
 
     def dag2fst(self, fstfile, symfile=None, altpron=False):
@@ -285,31 +302,37 @@ class Dag(object):
         if symfile:
             sfh = open(symfile, "w")
         idmap = {}
-        symmap = { "<eps>" : 0 }
+        symmap = {"<eps>": 0}
         j = 0
         for i, n in enumerate(self.nodes):
             idmap[n] = i
-            if altpron: sym = n.sym
-            else: sym = baseword(n.sym)
+            if altpron:
+                sym = n.sym
+            else:
+                sym = baseword(n.sym)
             if n.sym not in symmap:
                 j += 1
                 symmap[n.sym] = j
         for x in self.start.exits:
-            if altpron: sym = x.src.sym
-            else: sym = baseword(x.src.sym)
-            fh.write("%d %d %s %s %f\n" % (idmap[x.src], idmap[x.dest],
-                                        sym, sym, -x.ascr))
+            if altpron:
+                sym = x.src.sym
+            else:
+                sym = baseword(x.src.sym)
+            fh.write("%d %d %s %s %f\n" %
+                     (idmap[x.src], idmap[x.dest], sym, sym, -x.ascr))
         for x in self.edges():
             if x.src == self.start:
                 continue
-            if altpron: sym = x.src.sym
-            else: sym = baseword(x.src.sym)
-            fh.write("%d %d %s %s %f\n" % (idmap[x.src], idmap[x.dest],
-                                        sym, sym, -x.ascr))
+            if altpron:
+                sym = x.src.sym
+            else:
+                sym = baseword(x.src.sym)
+            fh.write("%d %d %s %s %f\n" %
+                     (idmap[x.src], idmap[x.dest], sym, sym, -x.ascr))
         fh.write("%d 0" % idmap[self.end])
         fh.close()
         if symfile:
-            for k, v in symmap.iteritems():
+            for k, v in symmap.items():
                 sfh.write("%s %d\n" % (k, v))
             sfh.close()
 
@@ -322,16 +345,17 @@ class Dag(object):
 
     def sort_nodes_forward(self):
         # Sort nodes by starting point
-        self.nodes.sort(lambda x,y: cmp(x.entry, y.entry))
+        self.nodes.sort(key=lambda x: x.entry)
         # Sort edges by ending point
         for n in self.nodes:
-            n.exits.sort(lambda x,y: cmp(x.dest.entry, y.dest.entry))
+            n.exits.sort(key=lambda x: x.dest.entry)
 
     headre = re.compile(r'# (-\S+) (\S+)')
+
     def sphinx2dag(self, s3file):
         """Read a Sphinx-III format lattice file to populate a DAG."""
-        if s3file.endswith('.gz'): # DUMB
-            fh = gzip.open(s3file)
+        if s3file.endswith('.gz'):  # DUMB
+            fh = gzip.open(s3file, "rt")
         else:
             fh = open(s3file)
         self.header = {}
@@ -355,7 +379,7 @@ class Dag(object):
                 if fields[0] == 'Frames':
                     self.n_frames = int(fields[1])
                 elif fields[0] == 'Nodes':
-                    state='nodes'
+                    state = 'nodes'
                     nnodes = int(fields[1])
                     self.nodes = [None] * nnodes
                 elif fields[0] == 'Initial':
@@ -364,9 +388,9 @@ class Dag(object):
                 elif fields[0] == 'Final':
                     self.end = self.nodes[int(fields[1])]
                 elif fields[0] == 'Edges':
-                    state='edges'
+                    state = 'edges'
                 elif fields[0] == 'End':
-                    state='done'
+                    state = 'done'
                 else:
                     if state == 'nodes':
                         nodeid, word, sf, fef, lef = fields
@@ -377,7 +401,7 @@ class Dag(object):
                         ascr = float(ascr) * logbase
                         self.nodes[int(fromnode)].exits.append(
                             self.Link(fromnode, tonode, ascr))
-        if self.getcwd == None:
+        if self.getcwd is None:
             self.getcwd = os.getcwd()
         # Snap links to nodes to point to the objects themselves
         self.snap_links()
@@ -385,26 +409,23 @@ class Dag(object):
         self.sort_nodes_forward()
 
     def dag2sphinx(self, outfile, logbase=1.0003):
-        if isinstance(outfile, file):
-            fh = outfile
+        if outfile.endswith('.gz'):  # DUMB
+            fh = gzip.open(outfile, "wt")
         else:
-            if outfile.endswith('.gz'): # DUMB
-                fh = gzip.open(outfile, "w")
-            else:
-                fh = open(outfile, "w")
+            fh = open(outfile, "w")
         fh.write("# getcwd: %s\n" % self.getcwd)
         fh.write("# -logbase %e\n" % logbase)
-        for arg, val in self.header.iteritems():
+        for arg, val in self.header.items():
             if arg != '-logbase':
-                fh.write("# %s %s\n" % (arg,val))
+                fh.write("# %s %s\n" % (arg, val))
         fh.write("#\n")
         fh.write("Frames %d\n" % self.n_frames)
         fh.write("#\n")
-        fh.write("Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n"
-                 % self.n_nodes())
-        links = []
+        fh.write(
+            "Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n"
+            % self.n_nodes())
         idmap = {}
-        for i,n in enumerate(self.nodes):
+        for i, n in enumerate(self.nodes):
             fef = self.n_frames
             lef = 0
             for x in n.exits:
@@ -419,11 +440,11 @@ class Dag(object):
         fh.write("Final %d\n" % idmap[self.end])
         fh.write("BestSegAscr 0 (NODEID ENDFRAME ASCORE)\n#\n")
         fh.write("Edges (FROM-NODEID TO-NODEID ASCORE)\n")
-        logfactor = 1./math.log(logbase)
+        logfactor = 1. / math.log(logbase)
         for u in self.nodes:
             for x in u.exits:
-                fh.write("%d %d %d\n" % (idmap[u], idmap[x.dest],
-                                         int(x.ascr * logfactor)))
+                fh.write("%d %d %d\n" %
+                         (idmap[u], idmap[x.dest], int(x.ascr * logfactor)))
         fh.write("End\n")
         fh.close()
 
@@ -432,14 +453,14 @@ class Dag(object):
         fh.write("digraph lattice {\n\trankdir=LR;\n\t")
         nodeid = {}
         fh.write("\tnode [shape=circle];")
-        for i,u in enumerate(self.nodes):
+        for i, u in enumerate(self.nodes):
             nodeid[u] = '"%s/%d"' % (u.sym, u.entry)
             if u != self.end:
                 fh.write(" %s" % nodeid[u])
         fh.write(";\n\tnode [shape=doublecircle]; %s;\n\n" % nodeid[self.end])
         for x in self.edges():
-            fh.write("\t%s -> %s [label=\"%.2f\"];\n"
-                     % (nodeid[x.src], nodeid[x.dest], x.post))
+            fh.write("\t%s -> %s [label=\"%.2f\"];\n" %
+                     (nodeid[x.src], nodeid[x.dest], x.post))
         fh.write("}\n")
         fh.close()
 
@@ -478,9 +499,9 @@ class Dag(object):
         This function does shortest-path search over edges rather than
         nodes, which makes it possible to do full trigram expansion.
         """
-        if start == None:
+        if start is None:
             start = self.start
-        if end == None:
+        if end is None:
             end = self.end
         # Find number of links into each node
         for w in self.nodes:
@@ -581,15 +602,15 @@ class Dag(object):
         for u in Q:
             u.score = LOGZERO
             u.prev = None
-        if start == None:
+        if start is None:
             start = self.start
-        if end == None:
+        if end is None:
             end = self.end
         start.score = 0
         while Q:
             bestscore = LOGZERO
             bestidx = 0
-            for i,u in enumerate(Q):
+            for i, u in enumerate(Q):
                 if is_filler(u.sym) and u != end:
                     continue
                 if u.score > bestscore:
@@ -625,7 +646,7 @@ class Dag(object):
         @return: Best path through lattice from start to end.
         @rtype: list of Dag.Node
         """
-        if end == None:
+        if end is None:
             end = self.end
         backtrace = []
         while end:
@@ -636,9 +657,7 @@ class Dag(object):
 
     def node_range(self, start, end):
         """Return all nodes starting in a certain time range."""
-        return [n for n in self.nodes
-                if n.entry >= start
-                and n.entry < end]
+        return [n for n in self.nodes if n.entry >= start and n.entry < end]
 
     def edge_slice(self, time):
         """Return all edges active at a certain time point."""
@@ -646,18 +665,19 @@ class Dag(object):
 
     def edge_range(self, start, end):
         """Return all edges active in a certain time range."""
-        return [e for e in self.edges()
-                if e.src.entry <= end
-                and e.dest.entry > start]
+        return [
+            e for e in self.edges()
+            if e.src.entry <= end and e.dest.entry > start
+        ]
 
     def traverse_depth(self, start=None):
         """Depth-first traversal of DAG nodes"""
-        if start == None:
+        if start is None:
             start = self.start
         # Initialize the agenda (set of root nodes)
         roots = [start]
         # Keep a table of already seen nodes
-        seen = {start:1}
+        seen = {start: 1}
         # Repeatedly pop the first one off of the agenda and push
         # all of its successors
         while roots:
@@ -670,12 +690,12 @@ class Dag(object):
 
     def traverse_breadth(self, start=None):
         """Breadth-first traversal of DAG nodes"""
-        if start == None:
+        if start is None:
             start = self.start
         # Initialize the agenda (set of active nodes)
         roots = [start]
         # Keep a table of already seen nodes
-        seen = {start:1}
+        seen = {start: 1}
         # Repeatedly pop the first one off of the agenda and shift
         # all of its successors
         while roots:
@@ -688,12 +708,12 @@ class Dag(object):
 
     def reverse_breadth(self, end=None):
         """Breadth-first reverse traversal of DAG nodes"""
-        if end == None:
+        if end is None:
             end = self.end
         # Initialize the agenda (set of active nodes)
         roots = [end]
         # Keep a table of already seen nodes
-        seen = {end:1}
+        seen = {end: 1}
         # Repeatedly pop the first one off of the agenda and shift
         # all of its successors
         while roots:
@@ -725,11 +745,13 @@ class Dag(object):
         else:
             silpen = math.log(silprob)
             fillpen = math.log(fillprob)
+
         def fill_score(link):
             if link.dest.sym == '<sil>':
                 return link.ascr + silpen
             else:
                 return link.ascr + fillpen
+
         # Do transitive closure on filler nodes
         for n in self.nodes:
             if is_filler(n.sym):
@@ -737,7 +759,6 @@ class Dag(object):
             # Traverse the outgoing filler links until all non-fillers
             # are reached.
             agenda = []
-            leaves = []
             for nx in n.exits:
                 if is_filler(nx.dest.sym) and nx.dest != self.end:
                     fscr = fill_score(nx)
@@ -784,7 +805,7 @@ class Dag(object):
                 begone[w] = 1
                 #print "Removing node %s" % w
                 self.nodes[i] = None
-        self.nodes = [w for w in self.nodes if w != None]
+        self.nodes = [w for w in self.nodes if w is not None]
         # Remove links to unreachable nodes
         for w in self.nodes:
             newexits = []
@@ -812,8 +833,10 @@ class Dag(object):
             w.fan = 0
         for x in self.edges():
             x.dest.fan += 1
-        if start == None: start = self.start
-        if end == None: end = self.end
+        if start is None:
+            start = self.start
+        if end is None:
+            end = self.end
         # Agenda of closed edges
         Q = start.exits[:]
         while Q:
@@ -825,7 +848,7 @@ class Dag(object):
                 if e.dest == end:
                     break
                 Q.extend(e.dest.exits)
-            
+
     def reverse_edges_topo(self, start=None, end=None):
         """
         Traverse edges in reverse topological order (ensuring that all
@@ -836,8 +859,10 @@ class Dag(object):
             w.fan = 0
         for x in self.edges():
             x.src.fan += 1
-        if start == None: start = self.start
-        if end == None: end = self.end
+        if start is None:
+            start = self.start
+        if end is None:
+            end = self.end
         # Agenda of closed edges
         Q = end.entries[:]
         while Q:
@@ -849,7 +874,7 @@ class Dag(object):
                 if e.src == start:
                     break
                 Q.extend(e.src.entries)
-            
+
     def forward(self, lm=None, lw=1.0, aw=1.0):
         """
         Compute forward variable for all arcs in the lattice.
@@ -867,8 +892,9 @@ class Dag(object):
             for vx in wx.src.entries:
                 # Get unscaled language model score P(w|v) (bigrams only for now...)
                 if lm:
-                    lscr = lm.prob([baseword(wx.src.sym),
-                                    baseword(vx.src.sym)]) * lw
+                    lscr = lm.prob(
+                        [baseword(wx.src.sym),
+                         baseword(vx.src.sym)]) * lw
                 else:
                     lscr = 0
                 # Accumulate alpha for this arc
@@ -889,8 +915,9 @@ class Dag(object):
                 beta = LOGZERO
                 # Get unscaled language model probability P(w|v) (bigrams only for now...)
                 if lm:
-                    lscr = lm.prob([baseword(vx.dest.sym),
-                                    baseword(vx.src.sym)]) * lw
+                    lscr = lm.prob(
+                        [baseword(vx.dest.sym),
+                         baseword(vx.src.sym)]) * lw
                 else:
                     lscr = 0
                 # For each outgoing arc from vx.dest
@@ -945,17 +972,17 @@ class Dag(object):
         @rtype: (int, list(string, string))
         """
         # Initialize the alignment matrix
-        align_matrix = numpy.ones((len(ref),len(self.nodes)), 'i') * 999999999
+        align_matrix = numpy.ones((len(ref), len(self.nodes)), 'i') * 999999999
         # And the backpointer matrix
-        bp_matrix = numpy.zeros((len(ref),len(self.nodes)), 'O')
+        bp_matrix = numpy.zeros((len(ref), len(self.nodes)), 'O')
         # Remove filler nodes from the reference
-        ref = filter(lambda x: not is_filler(x), ref)
+        ref = [x for x in ref if not is_filler(x)]
         # Remove unreachable nodes
         self.remove_unreachable()
         # Figure out the minimum distance to each node from the start
         # of the lattice, and construct a node to ID mapping
         nodeid = {}
-        for i,u in enumerate(self.nodes):
+        for i, u in enumerate(self.nodes):
             u.score = 999999999
             nodeid[u] = i
         self.start.score = 1
@@ -966,6 +993,7 @@ class Dag(object):
                 dist = u.score + 1
                 if dist < x.dest.score:
                     x.dest.score = dist
+
         def find_pred(ii, jj):
             bestscore = 999999999
             bestp = -1
@@ -973,72 +1001,80 @@ class Dag(object):
                 return bestp, bestscore
             for e in self.nodes[jj].entries:
                 k = nodeid[e.src]
-                if align_matrix[ii,k] < bestscore:
+                if align_matrix[ii, k] < bestscore:
                     bestp = k
-                    bestscore = align_matrix[ii,k]
+                    bestscore = align_matrix[ii, k]
             return bestp, bestscore
+
         # Now fill in the alignment matrix
         for i, w in enumerate(ref):
             for j, u in enumerate(self.nodes):
                 # Insertion = cost(w, prev(u)) + 1
-                if u == self.start: # start node
+                if u == self.start:  # start node
                     bestp = -1
-                    inscost = i + 2 # Distance from start of ref
+                    inscost = i + 2  # Distance from start of ref
                 else:
                     # Find best predecessor in the same reference position
                     bestp, bestscore = find_pred(i, j)
-                    inscost = align_matrix[i,bestp] + 1
+                    inscost = align_matrix[i, bestp] + 1
                 # Deletion  = cost(prev(w), u) + 1
-                if i == 0: # start symbol
-                    delcost = u.score + 1 # Distance from start of hyp
+                if i == 0:  # start symbol
+                    delcost = u.score + 1  # Distance from start of hyp
                 else:
-                    delcost = align_matrix[i-1,j] + 1
+                    delcost = align_matrix[i - 1, j] + 1
                 # Substitution = cost(prev(w), prev(u)) + (w != u)
-                if i == 0 and bestp == -1: # Start node, start of ref
-                    subcost = int(baseword_noclass(w) != baseword_noclass(u.sym))
-                elif i == 0: # Start of ref
-                    subcost = (self.nodes[bestp].score
-                               + int(baseword_noclass(w) != baseword_noclass(u.sym)))
-                elif bestp == -1: # Start node
-                    subcost = i - 1 + int(baseword_noclass(w) != baseword_noclass(u.sym))
+                if i == 0 and bestp == -1:  # Start node, start of ref
+                    subcost = int(
+                        baseword_noclass(w) != baseword_noclass(u.sym))
+                elif i == 0:  # Start of ref
+                    subcost = (
+                        self.nodes[bestp].score +
+                        int(baseword_noclass(w) != baseword_noclass(u.sym)))
+                elif bestp == -1:  # Start node
+                    subcost = i - 1 + int(
+                        baseword_noclass(w) != baseword_noclass(u.sym))
                 else:
                     # Find best predecessor in the previous reference position
-                    bestp, bestscore = find_pred(i-1, j)
-                    subcost = (align_matrix[i-1,bestp]
-                               + int(baseword_noclass(w) != baseword_noclass(u.sym)))
-                align_matrix[i,j] = min(subcost, inscost, delcost)
+                    bestp, bestscore = find_pred(i - 1, j)
+                    subcost = (
+                        align_matrix[i - 1, bestp] +
+                        int(baseword_noclass(w) != baseword_noclass(u.sym)))
+                align_matrix[i, j] = min(subcost, inscost, delcost)
                 # Now find the argmin
-                if align_matrix[i,j] == subcost:
-                    bp_matrix[i,j] = (i-1, bestp)
-                elif align_matrix[i,j] == inscost:
-                    bp_matrix[i,j] = (i, bestp)
+                if align_matrix[i, j] == subcost:
+                    bp_matrix[i, j] = (i - 1, bestp)
+                elif align_matrix[i, j] == inscost:
+                    bp_matrix[i, j] = (i, bestp)
                 else:
-                    bp_matrix[i,j] = (i-1, j)
+                    bp_matrix[i, j] = (i - 1, j)
         # Find last node's index
         last = nodeid[self.end]
         # Backtrace to get an alignment
-        i = len(ref)-1
+        i = len(ref) - 1
         j = last
         bt = []
         while True:
-            ip,jp = bp_matrix[i,j]
-            if ip == i: # Insertion
-                bt.append(('**INS**', '*%s*' % baseword_noclass(self.nodes[j].sym)))
-            elif jp == j: # Deletion
+            ip, jp = bp_matrix[i, j]
+            if ip == i:  # Insertion
+                bt.append(
+                    ('**INS**', '*%s*' % baseword_noclass(self.nodes[j].sym)))
+            elif jp == j:  # Deletion
                 bt.append(('*%s' % ref[i], '**DEL**'))
             else:
                 if ref[i] == baseword_noclass(self.nodes[j].sym):
                     bt.append((ref[i], baseword_noclass(self.nodes[j].sym)))
                 else:
-                    bt.append((ref[i], '*%s*' % baseword_noclass(self.nodes[j].sym)))
+                    bt.append(
+                        (ref[i], '*%s*' % baseword_noclass(self.nodes[j].sym)))
             # If we consume both ref and hyp, we are done
             if ip == -1 and jp == -1:
                 break
             # If we hit the beginning of the ref, fill with insertions
             if ip == -1:
                 while True:
-                    bt.append(('**INS**', baseword_noclass(self.nodes[jp].sym)))
-                    bestp, bestscore = find_pred(i,jp)
+                    bt.append(
+                        ('**INS**', baseword_noclass(self.nodes[jp].sym)))
+                    bestp, bestscore = find_pred(i, jp)
                     if bestp == -1:
                         break
                     jp = bestp
@@ -1050,9 +1086,9 @@ class Dag(object):
                     ip = ip - 1
                 break
             # Follow the pointer
-            i,j = ip,jp
+            i, j = ip, jp
         bt.reverse()
-        return align_matrix[len(ref)-1,last], bt
+        return align_matrix[len(ref) - 1, last], bt
 
     def dt_forward(self, aw=1.0):
         """
@@ -1072,7 +1108,7 @@ class Dag(object):
             for vx in wx.src.entries:
                 # Accumulate alpha for this arc
                 wx.alpha = logadd(wx.alpha, vx.alpha + lscr + wx.ascr * aw)
-    
+
     def dt_backward(self, aw=1.0):
         """
         Compute backward variable for all arcs in the lattice.
@@ -1121,9 +1157,9 @@ class Dag(object):
     def forward_edge_prune(self, beam=1.0e-50):
         # prune exist edges which has very small posterior probability
         logbeam = math.log(beam)
-	for n in self.nodes:
+        for n in self.nodes:
             if n != self.start and n != self.end:
-                newexits =[]
+                newexits = []
                 bestpost = LOGZERO
                 for e in n.exits:
                     if e.post > bestpost:
@@ -1138,7 +1174,7 @@ class Dag(object):
     def backward_edge_prune(self, beam=1.0e-50):
         # prune entry edges which has very small posterior probability
         logbeam = math.log(beam)
-	for n in self.nodes:
+        for n in self.nodes:
             if n != self.start and n != self.end:
                 newentries = []
                 bestpost = LOGZERO
@@ -1157,7 +1193,7 @@ class Dag(object):
         #  but with very small posterior probability
         seen = {}
         win = 10
-	logbeam = math.log(beam)
+        logbeam = math.log(beam)
         for n in self.nodes:
             if n != self.start and n != self.end and n not in seen:
                 seen[n] = 1
@@ -1166,7 +1202,7 @@ class Dag(object):
                 if start < 1:
                     start = 1
                 if end > self.end.entry - 1:
-                    end  = self.end.entry - 1
+                    end = self.end.entry - 1
                 align = self.node_range(start, end)
 
                 similar = []
@@ -1190,4 +1226,3 @@ class Dag(object):
         for n in self.nodes:
             for e in n.exits:
                 e.lscr = lm.prob([baseword(e.src.sym)]) * lw
-

@@ -2,19 +2,18 @@
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-
 """Hidden Markov Model objects for training/decoding.
 
 This module provides a basic HMM object and factory classes for
 building HMMs from triphones and from sentences.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
 import numpy
 import bisect
-from itertools import izip
+
 
 class HMMGraph(object):
     """
@@ -40,7 +39,7 @@ class HMMGraph(object):
         multiple HMMs will be added as alternatives with equal
         transition probabilities into them.
         """
-        for h1,h2 in izip(hmms[:-1],hmms[1:]):
+        for h1, h2 in zip(hmms[:-1], hmms[1:]):
             if isinstance(h1, tuple):
                 for h in h1:
                     self.hmms.append(h)
@@ -57,7 +56,7 @@ class HMMGraph(object):
                 self.hmms.append(h)
                 self.hmmmap[h] = self.offsets[-1]
                 self.offsets.append(self.offsets[-1] + len(h))
-            self.offsets.pop() # Remove the extra offset
+            self.offsets.pop()  # Remove the extra offset
         else:
             self.hmms.append(hmms[-1])
             self.hmmmap[hmms[-1]] = self.offsets[-1]
@@ -72,7 +71,7 @@ class HMMGraph(object):
         @rtype: (cmusphinx.hmm.HMM, int)
         """
         i = bisect.bisect(self.offsets, idx)
-        return self.hmms[i-1], idx - self.offsets[i-1]
+        return self.hmms[i - 1], idx - self.offsets[i - 1]
 
     def senid(self, idx):
         """
@@ -100,8 +99,8 @@ class HMMGraph(object):
         ihmm, ioff = self.get_hmm_idx(i)
         jhmm, joff = self.get_hmm_idx(j)
         if ihmm == jhmm:
-            return ihmm[ioff,joff]
-        elif ioff == len(ihmm)-1 and joff == 0 and jhmm in ihmm.links:
+            return ihmm[ioff, joff]
+        elif ioff == len(ihmm) - 1 and joff == 0 and jhmm in ihmm.links:
             return ihmm.links[jhmm]
         else:
             return 0
@@ -158,7 +157,7 @@ class HMMGraph(object):
         """
         # Transitions out of non-emitting states come first (see
         # below)
-        for hmm, offset in izip(self.hmms, self.offsets):
+        for hmm, offset in zip(self.hmms, self.offsets):
             for ohmm in hmm.links:
                 # Transition from final state of this one to first
                 # state of successor HMM
@@ -166,9 +165,10 @@ class HMMGraph(object):
         # Transitions into non-emitting states come last (this should
         # happen automatically since they are always last in each
         # state sequence)
-        for hmm, offset in izip(self.hmms, self.offsets):
-            for i,j in hmm.iter_statepairs():
+        for hmm, offset in zip(self.hmms, self.offsets):
+            for i, j in hmm.iter_statepairs():
                 yield i + offset, j + offset
+
 
 class HMM(object):
     """Class representing a single HMM"""
@@ -200,7 +200,7 @@ class HMM(object):
         @return: Transition log-probability (base e) from i to j.
         @rtype: float
         """
-        return self.tmat[i,j]
+        return self.tmat[i, j]
 
     def link(self, others, prob=1.0):
         """
@@ -210,7 +210,7 @@ class HMM(object):
         """
         if isinstance(others, tuple):
             for o in others:
-                self.link(o, prob/len(others))
+                self.link(o, prob / len(others))
         else:
             self.links[others] = prob
 
@@ -265,18 +265,19 @@ class HMM(object):
         """
         return iter(numpy.transpose(self.tmat.nonzero()))
 
+
 def forward_evaluate(hmm, gmms, alpha=None):
     """
     Calculate the forward variable \\alpha over an HMM or HMMGraph
     for a frame of observations.  The forward variable is defined as::
 
-      \\alpha_t(j) = P(o_1, ..., o_j, q_t = j | \lambda)
+      \\alpha_t(j) = P(o_1, ..., o_j, q_t = j | \\lambda)
       \\alpha_0(0) = 1.0
-      \\alpha_t(j) = \sum_i \\alpha_{t-1}(i) a_{ij} b_j(o_t)
+      \\alpha_t(j) = \\sum_i \\alpha_{t-1}(i) a_{ij} b_j(o_t)
 
     Or, for non-emitting states j_N::
 
-      \\alpha_t(j_N) = \sum_i \\alpha_{t}(i) a_{ij_N}
+      \\alpha_t(j_N) = \\sum_i \\alpha_{t}(i) a_{ij_N}
 
     Note that non-emitting states transition from the current frame,
     and thus we need to fully calculate \\alpha_{t}(i) for all their
@@ -293,29 +294,30 @@ def forward_evaluate(hmm, gmms, alpha=None):
     @return: Updated list of alpha variables
     @rtype: [numpy.ndarray]
     """
-    if alpha == None:
+    if alpha is None:
         alpha = numpy.zeros(len(hmm))
-        alpha[0] = 1. # Assume unique initial state
+        alpha[0] = 1.  # Assume unique initial state
     new_alpha = numpy.zeros(len(alpha))
-    for i,j in hmm.iter_statepairs():
+    for i, j in hmm.iter_statepairs():
         if hmm[j] == -1:
-            new_alpha[j] += new_alpha[i] * hmm[i,j]
+            new_alpha[j] += new_alpha[i] * hmm[i, j]
         else:
-            new_alpha[j] += alpha[i] * hmm[i,j] * gmms[hmm[j]]
+            new_alpha[j] += alpha[i] * hmm[i, j] * gmms[hmm[j]]
     return new_alpha
+
 
 def backward_evaluate(hmm, gmms, beta=None):
     """
     Calculate the backward variable \\beta over an HMM or HMMGraph
     for a frame of observations.  The backward variable is defined as::
 
-      \\beta_t(i) = P(o_{t+1}, ..., o_T | q_t = i, \lambda)
+      \\beta_t(i) = P(o_{t+1}, ..., o_T | q_t = i, \\lambda)
       \\beta_T(i) = 1.0 for all final states i
-      \\beta_t(i) = \sum_j \\beta_{t+1}(j) a_{ij} b_j(o_t+1)
+      \\beta_t(i) = \\sum_j \\beta_{t+1}(j) a_{ij} b_j(o_t+1)
 
     Or, for non-emitting states i_N::
-    
-      \\beta_t(i_N) = \sum_j\\beta_{t}(j) a_{i_Nj} b_j(o_{t})
+
+      \\beta_t(i_N) = \\sum_j\\beta_{t}(j) a_{i_Nj} b_j(o_{t})
 
     Since we only have access to one frame of emissions at a time,
     this means that we must calculate beta_{t+1}(i) for non-emitting
@@ -342,17 +344,18 @@ def backward_evaluate(hmm, gmms, beta=None):
     # invariant if we include them in the beta array.  Also, we don't
     # want to modify the beta argument.  So we store them separately.
     nonemit_beta = numpy.zeros(len(hmm))
-    if beta == None:
+    if beta is None:
         beta = numpy.zeros(len(hmm))
-        nonemit_beta[-1] = 1. # FIXME: Assumes final state is non-emitting
-    for i,j in hmm.iter_statepairs():
-        if hmm[i] == -1: # FIXME: Assumes that hmm[j] != -1
-            nonemit_beta[i] += beta[j] * hmm[i,j] * gmms[hmm[j]]
+        nonemit_beta[-1] = 1.  # FIXME: Assumes final state is non-emitting
+    for i, j in hmm.iter_statepairs():
+        if hmm[i] == -1:  # FIXME: Assumes that hmm[j] != -1
+            nonemit_beta[i] += beta[j] * hmm[i, j] * gmms[hmm[j]]
         elif hmm[j] == -1:
-            new_beta[i] += nonemit_beta[j] * hmm[i,j]
+            new_beta[i] += nonemit_beta[j] * hmm[i, j]
         else:
-            new_beta[i] += beta[j] * hmm[i,j] * gmms[hmm[j]]
+            new_beta[i] += beta[j] * hmm[i, j] * gmms[hmm[j]]
     return new_beta
+
 
 class PhoneHMMFactory(object):
     """
@@ -383,7 +386,7 @@ class PhoneHMMFactory(object):
           - b: Word-initial phone
           - e: Word-final phone
           - s: Single-phone word (both initial and final)
-        
+
         @type wpos: string
         """
         pid = self.acmod.mdef.phone_id(ci, lc, rc, wpos)
@@ -391,6 +394,7 @@ class PhoneHMMFactory(object):
         return HMM(self.acmod.mdef.sseq[ssid],
                    self.acmod.tmat[self.acmod.mdef.pid2tmat(pid)],
                    (ci, lc, rc, wpos))
+
 
 class SentenceHMMFactory(object):
     """Create sentence HMMs"""

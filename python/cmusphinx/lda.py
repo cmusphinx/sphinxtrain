@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
 Calculate Fisher's linear discriminant for acoustic models.
 
@@ -12,20 +11,20 @@ stream Sphinx-III acoustic models.
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
-import sys, os
+import sys
 
 try:
     import numpy
 except ImportError:
-    print "FATAL: Failed to import numpy modules. Check that numpy and scipy are installed"
+    print("FATAL: Failed to import numpy modules. "
+          "Check that numpy and scipy are installed")
     sys.exit(1)
 
-import s3lda
-import s3gaucnt
-import itertools
+from cmusphinx import s3lda, s3gaucnt
+
 
 def makelda(gauden_counts):
     """
@@ -36,7 +35,7 @@ def makelda(gauden_counts):
     @type gauden_counts: cmusphinx.s3gaucnt.S3FullGauCntFile
     """
     if not gauden_counts.pass2var:
-        raise Exception, "Please re-run bw with '-2passvar yes'"
+        raise Exception("Please re-run bw with '-2passvar yes'")
     mean = numpy.concatenate([x[0] for x in gauden_counts.mean])
     var = numpy.concatenate([x[0] for x in gauden_counts.var])
     dnom = gauden_counts.dnom.ravel()
@@ -45,15 +44,15 @@ def makelda(gauden_counts):
     globalmean = mean.sum(0) / dnom.sum()
     sw = var.sum(0)
     sb = numpy.zeros(var[0].shape, 'd')
-    for d, m in itertools.izip(dnom, mean):
+    for d, m in zip(dnom, mean):
         diff = m / d - globalmean
         sb += d * numpy.outer(diff, diff)
 
-    print "Sw:\n", sw
-    print "Sb:\n", sb
+    print("Sw:\n", sw)
+    print("Sb:\n", sb)
     BinvA = numpy.dot(numpy.linalg.inv(sw), sb)
     u, v = numpy.linalg.eig(BinvA)
-    
+
     top = list(u.argsort())
     top.reverse()
     u = u.take(top)
@@ -61,10 +60,11 @@ def makelda(gauden_counts):
     # them to be in the rows.
     v = v.T.take(top, 0)
 
-    print "u:\n", u
-    print "v:\n", v
+    print("u:\n", u)
+    print("v:\n", v)
 
     return v
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
@@ -75,4 +75,4 @@ if __name__ == '__main__':
     accumdirs = sys.argv[2:]
     gauden = s3gaucnt.accumdirs_full(accumdirs)
     lda = makelda(gauden)
-    s3lda.open(ldafn, 'w').writeall(lda[numpy.newaxis,:])
+    s3lda.open(ldafn, 'w').writeall(lda[numpy.newaxis, :])

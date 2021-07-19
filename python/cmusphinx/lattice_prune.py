@@ -2,23 +2,25 @@
 
 import os
 import sys
-import lattice
+from cmusphinx import lattice
 import sphinxbase
-
-
 
 if __name__ == '__main__':
     if len(sys.argv) != 11:
-        sys.stderr.write("Usage: %s ABEAM NBEAM LMWEIGHT LMFILE DENLATDIR PRUNED_DENLATDIR FILELIST TRANSFILE FILECOUNT FILEOFFSET\n" % (sys.argv[0]))
+        sys.stderr.write(
+            "Usage: %s ABEAM NBEAM LMWEIGHT LMFILE DENLATDIR "
+            "PRUNED_DENLATDIR FILELIST TRANSFILE FILECOUNT FILEOFFSET\n"
+            % (sys.argv[0]))
         sys.exit(1)
 
     # print command line
     command = ''
     for argv in sys.argv:
         command += argv + ' '
-    print "%s\n" % command
+    print("%s\n" % command)
 
-    abeam, nbeam, lw, lmfile, denlatdir, pruned_denlatdir, ctlfile, transfile, filecount, fileoffset = sys.argv[1:]
+    abeam, nbeam, lw, lmfile, denlatdir, pruned_denlatdir, \
+        ctlfile, transfile, filecount, fileoffset = sys.argv[1:]
 
     abeam = float(abeam)
     nbeam = float(nbeam)
@@ -49,30 +51,32 @@ if __name__ == '__main__':
         c = ctl[i].strip()
         r = ref[i].split()
         del r[-1]
-        if r[0] != '<s>': r.insert(0, '<s>')
-        if r[-1] != '</s>': r.append('</s>')
-        r = filter(lambda x: not lattice.is_filler(x), r)
+        if r[0] != '<s>':
+            r.insert(0, '<s>')
+        if r[-1] != '</s>':
+            r.append('</s>')
+        r = [x for x in r if not lattice.is_filler(x)]
 
-        print "process sent: %s" % c
-        
+        print("process sent: %s" % c)
+
         # load lattice
-        print "\t load lattice ..."
+        print("\t load lattice ...")
         dag = lattice.Dag(os.path.join(denlatdir, c + ".lat.gz"))
         dag.bypass_fillers()
         dag.remove_unreachable()
 
         # prune lattice
-	dag.edges_unigram_score(lm,lw)
+        dag.edges_unigram_score(lm, lw)
         dag.dt_posterior()
 
         # edge pruning
-        print "\t edge pruning ..."
+        print("\t edge pruning ...")
         dag.forward_edge_prune(abeam)
         dag.backward_edge_prune(abeam)
         dag.remove_unreachable()
 
         # node pruning
-        print "\t node pruning ..."
+        print("\t node pruning ...")
         dag.post_node_prune(nbeam)
         dag.remove_unreachable()
 
@@ -80,17 +84,17 @@ if __name__ == '__main__':
         err, bt = dag.minimum_error(r)
 
         # save pruned lattice
-        print "\t saving pruned lattice ...\n"
+        print("\t saving pruned lattice ...\n")
         dag.dag2sphinx(os.path.join(pruned_denlatdir, c + ".lat.gz"))
 
         sentcount += 1
         nodecount += dag.n_nodes()
         edgecount += dag.n_edges()
         wer += float(err) / len(r)
-        density += float(dag.n_edges())/len(r)
+        density += float(dag.n_edges()) / len(r)
 
-    print "Average Lattice Word Error Rate: %.2f%%" % (wer / sentcount * 100)
-    print "Average Lattice Density: %.2f" % (float(density) / sentcount)
-    print "Average Number of Node: %.2f" % (float(nodecount) / sentcount)
-    print "Average Number of Arc: %.2f" % (float(edgecount) / sentcount)
-    print "ALL DONE"
+    print("Average Lattice Word Error Rate: %.2f%%" % (wer / sentcount * 100))
+    print("Average Lattice Density: %.2f" % (float(density) / sentcount))
+    print("Average Number of Node: %.2f" % (float(nodecount) / sentcount))
+    print("Average Number of Arc: %.2f" % (float(edgecount) / sentcount))
+    print("ALL DONE")

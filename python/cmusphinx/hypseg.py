@@ -2,13 +2,16 @@
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-
 """
 Sphinx-III format hypothesis segmentation files.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
+
+
+import io
+
 
 def open(filename):
     """
@@ -17,6 +20,7 @@ def open(filename):
     @type filename string
     """
     return S3HypSeg(filename)
+
 
 class S3HypSegEntry(object):
     """
@@ -35,6 +39,7 @@ class S3HypSegEntry(object):
     @type segs: (string, int, int, int, int)
     """
     __fields__ = ['uttid', 'scale', 'score', 'ascr', 'lscr', 'segs']
+
     def __init__(self, line):
         fields = line.rstrip().split()
         # Strip S * T * A * L * sf
@@ -52,12 +57,29 @@ class S3HypSegEntry(object):
             self.segs.append((name, int(sf), int(ef), int(ascr), int(lscr)))
             sf = ef
 
-class S3HypSeg(file):
+
+class S3HypSeg:
     """
     Class for reading Sphinx-III format hypothesis segmentation files.
     """
-    def next(self):
-        spam = self.readline()
+    def __init__(self, filename):
+        self.fh = io.open(filename)
+
+    def __del__(self):
+        self.fh.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.fh.close()
+        return False
+
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        spam = self.fh.readline()
         if spam:
             return S3HypSegEntry(spam)
         else:

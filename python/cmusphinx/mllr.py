@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
 Adapt acoustic models using maximum-likelihood linear regression.
 
@@ -16,27 +15,28 @@ TODO: Multiple regression classes.
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision $"
 
 import numpy as np
 
 import sys
-import s3gaucnt
-import s3gau
+from cmusphinx import s3gaucnt, s3gau
 import getopt
+
 
 def extend(mean):
     """
     Produce an "extended mean vector".
     """
-    return np.concatenate(((1,),mean))
+    return np.concatenate(((1, ), mean))
+
 
 def estimate_mllr_mean(stats, inmean, invar):
     """
     Estimate an MLLR transformation of the means based on observed
     statistics.
-    
+
     This function calculates an MLLR transformation W (an n by n+1
     matrix) for each feature stream which, when applied to C{inmean},
     maximizes the likelihood of the data as represented by C{stats}.
@@ -60,11 +60,11 @@ def estimate_mllr_mean(stats, inmean, invar):
     for i in range(0, inmean.n_feat):
         ndim = inmean.veclen[i]
         # Collection of G matrices
-        G = np.zeros((ndim, ndim+1, ndim+1))
+        G = np.zeros((ndim, ndim + 1, ndim + 1))
         # Z matrix (for the single class and stream)
-        Z = np.zeros((ndim, ndim+1))
+        Z = np.zeros((ndim, ndim + 1))
         # W matrix
-        W = np.zeros((ndim, ndim+1))
+        W = np.zeros((ndim, ndim + 1))
         # One-class MLLR: just sum over all densities
         for j in range(0, inmean.n_mgau):
             for k in range(0, inmean.density):
@@ -74,16 +74,16 @@ def estimate_mllr_mean(stats, inmean, invar):
                 invvar = invar[j][i][k]
                 if len(invvar.shape) > 1:
                     invvar = np.diag(invvar)
-                invvar = 1./invvar.clip(1e-5,np.inf)
+                invvar = 1. / invvar.clip(1e-5, np.inf)
                 # Sum of posteriors (i.e. sum_t L_m_r(t))
-                dnom = stats.dnom[j,i,k]
+                dnom = stats.dnom[j, i, k]
                 # Sum of mean statistics
                 obsmean = stats.mean[j][i][k]
-                for l in range(0, ndim):
+                for ll in range(0, ndim):
                     # v_{ll} = sum_t L(t) \Sigma_{ll}^{-1}
                     # D = \ksi \ksi^T
                     # G^{l} = v_{ll} D
-                    G[l] += dnom * invvar[l] * np.outer(xmean, xmean)
+                    G[ll] += dnom * invvar[ll] * np.outer(xmean, xmean)
                 # Z = \sum_r\sum_t L(t) \Sigma_r^{-1} o(t) \ksi_r^T
                 Z += np.outer(invvar * obsmean, xmean)
         # Now solve for the rows of W
@@ -92,7 +92,8 @@ def estimate_mllr_mean(stats, inmean, invar):
         Ws.append(W)
     return Ws
 
-def write_mllr(fout, Ws, Hs=None):
+
+def write_mllr(fh, Ws, Hs=None):
     """
     Write out MLLR transformations of the means in the format that
     Sphinx3 understands.
@@ -101,27 +102,23 @@ def write_mllr(fout, Ws, Hs=None):
     @ptype Ws: list(numpy.ndarray)
     @param Hs: MLLR transformations of variances, one per feature stream
     @ptype Hs: list(numpy.ndarray)
-    @param fout: Filename or filehandle to write to.
-    @ptype fout: string or file
+    @param fh: Text filehandle to write output to
+    @ptype fh: file-like object
     """
-    if isinstance(fout, file):
-        fh = fout
-    else:
-        fh = file(fout, 'w')
     # One-class MLLR for now
     fh.write("%d\n" % 1)
     fh.write("%d\n" % len(Ws))
-    for i,W in enumerate(Ws):
+    for i, W in enumerate(Ws):
         fh.write("%d\n" % W.shape[0])
         # Write rotation and bias terms separately
         for w in W:
             for x in w[1:]:
                 fh.write("%f " % x)
             fh.write("\n")
-        for x in W[:,0]:
+        for x in W[:, 0]:
             fh.write("%f " % x)
         fh.write("\n")
-        if Hs != None:
+        if Hs is not None:
             for x in Hs[i]:
                 fh.write("%f " % x)
             fh.write("\n")
@@ -129,18 +126,19 @@ def write_mllr(fout, Ws, Hs=None):
             fh.write("1.0 " * W.shape[0])
             fh.write("\n")
 
+
 def estimate_mllr_variance(stats, inmean, invar, Ws):
     """
     Estimate a diagonal MLLR transformation of the variances based on
     observed statistics.
-    
+
     This function calculates an MLLR transformation H (a diagonal nxn
     matrix, represented as a vector) which maximizes the likelihood of
     the data as represented by C{stats}, when applied to the inverse
     Cholesky factor of the covariance matrix B as B^T H B.  For
     diagonal covariances this reduces to a scaling of the variance by
     the diagonal of H, since the diagonal b = (sqrt(var^{-1}))^{-1} =
-    var^{0.5} and thus B^T H B = \Sigma H when \Sigma and H are
+    var^{0.5} and thus B^T H B = \\Sigma H when \\Sigma and H are
     diagonal.
 
     Note that this function will raise an exception if -2passvar yes
@@ -166,7 +164,8 @@ def estimate_mllr_variance(stats, inmean, invar, Ws):
     @rtype: list(numpy.ndarray)
     """
     if stats.pass2var:
-        raise RuntimeException, "Statistics using -2passvar yes are not allowed"
+        raise RuntimeError(
+            "Statistics using -2passvar yes are not allowed")
     Hs = []
     for i, W in enumerate(Ws):
         ndim = inmean.veclen[i]
@@ -181,7 +180,7 @@ def estimate_mllr_variance(stats, inmean, invar, Ws):
                 # Transform it
                 mean = np.dot(W, xmean)
                 # Cholesky factorization not needed for diagonals...
-                invvar = 1./invar[j][i][k].clip(1e-5,np.inf)
+                invvar = 1. / invar[j][i][k].clip(1e-5, np.inf)
                 if len(invvar.shape) > 1:
                     invvar = np.diag(invvar)
                 # Note: the code actually just computes diagonals
@@ -200,7 +199,9 @@ def estimate_mllr_variance(stats, inmean, invar, Ws):
         Hs.append(H / norm)
     return Hs
 
+
 if __name__ == '__main__':
+
     def usage():
         sys.stderr.write("Usage: %s INMEAN INVAR ACCUMDIRS...\n" % sys.argv[0])
 

@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 
 import numpy
 import sys
 import os
 import struct
-import s3mixw
-import sendump
+from cmusphinx import s3mixw, sendump
 import sphinxbase
+
 
 def mixw_kmeans_iter(lmw, cb):
     cbacc = numpy.zeros(len(cb))
@@ -24,6 +24,7 @@ def mixw_kmeans_iter(lmw, cb):
     cb[:] = cbacc / cbcnt
     return tdist
 
+
 def map_mixw_cb(mixw, cb, zero=0.0):
     n_sen, n_feat, n_gau = mixw.shape
     lmw = numpy.log(mixw)
@@ -31,14 +32,15 @@ def map_mixw_cb(mixw, cb, zero=0.0):
     for s in range(0, n_sen):
         for f in range(0, n_feat):
             for g in range(0, n_gau):
-                x = mixw[s,f,g]
+                x = mixw[s, f, g]
                 if x <= zero:
-                    mwmap[s,f,g] = len(cb)
+                    mwmap[s, f, g] = len(cb)
                 else:
-                    dist = (cb - lmw[s,f,g])
+                    dist = (cb - lmw[s, f, g])
                     dist *= dist
-                    mwmap[s,f,g] = dist.argmin()
+                    mwmap[s, f, g] = dist.argmin()
     return mwmap
+
 
 def mixw_freq(mixwmap):
     hist = numpy.zeros(mixwmap.max() + 1, 'i')
@@ -46,37 +48,41 @@ def mixw_freq(mixwmap):
         hist[cw] += 1
     return hist
 
+
 try:
     from qmwx import mixw_kmeans_iter, map_mixw_cb, mixw_freq
-except:
+except ImportError:
     pass
-    
+
+
 def quantize_mixw_kmeans(mixw, k, zero=0.0):
     mw = mixw.ravel()
     lmw = numpy.log(mw.take(numpy.greater(mw, zero).nonzero()[0]))
     mmw = lmw.min()
     xmw = lmw.max()
     rmw = xmw - mmw
-    print "min log mixw: %f range: %f" % (mmw, rmw)
+    print("min log mixw: %f range: %f" % (mmw, rmw))
     cb = numpy.random.random(k) * rmw + mmw
     pdist = 1e+50
-    for i in range(0,10):
+    for i in range(0, 10):
         tdist = mixw_kmeans_iter(lmw, cb)
         conv = (pdist - tdist) / pdist
-        print "Total distortion: %e convergence ratio: %e" % (tdist, conv)
+        print("Total distortion: %e convergence ratio: %e" % (tdist, conv))
         if conv < 0.01:
-            print "Training has converged, stopping"
+            print("Training has converged, stopping")
             break
         pdist = tdist
     return cb
 
+
 def hb_encode(mixw):
     comp = []
-    for i in range(0, len(mixw)-1, 2):
-        comp.append((mixw[i+1] << 4) | mixw[i])
+    for i in range(0, len(mixw) - 1, 2):
+        comp.append((mixw[i + 1] << 4) | mixw[i])
     if len(mixw) % 2:
         comp.append(mixw[-1])
     return comp
+
 
 fmtdesc3 = \
 """BEGIN FILE FORMAT DESCRIPTION
@@ -97,6 +103,7 @@ cluster_bits 4
 logbase 1.0001
 mixw_shift 10"""
 
+
 def write_sendump_hb(mixwmap, cb, outfile):
     n_sen, n_feat, n_gau = mixwmap.shape
     fh = open(outfile, "wb")
@@ -108,14 +115,16 @@ def write_sendump_hb(mixwmap, cb, outfile):
         fh.write('\0')
     fh.write(struct.pack('>I', 0))
     # Add one extra index to the end to hold the "zero" value
-    qcb = numpy.resize(-(cb / numpy.log(1.0001)).astype('i') >> 10, len(cb)+1)
+    qcb = numpy.resize(-(cb / numpy.log(1.0001)).astype('i') >> 10,
+                       len(cb) + 1)
     qcb[-1] = 159
     qcb.astype('uint8').tofile(fh)
     for f in range(0, n_feat):
         for g in range(0, n_gau):
-            mm = numpy.array(hb_encode(mixwmap[:,f,g]), 'uint8')
+            mm = numpy.array(hb_encode(mixwmap[:, f, g]), 'uint8')
             mm.tofile(fh)
     fh.close()
+
 
 fmtdesc4 = \
 """BEGIN FILE FORMAT DESCRIPTION
@@ -142,6 +151,7 @@ huffman_coded 1
 logbase 1.0001
 mixw_shift 10"""
 
+
 def write_sendump_huff(mixwmap, cb, outfile):
     n_sen, n_feat, n_gau = mixwmap.shape
     fh = open(outfile, "wb")
@@ -155,29 +165,31 @@ def write_sendump_huff(mixwmap, cb, outfile):
     fh.write(struct.pack('>I', 0))
     # If there's an extra "floor" value then add it to the codebook
     if mixwmap.max() == len(cb):
-        qcb = numpy.resize(-(cb / numpy.log(1.0001)).astype('i') >> 10, len(cb)+1)
+        qcb = numpy.resize(-(cb / numpy.log(1.0001)).astype('i') >> 10,
+                           len(cb) + 1)
         qcb[-1] = 159
     else:
-        qcb = numpy.resize(-(cb / numpy.log(1.0001)).astype('i') >> 10, len(cb))
+        qcb = numpy.resize(-(cb / numpy.log(1.0001)).astype('i') >> 10,
+                           len(cb))
     # Histogram the mixture weight map and build a Huffman codebook
     hist = mixw_freq(mixwmap)
     # Write the codebook (we code directly to quantized mixw values)
-    huff = sphinxbase.HuffCode(zip(qcb, hist))
+    huff = sphinxbase.HuffCode(list(zip(qcb, hist)))
     huff.write(fh)
     # Now Huffman code the mixture weights (not their codebook indices
     # mind you!) to the output file.
     huff.attach(fh, "wb")
     for f in range(0, n_feat):
         for g in range(0, n_gau):
-            syms = [qcb[x] for x in mixwmap[:,f,g]]
+            syms = [qcb[x] for x in mixwmap[:, f, g]]
             huff.encode_to_file(syms)
     huff.detach()
     fh.close()
 
 
-
 def norm_floor_mixw(mixw, floor=1e-7):
     return (mixw.T / mixw.T.sum(0)).T.clip(floor, 1.0)
+
 
 if __name__ == '__main__':
     ifn, ofn = sys.argv[1:]

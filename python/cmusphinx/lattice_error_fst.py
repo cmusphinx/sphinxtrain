@@ -4,36 +4,37 @@
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-
 """
 Find lattice word error rate using OpenFST.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
-
 
 import sys
 import os
 import re
 import openfst
-import fstutils
-import lattice
-import lat2fsg
-from itertools import izip
+from cmusphinx import fstutils, lattice, lat2fsg
+
 
 def is_filler(sym):
-    if sym == '<s>' or sym == '</s>': return False
-    return ((sym[0] == '<' and sym[-1] == '>') or
-            (sym[0] == '+' and sym[-1] == '+'))
+    if sym == '<s>' or sym == '</s>':
+        return False
+    return ((sym[0] == '<' and sym[-1] == '>')
+            or (sym[0] == '+' and sym[-1] == '+'))
+
 
 linere = re.compile(r"^\s*(?:<s>)?\s*([^(]+)(?:</s>)?\s*(?:\(([^)]+)\))\s*?")
+
+
 def get_utt(line):
     m = linere.match(line)
     if m:
         return m.groups()
     else:
         return (None, None)
+
 
 class LevenshteinModel(openfst.StdVectorFst):
     def __init__(self, symtab, scost=1, icost=1, dcost=1):
@@ -57,6 +58,7 @@ class LevenshteinModel(openfst.StdVectorFst):
                 self.AddArc(st, val, vv, scost, st)
         self.SetInputSymbols(symtab)
         self.SetOutputSymbols(symtab)
+
 
 class CompoundWordModel(openfst.StdVectorFst):
     def __init__(self, isyms, osyms):
@@ -91,25 +93,28 @@ class CompoundWordModel(openfst.StdVectorFst):
         self.SetInputSymbols(isyms)
         self.SetOutputSymbols(osyms)
 
+
 if __name__ == '__main__':
     from optparse import OptionParser
     parser = OptionParser(usage="%prog CTL REF LATDIR")
     parser.add_option("--prune", type="float")
     opts, args = parser.parse_args(sys.argv[1:])
-    
+
     ctl, ref, latdir = args
     ctl = open(ctl)
     ref = open(ref)
     wordcount = 0
     errcount = 0
-    for c,r in izip(ctl, ref):
+    for c, r in zip(ctl, ref):
         # Normalize reference, etc.
         ref, refid = get_utt(r)
         c = c.strip()
         r = ref.split()
-        if len(r) == 0 or r[0] != '<s>': r.insert(0, '<s>')
-        if r[-1] != '</s>': r.append('</s>')
-        r = filter(lambda x: not is_filler(x), r)
+        if len(r) == 0 or r[0] != '<s>':
+            r.insert(0, '<s>')
+        if r[-1] != '</s>':
+            r.append('</s>')
+        r = [x for x in r if not is_filler(x)]
         # Turn it into an FSM
         rfst = fstutils.sent2fst(r)
         # Get the hypothesis lattice
@@ -120,11 +125,13 @@ if __name__ == '__main__':
                 l = lattice.Dag(os.path.join(latdir, c + ".lat.gz"))
             except IOError:
                 l = lattice.Dag(htk_file=os.path.join(latdir, c + ".slf"))
-        if opts.prune != None:
+        if opts.prune is not None:
             l.posterior_prune(-opts.prune)
         # Convert it to an FSM
-        lfst = lat2fsg.build_lattice_fsg(l, rfst.OutputSymbols(),
-                                         addsyms=True, determinize=False,
+        lfst = lat2fsg.build_lattice_fsg(l,
+                                         rfst.OutputSymbols(),
+                                         addsyms=True,
+                                         determinize=False,
                                          baseword=lattice.baseword_noclass)
         openfst.ArcSortInput(lfst)
         # Apply Levenshtein model to the input
@@ -165,14 +172,14 @@ if __name__ == '__main__':
         nwords = len(r) - 2
         refid = '(%s)' % refid
         c = '(%s)' % c
-        print " ".join(["%*s" % (m, x[0]) for m, x in izip(maxlen, bt)]), refid
-        print " ".join(["%*s" % (m, x[1]) for m, x in izip(maxlen, bt)]), c
+        print(" ".join(["%*s" % (m, x[0]) for m, x in zip(maxlen, bt)]), refid)
+        print(" ".join(["%*s" % (m, x[1]) for m, x in zip(maxlen, bt)]), c)
         if nwords:
-            print "Error: %.2f%%" % (float(err) / nwords * 100)
+            print("Error: %.2f%%" % (float(err) / nwords * 100))
         else:
-            print "Error: %.2f%%" % (float(err) * 100)
-        print
+            print("Error: %.2f%%" % (float(err) * 100))
+        print()
         wordcount += nwords
         errcount += err
 
-    print "TOTAL Error: %.2f%%" % (float(errcount) / wordcount * 100)
+    print("TOTAL Error: %.2f%%" % (float(errcount) / wordcount * 100))

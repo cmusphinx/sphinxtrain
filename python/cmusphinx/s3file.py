@@ -10,18 +10,30 @@ by Sphinx-III and PocketSphinx share a common file format.  This
 module contains some base classes for reading and writing these files.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
 from struct import unpack, pack
-from numpy import array,reshape,shape,fromstring
+from numpy import reshape, shape, frombuffer
 
-class S3File(object):
+
+class S3File:
     "Read Sphinx-III binary files"
     def __init__(self, filename=None, mode="rb"):
-        if filename != None:
+        self.fh = None
+        if filename is not None:
             self.open(filename, mode)
 
+    def __del__(self):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.close()
+        return False
+    
     def getall(self):
         return self._params
 
@@ -42,39 +54,44 @@ class S3File(object):
 
     def open(self, filename, mode="rb"):
         self.filename = filename
-        self.fh = file(filename, mode)
+        self.fh = open(filename, mode)
         self.readheader()
+
+    def close(self):
+        if self.fh is not None:
+            self.fh.close()
+            self.fh = None
 
     def readheader(self):
         """
-	Read binary header.  Sets the following attributes:
+        Read binary header.  Sets the following attributes:
 
           - fileattr (a dictionary of attribute-value pairs)
           - swap (a byteswap string as used by the struct module)
           - otherend (a flag indicating if the file is wrong-endian
                   for the current platform)
           - data_start (offset of the start of data in the file)
-	"""
-	spam = self.fh.readline()
+        """
+        spam = self.fh.readline()
         self.fileattr = {}
-        if spam != "s3\n":
+        if spam != b"s3\n":
             raise Exception("File ID not found or invalid: " + spam)
         while True:
             spam = self.fh.readline()
-            if spam == "":
+            if spam == b"":
                 raise Exception("EOF while reading headers")
-            if spam.endswith("endhdr\n"):
+            if spam.endswith(b"endhdr\n"):
                 break
-            sp = spam.find(' ')
-            k = spam[0:sp].strip()
-            v = spam[sp:].strip()
+            sp = spam.find(b' ')
+            k = spam[0:sp].strip().decode('utf-8')
+            v = spam[sp:].strip().decode('utf-8')
             self.fileattr[k] = v
         # This is 0x11223344 in the file's byte order
         spam = unpack("<i", self.fh.read(4))[0]
         if spam == 0x11223344:
-            self.swap = "<" # little endian
+            self.swap = "<"  # little endian
         elif spam == 0x44332211:
-            self.swap = ">" # big endian
+            self.swap = ">"  # big endian
         else:
             raise Exception("Invalid byte-order mark %08x" % spam)
         # Now determine whether we need to swap to get to native
@@ -95,7 +112,7 @@ class S3File(object):
                              self.d1 * self.d2 * self.d3,
                              self.d1, self.d2, self.d3))
         spam = self.fh.read(self._nfloats * 4)
-        params = fromstring(spam, 'f')
+        params = frombuffer(spam, 'f').copy()
         if self.otherend:
             params = params.byteswap()
         return reshape(params, (self.d1, self.d2, self.d3)).astype('d')
@@ -112,7 +129,7 @@ class S3File(object):
                              self.d1 * self.d2,
                              self.d1, self.d2))
         spam = self.fh.read(self._nfloats * 4)
-        params = fromstring(spam, 'f')
+        params = frombuffer(spam, 'f').copy()
         if self.otherend:
             params = params.byteswap()
         return reshape(params, (self.d1, self.d2)).astype('d')
@@ -126,34 +143,51 @@ class S3File(object):
                             %
                             (self._nfloats, self.d1))
         spam = self.fh.read(self._nfloats * 4)
-        params = fromstring(spam, 'f')
+        params = frombuffer(spam, 'f').copy()
         if self.otherend:
             params = params.byteswap()
         return params.astype('d')
         
+
 class S3File_write:
     "Write Sphinx-III binary files"
-    def __init__(self, filename=None, mode="wb", attr={"version":1.0}):
+    def __init__(self, filename=None, mode="wb", attr={"version": "1.0"}):
+        self.fh = None
         self.fileattr = attr
-        if filename != None:
+        if filename is not None:
             self.open(filename)
 
     def open(self, filename):
         self.filename = filename
-        self.fh = file(filename, "wb")
+        self.fh = open(filename, "wb")
         self.writeheader()
 
+    def close(self):
+        if self.fh is not None:
+            self.fh.close()
+            self.fh = None
+
+    def __del__(self):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.close()
+        return False
+    
     def writeheader(self):
-        self.fh.write("s3\n")
-        for k,v in self.fileattr.iteritems():
-            self.fh.write("%s %s\n" % (k,v))
+        self.fh.write(b"s3\n")
+        for k, v in self.fileattr.items():
+            self.fh.write(("%s %s\n" % (k, v)).encode('utf-8'))
         # Make sure the binary data lives on a 4-byte boundary
-        lsb = (self.fh.tell() + len("endhdr\n")) & 3
+        lsb = (self.fh.tell() + len(b"endhdr\n")) & 3
         if lsb != 0:
             align = 4-lsb
-            self.fh.write("%sendhdr\n" % (" " * align))
+            self.fh.write(b"%sendhdr\n" % (b" " * align))
         else:
-            self.fh.write("endhdr\n")
+            self.fh.write(b"endhdr\n")
         self.fh.write(pack("=i", 0x11223344))
         self.data_start = self.fh.tell()
 
@@ -175,9 +209,3 @@ class S3File_write:
         d1 = len(stuff)
         self.fh.write(pack("=II", d1, d1))
         stuff.ravel().astype('f').tofile(self.fh)
-
-    def __del__(self):
-        self.close()
-
-    def close(self):
-        self.fh.close()

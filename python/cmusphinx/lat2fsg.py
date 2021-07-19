@@ -4,19 +4,19 @@
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-
 """
 Convert Sphinx lattices to finite state automata and grammars.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
 import openfst
-import lattice
+from . import lattice
 import math
 import sys
 import os
+
 
 def baseword(sym):
     """
@@ -28,24 +28,30 @@ def baseword(sym):
     else:
         return sym
 
+
 def realword(sym):
     """
     Test if a word is a real word (not silence or filler)
     """
-    if sym.lower() in ('<s>','<sil>','</s>'):
+    if sym.lower() in ('<s>', '<sil>', '</s>'):
         return False
     if sym.startswith("++"):
         return False
     return True
 
-def build_lattice_fsg(dag, syms=None, ascale=0, pscale=0,
-                      addsyms=False, determinize=True,
+
+def build_lattice_fsg(dag,
+                      syms=None,
+                      ascale=0,
+                      pscale=0,
+                      addsyms=False,
+                      determinize=True,
                       baseword=baseword):
     """
     Build an FSM from a Sphinx word lattice.
     """
     fst = openfst.StdVectorFst()
-    if syms == None:
+    if syms is None:
         fsgsyms = openfst.SymbolTable("words")
         fsgsyms.AddSymbol("&epsilon;")
         fsgsyms.AddSymbol("&sigma;")
@@ -55,7 +61,6 @@ def build_lattice_fsg(dag, syms=None, ascale=0, pscale=0,
     else:
         fsgsyms = syms
     statemap = {}
-    j = 0
     for n in dag.nodes:
         # Skip fillers as they have been "bypassed" by PocketSphinx
         if n.sym.startswith("++") or n.sym == "<sil>":
@@ -106,12 +111,11 @@ def build_lattice_fsg(dag, syms=None, ascale=0, pscale=0,
     fst.SetOutputSymbols(fsgsyms)
     return fst
 
+
 def build_fsg_fst(fst, outfile, name="fromfst"):
     """
     Build a Sphinx FSG from an FST.
     """
-    if not isinstance(outfile, file):
-        outfile = file(outfile, "w")
     outfile.write("FSG_BEGIN %s\n" % name)
     outfile.write("NUM_STATES %d\n" % fst.NumStates())
     outfile.write("START_STATE %d\n" % fst.Start())
@@ -121,23 +125,25 @@ def build_fsg_fst(fst, outfile, name="fromfst"):
         if fst.IsFinal(state):
             end = state
             break
-    if end == None:
-        raise RuntimeError, "No ending state in lattice, writing %s failed" % outfile
+    if end is None:
+        raise RuntimeError("No ending state in lattice, writing %s failed" %
+                           outfile)
     outfile.write("FINAL_STATE %d\n" % end)
     syms = fst.OutputSymbols()
     for state in fst:
         for arc in fst.iterarcs(state):
-            if arc.ilabel == 0 or syms.Find(arc.ilabel) in ('<s>','</s>'):
-                outfile.write("TRANSITION %d %d %g\n"
-                              % (state, arc.nextstate,
-                                 math.exp(-arc.weight.Value())))
+            if arc.ilabel == 0 or syms.Find(arc.ilabel) in ('<s>', '</s>'):
+                outfile.write(
+                    "TRANSITION %d %d %g\n" %
+                    (state, arc.nextstate, math.exp(-arc.weight.Value())))
             else:
-                outfile.write("TRANSITION %d %d %g %s\n"
-                              % (state, arc.nextstate,
-                                 math.exp(-arc.weight.Value()),
-                                 syms.Find(arc.ilabel)))
+                outfile.write(
+                    "TRANSITION %d %d %g %s\n" %
+                    (state, arc.nextstate, math.exp(-arc.weight.Value()),
+                     syms.Find(arc.ilabel)))
     outfile.write("FSG_END\n")
     outfile.flush()
+
 
 def lat2fsg(lat, fsgfile, lmfst, prune=15):
     if isinstance(lat, str):
@@ -165,15 +171,18 @@ def lat2fsg(lat, fsgfile, lmfst, prune=15):
     build_fsg_fst(outfst, fsgfile)
     return outfst
 
+
 def apply_errfst(fst, errfst):
     sigma = errfst.InputSymbols().Find("&sigma;")
     opts = openfst.StdSigmaComposeOptions()
     opts.matcher1 = openfst.StdSigmaMatcher(fst, openfst.MATCH_NONE)
-    opts.matcher2 = openfst.StdSigmaMatcher(errfst, openfst.MATCH_INPUT, sigma, True)
+    opts.matcher2 = openfst.StdSigmaMatcher(errfst, openfst.MATCH_INPUT, sigma,
+                                            True)
     cfst = openfst.StdComposeFst(fst, errfst, opts)
     cfst = openfst.StdVectorFst(cfst)
     openfst.ProjectOutput(cfst)
     return cfst
+
 
 def lat2fsg_posterior(lat, fsgfile, prune=5, errfst=None):
     if isinstance(lat, str):
@@ -186,13 +195,17 @@ def lat2fsg_posterior(lat, fsgfile, prune=5, errfst=None):
     dag.posterior_prune(-prune)
     fst = build_lattice_fsg(dag, pscale=1)
     if errfst:
-        fst = build_lattice_fsg(dag, errfst.InputSymbols(), pscale=1, addsyms=True)
+        fst = build_lattice_fsg(dag,
+                                errfst.InputSymbols(),
+                                pscale=1,
+                                addsyms=True)
         errfst.SetOutputSymbols(errfst.InputSymbols())
         fst = apply_errfst(fst, errfst)
     else:
         fst = build_lattice_fsg(dag, pscale=1)
     build_fsg_fst(fst, fsgfile)
     return fst
+
 
 def lat2flat(latfile, fsgfile, lmfst):
     """
@@ -230,6 +243,7 @@ def lat2flat(latfile, fsgfile, lmfst):
     build_fsg_fst(outfst, fsgfile)
     return outfst
 
+
 if __name__ == '__main__':
     from optparse import OptionParser
     parser = OptionParser(usage="%prog CTL LATDIR")
@@ -250,14 +264,15 @@ if __name__ == '__main__':
                 arc = ai.Value()
                 if arc.ilabel == sigma:
                     continue
-                ai.SetValue(openfst.StdArc(arc.ilabel, arc.olabel, 
-                                           arc.weight.Value() + opts.errpen,
-                                           arc.nextstate))
+                ai.SetValue(
+                    openfst.StdArc(arc.ilabel, arc.olabel,
+                                   arc.weight.Value() + opts.errpen,
+                                   arc.nextstate))
         openfst.ArcSortInput(errfst)
-    if opts.outext == None:
+    if opts.outext is None:
         opts.outext = ".fsg%d" % opts.prune
-    for spam in file(ctlfile):
+    for spam in open(ctlfile):
         latfile = os.path.join(latdir, spam.strip() + ".slf")
         fsgfile = os.path.join(latdir, spam.strip() + opts.outext)
-        print spam,
+        print(spam, end=' ')
         ofst = lat2fsg_posterior(latfile, fsgfile, opts.prune, errfst)
