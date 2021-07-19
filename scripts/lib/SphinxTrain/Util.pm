@@ -343,7 +343,7 @@ sub RunTool {
 
   if ($pid == 0) {
       open STDERR, ">&STDOUT";
-      exec $cmd, @args;
+      exec $cmd, @args or print STDERR "ERROR: Cannot exec '$cmd': $!\n";
   }
   else {
     while (<$pipe>) {
