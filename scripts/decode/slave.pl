@@ -106,9 +106,9 @@ sub condition_text {
 
   while (<IN>) {
     m/^(.*)\((\S+)\)\s*$/;
-# Make them uppercase
-    my $text = uc($1);
-    my $id = uc($2);
+# We no longer uppercase these by default
+    my $text = $1;
+    my $id = $2;
 # Removing leading spaces
     $text =~ s/^\s+//;
 # Removing trailing spaces

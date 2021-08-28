@@ -88,7 +88,7 @@ my %phonelist_hash;
 	    my $phonetic = $2;
 	    my @phones = ($phonetic =~ m/(\S+)/g);
 	    for my $phone (@phones) {
-		$dict_phone_hash{uc($phone)}++;
+		$dict_phone_hash{$phone}++;
 	    }
 	}
 	$counter++;
