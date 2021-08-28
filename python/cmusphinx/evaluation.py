@@ -14,6 +14,8 @@ import re
 import os
 
 linere = re.compile(r"^\s*(?:<s>)?\s*([^(]+?)(?:</s>)?\s*(?:\(([^\)\s]+)\s*([^\)]+)?\))\s*?")
+
+
 def parse_hyp(line):
     """
     Parse a hypothesis file string into text, utterance ID, and
@@ -27,7 +29,7 @@ def parse_hyp(line):
     m = linere.match(line)
     if m:
         text, uttid, score = m.groups()
-        if score == None:
+        if score is None:
             score = 0
         else:
             score = int(score)
@@ -35,30 +37,30 @@ def parse_hyp(line):
     else:
         return (None, None, 0)
 
-def hypfile(infile):
+
+def hypfile(infh):
     """
     Iterate over hypotheses in a decoder hypothesis file.
 
-    @param infile: File to iterate over.
-    @type infile: file or str
+    @param infh: File to iterate over.
+    @type infh: file-like object
     @return: Generator over (hyp, uttid, score) tuples
     @rtype: generator(str, str, int)
     """
-    if isinstance(infile, file):
-        infh = infile
-    else:
-        infh = file(infile)
     while True:
         hyp = infh.readline()
         if hyp == "":
             break
         yield parse_hyp(hyp)
 
+
 countre = re.compile(r"(?:Words|Phones): (\S+) Correct: (\S+) Errors: (\S+) "
-                     "Percent correct = (\S+)% Error = (\S+)% Accuracy = (\S+)%")
+                     r"Percent correct = (\S+)% Error = (\S+)% Accuracy = (\S+)%")
 errtre = re.compile(r"Insertions: (\S+) Deletions: (\S+) Substitutions: (\S+)")
 totalre = re.compile(r"TOTAL (?:Words|Phones)")
-def alignfile(infile):
+
+
+def alignfile(infh):
     """
     Iterate over alignments in the output of word_align.pl.
 
@@ -79,15 +81,11 @@ def alignfile(infile):
        - deletions: Number of deletions
        - substitutions: Number of substitutions
 
-    @param infile: File to iterate over.
-    @type infile: file or str
+    @param infh: File to iterate over.
+    @type infh: file-like object
     @return: Generator over (ref, hyp, info) tuples
     @rtype: generator(str, str, dict)
     """
-    if isinstance(infile, file):
-        infh = infile
-    else:
-        infh = file(infile)
     while True:
         ref = infh.readline()
         if ref == "":
@@ -106,14 +104,17 @@ def alignfile(infile):
         info = {}
         m = countre.match(counts)
         info['words'], info['correct'], info['errors'], \
-                       info['%correct'], info['%error'], info['%accuracy'] \
-                       = [float(x) for x in m.groups()]
+            info['%correct'], info['%error'], info['%accuracy'] \
+            = [float(x) for x in m.groups()]
         m = errtre.match(errtypes)
         info['insertions'], info['deletions'], info['substitutions'] \
-                            = [float(x) for x in m.groups()]
+            = [float(x) for x in m.groups()]
         yield ref, hyp, info
 
+
 alignre = re.compile(r"TOTAL Percent correct.*Error(?: =|:) (\S+)%")
+
+
 def get_error_rates(alignfiles, xtransform=os.path.basename):
     """
     Retrieve error rates from a sequence or set of alignment files.
@@ -123,7 +124,7 @@ def get_error_rates(alignfiles, xtransform=os.path.basename):
     x = []
     y = []
     for f in alignfiles:
-        for spam in file(f):
+        for spam in open(f):
             m = alignre.match(spam)
             if m:
                 x.append(xtransform(f))

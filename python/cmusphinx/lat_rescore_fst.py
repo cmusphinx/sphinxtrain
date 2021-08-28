@@ -4,27 +4,24 @@
 #
 # You may copy and modify this freely under the same terms as
 # Sphinx-III
-
 """
 Rescore a lattice using a language model FST (or a set of them).
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision $"
 
-
 import openfst
-import lattice
-import lat2fsg
-import math
+from cmusphinx import lattice, lat2fsg
 import sys
 import os
+
 
 def lat_rescore(dag, lmfst, lw=9.5):
     """
     Rescore a lattice using a language model FST.
     """
-    fst = lat2fsg.build_lattice_fsg(dag, lmfst.InputSymbols(), 1./lw)
+    fst = lat2fsg.build_lattice_fsg(dag, lmfst.InputSymbols(), 1. / lw)
     phi = lmfst.InputSymbols().Find("&phi;")
     if phi != -1:
         opts = openfst.StdPhiComposeOptions()
@@ -46,6 +43,7 @@ def lat_rescore(dag, lmfst, lw=9.5):
         st = a.nextstate
     return words, score
 
+
 if __name__ == '__main__':
     from optparse import OptionParser
     parser = OptionParser(usage="%prog CTL LATDIR [LMFST]")
@@ -58,16 +56,16 @@ if __name__ == '__main__':
         lmfst = openfst.StdVectorFst.Read(args[2])
         lmnamectl = None
     elif opts.lmnamectl:
-        lmnamectl = file(opts.lmnamectl)
+        lmnamectl = open(opts.lmnamectl)
         lmfsts = {}
     else:
         parser.error("either --lmnamectl or LMFST must be given")
-    for spam in file(ctlfile):
+    for spam in open(ctlfile):
         if lmnamectl:
             lmname = lmnamectl.readline().strip()
             if lmname not in lmfsts:
-                lmfsts[lmname] = openfst.StdVectorFst.Read(os.path.join(opts.lmdir,
-                                                                        lmname + ".arpa.fst"))
+                lmfsts[lmname] = openfst.StdVectorFst.Read(
+                    os.path.join(opts.lmdir, lmname + ".arpa.fst"))
             lmfst = lmfsts[lmname]
         try:
             dag = lattice.Dag(os.path.join(latdir, spam.strip() + ".lat.gz"))
@@ -75,6 +73,8 @@ if __name__ == '__main__':
             try:
                 dag = lattice.Dag(os.path.join(latdir, spam.strip() + ".lat"))
             except IOError:
-                dag = lattice.Dag(htk_file=os.path.join(latdir, spam.strip() + ".slf"))
+                dag = lattice.Dag(
+                    htk_file=os.path.join(latdir,
+                                          spam.strip() + ".slf"))
         words, score = lat_rescore(dag, lmfst, opts.lw)
-        print " ".join(words), "(%s %f)" % (spam.strip(), score)
+        print(" ".join(words), "(%s %f)" % (spam.strip(), score))

@@ -9,24 +9,26 @@ This module reads and writes the Gaussian mixture weight files used by
 SphinxTrain, Sphinx-III, and PocketSphinx.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
-from s3file import S3File, S3File_write
+from .s3file import S3File, S3File_write
 import os
+
 
 def open(filename, mode="rb"):
     if mode in ("r", "rb"):
-        return S3MixwFile(filename, mode)
+        return S3MixwFile(filename)
     elif mode in ("w", "wb"):
-        return S3MixwFile_write(filename, mode)
+        return S3MixwFile_write(filename)
     else:
-        raise Exception, "mode must be 'r', 'rb', 'w', or 'wb'"
+        raise Exception("mode must be 'r', 'rb', 'w', or 'wb'")
+
 
 class S3MixwFile(S3File):
     "Read Sphinx-III format mixture weight files"
-    def __init__(self, file, mode):
-        S3File.__init__(self, file, mode)
+    def __init__(self, filename, mode="rb"):
+        super().__init__(filename=filename, mode=mode)
         self._params = self._load()
 
     def readgauheader(self):
@@ -39,11 +41,13 @@ class S3MixwFile(S3File):
         self.fh.seek(self.data_start, 0)
         return self.read3d()
 
+
 class S3MixwFile_write(S3File_write):
     "Write Sphinx-III format mixture weight files"
 
     def writeall(self, stuff):
         self.write3d(stuff)
+
 
 def accumdirs(accumdirs):
     "Read and accumulate counts from several directories"
@@ -51,10 +55,10 @@ def accumdirs(accumdirs):
     for d in accumdirs:
         try:
             submixw = S3MixwFile(os.path.join(d, "mixw_counts"), "rb")
-        except:
+        except OSError:
             submixw = None
             continue
-        if mixw == None:
+        if mixw is None:
             mixw = submixw
         else:
             mixw._params += submixw._params

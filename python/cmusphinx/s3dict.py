@@ -9,22 +9,30 @@ This module reads and writes the text format dictionary files used by
 SphinxTrain, Sphinx-III, and PocketSphinx.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision $"
 
 from collections import defaultdict
 from itertools import chain
 import re
+import io
 
-def open(file, *args, **kwargs):
-    return S3Dict(file, *args, **kwargs)
+
+def open(filename, *args, **kwargs):
+    with io.open(filename) as fh:
+        return S3Dict(fh, *args, **kwargs)
+
 
 altre = re.compile(r'(.*)\(([^\)]+)\)')
+tagre = re.compile(r':[^\(]+')
+
+
 def word_to_str(w):
     if w[1] == 1:
         return w[0]
     else:
         return "%s(%d)" % w
+
 
 def str_to_word(w):
     m = altre.match(w)
@@ -34,18 +42,18 @@ def str_to_word(w):
     else:
         return w, 1
 
-tagre = re.compile(r':[^\(]+')
 
 class S3Dict(dict):
     """
     Class for reading / processing Sphinx format dictionary files.
     """
-    def __init__(self, infile=None, preserve_alts=False, strip_classtags=False):
+    def __init__(self, infile=None, preserve_alts=False,
+                 strip_classtags=False):
         self.preserve_alts = preserve_alts
         self.strip_classtags = strip_classtags
         self.phoneset = defaultdict(int)
         self.maxalt = defaultdict(int)
-        if infile != None:
+        if infile is not None:
             self.read(infile)
 
     def __contains__(self, key):
@@ -70,14 +78,10 @@ class S3Dict(dict):
             w, p = key
             self.set_alt_phones(w, p, val)
 
-    def read(self, infile):
+    def read(self, fh):
         """
         Read dictionary from a file.
         """
-        if isinstance(infile, file):
-            fh = infile
-        else:
-            fh = file(infile)
         for line in fh:
             line = line.strip()
             # Skip any comment lines as in cmudict source
@@ -85,22 +89,21 @@ class S3Dict(dict):
                 continue
             if line.startswith(';;'):
                 continue
+            # And blank lines
+            if line == "":
+                continue
             spam = line.split()
-            word = unicode(spam[0], 'utf8')
+            word = spam[0]
             if self.strip_classtags:
                 word = self.tagre.sub("", word)
             phones = spam[1:]
             self[word] = phones
-                
-    def write(self, outfile):
+
+    def write(self, fh):
         """
         Write dictionary to a file.
         """
-        if isinstance(outfile, file):
-            fh = outfile
-        else:
-            fh = file(outfile, 'w')
-        wlist = self.keys()
+        wlist = list(self.keys())
         wlist.sort()
         for k in wlist:
             word = word_to_str(k)
@@ -126,7 +129,8 @@ class S3Dict(dict):
         if not dict.__contains__(self, (word, 1)):
             raise KeyError
         elif not dict.__contains__(self, (word, alt)):
-            raise IndexError, "Alternate pronunciation index %d does not exist" % alt
+            raise IndexError("Alternate pronunciation index %d does not exist"
+                             % alt)
         return dict.__getitem__(self, (word, alt))
 
     def set_phones(self, word, phones):
@@ -136,7 +140,7 @@ class S3Dict(dict):
         dict.__setitem__(self, (word, 1), phones)
         self.maxalt[word] = 1
         for ph in phones:
-            self.phoneset[ph] += 1 # FIXME: should make a class for this
+            self.phoneset[ph] += 1  # FIXME: should make a class for this
 
     def set_alt_phones(self, word, alt, phones):
         """
@@ -147,7 +151,7 @@ class S3Dict(dict):
 
         """
         if alt > self.maxalt[word] + 1:
-            raise IndexError, "Alternate pronunciation index %d too high" % alt
+            raise IndexError("Alternate pronunciation index %d too high" % alt)
         dict.__setitem__(self, (word, alt), phones)
         self.maxalt[word] = max(alt, self.maxalt[word])
         for ph in phones:
@@ -175,10 +179,11 @@ class S3Dict(dict):
 
         """
         if not dict.__contains__(self, (word, alt)):
-            raise IndexError, "Alternate pronunciation index %d does not exist" % alt
+            raise IndexError("Alternate pronunciation index %d does not exist"
+                             % alt)
         for ph in self[word, alt]:
             self.phoneset[ph] -= 1
-            if self.phoneset[ph] == 0: # FIXME: make a class
+            if self.phoneset[ph] == 0:  # FIXME: make a class
                 del self.phoneset[ph]
         del self[word, alt]
         if alt == self.maxalt[word]:
@@ -186,7 +191,7 @@ class S3Dict(dict):
         if not self.preserve_alts:
             alts = []
             for i in range(1, self.maxalt[word] + 1):
-                if (word,i) in self:
+                if (word, i) in self:
                     alts.append(dict.__getitem__(self, (word, i)))
                     del self[word, i]
             self.del_phones(word)
@@ -204,9 +209,9 @@ class S3Dict(dict):
         """
         for i in range(1, self.maxalt[word] + 1):
             if dict.__contains__(self, (word, i)):
-                for ph in self[word,i]:
+                for ph in self[word, i]:
                     self.phoneset[ph] -= 1
-                    if self.phoneset[ph] == 0: # FIXME: make a class
+                    if self.phoneset[ph] == 0:  # FIXME: make a class
                         del self.phoneset[ph]
                 dict.__delitem__(self, (word, i))
         del self.maxalt[word]
@@ -215,7 +220,7 @@ class S3Dict(dict):
         """
         Iterate over base words in this dictionary.
         """
-        for word,alt in self:
+        for word, alt in self:
             if alt == 1:
                 yield word
 
@@ -224,8 +229,9 @@ class S3Dict(dict):
         Iterate over alternative pronunciations for a word.
         """
         for i in range(1, self.maxalt[word] + 1):
-            if (word,i) in self:
-                yield self[word,i]
+            if (word, i) in self:
+                yield self[word, i]
+
 
 def copy(self, other, w):
     """
@@ -233,6 +239,7 @@ def copy(self, other, w):
     """
     for phones in other.alts(w):
         self.add_alt_phones(w, phones)
+
 
 def union(self, other):
     """
@@ -244,7 +251,7 @@ def union(self, other):
     will not be preserved, however, the default pronunciation in the
     output is guaranteed to be the default pronunciation in self.
     """
-    
+
     newdict = self.__class__()
     sw = set(self.words())
     ow = set(other.words())
@@ -267,6 +274,7 @@ def union(self, other):
         for phones in prons:
             newdict.add_alt_phones(w, list(phones))
     return newdict
+
 
 def convert_to_40(d):
     badalts = []
@@ -304,4 +312,4 @@ def convert_to_40(d):
                     j += 1
         badalts.extend(baw[::-1])
     for w, i in badalts:
-        d.del_alt_phones(w, i)    
+        d.del_alt_phones(w, i)

@@ -9,11 +9,11 @@
 FST utility functions
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision $"
 
 import sphinxbase
-import fstutils
+from . import fstutils
 import openfst
 import sys
 

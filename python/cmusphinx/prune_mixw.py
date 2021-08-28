@@ -3,10 +3,12 @@
 import sys
 import numpy
 import struct
-import s3mixw
+from cmusphinx import s3mixw
+
 
 def perplexity(dist):
     return numpy.exp(-(dist * numpy.log(dist)).sum())
+
 
 def prune_mixw_entropy(mixw, avgn):
     # Calculate average entropy
@@ -22,19 +24,23 @@ def prune_mixw_entropy(mixw, avgn):
     avgtop = 0
     mintop = 999
     maxtop = 0
-    histo = numpy.zeros(len(mixw[0,0]),'i')
+    histo = numpy.zeros(len(mixw[0, 0]), 'i')
     for m in mixw:
         for f in m:
             pplx = perplexity(f)
             top = round(pplx * scale)
-            if top < len(f): histo[top] += 1
+            if top < len(f):
+                histo[top] += 1
             avgtop += top
-            if top < mintop: mintop = top
-            if top > maxtop: maxtop = top
+            if top < mintop:
+                mintop = top
+            if top > maxtop:
+                maxtop = top
             f.put(f.argsort()[:-top], 0)
-    print "Average #mixw: %.2f" % (float(avgtop) / count)
-    print "Min #mixw: %d Max #mixw: %d" % (mintop, maxtop)
+    print("Average #mixw: %.2f" % (float(avgtop) / count))
+    print("Min #mixw: %d Max #mixw: %d" % (mintop, maxtop))
     return histo
+
 
 def prune_mixw_entropy_min(mixw, avgn, minn):
     # Calculate average entropy
@@ -50,25 +56,31 @@ def prune_mixw_entropy_min(mixw, avgn, minn):
     avgtop = 0
     mintop = 999
     maxtop = 0
-    histo = numpy.zeros(len(mixw[0,0]),'i')
+    histo = numpy.zeros(len(mixw[0, 0]), 'i')
     for m in mixw:
         for f in m:
             pplx = perplexity(f)
             top = round(pplx * scale)
-            if top < minn: top = minn
-            elif top >= len(f): top = len(f)-1
-            else: histo[top] += 1
+            if top < minn:
+                top = minn
+            elif top >= len(f):
+                top = len(f) - 1
+            else:
+                histo[top] += 1
             avgtop += top
-            if top < mintop: mintop = top
-            if top > maxtop: maxtop = top
+            if top < mintop:
+                mintop = top
+            if top > maxtop:
+                maxtop = top
             f.put(f.argsort()[:-top], 0)
-    print "Average #mixw: %.2f" % (float(avgtop) / count)
-    print "Min #mixw: %d Max #mixw: %d" % (mintop, maxtop)
+    print("Average #mixw: %.2f" % (float(avgtop) / count))
+    print("Min #mixw: %d Max #mixw: %d" % (mintop, maxtop))
     return histo
+
 
 def prune_mixw_pplx_hist(mixw):
     # Calculate perplexity histogram
-    histo = numpy.zeros(len(mixw[0,0]),'i')
+    histo = numpy.zeros(len(mixw[0, 0]), 'i')
     for m in mixw:
         for f in m:
             pplx = perplexity(f)
@@ -82,41 +94,50 @@ def prune_mixw_pplx_hist(mixw):
         for f in m:
             top = round(perplexity(f))
             avgtop += top
-            if top < minn: top = minn
-            if top < mintop: mintop = top
-            if top > maxtop: maxtop = top
+            if top < minn:
+                top = minn
+            if top < mintop:
+                mintop = top
+            if top > maxtop:
+                maxtop = top
             f.put(f.argsort()[:-top], 0)
     count = mixw.shape[0] * mixw.shape[1]
-    print "Average #mixw: %.2f" % (float(avgtop) / count)
-    print "Min #mixw: %d Max #mixw: %d" % (mintop, maxtop)
+    print("Average #mixw: %.2f" % (float(avgtop) / count))
+    print("Min #mixw: %d Max #mixw: %d" % (mintop, maxtop))
     return histo
+
 
 def prune_mixw_topn(mixw, n):
     for m in mixw:
         for f in m:
             f.put(f.argsort()[:-n], 0)
 
+
 def prune_mixw_thresh(mixw, thresh):
     avgtop = 0
     mintop = 999
     maxtop = 0
-    histo = numpy.zeros(len(mixw[0,0]),'i')
+    histo = numpy.zeros(len(mixw[0, 0]), 'i')
     for m in mixw:
         for f in m:
             toprune = numpy.less(f, thresh).nonzero()[0]
             top = len(f) - len(toprune)
             histo[top] += 1
             avgtop += top
-            if top < mintop: mintop = top
-            if top > maxtop: maxtop = top
+            if top < mintop:
+                mintop = top
+            if top > maxtop:
+                maxtop = top
             f.put(toprune, 0)
     count = mixw.shape[0] * mixw.shape[1]
-    print "Average #mixw: %.2f" % (float(avgtop) / count)
-    print "Min #mixw: %d Max #mixw: %d" % (mintop, maxtop)
+    print("Average #mixw: %.2f" % (float(avgtop) / count))
+    print("Min #mixw: %d Max #mixw: %d" % (mintop, maxtop))
     return histo
+
 
 def norm_floor_mixw(mixw, floor=1e-7):
     return (mixw.T / mixw.T.sum(0)).T.clip(floor, 1.0)
+
 
 fmtdesc = \
 """BEGIN FILE FORMAT DESCRIPTION
@@ -134,6 +155,7 @@ cluster_count 0
 logbase 1.0001
 codebook_count 1
 feature_count %d"""
+
 
 def write_sendump(mixw, outfile, floor=1e-7):
     n_sen, n_feat, n_gau = mixw.shape
@@ -160,16 +182,17 @@ def write_sendump(mixw, outfile, floor=1e-7):
         # Assume they are already normalized and floored
         qmixw = (-numpy.log(mixw) / numpy.log(1.0001)).astype('i') >> 10
     else:
-        qmixw = (-numpy.log(norm_floor_mixw(mixw, floor))
-                 / numpy.log(1.0001)).astype('i') >> 10
+        qmixw = (-numpy.log(norm_floor_mixw(mixw, floor)) /
+                 numpy.log(1.0001)).astype('i') >> 10
     qmixw = qmixw.clip(0, 159).astype('uint8')
     for f in range(0, n_feat):
         for d in range(0, n_gau):
-            qmixw[:,f,d].tofile(fh)
+            qmixw[:, f, d].tofile(fh)
             # Align it to 4 byte boundary (why?)
             if aligned_n_sen > n_sen:
                 fh.write('\0' * (aligned_n_sen - n_sen))
     fh.close()
+
 
 if __name__ == '__main__':
     ifn, ofn, tmw, mmw = sys.argv[1:]

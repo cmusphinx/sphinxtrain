@@ -9,7 +9,7 @@ This module provides a class for reading, writing, and using ARPA
 format statistical language model files.
 """
 
-__author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
+__author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
 from collections import defaultdict
@@ -52,22 +52,22 @@ class SphinxLMCtl(object):
                 for x in spam.strip().split():
                     yield x
         def fail(msg):
-            raise RuntimeError, msg
+            raise RuntimeError(msg)
         t = tokenize()
-        if t.next() != '{':
+        if next(t) != '{':
             fail("Expected {")
-        self.probdeffile = os.path.join(self.basedir, t.next())
-        if t.next() != '}':
+        self.probdeffile = os.path.join(self.basedir, next(t))
+        if next(t) != '}':
             fail("Expected }")
         while True:
             try:
-                arpafile = t.next()
-                lmname = t.next()
+                arpafile = next(t)
+                lmname = next(t)
                 self.lmfiles[lmname] = os.path.join(self.basedir, arpafile)
-                if t.next() != '{':
+                if next(t) != '{':
                     fail("Expected {")
                 while True:
-                    classname = t.next()
+                    classname = next(t)
                     if classname == '}':
                         break
                     self.classes[lmname].append(classname)
@@ -143,7 +143,7 @@ class SphinxProbdef(object):
         Normalize probabilities.
         """
         for c in self.classes:
-            t = sum(self.classes[c].itervalues())
+            t = sum(self.classes[c].values())
             if t != 0:
                 for w in self.classes[c]:
                     self.classes[c][w] /= t
@@ -167,36 +167,41 @@ class ArpaLM(object):
             self.log_prob = log_prob
             self.log_bowt = log_bowt
 
-    def __init__(self, path=None, lw=1.0, wip=1.0):
+    def __init__(self, path=None, lw=1.0, wip=1.0, encoding='utf-8'):
         """
         Initialize an ArpaLM object.
 
         @param path: Path to an ARPA format file to (optionally) load
                      language model from.  This file can be
                      gzip-compressed if you like.
-        @type path: string
+        @type path: str
+        @param encoding: Encoding for text.
+        @type encoding: str
         """
         if path != None:
-            self.read(path)
+            self.read(path, encoding=encoding)
         self.lw = lw
         self.wip = wip
         self.log_wip = numpy.log(wip)
 
-    def read(self, path):
+    def read(self, path, encoding='utf-8'):
         """
         Load an ARPA format language model from a file in its entirety.
 
         @param path: Path to an ARPA format file to (optionally) load
                      language model from.  This file can be
-                     gzip-compressed if you like.
-        @type path: string
+                     gzip-compressed if you like. Text is assumed to be
+                     in UTF-8 unless encoding is given.
+        @type path: str
+        @param encoding: Encoding for text.
+        @type encoding: str
         """
         try:
-            fh = gzip.open(path)
+            fh = gzip.open(path, "rt")
             fh.readline()
-            fh.seek(0,0)
-        except:
-            fh = file(path)
+            fh.seek(0, 0)
+        except gzip.BadGzipFile:
+            fh = open(path, "rt")
         # Skip header
         while True:
             spam = fh.readline().rstrip()
@@ -212,7 +217,7 @@ class ArpaLM(object):
                 break
             m = r.match(spam)
             if m != None:
-                n, c = map(int, m.groups())
+                n, c = list(map(int, m.groups()))
                 self.ng_counts[n] = c
 
         # Word and N-Gram to ID mapping
@@ -228,7 +233,7 @@ class ArpaLM(object):
         # Read unigrams and create word id list
         spam = fh.readline().rstrip()
         if spam != "\\1-grams:":
-            raise Exception, "1-grams marker not found"
+            raise Exception("1-grams marker not found")
         # ID to word mapping
         self.widmap = []
         wordid = 0
@@ -268,7 +273,7 @@ class ArpaLM(object):
                     ng = tuple(spam[1:])
                     b = 0.0
                 else:
-                    raise RuntimeError, "Found %d-gram in %d-gram section" % (len(spam)-1, n)
+                    raise RuntimeError("Found %d-gram in %d-gram section" % (len(spam)-1, n))
                 # N-Gram info
                 self.ngrams[n-1][ngramid,:] = p, b
                 self.ngmap[n-1][ng] = ngramid
@@ -289,25 +294,29 @@ class ArpaLM(object):
         """
         return len(self.ngmap)
 
-    def save(self, path):
+    def save(self, path, encoding='utf-8'):
         """
         Save an ARPA format language model to a file.
 
         @param path: Path to save the file to.  If this ends in '.gz',
-                     the file contents will be gzip-compressed.
+                     the file contents will be gzip-compressed.  Text
+                     will be encoded in UTF-8 unless
+                     encoding is specified.
         @type path: string
+        @param encoding: Encoding for text.
+        @type encoding: str
         """
         if path.endswith('.gz'):
-            fh = gzip.open(path, 'w')
+            fh = gzip.open(path, 'wt')
         else:
-            fh = open(path, 'w')
+            fh = open(path, 'wt')
         fh.write("# Written by arpalm.py\n")
         fh.write("\\data\\\n")
         for n in range(1, self.n+1):
             fh.write("ngram %d=%d\n" % (n, self.ng_counts[n]))
         for n in range(1, self.n+1):
             fh.write("\n\\%d-grams:\n" % n)
-            ngrams = self.ngmap[n-1].keys()
+            ngrams = list(self.ngmap[n-1].keys())
             ngrams.sort()
             if '<UNK>' in self.ngmap[n-1]:
                 ngid = self.ngmap[n-1]['<UNK>']
@@ -356,7 +365,7 @@ class ArpaLM(object):
         @return: Iterator over N-Grams
         @rtype: generator(NGram)
         """
-        for ng, ngid in self.ngmap[m].iteritems():
+        for ng, ngid in self.ngmap[m].items():
             if isinstance(ng, str):
                 ng = (ng,)
             yield self.NGram(ng, *self.ngrams[m][ngid,:])
@@ -418,7 +427,7 @@ class ArpaLM(object):
                 # Use <UNK>
                 return self.ngrams[0][self.ngmap[0]['<UNK>']][0]
             else:
-                raise IndexError, "Unknown unigram %s" % syms[0]
+                raise IndexError("Unknown unigram %s" % syms[0])
         else:
             # Forward N-gram (since syms is reversed)
             fsyms = tuple(reversed(syms))
@@ -455,7 +464,7 @@ class ArpaLM(object):
         probabilities are listed in unigram."""
         if vocab:
             # Construct a temporary list mapping for the unigrams
-            vmap = map(lambda w: self.ngmap[0][w], vocab)
+            vmap = [self.ngmap[0][w] for w in vocab]
             # Get the original unigrams
             og = numpy.exp(self.ngrams[0][:,0].take(vmap))
             # Compute the individual scaling factors
@@ -478,7 +487,7 @@ class ArpaLM(object):
             # Rescaled total probabilities
             newtprob = numpy.zeros(self.ngrams[n-1].shape[0], 'd')
             # For each N-gram, accumulate and rescale
-            for ng,idx in self.ngmap[n].iteritems():
+            for ng,idx in self.ngmap[n].items():
                 h = ng[0:-1]
                 if n == 1: # Quirk of unigrams
                     h = h[0]
@@ -491,7 +500,7 @@ class ArpaLM(object):
                 self.ngrams[n][idx,0] = numpy.log(prob)
             # Now renormalize everything
             norm = tprob / newtprob
-            for ng,idx in self.ngmap[n].iteritems():
+            for ng,idx in self.ngmap[n].items():
                 h = ng[0:-1]
                 if n == 1: # Quirk of unigrams
                     h = h[0]
