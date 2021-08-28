@@ -54,6 +54,8 @@ while (defined(my $hyp_utt=<HYP>)){
 }
 close HYP;
 
+die "No hypotheses in: $hyp" unless %hyphash;
+
 open REF, "<$ref" or die "Failed to open $ref: $!";
 open HYP, "<$hyp" or die "Failed to open $hyp: $!";
 
