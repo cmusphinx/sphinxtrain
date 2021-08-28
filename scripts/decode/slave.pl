@@ -151,6 +151,7 @@ sub align_hyp {
     my ($wer, $ser, $word_total, $sent_total, $sent_err);
     open (OUT, "> $outfile") or die "Can't open $outfile for writing\n";
     my $cmdln = "perl \"$thisdir/word_align.pl\" $use_cer -i \"$ref\" \"$hyp\"";
+    print "$cmdln\n";
     $sent_total = 0;
     if (open (PIPE, "$cmdln 2>&1 |")) {
       while (<PIPE>) {
