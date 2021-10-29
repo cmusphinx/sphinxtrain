@@ -106,9 +106,13 @@ sub condition_text {
 
   while (<IN>) {
     m/^(.*)\((\S+)\)\s*$/;
+    my $text = $1;
+    my $id = $2;
+    if ($ST::CFG_CASEDSYMBOLS ne 'yes') {
 # Make them uppercase
-    my $text = uc($1);
-    my $id = uc($2);
+      $text = uc($text);
+      $id = uc($id);
+    }
 # Removing leading spaces
     $text =~ s/^\s+//;
 # Removing trailing spaces

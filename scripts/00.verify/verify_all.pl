@@ -88,7 +88,11 @@ my %phonelist_hash;
 	    my $phonetic = $2;
 	    my @phones = ($phonetic =~ m/(\S+)/g);
 	    for my $phone (@phones) {
-		$dict_phone_hash{uc($phone)}++;
+	        # For case-insensitive file systems, forcing case can be helpful
+	        if ($ST::CFG_CASEDSYMBOLS ne 'yes') {
+	            $phone = uc($phone)
+	        }
+	        $dict_phone_hash{$phone}++;
 	    }
 	}
 	$counter++;

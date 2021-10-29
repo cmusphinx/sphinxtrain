@@ -45,7 +45,7 @@ my ($ref, $hyp) = @ARGV;
 my ($total_cost, $total_words, $total_hyp);
 my ($total_ins, $total_del, $total_subst, $total_match);
 
-# Build hypotesis hash (lookup by uttid)
+# Build hypothesis hash (lookup by uttid)
 open HYP, "<$hyp" or die "Failed to open $hyp: $!";
 while (defined(my $hyp_utt=<HYP>)){
     my $hyp_uttid;
@@ -53,6 +53,8 @@ while (defined(my $hyp_utt=<HYP>)){
     $hyphash{$hyp_uttid} = "$hyp_utt ($hyp_uttid)";
 }
 close HYP;
+
+die "No hypotheses in: $hyp" unless %hyphash;
 
 open REF, "<$ref" or die "Failed to open $ref: $!";
 open HYP, "<$hyp" or die "Failed to open $hyp: $!";
