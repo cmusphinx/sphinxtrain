@@ -1,2 +1,2 @@
-SUBDIRS = libclust  libcommon  libio  libmllr  libmodinv
+SUBDIRS = libclust  libcommon  libio  libmllr  libmodinv libsphinxbase
 
