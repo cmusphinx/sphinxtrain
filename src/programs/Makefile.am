@@ -25,6 +25,8 @@ norm \
 param_cnt \
 printp \
 prunetree \
+sphinx_cepview \
+sphinx_fe \
 tiestate
 
 
@@ -33,3 +35,5 @@ SUBDIRS = $(BASEDIRS) g2p_train g2p_eval
 else 
 SUBDIRS = $(BASEDIRS)
 endif
+
+EXTRA_DIST = Makefile_programs_libs.am

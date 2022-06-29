@@ -1,20 +1,98 @@
 # Automake-based build system
 
 AC_INIT(SphinxTrain, 5prealpha)
-AC_CONFIG_HEADERS([include/config.h])
-AM_INIT_AUTOMAKE([no-define foreign])
+AC_CONFIG_HEADERS([include/config.h include/sphinx_config.h])
+AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_CANONICAL_HOST
-
+AC_ISC_POSIX
 AC_PROG_CC
+AC_PROG_CC_STDC
 AC_PROG_CXX
-AC_C_BIGENDIAN
 
 LT_INIT
 
+# We don't bother ourselves with flex checks until the rest of the world has an up-to-date Flex
+# We need specific bison extensions, so check for bison
+AC_CHECK_PROG(YACC, bison, [bison -y], no)
+if test "x$YACC" = "xno";
+then
+    AC_MSG_ERROR([You need to install bison])
+fi
+AC_ARG_VAR(YACC,[Bison command])
+
+AC_HEADER_STDC
+AC_C_BIGENDIAN
+AC_TYPE_SIGNAL
+AC_CHECK_TYPES(long long)
+AC_CHECK_SIZEOF(long long)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_FUNCS([popen perror snprintf])
+AC_CHECK_HEADER(errno.h)
+
+dnl
+dnl Check for Lapack stuff unless disabled
+dnl
+use_lapack=true
+use_internal_lapack=false
+AC_ARG_WITH(lapack,
+	AS_HELP_STRING([--without-lapack],
+		       [Disable matrix algebra support (depends on LAPACK)]),[
+if test x$withval = xno; then
+   use_lapack=false
+fi
+])
+if test x$use_lapack = xtrue; then
+   AC_CHECK_LIB(lapack, sgesv_,,use_internal_lapack=true)
+   if test x$use_internal_lapack != xtrue; then
+      AC_CHECK_LIB(blas, sgemm_,,use_internal_lapack=true)
+   fi
+   AC_DEFINE(WITH_LAPACK, [], [Enable matrix algebra with LAPACK])
+fi
+AM_CONDITIONAL(LAPACK_LITE, test x$use_internal_lapack = xtrue)
+AM_CONDITIONAL(USE_LAPACK, test x$use_lapack = xtrue)
+
 AC_CHECK_LIB(m, log)
 AC_CHECK_LIB(g2c, d_log)
+
+
+dnl
+dnl Enable thread-safe versions of some internal functions
+dnl
+threadsafe=auto
+AC_ARG_ENABLE(threads,
+	AS_HELP_STRING([--disable-threads],
+		       [Disable thread-safe versions of memory allocation functions (default: check)]),[
+if test x$enableval != x; then
+   threadsafe=$enableval
+fi
+])
+if test x$threadsafe != xno; then
+   threads=false
+   dnl
+   dnl Can't seem to check for Windows API functions, but that's okay
+   dnl because we know they will be there...
+   dnl
+   case $host in
+     *cygwin*|*mingw*|*wince*)
+	threads=true
+     ;;
+     *)
+        AC_CHECK_HEADERS([pthread.h], [threads=true])
+	AC_CHECK_LIB(pthread, pthread_create)
+     ;;
+   esac
+   if test x$threads = xtrue; then
+     AC_DEFINE(ENABLE_THREADS, [], [Enable thread safety])
+     threadsafe=yes
+   elif test x$threadsafe = xyes; then
+     AC_MSG_ERROR(--enable-threads was given but test for thread functions failed!)
+   else
+     threadsafe=no
+   fi
+fi
+AM_CONDITIONAL(USE_THREADS, test x$threadsafe = xyes)
 
 AC_PATH_PROGS(PERL, [perl5 perl])
 if test "x$PERL" = x; then
@@ -36,113 +114,6 @@ case $host_cpu in
 	CFLAGS="$CFLAGS -fPIC -DPIC"
 	;;
 esac
-
-dnl
-dnl Get SphinxBase source from command line if given
-dnl
-AC_ARG_WITH(sphinxbase,
-	AS_HELP_STRING([--with-sphinxbase=DIRECTORY],
-			[Look for SphinxBase source files in DIRECTORY.  If this is 'auto',
-			 the system-wide installation will be used.]),
-			sphinxbase=$withval)
-
-dnl
-dnl Get SphinxBase build directory from command line if given
-dnl
-AC_ARG_WITH(sphinxbase-build,
-	AS_HELP_STRING([--with-sphinxbase-build=DIRECTORY],
-			[Look for SphinxBase object files in DIRECTORY]),
-	sphinxbasebuild=$withval)
-
-
-dnl
-dnl Check for SphinxBase in parent directories
-dnl
-if test x$sphinxbase = x; then
-   dn=`dirname $0`
-   case "$dn" in
-	.)
-	sbdir="`pwd`/.."
-	;;
-	[\\/]* | ?:[\\/]*)
-	sbdir="$dn/.."
-	;;
-	*)
-	sbdir="`pwd`/$dn/.."
-	;;
-   esac
-   # Look for sphinxbase in the parent directory
-   for sb in "$sbdir/sphinxbase" \
-	  "$sbdir/sphinxbase"*; do
-       AC_MSG_CHECKING([for sphinxbase in $sb])
-       if test -f "$sb/include/sphinxbase/cmd_ln.h"; then
-          sphinxbase="$sb"
-	  AC_MSG_RESULT(yes)
-	  break
-       else
-	  AC_MSG_RESULT(no)
-       fi
-   done
-fi
-
-dnl
-dnl Check for system SphinxBase if none was passed to us
-dnl Also allow --with-sphinxbase=auto to use system one explicitly
-dnl
-if test x$sphinxbase = x || test x$sphinxbase = xauto; then
-   sphinxbase=
-   if test "x$HAVE_PKGCONFIG" = "xno"; then
-      SphinxBase_CFLAGS = "-Iusr/include/sphinxbase -I/usr/local/include/sphinxbase"
-      SphinxBase_LIBS = "-lsphinxbase"
-   else
-      PKG_CHECK_MODULES(SphinxBase, [sphinxbase],,[
-      AC_MSG_FAILURE(dnl
-[SphinxBase was not found in the parent directories or
-installed system-wide on your system.  Make sure that
-you have compiled it or installed it and that the
-PKG_CONFIG_PATH environment variable is set correctly, if
-it was installed in a non-standard prefix.])])
-   fi
-   LIBS="$LIBS $SphinxBase_LIBS"
-   CPPFLAGS="$CPPFLAGS $SphinxBase_CFLAGS"
-   AC_CHECK_HEADER(sphinx_config.h,,[
-   AC_MSG_FAILURE(dnl
-[SphinxBase was not found on your system.])])
-fi
-
-dnl
-dnl Now verify SphinxBase if defined
-dnl Sadly, this doesn't work when cross-compiling (for some dumb reason...)
-dnl
-: ${sphinxbasebuild=$sphinxbase}
-if test x$sphinxbase != x && test x$cross_compiling = xyes; then
-   CPPFLAGS="-I$sphinxbase/include -I$sphinxbasebuild/include $CPPFLAGS"
-   LIBS="$LIBS -lsphinxbase"
-   # We include libsphinxbase/.libs because of stupid broken versions of libtool
-   LDFLAGS="$LDFLAGS -L$sphinxbasebuild/src/libsphinxad \
-		     -L$sphinxbasebuild/src/libsphinxbase \
-		     -L$sphinxbasebuild/src/libsphinxbase/.libs"
-fi
-if test x$sphinxbase != x && test x$cross_compiling != xyes; then
-   AC_CHECK_FILE($sphinxbase/include/sphinxbase/prim_type.h,CPPFLAGS="-I$sphinxbase/include $CPPFLAGS",
-   AC_ERROR(
-[SphinxBase headers not found in $sphinxbase.  Please use the
---with-sphinxbase option to `configure' to specify the location of
-SphinxBase.  Run $0 --help for more information.]))
-fi
-# We include libsphinxbase/.libs because of stupid broken versions of libtool
-if test x$sphinxbasebuild != x && test x$cross_compiling != xyes; then
-   AC_CHECK_FILE($sphinxbasebuild/src/libsphinxbase/libsphinxbase.la,
-[CPPFLAGS="-I$sphinxbasebuild/include $CPPFLAGS"
-LIBS="$LIBS -lsphinxbase"
-LDFLAGS="$LDFLAGS -L$sphinxbasebuild/src/libsphinxad \
-		  -L$sphinxbasebuild/src/libsphinxbase \
-		  -L$sphinxbasebuild/src/libsphinxbase/.libs"],
-		   AC_ERROR(
-[SphinxBase libraries were not found in $sphinxbasebuild.
-Use the --with-sphinxbase-build option to `configure' to specify
-the build directory for SphinxBase.  Run $0 --help for more information.]))
-fi
 
 AC_ARG_ENABLE(g2p-decoder,
  [  --enable-g2p-decoder  Enable the g2p decoder],
@@ -204,6 +175,11 @@ src/libs/libcommon/Makefile
 src/libs/libio/Makefile
 src/libs/libmllr/Makefile
 src/libs/libmodinv/Makefile
+src/libs/libsphinxbase/Makefile
+src/libs/libsphinxbase/fe/Makefile
+src/libs/libsphinxbase/feat/Makefile
+src/libs/libsphinxbase/lm/Makefile
+src/libs/libsphinxbase/util/Makefile
 src/programs/agg_seg/Makefile
 src/programs/bldtree/Makefile
 src/programs/bw/Makefile
@@ -232,6 +208,8 @@ src/programs/norm/Makefile
 src/programs/param_cnt/Makefile
 src/programs/printp/Makefile
 src/programs/prunetree/Makefile
+src/programs/sphinx_fe/Makefile
+src/programs/sphinx_cepview/Makefile
 src/programs/tiestate/Makefile
 test/Makefile
 ])

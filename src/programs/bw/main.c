@@ -85,34 +85,6 @@
 #define LOG_ZERO	-1.0E10
 static float32 lm_scale = 11.5;
 
-/* FIXME: Should go in libutil */
-char *
-string_join(const char *base, ...)
-{
-    va_list args;
-    size_t len;
-    const char *c;
-    char *out;
-
-    va_start(args, base);
-    len = strlen(base);
-    while ((c = va_arg(args, const char *)) != NULL) {
-        len += strlen(c);
-    }
-    len++;
-    va_end(args);
-
-    out = ckd_calloc(len, 1);
-    va_start(args, base);
-    strcpy(out, base);
-    while ((c = va_arg(args, const char *)) != NULL) {
-        strcat(out, c);
-    }
-    va_end(args);
-
-    return out;
-}
-
 static void
 print_all_timers(bw_timers_t *timers, int32 n_frame)
 {
