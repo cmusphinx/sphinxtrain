@@ -8,7 +8,7 @@ import os
 class TestHypseg(unittest.TestCase):
     def setUp(self):
         thisdir = os.path.dirname(__file__)
-        self.testdir = os.path.join(thisdir, 'test')
+        self.testdir = os.path.join(thisdir, 'data')
 
     def test_read(self):
         hseg = hypseg.open(os.path.join(self.testdir, "an4-1-1.matchseg"))

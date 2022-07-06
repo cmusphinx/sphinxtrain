@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from . import arpalm
+from cmusphinx import arpalm
 import unittest
 import os
 import math
@@ -11,7 +11,7 @@ LOG10TOLOG = math.log(10)
 class TestArpaLM(unittest.TestCase):
     def setUp(self):
         thisdir = os.path.dirname(__file__)
-        self.testdir = os.path.join(thisdir, 'test')
+        self.testdir = os.path.join(thisdir, 'data')
 
     def test_load(self):
         lm = arpalm.ArpaLM(os.path.join(self.testdir, "100.arpa.gz"))

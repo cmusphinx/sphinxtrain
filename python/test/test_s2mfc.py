@@ -9,7 +9,7 @@ import os
 class TestS2MFC(unittest.TestCase):
     def setUp(self):
         thisdir = os.path.dirname(__file__)
-        self.testdir = os.path.join(thisdir, 'test')
+        self.testdir = os.path.join(thisdir, 'data')
 
     def test_mfcfile(self):
         with s2mfc.open(os.path.join(self.testdir, "sa1.mfc")) as s2f:

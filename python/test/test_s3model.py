@@ -10,7 +10,7 @@ import os
 class TestS3Model(unittest.TestCase):
     def setUp(self):
         thisdir = os.path.dirname(__file__)
-        self.testdir = os.path.join(thisdir, 'test', 'tidigits')
+        self.testdir = os.path.join(thisdir, 'data', 'tidigits')
         self.acmod = s3model.S3Model(self.testdir)
 
     def test_created(self):

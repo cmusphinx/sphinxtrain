@@ -10,8 +10,8 @@ import sys
 class TestFileResource(unittest.TestCase):
     def setUp(self):
         thisdir = os.path.dirname(__file__)
-        self.testdir = os.path.join(thisdir, 'test')
-        self.testfile = os.path.join(thisdir, 'test', 'test.ctl')
+        self.testdir = os.path.join(thisdir, 'data')
+        self.testfile = os.path.join(thisdir, 'data', 'test.ctl')
 
     def test_string(self):
         ctl = corpus.ListResource(self.testfile, corpus.CtlEntry)
@@ -28,7 +28,7 @@ class TestFileResource(unittest.TestCase):
 class TestListResource(unittest.TestCase):
     def setUp(self):
         thisdir = os.path.dirname(__file__)
-        self.testfile = os.path.join(thisdir, 'test', 'test.ctl')
+        self.testfile = os.path.join(thisdir, 'data', 'test.ctl')
 
     def test_string(self):
         res = iter(corpus.ListResource(self.testfile))
