@@ -17,7 +17,7 @@ from .s3file import S3File, S3File_write
 class S3LDAFile(S3File):
     "Read Sphinx-III format LDA files"
 
-    def __init__(self, file, mode):
+    def __init__(self, file, mode="rb"):
         S3File.__init__(self, file, mode)
         self._params = self._load()
 
