@@ -13,6 +13,7 @@ __author__ = "David Huggins-Daines <dhdaines@gmail.com>"
 __version__ = "$Revision$"
 
 import numpy
+import math
 import numpy.fft
 
 
@@ -22,6 +23,75 @@ def mel(f):
 
 def melinv(m):
     return 700. * (numpy.power(10., m / 2595.) - 1.)
+
+
+def s2dctmat(nfilt, ncep, freqstep):
+    """Return the 'legacy' not-quite-DCT matrix used by Sphinx"""
+    melcos = numpy.empty((ncep, nfilt), 'double')
+    for i in range(0, ncep):
+        freq = numpy.pi * float(i) / nfilt
+        melcos[i] = numpy.cos(freq *
+                              numpy.arange(0.5,
+                                           float(nfilt) + 0.5, 1.0, 'double'))
+    melcos[:, 0] = melcos[:, 0] * 0.5
+    return melcos
+
+
+def logspec2s2mfc(logspec, ncep=13):
+    """Convert log-power-spectrum bins to MFCC using the 'legacy'
+    Sphinx transform"""
+    nframes, nfilt = logspec.shape
+    melcos = s2dctmat(nfilt, ncep, 1. / nfilt)
+    return numpy.dot(logspec, melcos.T) / nfilt
+
+
+def dctmat(N, K, freqstep, orthogonalize=True):
+    """Return the orthogonal DCT-II/DCT-III matrix of size NxK.
+    For computing or inverting MFCCs, N is the number of
+    log-power-spectrum bins while K is the number of cepstra."""
+    cosmat = numpy.zeros((N, K), 'double')
+    for n in range(0, N):
+        for k in range(0, K):
+            cosmat[n, k] = numpy.cos(freqstep * (n + 0.5) * k)
+    if orthogonalize:
+        cosmat[:, 0] = cosmat[:, 0] * 1. / numpy.sqrt(2)
+    return cosmat
+
+
+def dct(input, K=13, htk=False):
+    """Convert log-power-spectrum to MFCC using the orthogonal DCT-II"""
+    nframes, N = input.shape
+    freqstep = numpy.pi / N
+    cosmat = dctmat(N, K, freqstep)
+    if htk:
+        return numpy.dot(input, cosmat) * numpy.sqrt(2.0 / N)
+    else:
+        return numpy.dot(input, cosmat) * numpy.sqrt(1.0 / N)
+
+
+def dct2(input, K=13):
+    """Convert log-power-spectrum to MFCC using the normalized DCT-II"""
+    nframes, N = input.shape
+    freqstep = numpy.pi / N
+    cosmat = dctmat(N, K, freqstep, False)
+    return numpy.dot(input, cosmat) * (2.0 / N)
+
+
+def idct(input, K=40):
+    """Convert MFCC to log-power-spectrum using the orthogonal DCT-III"""
+    nframes, N = input.shape
+    freqstep = numpy.pi / K
+    cosmat = dctmat(K, N, freqstep).T
+    return numpy.dot(input, cosmat) * numpy.sqrt(2.0 / K)
+
+
+def dct3(input, K=40):
+    """Convert MFCC to log-power-spectrum using the unnormalized DCT-III"""
+    nframes, N = input.shape
+    freqstep = numpy.pi / K
+    cosmat = dctmat(K, N, freqstep, False)
+    cosmat[:, 0] = cosmat[:, 0] * 0.5
+    return numpy.dot(input, cosmat.T)
 
 
 class MFCC(object):
@@ -34,7 +104,9 @@ class MFCC(object):
                  samprate=16000,
                  frate=100,
                  wlen=0.0256,
-                 nfft=512):
+                 nfft=512,
+                 transform="legacy",
+                 lifter=0):
         # Store parameters
         self.lowerf = lowerf
         self.upperf = upperf
@@ -53,7 +125,7 @@ class MFCC(object):
         self.alpha = alpha
 
         # Build mel filter matrix
-        self.filters = numpy.zeros((nfft / 2 + 1, nfilt), 'd')
+        self.filters = numpy.zeros((nfft // 2 + 1, nfilt), 'd')
         dfreq = float(samprate) / nfft
         if upperf > samprate / 2:
             raise Exception
@@ -91,18 +163,27 @@ class MFCC(object):
                 self.filters[freq, whichfilt] = (freq - rightfr) * rightslope
                 freq = freq + 1
 
+            # print("Filter %d: left %d=%f center %d=%f right %d=%f width %d" %
+            #       (whichfilt,
+            #        leftfr, leftfr*dfreq,
+            #        centerfr, centerfr*dfreq,
+            #        rightfr, rightfr*dfreq,
+            #        freq - leftfr))
+            # print(self.filters[leftfr:rightfr, whichfilt])
 
-#             print("Filter %d: left %d=%f center %d=%f right %d=%f width %d" %
-#                   (whichfilt,
-#                   leftfr, leftfr*dfreq,
-#                   centerfr, centerfr*dfreq,
-#                   rightfr, rightfr*dfreq,
-#                   freq - leftfr))
-#             print self.filters[leftfr:rightfr,whichfilt]
-
-# Build DCT matrix
+        # Build DCT matrix
         self.s2dct = s2dctmat(nfilt, ncep, 1. / nfilt)
         self.dct = dctmat(nfilt, ncep, numpy.pi / nfilt)
+
+        # Choice of transform
+        self.transform = transform
+        
+        # Liftering weights
+        if lifter:
+            self.lifter = (1 + lifter / 2
+                           * numpy.sin(numpy.arange(ncep) * numpy.pi / lifter))
+        else:
+            self.lifter = numpy.ones(ncep)
 
     def sig2s2mfc(self, sig):
         nfr = int(len(sig) / self.fshift + 1)
@@ -152,70 +233,10 @@ class MFCC(object):
 
     def frame2s2mfc(self, frame):
         logspec = self.frame2logspec(frame)
-        return numpy.dot(logspec, self.s2dct.T) / self.nfilt
-
-
-def s2dctmat(nfilt, ncep, freqstep):
-    """Return the 'legacy' not-quite-DCT matrix used by Sphinx"""
-    melcos = numpy.empty((ncep, nfilt), 'double')
-    for i in range(0, ncep):
-        freq = numpy.pi * float(i) / nfilt
-        melcos[i] = numpy.cos(freq *
-                              numpy.arange(0.5,
-                                           float(nfilt) + 0.5, 1.0, 'double'))
-    melcos[:, 0] = melcos[:, 0] * 0.5
-    return melcos
-
-
-def logspec2s2mfc(logspec, ncep=13):
-    """Convert log-power-spectrum bins to MFCC using the 'legacy'
-    Sphinx transform"""
-    nframes, nfilt = logspec.shape
-    melcos = s2dctmat(nfilt, ncep, 1. / nfilt)
-    return numpy.dot(logspec, melcos.T) / nfilt
-
-
-def dctmat(N, K, freqstep, orthogonalize=True):
-    """Return the orthogonal DCT-II/DCT-III matrix of size NxK.
-    For computing or inverting MFCCs, N is the number of
-    log-power-spectrum bins while K is the number of cepstra."""
-    cosmat = numpy.zeros((N, K), 'double')
-    for n in range(0, N):
-        for k in range(0, K):
-            cosmat[n, k] = numpy.cos(freqstep * (n + 0.5) * k)
-    if orthogonalize:
-        cosmat[:, 0] = cosmat[:, 0] * 1. / numpy.sqrt(2)
-    return cosmat
-
-
-def dct(input, K=13):
-    """Convert log-power-spectrum to MFCC using the orthogonal DCT-II"""
-    nframes, N = input.shape
-    freqstep = numpy.pi / N
-    cosmat = dctmat(N, K, freqstep)
-    return numpy.dot(input, cosmat) * numpy.sqrt(2.0 / N)
-
-
-def dct2(input, K=13):
-    """Convert log-power-spectrum to MFCC using the normalized DCT-II"""
-    nframes, N = input.shape
-    freqstep = numpy.pi / N
-    cosmat = dctmat(N, K, freqstep, False)
-    return numpy.dot(input, cosmat) * (2.0 / N)
-
-
-def idct(input, K=40):
-    """Convert MFCC to log-power-spectrum using the orthogonal DCT-III"""
-    nframes, N = input.shape
-    freqstep = numpy.pi / K
-    cosmat = dctmat(K, N, freqstep).T
-    return numpy.dot(input, cosmat) * numpy.sqrt(2.0 / K)
-
-
-def dct3(input, K=40):
-    """Convert MFCC to log-power-spectrum using the unnormalized DCT-III"""
-    nframes, N = input.shape
-    freqstep = numpy.pi / K
-    cosmat = dctmat(K, N, freqstep, False)
-    cosmat[:, 0] = cosmat[:, 0] * 0.5
-    return numpy.dot(input, cosmat.T)
+        if self.transform == "legacy":
+            mfcc = numpy.dot(logspec, self.s2dct.T) / self.nfilt
+        elif self.transform == "dct":
+            mfcc = numpy.dot(logspec, self.dct) * numpy.sqrt(2.0 / self.nfilt)
+        else:
+            raise RuntimeError("Unknown transform %s" % self.transform)
+        return mfcc * self.lifter
