@@ -248,8 +248,8 @@ extern "C" {
                                                                 \
   { "-remove_silence", \
     ARG_BOOLEAN, \
-    "yes", \
-    "Enables VAD, removes silence frames from processing" }, \
+    "no", \
+    "Enables VAD, REMOVES silence frames from processing.  Considered harmful, do not use." }, \
                                                              \
   { "-verbose", \
     ARG_BOOLEAN, \
