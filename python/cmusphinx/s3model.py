@@ -34,7 +34,10 @@ class S3Model(object):
             self.read(path)
 
     def read(self, path):
-        self.mdef = s3mdef.open(os.path.join(path, "mdef"))
+        try:
+            self.mdef = s3mdef.open(os.path.join(path, "mdef.txt"))
+        except FileNotFoundError:
+            self.mdef = s3mdef.open(os.path.join(path, "mdef"))
         self.mean = s3gau.open(os.path.join(path, "means"))
         self.var = s3gau.open(os.path.join(path, "variances"))
         self.mixw = s3mixw.open(os.path.join(path, "mixture_weights"))
