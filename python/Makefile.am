@@ -1,77 +1,88 @@
 scriptsdir=$(pkglibdir)/python
 
-nobase_scripts_SCRIPTS = \
-	setup.py \
-	cmusphinx/lat_rescore_fst.py \
-	cmusphinx/__init__.py \
-	cmusphinx/s3lda.py \
-	cmusphinx/arpalm.py \
-	cmusphinx/test_hmm.py \
-	cmusphinx/cluster_mixw.py \
-	cmusphinx/hypseg.py \
-	cmusphinx/sendump.py \
-	cmusphinx/test_s3dict.py \
-	cmusphinx/s2mfc.py \
-	cmusphinx/lattice_error_fst.py \
-	cmusphinx/s3senmgau.py \
-	cmusphinx/test_s3file.py \
-	cmusphinx/lda.py \
-	cmusphinx/divergence.py \
-	cmusphinx/lattice_error.py \
-	cmusphinx/lat_rescore.py \
-	cmusphinx/test_evaluation.py \
-	cmusphinx/classlm2fst.py \
-	cmusphinx/mllt.py \
-	cmusphinx/s3file.py \
-	cmusphinx/fstutils.py \
-	cmusphinx/feat/__init__.py \
-	cmusphinx/feat/_1s_c_d_dd.py \
-	cmusphinx/feat/s2_4x.py \
-	cmusphinx/mfcc.py \
-	cmusphinx/s3model.py \
-	cmusphinx/test/filler.dict \
-	cmusphinx/test/foo.dict \
-	cmusphinx/test/bar.dict \
-	cmusphinx/test/sa1.logspec \
-	cmusphinx/test/100.arpa.gz \
-	cmusphinx/test/test.ctl \
-	cmusphinx/test/sa1.dict \
-	cmusphinx/test/tidigits/dictionary \
-	cmusphinx/test/tidigits/mixture_weights \
-	cmusphinx/test/tidigits/transition_matrices \
-	cmusphinx/test/tidigits/means \
-	cmusphinx/test/tidigits/noisedict \
-	cmusphinx/test/tidigits/man.ah.111a.mfc \
-	cmusphinx/test/tidigits/mdef \
-	cmusphinx/test/tidigits/variances \
-	cmusphinx/test/tidigits/fillerdict \
-	cmusphinx/test/sa1.wav \
-	cmusphinx/test/sa1.ctl \
-	cmusphinx/test/sa1.lsn \
-	cmusphinx/test/sa1.mfc \
-	cmusphinx/test_corpus.py \
-	cmusphinx/test_s3model.py \
-	cmusphinx/s3gau.py \
-	cmusphinx/s3mixw.py \
-	cmusphinx/s3tmat.py \
-	cmusphinx/corpus.py \
-	cmusphinx/lattice_prune.py \
-	cmusphinx/lat2fsg.py \
-	cmusphinx/htkmfc.py \
-	cmusphinx/test_arpalm.py \
-	cmusphinx/gmm.py \
-	cmusphinx/hmm.py \
-	cmusphinx/s3dict.py \
-	cmusphinx/s3mdef.py \
-	cmusphinx/evaluation.py \
-	cmusphinx/mllr.py \
-	cmusphinx/dict_spd.py \
-	cmusphinx/lattice.py \
-	cmusphinx/lattice_conv.py \
-	cmusphinx/s3gaucnt.py \
-	cmusphinx/prune_mixw.py \
-	cmusphinx/quantize_mixw.py \
-	cmusphinx/lat2dot.py \
-	cmusphinx/qmwx.pyx
+nobase_scripts_SCRIPTS =			\
+setup.py					\
+setup.cfg					\
+cmusphinx/s3senmgau.py				\
+cmusphinx/classlm2fst.py			\
+cmusphinx/lat2fsg.py				\
+cmusphinx/dict_spd.py				\
+cmusphinx/lat_rescore_fst.py			\
+cmusphinx/lattice_prune.py			\
+cmusphinx/lattice_conv.py			\
+cmusphinx/lattice_error.py			\
+cmusphinx/fstutils.py				\
+cmusphinx/divergence.py				\
+cmusphinx/quantize_mixw.py			\
+cmusphinx/cmllr.py				\
+cmusphinx/evaluation.py				\
+cmusphinx/mllt.py				\
+cmusphinx/hmm.py				\
+cmusphinx/htkmfc.py				\
+cmusphinx/lattice.py				\
+cmusphinx/s2mfc.py				\
+cmusphinx/hypseg.py				\
+cmusphinx/qmwx.pyx				\
+cmusphinx/mfcc.py				\
+cmusphinx/lat2dot.py				\
+cmusphinx/s3file.py				\
+cmusphinx/lda.py				\
+cmusphinx/s3tmat.py				\
+cmusphinx/gmm.py				\
+cmusphinx/s3model.py				\
+cmusphinx/feat/_1s_c_d_dd.py			\
+cmusphinx/feat/__init__.py			\
+cmusphinx/feat/s2_4x.py				\
+cmusphinx/lattice_error_fst.py			\
+cmusphinx/s3mixw.py				\
+cmusphinx/s3mdef.py				\
+cmusphinx/s3dict.py				\
+cmusphinx/arpalm.py				\
+cmusphinx/s3gau.py				\
+cmusphinx/sendump.py				\
+cmusphinx/cluster_mixw.py			\
+cmusphinx/s3lda.py				\
+cmusphinx/mllr.py				\
+cmusphinx/prune_mixw.py				\
+cmusphinx/corpus.py				\
+cmusphinx/lat_rescore.py			\
+cmusphinx/s3gaucnt.py				\
+test/test_corpus.py				\
+test/test_s2mfc.py				\
+test/test_s3file.py				\
+test/test_s3model.py				\
+test/test_s3gaucnt.py				\
+test/data/sa1.mfc				\
+test/data/sa1.logspec				\
+test/data/100.arpa.gz				\
+test/data/an4-1-1.matchseg			\
+test/data/test.ctl				\
+test/data/sa1.dict				\
+test/data/bwaccumdir/an4_buff_1/mixw_counts	\
+test/data/bwaccumdir/an4_buff_1/tmat_counts	\
+test/data/bwaccumdir/an4_buff_1/gauden_counts	\
+test/data/bwaccumdir/an4_buff_2/mixw_counts	\
+test/data/bwaccumdir/an4_buff_2/tmat_counts	\
+test/data/bwaccumdir/an4_buff_2/gauden_counts	\
+test/data/sa1.lsn				\
+test/data/bar.dict				\
+test/data/foo.dict				\
+test/data/tidigits/means			\
+test/data/tidigits/noisedict			\
+test/data/tidigits/transition_matrices		\
+test/data/tidigits/mdef				\
+test/data/tidigits/variances			\
+test/data/tidigits/fillerdict			\
+test/data/tidigits/man.ah.111a.mfc		\
+test/data/tidigits/dictionary			\
+test/data/tidigits/mixture_weights		\
+test/data/sa1.wav				\
+test/data/filler.dict				\
+test/data/sa1.ctl				\
+test/test_evaluation.py				\
+test/test_s3dict.py				\
+test/test_hmm.py				\
+test/test_arpalm.py				\
+test/test_hypseg.py
 
 EXTRA_DIST = $(nobase_scripts_SCRIPTS)
