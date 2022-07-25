@@ -73,11 +73,14 @@ $logfile = "$log_dir/${exptid}-${part}-${npart}.log";
 
 # Defines input audio format
 $wavtype = $ST::CFG_WAVFILE_TYPE unless defined($wavtype);
-$nist = "no"; $raw = "no"; $mswav = "no";
+my $nist = "no";
+my $raw = "no";
+my $mswav = "no";
+my $sox = "no";
 if ($wavtype eq 'nist') {$nist = "yes";}
-if ($wavtype eq 'raw') {$raw = "yes";}
-if ($wavtype eq 'mswav') {$mswav = "yes";}
-
+elsif ($wavtype eq 'raw') {$raw = "yes";}
+elsif ($wavtype eq 'mswav') {$mswav = "yes";}
+else { $sox = "yes";}
 
 my @warp_args;
 if (defined($warp)) {
@@ -111,6 +114,7 @@ my $rv = RunTool('sphinx_fe', $logfile, $ctlcount,
 		  -nist => $nist,
 		  -raw => $raw,
 		  -mswav => $mswav,
+		  -sox => $sox,
 		  -samprate => $ST::CFG_WAVFILE_SRATE,
 		  -lowerf => $ST::CFG_LO_FILT,
 		  -upperf => $ST::CFG_HI_FILT,

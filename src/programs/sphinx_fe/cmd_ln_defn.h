@@ -155,6 +155,11 @@ static arg_t defn[] = {
     "yes",
     "Create missing subdirectories in output directory" },
 
+  { "-sox",
+    ARG_BOOLEAN,
+    "no",
+    "Input is anything SoX supports, use sox to convert it" },
+
   { "-sph2pipe",
     ARG_BOOLEAN,
     "no",
