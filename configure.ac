@@ -13,15 +13,6 @@ AC_PROG_CXX
 
 LT_INIT
 
-# We don't bother ourselves with flex checks until the rest of the world has an up-to-date Flex
-# We need specific bison extensions, so check for bison
-AC_CHECK_PROG(YACC, bison, [bison -y], no)
-if test "x$YACC" = "xno";
-then
-    AC_MSG_ERROR([You need to install bison])
-fi
-AC_ARG_VAR(YACC,[Bison command])
-
 AC_HEADER_STDC
 AC_C_BIGENDIAN
 AC_TYPE_SIGNAL
@@ -55,44 +46,6 @@ AM_CONDITIONAL(USE_LAPACK, test x$use_lapack = xtrue)
 
 AC_CHECK_LIB(m, log)
 AC_CHECK_LIB(g2c, d_log)
-
-
-dnl
-dnl Enable thread-safe versions of some internal functions
-dnl
-threadsafe=auto
-AC_ARG_ENABLE(threads,
-	AS_HELP_STRING([--disable-threads],
-		       [Disable thread-safe versions of memory allocation functions (default: check)]),[
-if test x$enableval != x; then
-   threadsafe=$enableval
-fi
-])
-if test x$threadsafe != xno; then
-   threads=false
-   dnl
-   dnl Can't seem to check for Windows API functions, but that's okay
-   dnl because we know they will be there...
-   dnl
-   case $host in
-     *cygwin*|*mingw*|*wince*)
-	threads=true
-     ;;
-     *)
-        AC_CHECK_HEADERS([pthread.h], [threads=true])
-	AC_CHECK_LIB(pthread, pthread_create)
-     ;;
-   esac
-   if test x$threads = xtrue; then
-     AC_DEFINE(ENABLE_THREADS, [], [Enable thread safety])
-     threadsafe=yes
-   elif test x$threadsafe = xyes; then
-     AC_MSG_ERROR(--enable-threads was given but test for thread functions failed!)
-   else
-     threadsafe=no
-   fi
-fi
-AM_CONDITIONAL(USE_THREADS, test x$threadsafe = xyes)
 
 AC_PATH_PROGS(PERL, [perl5 perl])
 if test "x$PERL" = x; then
