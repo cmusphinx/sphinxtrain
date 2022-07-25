@@ -6,8 +6,14 @@ RUN mkdir pocketsphinx-master/build && cd pocketsphinx-master/build && cmake .. 
 RUN wget -O sphinxtrain-master.zip https://github.com/cmusphinx/sphinxtrain/archive/refs/heads/master.zip
 RUN unzip sphinxtrain-master
 RUN cd sphinxtrain-master && ./autogen.sh && make install
+RUN apk add python3 python3-dev py3-numpy-dev py3-wheel py3-pip swig
+RUN git clone https://github.com/dhdaines/sequitur-g2p.git
+# Don't use pip or build as they will rebuild numpy from scratch :(
+RUN cd sequitur-g2p && python3 setup.py bdist_wheel
 
 FROM alpine:latest
-RUN apk add perl python3 sox
+RUN apk add perl python3 py3-pip py3-scipy sox
 RUN ln -s python3 /usr/bin/python
 COPY --from=build /usr/local/ /usr/local/
+COPY --from=build /sequitur-g2p/dist/*.whl /
+RUN pip3 install *.whl && rm *.whl
