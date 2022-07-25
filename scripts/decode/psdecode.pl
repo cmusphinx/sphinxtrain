@@ -140,6 +140,8 @@ my $rv = RunTool('pocketsphinx_batch', $logfile, $ctlcount,
 		 -agc => $ST::DEC_CFG_AGC,
 		 -varnorm => $ST::DEC_CFG_VARNORM,
 		 -cmn => $ST::DEC_CFG_CMN,
+
+		 -loglevel => "INFO",
 		 @ST::DEC_CFG_EXTRA_ARGS);
 
 if ($rv) {
