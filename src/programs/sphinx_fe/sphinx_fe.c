@@ -244,9 +244,45 @@ detect_sph2pipe(sphinx_wave2feat_t *wtf)
     wtf->infh = fh;
     return TRUE;
 }
+
+static int
+detect_sox(sphinx_wave2feat_t *wtf)
+{
+    FILE *fh;
+    char *cmdline;
+    int rv, samprate;
+    size_t len;
+
+    /* popen it with sox and convert to raw. */
+    samprate = (int)cmd_ln_float32_r(wtf->config, "-samprate");
+#define SOX_CMDLINE "sox '%s' -t raw -e signed-integer -b 16 -c 1 -r %d -"
+    len = snprintf(NULL, 0, SOX_CMDLINE, wtf->infile, samprate);
+    cmdline = ckd_calloc(len + 1, 1);
+    if (snprintf(cmdline, len + 1, SOX_CMDLINE,
+                 wtf->infile, samprate) != len) {
+        E_ERROR_SYSTEM("snprintf(%d) failed", len);
+        ckd_free(cmdline);
+        return -1;
+    }
+    if ((fh = popen(cmdline, "r")) == NULL) {
+        E_ERROR_SYSTEM("Failed to popen(\"%s\")", cmdline);
+        ckd_free(cmdline);
+        return -1;
+    }
+
+    wtf->infh = fh;
+    return TRUE;
+}
 #else /* !HAVE_POPEN */
 static int
 detect_sph2pipe(sphinx_wave2feat_t *wtf)
+{
+    E_ERROR("popen() not available, cannot run sph2pipe\n");
+    return -1;
+}
+
+static int
+detect_sox(sphinx_wave2feat_t *wtf)
 {
     E_ERROR("popen() not available, cannot run sph2pipe\n");
     return -1;
@@ -486,7 +522,8 @@ static const audio_type_t types[] = {
     { "-mswav", &detect_riff, &decode_pcm },
     { "-nist", &detect_nist, &decode_pcm },
     { "-raw", &detect_raw, &decode_pcm },
-    { "-sph2pipe", &detect_sph2pipe, &decode_pcm }
+    { "-sph2pipe", &detect_sph2pipe, &decode_pcm },
+    { "-sox", &detect_sox, &decode_pcm }
 };
 static const int ntypes = sizeof(types)/sizeof(types[0]);
 static const audio_type_t mfcc_type = {
