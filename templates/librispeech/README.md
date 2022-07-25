@@ -21,24 +21,24 @@ Unpack these all in the same directory.  It should look like this:
     librispeech-lexicon.txt
     train-clean-100.tar.gz
 
-Now, in a *different* directory, initialize a SphinxTrain model:
+Create a scratch directory for training and initialize it for
+SphinxTrain:
 
+    mkdir /path/to/scratch/librispeech # change this!
+    cd /path/to/scratch/librispeech
     sphinxtrain -t librispeech setup
 
-Link the the files extracted above to your training directory:
+Link some files to it (change `~/data/librispeech` to wherever you
+extracted the LibriSpeech files above):
 
-    ln -s ~/data/librispeech/LibriSpeech wav
+    ln -s ~/data/librispeech/LibriSpeech wav # or from wherever
     ln -s ~/data/librispeech/3-gram.pruned.3e-7.arpa.gz etc/
     ln -s ~/data/librispeech/librispeech-lexicon.txt etc/
     ln -s ~/data/librispeech/g2p-model-5 etc/
 
-Edit the configuration to your liking.  You will at least need to
-change CFG_FEATFILES_EXTENSION to "flac" and CFG_FEATFILES_TYPE to
-"sox".
-
-Now we will create the transcripts and the dictionaries using the
-scripts in this directory.  First we generate the transcripts, which
-will also create the list of OOV words:
+Now we will create the transcripts and the dictionaries.  First we
+generate the transcripts, which will also create the list of OOV
+words:
 
     python3 scripts_pl/make_librispeech_transcripts.py \
 	    -l etc/librispeech-lexicon.txt \
