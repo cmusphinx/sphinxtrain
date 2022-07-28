@@ -15,10 +15,9 @@ RUN unzip 03745404eecb7a440308263293caabdb605e7906
 WORKDIR /pocketsphinx-03745404eecb7a440308263293caabdb605e7906
 RUN mkdir build && cd build && cmake .. && make && make install
 WORKDIR /
-RUN wget https://github.com/cmusphinx/sphinxtrain/archive/4cf25976274eaf2cdaba6c1b2928499a6df037a0.zip
-RUN unzip 4cf25976274eaf2cdaba6c1b2928499a6df037a0
-WORKDIR /sphinxtrain-4cf25976274eaf2cdaba6c1b2928499a6df037a0
-RUN ./autogen.sh && make install
+COPY . /sphinxtrain
+WORKDIR /sphinxtrain
+RUN ./autogen.sh && make clean && make install
 
 FROM runtime
 RUN ln -s python3 /usr/bin/python
