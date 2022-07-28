@@ -75,6 +75,7 @@
 #include <s3/mllr_io.h>
 #include <s3/acmod_set.h>
 #include <s3/s3.h>
+#include <s3/s3io.h>
 
 #include <stdio.h>
 #include <string.h>

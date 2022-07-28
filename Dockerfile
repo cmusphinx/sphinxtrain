@@ -19,3 +19,8 @@ RUN ln -s python3 /usr/bin/python
 COPY --from=build /usr/local/ /usr/local/
 COPY --from=build /sequitur-g2p/dist/*.whl /
 RUN pip3 install *.whl && rm *.whl
+
+# Why in the world Docker runs everything as root by default, I will
+# never know.  Did they even stop to think that this was a bad idea?
+RUN adduser -u 1000 -DHD sphinxtrain
+USER sphinxtrain

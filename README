@@ -62,6 +62,15 @@ This should configure everything automatically. The code has been tested with gc
 
 Also, check the section title "All Platforms" above.
 
+Note for installation from the GitHub source code, you will
+additionally require autoconf, automake, libtool, and
+autoconf-archive, which you can install on Debian/Ubuntu for instance
+like this:
+
+    sudo apt install autoconf automake libtool autoconf-archive
+
+Likely this will be switched to CMake in the very near future.
+
 Windows Installation:
 ==============================================================================
 
