@@ -46,7 +46,7 @@ words:
 
 Next we run Sequitur to generate pronunciations from the OOVs:
 
-    g2p.py --model etc/g2p-model-5 etc/librispeech-100_train.oov \
+    g2p.py --model etc/g2p-model-5 --apply etc/librispeech-100_train.oov \
 	   > etc/librispeech-100_train.oov.dic
 
 Now we generate the full dictionary from the LibriSpeech lexicon and
