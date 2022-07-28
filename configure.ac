@@ -123,7 +123,6 @@ include/Makefile
 python/Makefile
 scripts/Makefile
 src/Makefile
-src/programs/Makefile
 src/libs/Makefile
 src/libs/libclust/Makefile
 src/libs/libcommon/Makefile
@@ -134,6 +133,7 @@ src/libs/libsphinxbase/Makefile
 src/libs/libsphinxbase/fe/Makefile
 src/libs/libsphinxbase/feat/Makefile
 src/libs/libsphinxbase/util/Makefile
+src/programs/Makefile
 src/programs/agg_seg/Makefile
 src/programs/bldtree/Makefile
 src/programs/bw/Makefile
