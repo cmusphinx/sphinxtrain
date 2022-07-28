@@ -133,7 +133,6 @@ src/libs/libmodinv/Makefile
 src/libs/libsphinxbase/Makefile
 src/libs/libsphinxbase/fe/Makefile
 src/libs/libsphinxbase/feat/Makefile
-src/libs/libsphinxbase/lm/Makefile
 src/libs/libsphinxbase/util/Makefile
 src/programs/agg_seg/Makefile
 src/programs/bldtree/Makefile
