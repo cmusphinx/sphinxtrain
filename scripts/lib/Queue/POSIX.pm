@@ -61,8 +61,6 @@ sub submit_job {
 	return $pid;
     }
     else {
-	# Detach from parent process
-	setsid();
 	if (defined($job->{outfile})) {
 	    open STDOUT, ">$job->{outfile}" or die "Failed to open $job->{outfile}: $!";
 	}
