@@ -50,7 +50,7 @@
 #include <fst/script/fst-class.h>
 #include <fst/script/determinize.h>
 #include <fst/script/minimize.h>
-#include <fst/extensions/far/main.h>
+#include <fst/extensions/far/far.h>
 #include <fst/script/print.h>
 #include <ngram/ngram-shrink.h>
 #include <ngram/ngram-relentropy.h>
@@ -77,7 +77,6 @@
 #define keep_symbols true
 #define initial_symbols true
 #define allow_negative_labels false
-#define file_list_input false
 #define key_prefix ""
 #define key_suffix ""
 #define backoff false
@@ -262,21 +261,25 @@ train_model(string eps, string s1s2_sep, string skip, int order,
 
     // compile strings into a far archive
     cout << "Compiling symbols into FAR archive..." << endl;
-    fst::FarEntryType fet = fst::StringToFarEntryType(entry_type);
-    fst::FarTokenType ftt = fst::StringToFarTokenType(token_type);
-    fst::FarType fartype = fst::FarTypeFromString(far_type);
+    fst::FarEntryType fet;
+    fst::script::GetFarEntryType(entry_type, &fet);
+    fst::FarTokenType ftt;
+    fst::script::GetFarTokenType(token_type, &ftt);
+    // Lovely inconsistent API you got there, OpenFST...
+    fst::FarType fartype = fst::script::GetFarType(far_type);
 
     delete ingram;
 
     vector<string> in_fname;
     in_fname.push_back(prefix + ".corpus.aligned");
 
-    fst::script::FarCompileStrings(in_fname, prefix + ".corpus.far",
-                                   arc_type, fst_type, fartype,
+    fst::script::FarCompileStrings(in_fname,
+                                   prefix + ".corpus.far", arc_type,
+                                   fst_type, fartype,
                                    generate_keys, fet, ftt,
-                                   prefix + ".corpus.syms", unknown_symbol,
-                                   keep_symbols, initial_symbols,
-                                   allow_negative_labels, file_list_input,
+                                   prefix + ".corpus.syms",
+                                   unknown_symbol, keep_symbols,
+                                   initial_symbols, allow_negative_labels,
                                    key_prefix, key_suffix);
 
     //count n-grams
@@ -291,7 +294,7 @@ train_model(string eps, string s1s2_sep, string skip, int order,
     while (!far_reader->Done()) {
         if (ifst)
             delete ifst;
-        ifst = far_reader->GetFst().Copy();
+        ifst = far_reader->GetFst()->Copy();
 
         if (!ifst) {
             E_FATAL("ngramcount: unable to read fst #%d\n", fstnumber);
@@ -357,7 +360,9 @@ train_model(string eps, string s1s2_sep, string skip, int order,
             fst = ngram.GetMutableFst();
         }
         else if (smooth == "katz") {
-            NGramKatz ngram(fst, backoff, backoff_label,
+            // No idea why *this one* needs a template argument and
+            // not the others!
+            NGramKatz<StdArc> ngram(fst, backoff, backoff_label,
                             norm_eps, check_consistency, bins);
             ngram.MakeNGramModel();
             fst = ngram.GetMutableFst();

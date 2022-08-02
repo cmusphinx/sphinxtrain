@@ -15,6 +15,8 @@ g2p_train_SOURCES = \
 	$(top_srcdir)/src/programs/g2p_eval/utf8/core.h \
 	main.cpp
 
-g2p_train_LDADD = @OPENFST_LIBS@
+include ../Makefile_programs_libs.am
 
-AM_CFLAGS =@OPENFST_CFLAGS@
+LDADD += @OPENFST_LIBS@
+
+AM_CFLAGS += @OPENFST_CFLAGS@
