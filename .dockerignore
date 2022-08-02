@@ -9,3 +9,4 @@ Dockerfile
 .DS_Store
 .gitignore
 .git
+build
