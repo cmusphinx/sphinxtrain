@@ -92,5 +92,7 @@ while (defined(my $file = readdir OUTDIR)) {
 				     $spk, "$base.fileids", "$base.transcription"]);
 	# Launch an adapt job which runs afterwards
 	LaunchScript("mllr.$spk", ['mllr_solve.pl', $spk], [$job]);
+        # Explicitly wait for the BW script to avoid zombies
+        WaitForScript($job);
     }
 }

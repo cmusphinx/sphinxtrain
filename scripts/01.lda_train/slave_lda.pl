@@ -124,7 +124,6 @@ else {
     my $lda_log = File::Spec->catfile($logdir, "$ST::CFG_EXPTNAME.lda_train.log");
     if ($iter == 1) {
 	# This is kind of a lousy way to do it, but oh well...
-	local $SIG{CHLD} = sub { wait; };
 	my $interval = 5;
 	while (1) {
 	    # Look for an error

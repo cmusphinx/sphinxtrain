@@ -109,6 +109,8 @@ if ($iter eq 'N') {
 	push @deps, LaunchScript("bw.mllt.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, 'yes']);
     }
     LaunchScript("mllt", "mllt_train.pl", \@deps);
+    # Explicitly wait for the BW scripts to avoid zombies
+    WaitForScript(@deps);
 }
 else {
     my @deps;
@@ -122,7 +124,6 @@ else {
     my $mllt_log = File::Spec->catfile($logdir, "$ST::CFG_EXPTNAME.mllt_train.log");
     if ($iter == 1) {
 	# This is kind of a lousy way to do it, but oh well...
-	local $SIG{CHLD} = sub { wait; };
 	my $interval = 5;
 	while (1) {
 	    # Look for an error

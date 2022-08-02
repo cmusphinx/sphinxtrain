@@ -553,11 +553,6 @@ sub WaitForMMIEConverge {
   my $logdir = shift;
   my $interval = shift;
 
-  # For some reason (probably due to stupidity of system()), we
-  # can't do this globally or in Queue::POSIX, but we need it here
-  # (hopefully it does nothing on Windows)
-  local $SIG{CHLD} = sub { wait; };
-
   $interval = 5 unless defined($interval);
   # Wait for training to complete (FIXME: This needs to be more robust)
   my $maxiter = 0;
