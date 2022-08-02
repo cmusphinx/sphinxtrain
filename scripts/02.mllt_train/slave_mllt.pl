@@ -108,8 +108,8 @@ if ($iter eq 'N') {
     for (my $i=1; $i<=$n_parts; $i++) {
 	push @deps, LaunchScript("bw.mllt.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, 'yes']);
     }
-    LaunchScript("mllt", "mllt_train.pl", \@deps);
-    # Explicitly wait for the BW scripts to avoid zombies
+    push @deps, LaunchScript("mllt", "mllt_train.pl", \@deps);
+    # Explicitly wait for everything
     WaitForScript(@deps);
 }
 else {
@@ -117,40 +117,35 @@ else {
     for (my $i=1; $i<=$n_parts; $i++) {
 	push @deps, LaunchScript("bw.mllt.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, 'no']);
     }
-    LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
-    # Explicitly wait for the BW scripts to avoid zombies
+    push @deps, LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
+    # Explicitly wait for everything to complete
     WaitForScript(@deps);
-    # On the first iteration, wait for the MLLT stuff to complete
+    # Report success or failure
     my $mllt_log = File::Spec->catfile($logdir, "$ST::CFG_EXPTNAME.mllt_train.log");
     if ($iter == 1) {
-	# This is kind of a lousy way to do it, but oh well...
-	my $interval = 5;
-	while (1) {
-	    # Look for an error
-	    for ($iter = 1; $iter <= $ST::CFG_MAX_ITERATIONS; ++$iter) {
-		my $norm_log = File::Spec->catfile($logdir,
-						   "$ST::CFG_EXPTNAME.$iter.norm.log");
-		if (open LOG, "<$norm_log") {
-		    if (/failed/ or /Aborting/) {
-			LogError("Training failed in iteration $iter");
-			exit 1;
-		    }
-		}
-	    }
-	    if (open LOG, "<$mllt_log") {
-		while (<LOG>) {
-		    if (/failed/) {
-			LogError("MLLT Training failed");
-			exit 1;
-		    }
-		    elsif (/complete/) {
-			Log("MLLT Training completed", 'result');
-			exit 0;
-		    }
-		}
-	    }
-	    sleep $interval;
-	}
+        # Look for an error
+        for ($iter = 1; $iter <= $ST::CFG_MAX_ITERATIONS; ++$iter) {
+            my $norm_log = File::Spec->catfile($logdir,
+                                               "$ST::CFG_EXPTNAME.$iter.norm.log");
+            if (open LOG, "<$norm_log") {
+                if (/failed/ or /Aborting/) {
+                    LogError("Training failed in iteration $iter");
+                    exit 1;
+                }
+            }
+        }
+        if (open LOG, "<$mllt_log") {
+            while (<LOG>) {
+                if (/failed/ or /Error/) {
+                    LogError("MLLT Training failed");
+                    exit 1;
+                }
+                elsif (/complete/) {
+                    Log("MLLT Training completed", 'result');
+                    exit 0;
+                }
+            }
+        }
     }
 }
 
