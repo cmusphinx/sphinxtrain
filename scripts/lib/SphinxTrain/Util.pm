@@ -443,18 +443,14 @@ sub LaunchScript {
 }
 
 sub WaitForScript {
-    my $id = shift;
-    return $ST::Q->waitfor_job($id);
+    foreach my $id (@_) {
+        $ST::Q->waitfor_job($id);
+    }
 }
 
 sub WaitForConvergence {
     my $logdir = shift;
     my $interval = shift;
-
-    # For some reason (probably due to stupidity of system()), we
-    # can't do this globally or in Queue::POSIX, but we need it here
-    # (hopefully it does nothing on Windows)
-    local $SIG{CHLD} = sub { wait; };
 
     $interval = 5 unless defined($interval);
     # Wait for training to complete (FIXME: This needs to be more robust)
@@ -496,11 +492,6 @@ sub WaitForConvergence {
 sub TiedWaitForConvergence {
     my $logdir = shift;
     my $interval = shift;
-
-    # For some reason (probably due to stupidity of system()), we
-    # can't do this globally or in Queue::POSIX, but we need it here
-    # (hopefully it does nothing on Windows)
-    local $SIG{CHLD} = sub { wait; };
 
     $interval = 5 unless defined($interval);
     # Wait for training to complete (FIXME: This needs to be more robust)

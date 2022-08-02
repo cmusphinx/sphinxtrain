@@ -116,6 +116,8 @@ else {
 	push @deps, LaunchScript("bw.mllt.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, 'no']);
     }
     LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
+    # Explicitly wait for the BW scripts to avoid zombies
+    WaitForScript(@deps);
     # On the first iteration, wait for the MLLT stuff to complete
     my $mllt_log = File::Spec->catfile($logdir, "$ST::CFG_EXPTNAME.mllt_train.log");
     if ($iter == 1) {

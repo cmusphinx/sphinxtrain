@@ -112,12 +112,10 @@ for (my $i=1; $i<=$n_parts; $i++)
 {
     push @jobs, LaunchScript("bw.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts])
 }
-my $norm = LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@jobs);
-# Explicitly wait for them all to complete to avoid zombies
-push @jobs, $norm;
-foreach (@jobs) {
-    $ST::Q->waitfor_job($_);
-}
+LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@jobs);
+# Explicitly wait for the BW scripts to avoid zombies
+WaitForScript(@jobs);
+
 # For the first iteration (i.e. the one that was called from the
 # command line or a parent script), wait until completion or error
 if ($iter == 1) {

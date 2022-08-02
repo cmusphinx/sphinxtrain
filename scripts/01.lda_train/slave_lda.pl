@@ -109,6 +109,8 @@ if ($iter eq 'N') {
 	push @deps, LaunchScript("bw.lda.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, 'yes']);
     }
     LaunchScript("lda", "lda_train.pl", \@deps);
+    # Explicitly wait for the BW scripts to avoid zombies
+    WaitForScript(@deps);
 }
 else {
     my @deps;
@@ -116,6 +118,8 @@ else {
 	push @deps, LaunchScript("bw.lda.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, 'no']);
     }
     LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
+    # Explicitly wait for the BW scripts to avoid zombies
+    WaitForScript(@deps);
     # On the first iteration, wait for the LDA stuff to complete
     my $lda_log = File::Spec->catfile($logdir, "$ST::CFG_EXPTNAME.lda_train.log");
     if ($iter == 1) {

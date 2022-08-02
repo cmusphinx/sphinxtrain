@@ -173,6 +173,8 @@ for (my $i=1; $i<=$n_parts; $i++)
 }
 
 LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
+# Explicitly wait for the BW scripts to avoid zombies
+WaitForScript(@deps);
 
 # For the first iteration (i.e. the one that was called from the
 # command line or a parent script), wait until completion or error
