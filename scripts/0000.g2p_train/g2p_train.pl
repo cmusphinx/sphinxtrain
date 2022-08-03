@@ -70,8 +70,21 @@ my $decoder_path = "$ST::CFG_BIN_DIR";
 mkdir ($g2p_dir,0777);
 
 Log ("Phase 2: Training g2p model...\n");
+# G2P code's "tokenizer" does not accept multiple spaces between
+# "tokens", and also alternate pronunciations will cause Problems.
+open INDICT, "<$dict" or die "Failed to open $dict: $!";
+open OUTDICT, ">$dict.g2p.train" or die "Failed to open $dict.g2p.train: $!";
+while (<INDICT>) {
+    s/\(\d+\)//;
+    s/^\s*//;
+    s/\s*$//;
+    s/\s+/ /g;
+    print OUTDICT "$_\n";
+}
+close INDICT or die $!;
+close OUTDICT or die $!;
 my $rv = RunTool('g2p_train', $logfile . ".training.log", 0,
-		 -ifile => $dict,
+		 -ifile => "$dict.g2p.train",
 		 -prefix => $g2p_prefix);
 return $rv if $rv;
 
