@@ -15,7 +15,6 @@ RUN wget https://github.com/cmusphinx/pocketsphinx/archive/03745404eecb7a4403082
 RUN tar xf 03745404eecb7a440308263293caabdb605e7906.tar.gz
 WORKDIR /pocketsphinx-03745404eecb7a440308263293caabdb605e7906
 RUN mkdir build && cd build && cmake .. && make && make install
-RUN /sbin/ldconfig
 WORKDIR /
 COPY . /sphinxtrain
 WORKDIR /sphinxtrain
@@ -24,6 +23,7 @@ RUN ./autogen.sh --enable-g2p-decoder && make clean && make install
 FROM runtime
 RUN ln -s python3 /usr/bin/python
 COPY --from=build /usr/local/ /usr/local/
+RUN /sbin/ldconfig
 
 # Create a non-root user and use it
 RUN useradd -UM sphinxtrain
