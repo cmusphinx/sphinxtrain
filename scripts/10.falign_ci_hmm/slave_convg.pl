@@ -104,12 +104,15 @@ if ($iter == 1 and $n_gau == $ST::CFG_INITIAL_NUM_DENSITIES) {
 
 # Call baum_welch with iter part and n_parts,
 # once done call norm_and_lauchbw.pl
-my @deps;
+my @jobs;
 for (my $i=1; $i<=$n_parts; $i++)
 {
-    push @deps, LaunchScript("bw.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, $n_gau])
+    push @jobs, LaunchScript("bw.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, $n_gau])
 }
-LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts, $n_gau], \@deps);
+LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts, $n_gau], \@jobs);
+# Explicitly wait for the BW scripts to avoid zombies
+WaitForScript(@jobs);
+
 # For the first iteration (i.e. the one that was called from the
 # command line or a parent script), wait until completion or error
 if ($iter == 1 && $n_gau == $ST::CFG_INITIAL_NUM_DENSITIES) {

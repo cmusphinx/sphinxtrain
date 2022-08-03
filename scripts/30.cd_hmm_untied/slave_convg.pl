@@ -107,12 +107,15 @@ if ($iter == 1) {
 
 # Call baum_welch with iter part and n_parts,
 # once done call norm_and_lauchbw.pl
-my @deps;
+my @jobs;
 for (my $i=1; $i<=$n_parts; $i++)
 {
-    push @deps, LaunchScript("bw.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts])
+    push @jobs, LaunchScript("bw.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts])
 }
-LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
+LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@jobs);
+# Explicitly wait for the BW scripts to avoid zombies
+WaitForScript(@jobs);
+
 # For the first iteration (i.e. the one that was called from the
 # command line or a parent script), wait until completion or error
 if ($iter == 1) {

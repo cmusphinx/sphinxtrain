@@ -108,46 +108,44 @@ if ($iter eq 'N') {
     for (my $i=1; $i<=$n_parts; $i++) {
 	push @deps, LaunchScript("bw.lda.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, 'yes']);
     }
-    LaunchScript("lda", "lda_train.pl", \@deps);
+    push @deps, LaunchScript("lda", "lda_train.pl", \@deps);
+    # Explicitly wait for everything
+    WaitForScript(@deps);
 }
 else {
     my @deps;
     for (my $i=1; $i<=$n_parts; $i++) {
 	push @deps, LaunchScript("bw.lda.$iter.$i", ['baum_welch.pl', $iter, $i, $n_parts, 'no']);
     }
-    LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
-    # On the first iteration, wait for the LDA stuff to complete
+    push @deps, LaunchScript("norm.$iter", ['norm_and_launchbw.pl', $iter, $n_parts], \@deps);
+    # Explicitly wait for the BW scripts to avoid zombies
+    WaitForScript(@deps);
+    # Report success or failure
     my $lda_log = File::Spec->catfile($logdir, "$ST::CFG_EXPTNAME.lda_train.log");
     if ($iter == 1) {
-	# This is kind of a lousy way to do it, but oh well...
-	local $SIG{CHLD} = sub { wait; };
-	my $interval = 5;
-	while (1) {
-	    # Look for an error
-	    for ($iter = 1; $iter <= $ST::CFG_MAX_ITERATIONS; ++$iter) {
-		my $norm_log = File::Spec->catfile($logdir,
-						   "$ST::CFG_EXPTNAME.$iter.norm.log");
-		if (open LOG, "<$norm_log") {
-		    if (/failed/ or /Aborting/) {
-			LogError("Training failed in iteration $iter");
-			exit 1;
-		    }
-		}
-	    }
-	    if (open LOG, "<$lda_log") {
-		while (<LOG>) {
-		    if (/failed/) {
-			LogError("LDA Training failed");
-			exit 1;
-		    }
-		    elsif (/complete/) {
-			Log("LDA Training completed", 'result');
-			exit 0;
-		    }
-		}
-	    }
-	    sleep $interval;
-	}
+        # Look for an error
+        for ($iter = 1; $iter <= $ST::CFG_MAX_ITERATIONS; ++$iter) {
+            my $norm_log = File::Spec->catfile($logdir,
+                                               "$ST::CFG_EXPTNAME.$iter.norm.log");
+            if (open LOG, "<$norm_log") {
+                if (/failed/ or /Aborting/) {
+                    LogError("Training failed in iteration $iter");
+                    exit 1;
+                }
+            }
+        }
+        if (open LOG, "<$lda_log") {
+            while (<LOG>) {
+                if (/failed/) {
+                    LogError("LDA Training failed");
+                    exit 1;
+                }
+                elsif (/complete/) {
+                    Log("LDA Training completed", 'result');
+                    exit 0;
+                }
+            }
+        }
     }
 }
 
