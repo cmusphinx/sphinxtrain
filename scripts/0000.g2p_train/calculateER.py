@@ -59,14 +59,14 @@ class ErrorRater( ):
           The edit distance between the two sequences will be stored 
             in the last entry in the matrix.
         """
-        matrix = [ [0 for x in xrange(len(ref)+1)] for y in xrange(len(hyp)+1) ]
-        for i in xrange(len(hyp)+1):
+        matrix = [ [0 for x in range(len(ref)+1)] for y in range(len(hyp)+1) ]
+        for i in range(len(hyp)+1):
             matrix[i][0] = i
-        for j in xrange(len(ref)+1):
+        for j in range(len(ref)+1):
             matrix[0][j] = j
 
-        for i in xrange(1,len(hyp)+1):
-            for j in xrange(1,len(ref)+1):
+        for i in range(1,len(hyp)+1):
+            for j in range(1,len(ref)+1):
                 if hyp[i-1]==ref[j-1]:
                     matrix[i][j] = matrix[i-1][j-1]
                 else:
@@ -137,11 +137,11 @@ class ErrorRater( ):
            reference sequence is on top.
         """
 
-        print " ".join([ x[2] for x in alignment ])
-        print " ".join([ x[1] for x in alignment ])
-        print " ".join([ x[0] for x in alignment ])
+        print(" ".join([ x[2] for x in alignment ]))
+        print(" ".join([ x[1] for x in alignment ]))
+        print(" ".join([ x[0] for x in alignment ]))
         self.print_ER( scores )
-        print ""
+        print("")
 
         return
 
@@ -153,11 +153,11 @@ class ErrorRater( ):
 
         if type(flist[0]).__name__=="str":
             for ig in self.ignore:
-                flist = filter(lambda ch: ch!=ig, flist)
+                flist = [ch for ch in flist if ch!=ig]
         else:
-            for i in xrange(len(flist)):
+            for i in range(len(flist)):
                 for ig in self.ignore:
-                    flist[i] = filter(lambda ch: ch!=ig, flist[i])
+                    flist[i] = [ch for ch in flist[i] if ch!=ig]
         return flist
 
     def _filter_regex_ignore( self, flist ):
@@ -168,11 +168,11 @@ class ErrorRater( ):
 
         if type(flist[0]).__name__=="str":
             flist = [ re.sub(self.regex_ignore,"",ch) for ch in flist ]
-            flist = filter(lambda ch: ch!="", flist)
+            flist = [ch for ch in flist if ch!=""]
         else:
-            for i in xrange(len(flist)):
+            for i in range(len(flist)):
                 flist[i] = [ re.sub(self.regex_ignore,"",ch) for ch in  flist[i] ]
-                flist[i] = filter(lambda ch: ch!="", flist[i])
+                flist[i] = [ch for ch in flist[i] if ch!=""]
         return flist
 
     def _filter_ignore( self, flist ):
@@ -192,7 +192,7 @@ class ErrorRater( ):
         """
 
         if not type(hyps).__name__=="list" or not type(refs).__name__=="list":
-            raise TypeError, "Hypothesis and reference(s) must be lists!"
+            raise TypeError("Hypothesis and reference(s) must be lists!")
 
         hyps = self._filter_ignore( hyps )
         if self.ignore_both:
@@ -237,7 +237,7 @@ class ErrorRater( ):
         if verbose: 
             self.print_alignment( alignment, scores )
 
-        self.totals = [ scores[i]+self.totals[i] for i in xrange(len(scores)) ]
+        self.totals = [ scores[i]+self.totals[i] for i in range(len(scores)) ]
 
         return alignment, scores
 
@@ -248,7 +248,7 @@ class ErrorRater( ):
         """
 
         if not type(sequence).__name__=="str":
-            raise TypeError, "Input sequence must be of type string ('str')!"
+            raise TypeError("Input sequence must be of type string ('str')!")
 
         if usep=="":
             sequences = [
@@ -311,11 +311,11 @@ class ErrorRater( ):
             refs.append(fields[1:])
 
         #Make sure we have the same number of entries
-        print "    Words:", len(words), " Hyps:", len(hyps), "Refs:", len(refs)
+        print("    Words:", len(words), " Hyps:", len(hyps), "Refs:", len(refs))
         assert len(words)==len(hyps) and len(hyps)==len(refs)
 
         for i, word in enumerate(words):
-            if verbose: print word
+            if verbose: print(word)
             self.align_sequences( hyps[i], refs[i], verbose=verbose )
 
         self.print_ER(self.totals)
@@ -328,17 +328,17 @@ class ErrorRater( ):
            the relative number of Matches, Substitutions, Insertions and Deletions.
         """
         width = 70
-        print "    (T)otal tokens in reference: %d" % (int(totals[0]))
-        print "    (M)atches: %d  (S)ubstitutions: %d  (I)nsertions: %d  (D)eletions: %d" %\
-            (int(totals[1]), int(totals[2]), int(totals[3]), int(totals[4]))
-        print "    %% Correct (M/T)           -- %%%0.2f" % ( 100*totals[1]/totals[0] )
-        print "    %% Token ER ((S+I+D)/T)    -- %%%0.2f" % ( 100*        (sum(totals[2:])/totals[0])   )
-        print "    %% Accuracy 1.0-ER         -- %%%0.2f" % ( 100*(1.0 - (sum(totals[2:])/totals[0]) ) )
-        print 
-        print "    (S)equences: %d  (C)orrect sequences: %d  (E)rror sequences: %d" %\
-            (int(self.total_sequences), int(self.total_sequences - self.sequence_errors), int(self.sequence_errors))
-        print "    %% Sequence ER (E/S)       -- %%%0.2f" % ( 100*(self.sequence_errors/self.total_sequences) )
-        print "    %% Sequence Acc (1.0-E/S)  -- %%%0.2f" % ( 100*(1.0-(self.sequence_errors/self.total_sequences)) )
+        print("    (T)otal tokens in reference: %d" % (int(totals[0])))
+        print("    (M)atches: %d  (S)ubstitutions: %d  (I)nsertions: %d  (D)eletions: %d" %\
+            (int(totals[1]), int(totals[2]), int(totals[3]), int(totals[4])))
+        print("    %% Correct (M/T)           -- %%%0.2f" % ( 100*totals[1]/totals[0] ))
+        print("    %% Token ER ((S+I+D)/T)    -- %%%0.2f" % ( 100*        (sum(totals[2:])/totals[0])   ))
+        print("    %% Accuracy 1.0-ER         -- %%%0.2f" % ( 100*(1.0 - (sum(totals[2:])/totals[0]) ) ))
+        print() 
+        print("    (S)equences: %d  (C)orrect sequences: %d  (E)rror sequences: %d" %\
+            (int(self.total_sequences), int(self.total_sequences - self.sequence_errors), int(self.sequence_errors)))
+        print("    %% Sequence ER (E/S)       -- %%%0.2f" % ( 100*(self.sequence_errors/self.total_sequences) ))
+        print("    %% Sequence Acc (1.0-E/S)  -- %%%0.2f" % ( 100*(1.0-(self.sequence_errors/self.total_sequences)) ))
         return
 
 
@@ -359,8 +359,8 @@ if __name__=="__main__":
     args = parser.parse_args()
 
     if args.verbose:
-        for attr, value in args.__dict__.iteritems():
-            print attr, "=", value
+        for attr, value in args.__dict__.items():
+            print(attr, "=", value)
 
     error_rater = ErrorRater( ignore=args.ignore, regex_ignore=args.regex_ignore, ignore_both=args.ignore_both )
     if os.path.exists( args.hyp ) and os.path.exists( args.ref ):
@@ -373,11 +373,11 @@ if __name__=="__main__":
                 verbose=args.verbose 
                 )
         elif args.format=="cmu":
-            print "CMU format not yet implemented..."
+            print("CMU format not yet implemented...")
         elif args.format=="htk":
-            print "HTK format not yet implemented..."
+            print("HTK format not yet implemented...")
         else:
-            print "--format must be one of 'g2p', 'cmu' or 'htk'."
+            print("--format must be one of 'g2p', 'cmu' or 'htk'.")
     else:
         error_rater.align_sequences(
             error_rater.split_sequence( args.hyp, usep=args.usep, fsep=args.fsep ), 

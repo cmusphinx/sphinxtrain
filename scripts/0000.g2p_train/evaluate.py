@@ -37,7 +37,7 @@ def process_testset( testfile, wordlist_out, reference_out, verbose=False ):
       word has multiple pronunciations.
     """
 
-    if verbose: print "Preprocessing the testset dictionary file..."
+    if verbose: print("Preprocessing the testset dictionary file...")
     test_dict = defaultdict(list)
     for entry in open(testfile):
         try:
@@ -52,7 +52,7 @@ def process_testset( testfile, wordlist_out, reference_out, verbose=False ):
 
     wordlist_ofp  = open(wordlist_out,"w")
     reference_ofp = open(reference_out,"w")
-    test_list = sorted(test_dict.iteritems(), key=operator.itemgetter(0))
+    test_list = sorted(iter(test_dict.items()), key=operator.itemgetter(0))
     for entry in test_list:
         wordlist_ofp.write("%s\n" % entry[0])
         for p in entry[1]:
@@ -75,7 +75,7 @@ def evaluate_testset(
          (1.0 - (WORDS_CORRECT / TOTAL_WORDS))
     """
 
-    if verbose: print "Executing evaluation with command:"
+    if verbose: print("Executing evaluation with command:")
     command = "%s -model %s -input %s -beam %d  -words yes -isfile yes -output_cost yes -output %s" \
         % (os.path.join(pathtog2pdecoder, "phonetisaurus-g2p"), modelfile, wordlistfile, beam, hypothesisfile)
 #    print command
