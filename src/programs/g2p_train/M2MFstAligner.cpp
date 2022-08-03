@@ -84,6 +84,7 @@ M2MFstAligner::get_max_length(string joint_label)
 {
     //We can probably make this a LOT faster...
     vector<string> parts = split(joint_label, s1s2_sep);
+    assert(parts.size() > 1);
     vector<string> s1 = split(parts[0], seq1_sep);
     vector<string> s2 = split(parts[1], seq2_sep);
     int m = max(s1.size(), s2.size());
@@ -254,9 +255,10 @@ M2MFstAligner::Sequences2FST(VectorFst<LogArc> *fst,
                     if (j + l <= seq2->size()) {
                         vector<string> subseq2(seq2->begin() + j,
                                                   seq2->begin() + j + l);
+                        string sym = skip + s1s2_sep +
+                            vec2str(subseq2, seq2_sep);
                         int is =
-                            isyms->AddSymbol(skip + s1s2_sep +
-                                             vec2str(subseq2, seq2_sep));
+                            isyms->AddSymbol(sym);
                         ostate = i * (seq2->size() + 1) + (j + l);
                         //LogArc arc( is, is, LogWeight::One().Value()*(l+1)*2, ostate );
                         LogArc arc(is, is, 99, ostate);
@@ -283,9 +285,10 @@ M2MFstAligner::Sequences2FST(VectorFst<LogArc> *fst,
                     if (i + k <= seq1->size()) {
                         vector<string> subseq1(seq1->begin() + i,
                                                   seq1->begin() + i + k);
+                        string sym = vec2str(subseq1, seq1_sep) +
+                            s1s2_sep + skip;
                         int is =
-                            isyms->AddSymbol(vec2str(subseq1, seq1_sep) +
-                                             s1s2_sep + skip);
+                            isyms->AddSymbol(sym);
                         ostate = (i + k) * (seq2->size() + 1) + j;
                         //LogArc arc( is, is, LogWeight::One().Value()*(k+1)*2, ostate );
                         LogArc arc(is, is, 99, ostate);
@@ -311,14 +314,15 @@ M2MFstAligner::Sequences2FST(VectorFst<LogArc> *fst,
                 for (int l = 1; l <= seq2_max; l++) {
                     if (i + k <= seq1->size() && j + l <= seq2->size()) {
                         vector<string> subseq1(seq1->begin() + i,
-                                                  seq1->begin() + i + k);
+                                               seq1->begin() + i + k);
                         string s1 = vec2str(subseq1, seq1_sep);
                         vector<string> subseq2(seq2->begin() + j,
-                                                  seq2->begin() + j + l);
+                                               seq2->begin() + j + l);
                         string s2 = vec2str(subseq2, seq2_sep);
                         if (l > 1 && k > 1)
                             continue;
-                        int is = isyms->AddSymbol(s1 + s1s2_sep + s2);
+                        string sym = s1 + s1s2_sep + s2;
+                        int is = isyms->AddSymbol(sym);
                         ostate = (i + k) * (seq2->size() + 1) + (j + l);
                         LogArc arc(is, is,
                                    LogWeight::One().Value() * (k + l),
