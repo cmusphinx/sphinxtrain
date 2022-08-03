@@ -16,21 +16,11 @@ RUN tar xf 03745404eecb7a440308263293caabdb605e7906.tar.gz
 WORKDIR /pocketsphinx-03745404eecb7a440308263293caabdb605e7906
 RUN mkdir build && cd build && cmake .. && make && make install
 RUN /sbin/ldconfig
-WORKDIR /
-COPY . /sphinxtrain
-WORKDIR /sphinxtrain
-RUN ./autogen.sh --enable-g2p-decoder && make clean && make install
-
-FROM runtime
 RUN ln -s python3 /usr/bin/python
-COPY --from=build /usr/local/ /usr/local/
 
-# Create a non-root user and use it
+# Set up for development
 RUN useradd -UM sphinxtrain
-RUN mkdir /st && chown sphinxtrain:sphinxtrain /st
+RUN mkdir /st /work && chown sphinxtrain:sphinxtrain /st /work
+RUN chown -R sphinxtrain:sphinxtrain /usr/local
+WORKDIR /work
 USER sphinxtrain
-
-# Mount your training directory here
-WORKDIR /st
-
-ENTRYPOINT ["sphinxtrain"]
