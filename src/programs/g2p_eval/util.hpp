@@ -47,6 +47,7 @@ vector <string> tokenize_utf8_string(string * utf8_string,
        Support for tokenizing a utf-8 string. Adapted to also support a delimiter.
        Note that leading, trailing or multiple consecutive delimiters will result in
        empty vector elements.  Normally should not be a problem but just in case.
+       FIXME: NO, IT IS A SERIOUS PROBLEM!!! WTF!!! WORST TOKENIZER EVER!!!
        Also note that any tokens that cannot be found in the model symbol table will be
        deleted from the input word prior to grapheme-to-phoneme conversion.
 
