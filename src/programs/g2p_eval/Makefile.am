@@ -15,6 +15,9 @@ phonetisaurus_g2p_SOURCES = \
 	utf8/unchecked.h \
 	utf8/core.h
 
-phonetisaurus_g2p_LDADD = @OPENFST_LIBS@
+include ../Makefile_programs_libs.am
 
-AM_CFLAGS =@OPENFST_CFLAGS@
+LDADD += @OPENFST_LIBS@
+
+AM_CFLAGS += @OPENFST_CFLAGS@
+

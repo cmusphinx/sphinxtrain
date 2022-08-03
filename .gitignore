@@ -26,3 +26,4 @@ aclocal.m4
 autom4te.cache
 include/stamp-h2
 ylwrap
+build

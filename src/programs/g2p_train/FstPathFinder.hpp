@@ -49,6 +49,7 @@
 #include <fst/fstlib.h>
 
 using namespace fst;
+using namespace std;
 
 struct PathData {
     vector<string> path;

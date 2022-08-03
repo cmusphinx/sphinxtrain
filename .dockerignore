@@ -1,0 +1,12 @@
+__pycache__
+*.so
+*.o
+*.lo
+*.c
+*~
+Dockerfile
+.dockerignore
+.DS_Store
+.gitignore
+.git
+build
