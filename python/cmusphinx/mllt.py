@@ -26,8 +26,7 @@ except ImportError:
           "Check that numpy and scipy are installed")
     sys.exit(1)
 
-from . import s3gaucnt
-from . import s3lda
+from cmusphinx import s3gaucnt, s3lda
 import getopt
 
 

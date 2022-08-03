@@ -46,7 +46,9 @@ cmusphinx/mllr.py				\
 cmusphinx/prune_mixw.py				\
 cmusphinx/corpus.py				\
 cmusphinx/lat_rescore.py			\
-cmusphinx/s3gaucnt.py				\
+cmusphinx/s3gaucnt.py
+
+EXTRA_DIST = $(nobase_scripts_SCRIPTS)		\
 test/test_corpus.py				\
 test/test_s2mfc.py				\
 test/test_s3file.py				\
@@ -84,5 +86,3 @@ test/test_s3dict.py				\
 test/test_hmm.py				\
 test/test_arpalm.py				\
 test/test_hypseg.py
-
-EXTRA_DIST = $(nobase_scripts_SCRIPTS)
