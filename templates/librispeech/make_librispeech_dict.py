@@ -61,12 +61,8 @@ if __name__ == "__main__":
         fh.write("""<s> SIL
 </s> SIL
 <sil> SIL
-[NOISE] +NSN+
-[SPEECH] +SPN+
 """)
     phoneset.add("SIL")
-    phoneset.add("+NSN+")
-    phoneset.add("+SPN+")
     with open(f"etc/{args.dbname}.phone", "wt") as fh:
         for ph in sorted(phoneset):
             print(ph, file=fh)

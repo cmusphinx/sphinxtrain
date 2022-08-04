@@ -34,29 +34,36 @@ extracted the LibriSpeech files above):
     ln -s ~/data/librispeech/LibriSpeech wav # or from wherever
     ln -s ~/data/librispeech/3-gram.pruned.3e-7.arpa.gz etc/
     ln -s ~/data/librispeech/librispeech-lexicon.txt etc/
-    ln -s ~/data/librispeech/g2p-model-5 etc/
 
-Now we will create the transcripts and the dictionaries.  First we
-generate the transcripts, which will also create the list of OOV
-words:
+Edit a few things in `sphinx_train.cfg`:
 
-    python3 scripts_pl/make_librispeech_transcripts.py \
+    $CFG_WAVFILE_EXTENSION = 'flac';
+    $CFG_WAVFILE_TYPE = 'sox';
+    $CFG_HMM_TYPE  = '.ptm.';
+    $CFG_INITIAL_NUM_DENSITIES = 64; # line 137, under "elsif... ptm"
+    $CFG_FINAL_NUM_DENSITIES = 64;
+    $CFG_N_TIED_STATES = 5000;
+    $CFG_NPART = 4;
+    $CFG_QUEUE_TYPE = "Queue::POSIX";
+    $CFG_G2P_MODEL= 'yes';
+    $DEC_CFG_LANGUAGEMODEL  = "$CFG_BASE_DIR/etc/3-gram.pruned.3e-7.arpa.gz";
+    $DEC_CFG_LISTOFFILES    = "$CFG_BASE_DIR/etc/${CFG_DB_NAME}_dev.fileids";
+    $DEC_CFG_TRANSCRIPTFILE = 
+        "$CFG_BASE_DIR/etc/${CFG_DB_NAME}_dev.transcription";
+    $DEC_CFG_NPART = 8;
+
+Now we will create the transcripts and the dictionaries.
+Pronunciation generation for the OOV words will be handled
+automatically, provided you have compiled SphinxTrain with
+`--enable-g2p-decoder`.
+
+    python3 make_librispeech_transcripts.py \
 	    -l etc/librispeech-lexicon.txt \
 	    --100 wav
-
-Next we run Sequitur to generate pronunciations from the OOVs:
-
-    g2p.py --model etc/g2p-model-5 --apply etc/librispeech-100_train.oov \
-	   > etc/librispeech-100_train.oov.dic
-
-Now we generate the full dictionary from the LibriSpeech lexicon and
-the output of Sequitur:
-
-    python3 scripts_pl/make_librispeech_dict.py \
-	    etc/librispeech-lexicon.txt
+    python3 make_librispeech_dict.py etc/librispeech-lexicon.txt
 
 Great, we should be ready to run the training:
 
     sphinxtrain run
 
-This will take a day or two on 4 CPUs.
+This will take a couple days on 4 CPUs.
