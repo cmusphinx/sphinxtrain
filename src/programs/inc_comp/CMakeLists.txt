@@ -1,0 +1,16 @@
+set(PROGRAM inc_comp)
+set(SRCS
+accum_wt_param.c
+inc_densities.c
+main.c
+parse_cmd_ln.c
+  )
+
+add_executable(${PROGRAM} ${SRCS})
+target_link_libraries(${PROGRAM} sphinxtrain)
+target_include_directories(
+  ${PROGRAM} PRIVATE ${CMAKE_BINARY_DIR}
+  ${PROGRAM} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+  ${PROGRAM} PUBLIC ${CMAKE_SOURCE_DIR}/include
+  ${PROGRAM} INTERFACE ${CMAKE_SOURCE_DIR}/include
+  )
