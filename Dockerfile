@@ -10,11 +10,10 @@ RUN apt-get update && apt-get install -y \
     automake autoconf autoconf-archive libtool \
     bison gcc g++ wget git cmake \
     python3 python3-dev python3-wheel swig \
-    libfst-dev libngram-dev
-RUN wget https://github.com/cmusphinx/pocketsphinx/archive/03745404eecb7a440308263293caabdb605e7906.tar.gz
-RUN tar xf 03745404eecb7a440308263293caabdb605e7906.tar.gz
-WORKDIR /pocketsphinx-03745404eecb7a440308263293caabdb605e7906
-RUN mkdir build && cd build && cmake .. && make && make install
+    libfst-dev libngram-dev ninja-build
+RUN git clone --depth 1 https://github.com/cmusphinx/pocketsphinx.git
+WORKDIR /pocketsphinx
+RUN cmake -S . -B build -G Ninja && cmake --build build --target install
 WORKDIR /
 COPY . /sphinxtrain
 WORKDIR /sphinxtrain
