@@ -14,3 +14,4 @@ target_include_directories(
   ${PROGRAM} PUBLIC ${CMAKE_SOURCE_DIR}/include
   ${PROGRAM} INTERFACE ${CMAKE_SOURCE_DIR}/include
   )
+install(TARGETS ${PROGRAM} RUNTIME DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/sphinxtrain)
