@@ -65,6 +65,7 @@ add_subdirectory(src)
 # install them.
 
 # Install various other stuff though!
+install(DIRECTORY etc DESTINATION ${CMAKE_INSTALL_DATADIR}/sphinxtrain)
 add_subdirectory(scripts)
 # This is unfortunate but will do for now
 add_subdirectory(python)
