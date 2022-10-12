@@ -89,17 +89,19 @@ my $rv = RunTool('g2p_train', $logfile . ".training.log", 0,
 return $rv if $rv;
 
 Log ("Phase 3: Evaluating g2p model...\n");
-my @script_args = (catfile($ST::CFG_SCRIPT_DIR, '0000.g2p_train', 'evaluate.py'),
-                $decoder_path,
-                $g2p_model,
-                $test_file,
-                $g2p_prefix);
-my $rv = RunTool(shift @script_args, $logfile . ".evaluate.log", 0, @script_args);
+my @script_args = ($decoder_path,
+                   $g2p_model,
+                   $test_file,
+                   $g2p_prefix);
+my $rv = RunTool("python",
+                 "$logfile.evaluate.log", 0,
+                 catfile($ST::CFG_SCRIPT_DIR, '0000.g2p_train', 'evaluate.py'),
+                 @script_args);
 
 Log ("Phase 4: Creating pronunciations for OOV words...\n");
 my @wordsflag = (-words => 'yes');
 my @isfileflag = (-isfile => 'yes');
-my $rv = RunTool('phonetisaurus-g2p', $logfile . ".make_dict.log", 0,
+my $rv = RunTool('g2p_eval', $logfile . ".make_dict.log", 0,
 		 -model => $g2p_model,
 		 -nbest => 1,
 		 @wordsflag,

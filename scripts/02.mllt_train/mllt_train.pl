@@ -62,11 +62,12 @@ closedir(ACCUMDIR);
 
 # Add PYTHONPATH
 $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_SPHINXTRAIN_DIR, 'python');
-my $return_value = RunTool(catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'cmusphinx', 'mllt.py'),
-		 $logfile, 0,
-		 -l => $ldafile, 
-		 $mlltfile,
-		 @bwaccumdirs);
+my $return_value = RunTool("python",
+    $logfile, 0,
+    -l => $ldafile, 
+    $mlltfile,
+    catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'cmusphinx', 'mllt.py'),
+    @bwaccumdirs);
 
 if (! -s $mlltfile || $return_value != 0) {
     LogError("mllt.py failed to create MLLT transform with status $return_value");
