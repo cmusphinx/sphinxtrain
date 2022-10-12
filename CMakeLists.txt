@@ -39,18 +39,15 @@ CHECK_INCLUDE_FILE(inttypes.h HAVE_INTTYPES_H)
 CHECK_INCLUDE_FILE(stdint.h HAVE_STDINT_H)
 CHECK_INCLUDE_FILE(errno.h HAVE_ERRNO_H)
 
-find_package(BLAS)
-find_package(LAPACK)
-find_library(MATH_LIBRARY m)
-if(NOT LAPACK_FOUND)
-endif()
-    
 # FIXME: Should be a more portable way to do this...
 if(MSVC)
   add_compile_options(/W3)
 else()
   add_compile_options(-Wall -Wextra)
 endif()
+
+# Don't build shared libs by default, but distributions can do it
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 # Put all the output where we can find it (and run in place)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -63,3 +60,11 @@ add_definitions(-DHAVE_CONFIG_H)
 
 # Compile all the things
 add_subdirectory(src)
+
+# SphinxTrain headers are not meant for public consumption, do not
+# install them.
+
+# Install various other stuff though!
+add_subdirectory(scripts)
+# This is unfortunate but will do for now
+add_subdirectory(python)

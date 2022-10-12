@@ -87,6 +87,9 @@ libs/libsphinxbase/util/slapack_lite.c
 libs/libsphinxbase/util/blas_lite.c
 libs/libsphinxbase/util/f2c_lite.c
 )
+find_package(BLAS)
+find_package(LAPACK)
+find_library(MATH_LIBRARY m)
 if(NOT LAPACK_FOUND)
   message("System-wide LAPACK not found, will use internal version")
   add_library(sphinxtrain ${SRCS} ${LAPACK_SRCS})
@@ -116,6 +119,7 @@ set_target_properties(sphinxtrain PROPERTIES
   SOVERSION 5
   WINDOWS_EXPORT_ALL_SYMBOLS ON
   )
+install(TARGETS sphinxtrain LIBRARY)
 
 add_subdirectory(programs/agg_seg)
 add_subdirectory(programs/bldtree)
