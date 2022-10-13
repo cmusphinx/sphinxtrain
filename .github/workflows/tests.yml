@@ -1,0 +1,42 @@
+name: Run Tests
+on:
+  - push
+  - pull_request
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install
+        run: |
+          sudo apt-get install sox libfst-dev libngram-dev ninja-build \
+               libopenblas-dev python3-numpy python3-scipy
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DBUILD_G2P=ON -DBUILD_SHARED_LIBS=ON
+          cmake --build build
+      - name: Run tests
+        run: |
+          cmake --build build --target test
+      - name: Checkout PocketSphinx
+        uses: actions/checkout@v3
+        with:
+          repository: cmusphinx/pocketsphinx
+          path: pocketsphinx
+      - name: Checkout AN4
+        uses: actions/checkout@v3
+        with:
+          repository: cmusphinx/an4
+          path: an4
+      - name: Build PocketSphinx
+        run: |
+          cmake -S pocketsphinx -B pocketsphinx/build -G Ninja
+          cmake --build pocketsphinx/build
+          cp pocketsphinx/build/pocketsphinx_batch build/
+      - name: Train AN4 (in-place)
+        run: |
+          cd an4
+          python ../scripts/sphinxtrain -t an4 setup
+          python ../scripts/sphinxtrain -t an4 run
+ 
