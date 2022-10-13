@@ -8,8 +8,7 @@ RUN pip install --no-cache-dir numpy scipy
 FROM runtime as build
 # Stuff that hopefully won't change
 RUN apt-get update && apt-get install -y \
-    gcc g++ git cmake python3 python3-dev python3-wheel \
-    libfst-dev libngram-dev ninja-build
+    gcc g++ git cmake libfst-dev libngram-dev ninja-build
 RUN git clone --depth 1 https://github.com/cmusphinx/pocketsphinx.git
 WORKDIR /pocketsphinx
 RUN cmake -S . -B build -G Ninja && cmake --build build --target install
