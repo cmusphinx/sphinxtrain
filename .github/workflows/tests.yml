@@ -128,9 +128,9 @@ jobs:
       - name: Train AN4 (parallel)
         run: |
           cd an4
+          sphinxtrain -t an4 setup
           perl -i -pe 's/(NPART.*)1/${1}4/g' etc/sphinx_train.cfg
           perl -i -pe 's/(QUEUE_TYPE.*Queue)/${1}::POSIX/g' etc/sphinx_train.cfg
-          sphinxtrain -t an4 setup
           sphinxtrain run
       - name: Archive AN4 logs
         if: success() || failure()
@@ -163,8 +163,9 @@ jobs:
       - name: Train AN4 (align)
         run: |
           cd an4
+          sphinxtrain -t an4 setup
           perl -i -pe 's/((?:FORCEDALIGN|FALIGN).*)no/${1}yes/g' etc/sphinx_train.cfg
-          python ../scripts/sphinxtrain run
+          sphinxtrain run
       - name: Archive AN4 logs
         if: success() || failure()
         uses: actions/upload-artifact@v3
@@ -196,12 +197,11 @@ jobs:
       - name: Train AN4 (G2P+LDA+VTLN)
         run: |
           cd an4
-          git clean -df
-          git checkout etc
+          sphinxtrain -t an4 setup
           perl -i -pe 's/((?:G2P|LDA|VTLN).*)no/${1}yes/g' etc/sphinx_train.cfg
           perl -i -pe 's/(VTLN_START.*)0\.80/${1}0.95/g' etc/sphinx_train.cfg
           perl -i -pe 's/(VTLN_END.*)1\.40/${1}1.05/g' etc/sphinx_train.cfg
-          python ../scripts/sphinxtrain run
+          sphinxtrain run
       - name: Archive AN4 logs
         if: success() || failure()
         uses: actions/upload-artifact@v3
