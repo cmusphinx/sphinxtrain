@@ -9,7 +9,7 @@ This distribution is free software, see LICENSE for licence.
 
 For up-to-date information, please see the web site at
 
-   http://cmusphinx.sourceforge.net
+   https://cmusphinx.github.io
 
 Among the interesting resources there, you will find a link to
 "Resources to build a recognition system", with pointers to a
@@ -17,7 +17,7 @@ dictionary, audio data, acoustic model etc.
 
 For introduction in training the acoustic model see the tutorial
 
-http://cmusphinx.sourceforge.net/wiki/tutorialam
+https://cmusphinx.github.io/wiki/tutorialam
 
 Installation Guide:
 -------------------
