@@ -64,13 +64,16 @@ closedir(ACCUMDIR);
 $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_SPHINXTRAIN_DIR, 'python');
 my $return_value = RunTool("python",
     $logfile, 0,
-    -l => $ldafile, 
     catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'cmusphinx', 'mllt.py'),
+    -l => $ldafile, 
     $mlltfile,
     @bwaccumdirs);
 
 if (! -s $mlltfile || $return_value != 0) {
     LogError("mllt.py failed to create MLLT transform with status $return_value");
+    open LOG, ">>$logfile" or die "Failed to open $logfile: $!";
+    print LOG "MLLT training failed\n";
+    close LOG;
 } else {
     open LOG, ">>$logfile" or die "Failed to open $logfile: $!";
     print LOG "MLLT training complete\n";

@@ -69,6 +69,9 @@ my $rv = RunTool("python",
 
 if (! -s $ldafile || $rv != 0) {
     LogError("lda.py failed to create LDA transform with status $rv");
+    open LOG, ">>$logfile" or die "Failed to open $logfile: $!";
+    print LOG "LDA training failed\n";
+    close LOG;
 }
 else {
     open LOG, ">>$logfile" or die "Failed to open $logfile: $!";
