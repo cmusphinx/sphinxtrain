@@ -45,12 +45,12 @@ jobs:
           git clean -df
           git checkout etc
           python ../scripts/sphinxtrain -t an4 setup
-          perl -i -pe 's/((?:G2P|FORCEDALIGN|LDA|FALIGN).*)no/${1}yes/g' etc/sphinx_train.cfg
+          perl -i -pe 's/((?:G2P|FORCEDALIGN|LDA|FALIGN|VTLN).*)no/${1}yes/g' etc/sphinx_train.cfg
           python ../scripts/sphinxtrain run
       - name: Train AN4 (installed)
         run: |
-          cmake --build build install
-          cmake --build pocketsphinx/build install
+          cmake --build build --target install
+          cmake --build pocketsphinx/build --target install
           /sbin/ldconfig
           cd an4
           git clean -df
@@ -66,3 +66,9 @@ jobs:
           perl -i -pe 's/(QUEUE_TYPE.*Queue)/${1}::POSIX/g' etc/sphinx_train.cfg
           sphinxtrain -t an4 setup
           sphinxtrain run
+      - name: Archive AN4 logs
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: an4-logdir
+          path: an4/logdir
