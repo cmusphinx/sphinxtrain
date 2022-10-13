@@ -149,6 +149,7 @@ add_subdirectory(programs/printp)
 add_subdirectory(programs/prunetree)
 add_subdirectory(programs/sphinx_cepview)
 add_subdirectory(programs/sphinx_fe)
+add_subdirectory(programs/sphinx3_align)
 add_subdirectory(programs/tiestate)
 
 option(BUILD_G2P "Build G2P trainer (requires OpenFST)" OFF)
