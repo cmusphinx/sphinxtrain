@@ -79,6 +79,10 @@
 #ifndef _CTX_TAB_
 #define _CTX_TAB_
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <sphinxbase/prim_type.h>
 
 #include <s3types.h>

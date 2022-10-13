@@ -64,6 +64,11 @@
 /** \file vector.h
     \brief operation on Vector
 */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <s3types.h>
 

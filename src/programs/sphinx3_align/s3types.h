@@ -81,6 +81,10 @@
 #ifndef _S3_S3TYPES_H_
 #define _S3_S3TYPES_H_
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <float.h>
 #include <assert.h>
 
