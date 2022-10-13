@@ -7,8 +7,7 @@ New features:
     * SphinxBase is not a requirement
     * Runs in-place properly
     * Docker support to ease dependency pain
-    * Force-alignment using PocketSphinx 5.0.0 (TODO)
-    * Python not needed for basic training (TODO)
+    * Include force-aligner from Sphinx3
 
 Fixes:
 
