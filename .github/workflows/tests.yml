@@ -43,9 +43,15 @@ jobs:
     needs: [build]
     steps:
       - name: Download build
+        id: download
         uses: actions/download-artifact@v3
         with:
           name: build
+          path: .
+      - name: 'Echo download path'
+        run: echo ${{steps.download.outputs.download-path}}
+      - name: Display structure of downloaded files
+        run: ls -R
       - name: Install
         run: |
           sudo apt-get install libfst-dev libngram-dev cmake \
@@ -74,6 +80,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build
+          path: .
       - name: Install
         run: |
           sudo apt-get install libfst-dev libngram-dev cmake \
@@ -106,6 +113,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build
+          path: .
       - name: Install
         run: |
           sudo apt-get install libfst-dev libngram-dev cmake \
@@ -140,6 +148,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build
+          path: .
       - name: Install
         run: |
           sudo apt-get install libfst-dev libngram-dev cmake \
@@ -172,6 +181,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build
+          path: .
       - name: Install
         run: |
           sudo apt-get install libfst-dev libngram-dev cmake \
