@@ -8,19 +8,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          path: sphinxtrain
       - name: Install
         run: |
           sudo apt-get install libfst-dev libngram-dev cmake \
                ninja-build libopenblas-dev python3-numpy python3-scipy
       - name: Build
         run: |
-          cmake -S sphinxtrain -B sphinxtrain/build -G Ninja -DBUILD_G2P=ON -DBUILD_SHARED_LIBS=ON
-          cmake --build sphinxtrain/build
+          cmake -S . -B build -G Ninja -DBUILD_G2P=ON
+          cmake --build build
       - name: Run tests
         run: |
-          cmake --build sphinxtrain/build --target test
+          cmake --build build --target test
       - name: Checkout PocketSphinx
         uses: actions/checkout@v3
         with:
@@ -30,28 +28,21 @@ jobs:
         run: |
           cmake -S pocketsphinx -B pocketsphinx/build -G Ninja
           cmake --build pocketsphinx/build
-          cp pocketsphinx/build/pocketsphinx_batch sphinxtrain/build/
+          cp pocketsphinx/build/pocketsphinx_batch build/
       - name: Archive build
         uses: actions/upload-artifact@v3
         with:
-          name: build
-          path: |
-            sphinxtrain/build
-            pocketsphinx/build
+          path: build
+
   train-inplace:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Download build
         id: download
         uses: actions/download-artifact@v3
-        with:
-          name: build
-          path: .
-      - name: 'Echo download path'
-        run: echo ${{steps.download.outputs.download-path}}
-      - name: Display structure of downloaded files
-        run: ls -R
       - name: Install
         run: |
           sudo apt-get install libfst-dev libngram-dev cmake \
@@ -64,29 +55,29 @@ jobs:
       - name: Train AN4 (inplace)
         run: |
           cd an4
-          python ../sphinxtrain/scripts/sphinxtrain -t an4 setup
-          python ../sphinxtrain/scripts/sphinxtrain run
+          python ../scripts/sphinxtrain -t an4 setup
+          python ../scripts/sphinxtrain run
       - name: Archive AN4 logs
         if: success() || failure()
         uses: actions/upload-artifact@v3
         with:
           name: an4-logdir
           path: an4/logdir
+
   train-installed:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Download build
         uses: actions/download-artifact@v3
-        with:
-          name: build
-          path: .
       - name: Install
         run: |
           sudo apt-get install libfst-dev libngram-dev cmake \
                ninja-build libopenblas-dev python3-numpy python3-scipy
-          sudo cmake --build sphinxtrain/build --target install
-          sudo cmake --build pocketsphinx/build --target install
+          sudo cmake --build build --target install
+          sudo cp build/pocketsphinx_batch /usr/local/bin
       - name: Checkout AN4
         uses: actions/checkout@v3
         with:
@@ -109,17 +100,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Download build
         uses: actions/download-artifact@v3
-        with:
-          name: build
-          path: .
       - name: Install
         run: |
           sudo apt-get install libfst-dev libngram-dev cmake \
                ninja-build libopenblas-dev python3-numpy python3-scipy
-          sudo cmake --build sphinxtrain/build --target install
-          sudo cmake --build pocketsphinx/build --target install
+          sudo cmake --build build --target install
+          sudo cp build/pocketsphinx_batch /usr/local/bin
       - name: Checkout AN4
         uses: actions/checkout@v3
         with:
@@ -144,17 +134,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Download build
         uses: actions/download-artifact@v3
-        with:
-          name: build
-          path: .
       - name: Install
         run: |
           sudo apt-get install libfst-dev libngram-dev cmake \
                ninja-build libopenblas-dev python3-numpy python3-scipy
-          sudo cmake --build sphinxtrain/build --target install
-          sudo cmake --build pocketsphinx/build --target install
+          sudo cmake --build build --target install
+          sudo cp build/pocketsphinx_batch /usr/local/bin
       - name: Checkout AN4
         uses: actions/checkout@v3
         with:
@@ -177,17 +166,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Download build
         uses: actions/download-artifact@v3
-        with:
-          name: build
-          path: .
       - name: Install
         run: |
           sudo apt-get install libfst-dev libngram-dev cmake \
                ninja-build libopenblas-dev python3-numpy python3-scipy
-          sudo cmake --build sphinxtrain/build --target install
-          sudo cmake --build pocketsphinx/build --target install
+          sudo cmake --build build --target install
+          sudo cp build/pocketsphinx_batch /usr/local/bin
       - name: Checkout AN4
         uses: actions/checkout@v3
         with:
