@@ -5,7 +5,7 @@
 using namespace std;
 
 const char helpstr[] =
-    "Usage: phonetisaurus-g2p -model MODEL -input INPUT [-output OUTPUT] [-isfile] [-output_cost] \n\
+    "Usage: g2p_eval -model MODEL -input INPUT [-output OUTPUT] [-isfile] [-output_cost] \n\
 		               [-nbest NBEST] [-beam BEAM] [-sep SEP] [-words] \n\
 		\n\
 		-model MODEL,   The input WFST G2P model. \n\

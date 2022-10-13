@@ -128,7 +128,7 @@ else {
             my $norm_log = File::Spec->catfile($logdir,
                                                "$ST::CFG_EXPTNAME.$iter.norm.log");
             if (open LOG, "<$norm_log") {
-                if (/failed/ or /Aborting/) {
+                if (/failed/i or /Aborting/) {
                     LogError("Training failed in iteration $iter");
                     exit 1;
                 }
@@ -136,7 +136,7 @@ else {
         }
         if (open LOG, "<$mllt_log") {
             while (<LOG>) {
-                if (/failed/ or /Error/) {
+                if (/failed/i or /Error/) {
                     LogError("MLLT Training failed");
                     exit 1;
                 }

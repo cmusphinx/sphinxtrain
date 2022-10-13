@@ -61,12 +61,17 @@ closedir(ACCUMDIR);
 
 # Add PYTHONPATH
 $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_SPHINXTRAIN_DIR, 'python');
-my $rv = RunTool(catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'cmusphinx', 'lda.py'),
+my $rv = RunTool("python",
 		 $logfile, 0,
-		 $ldafile, @bwaccumdirs);
+                 catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'cmusphinx', 'lda.py'),
+		 $ldafile,
+                 @bwaccumdirs);
 
 if (! -s $ldafile || $rv != 0) {
     LogError("lda.py failed to create LDA transform with status $rv");
+    open LOG, ">>$logfile" or die "Failed to open $logfile: $!";
+    print LOG "LDA training failed\n";
+    close LOG;
 }
 else {
     open LOG, ">>$logfile" or die "Failed to open $logfile: $!";

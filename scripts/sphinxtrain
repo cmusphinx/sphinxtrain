@@ -18,21 +18,19 @@ def find_paths():
     # Find the location of the files, it can be libexec or lib or lib64
     currentpath = os.path.dirname(os.path.realpath(__file__))
 
+    # FIXME: ALL OF THIS IS WRONG WRONG WRONG
     sphinxbinpath = os.path.realpath(currentpath + "/../libexec/sphinxtrain")
-
-    if os.path.exists(currentpath + "/../lib/sphinxtrain/bw"):
+    # Check if we are running in the source tree
+    if os.path.exists(currentpath + "/../build/bw"):
         sphinxbinpath = os.path.realpath(currentpath +
-                                         "/../lib/sphinxtrain/bw")
+                                         "/../build")
+    if os.path.exists(currentpath + "/../build/Debug/bw.exe"):
+        sphinxbinpath = os.path.realpath(currentpath + "/../build/Debug")
+    if os.path.exists(currentpath + "/../build/Release/bw.exe"):
+        sphinxbinpath = os.path.realpath(currentpath + "/../build/Release")
 
-    if os.path.exists(currentpath + "/../bin/Release/Win32"):
-        sphinxbinpath = os.path.realpath(currentpath + "/../bin/Release/Win32")
-
-    # Find the location for the libraries
-    sphinxpath = os.path.realpath(currentpath + "/../lib/sphinxtrain")
-
-    if os.path.exists(currentpath + "/../lib64/sphinxtrain/scripts/00.verify"):
-        sphinxpath = os.path.realpath(currentpath + "/../lib64/sphinxtrain")
-
+    # Find the location for the scripts
+    sphinxpath = os.path.realpath(currentpath + "/../share/sphinxtrain")
     if os.path.exists(currentpath + "/../scripts/00.verify"):
         sphinxpath = os.path.realpath(currentpath + "/..")
 
@@ -40,8 +38,11 @@ def find_paths():
             or os.path.exists(sphinxbinpath + "/bw.exe")):
         print("Failed to find sphinxtrain binaries. Check your installation")
         exit(1)
+    if not (os.path.exists(sphinxpath + "/scripts/00.verify/verify_all.pl")):
+        print("Failed to find sphinxtrain scripts. Check your installation")
+        exit(1)
 
-    # Perl script want forward slashes
+    # Perl scripts want forward slashes
     training_basedir = os.getcwd().replace('\\', '/')
     sphinxpath = sphinxpath.replace('\\', '/')
     sphinxbinpath = sphinxbinpath.replace('\\', '/')
@@ -101,7 +102,7 @@ def run_stages(stages):
             name = step.split("/")[0].split(".")[-1]
             number = step.split("/")[0].split(".")[0]
             if name == stage or number == stage:
-                ret = os.system(sphinxpath + "/scripts/" + step)
+                ret = os.system("perl '" + sphinxpath + "/scripts/" + step + "'")
                 if ret != 0:
                     exit(ret)
 
@@ -113,7 +114,7 @@ def run_from(stage):
         number = step.split("/")[0].split(".")[0]
         if name == stage or number == stage or found:
             found = True
-            ret = os.system(sphinxpath + "/scripts/" + step)
+            ret = os.system("perl '" + sphinxpath + "/scripts/" + step + "'")
             if ret != 0:
                 exit(ret)
 
@@ -121,7 +122,7 @@ def run_from(stage):
 def run():
     print("Running the training")
     for step in steps:
-        ret = os.system(sphinxpath + "/scripts/" + step)
+        ret = os.system("perl '" + sphinxpath + "/scripts/" + step + "'")
         if ret != 0:
             exit(ret)
 

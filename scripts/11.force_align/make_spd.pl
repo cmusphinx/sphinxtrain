@@ -58,8 +58,10 @@ if ($ST::CFG_FORCE_ALIGN_SPD eq "yes") {
     my $sptrans = catfile($outdir, "${ST::CFG_EXPTNAME}.sptranscripts");
     my $logfile = catfile($logdir, "${ST::CFG_EXPTNAME}.spd.log");
     $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_BASE_DIR, 'python');
-    my $rv = RunTool(catfile($ST::CFG_BASE_DIR, 'python', 'cmusphinx', 'dict_spd.py'),
-		     $logfile, 0, GetDict(), $transcriptfile, $spdict);
+    my $rv = RunTool("python",
+		     $logfile, 0,
+                     catfile($ST::CFG_BASE_DIR, 'python', 'cmusphinx', 'dict_spd.py'),
+                     GetDict(), $transcriptfile, $spdict);
     if ($rv != 0) {
 	die "Failed to create single pronunciation dictionary: $rv";
     }

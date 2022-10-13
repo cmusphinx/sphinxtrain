@@ -1,3 +1,21 @@
+SphinxTrain 5.0.0 (NOT YET RELEASED)
+^^^^^^^^^^^^^^^^^
+
+New features:
+
+    * Build system now uses CMake, supports VSCode
+    * SphinxBase is not a requirement
+    * Runs in-place properly
+    * Docker support to ease dependency pain
+    * Force-alignment using PocketSphinx 5.0.0 (TODO)
+    * Python not needed for basic training (TODO)
+
+Fixes:
+
+    * Feature extraction doesn't remove data from the input
+    * Improved error reporting
+    * Parallel training with Queue::POSIX is now reliable (tested on 64 CPUs)
+
 SphinxTrain 1.0.8
 ^^^^^^^^^^^^^^^^^
 

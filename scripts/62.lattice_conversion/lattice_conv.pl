@@ -102,8 +102,9 @@ my $fileoffset = $filecount * ($part-1);
 
 # Add PYTHONPATH
 $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_SPHINXTRAIN_DIR, 'python');
-my $rv = RunTool(catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'cmusphinx', 'lattice_conv.py'),
+my $rv = RunTool("python",
 		 $logfile, $filecount,
+                 catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'cmusphinx', 'lattice_conv.py'),
 		 $lmfile, $fillerfile, $filelst, $filecount, $fileoffset,
 		 $in_denlatdir, $numlatdir, $latdir);
 

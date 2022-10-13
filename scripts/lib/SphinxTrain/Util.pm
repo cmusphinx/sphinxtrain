@@ -367,7 +367,16 @@ sub RunTool {
 	}
       }
     }
-    close $pipe;
+    unless (close $pipe) {
+      if ($!) {
+        $returnvalue = $!;
+        LogError("Exec failed: $!");
+      }
+      else {
+        $returnvalue = $? >> 8;
+        LogError("Subprocess failed with return code $returnvalue");
+      }
+    }
     print "\n" if $ctl_counter;
     if ($error_count > 0) {
 	LogError("This step had $error_count ERROR messages and " .
@@ -465,7 +474,7 @@ sub WaitForConvergence {
 	    }
 	    open LOG, "<$norm_log" or last;
 	    while (<LOG>) {
-		if (/failed/ or /Aborting/) {
+		if (/failed/i or /Aborting/) {
 		    LogError("Training failed in iteration $iter");
 		    return -1;
 		}
@@ -508,7 +517,7 @@ sub TiedWaitForConvergence {
 						   "$ST::CFG_EXPTNAME.$ngau.$iter.norm.log");
 		open LOG, "<$norm_log" or last ITER;
 		while (<LOG>) {
-		    if (/failed/ or /Aborting/) {
+		    if (/failed/i or /Aborting/) {
 			Log("Training failed in iteration $iter");
 			return -1;
 		    } elsif (/COMPLETE/) {
@@ -564,7 +573,7 @@ sub WaitForMMIEConverge {
 
       open LOG, "<$norm_log" or last;
       while (<LOG>) {
-	if (/failed/ or /Aborting/) {
+	if (/failed/i or /Aborting/) {
 	  LogError("Training failed in iteration $iter");
 	  return -1;
 	}
