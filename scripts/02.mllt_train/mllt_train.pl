@@ -65,8 +65,8 @@ $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_SPHINXTRAIN_DIR, 'python')
 my $return_value = RunTool("python",
     $logfile, 0,
     -l => $ldafile, 
-    $mlltfile,
     catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'cmusphinx', 'mllt.py'),
+    $mlltfile,
     @bwaccumdirs);
 
 if (! -s $mlltfile || $return_value != 0) {

@@ -63,8 +63,8 @@ closedir(ACCUMDIR);
 $ENV{PYTHONPATH} .= ':' . File::Spec->catdir($ST::CFG_SPHINXTRAIN_DIR, 'python');
 my $rv = RunTool("python",
 		 $logfile, 0,
-		 $ldafile,
                  catfile($ST::CFG_SPHINXTRAIN_DIR, 'python', 'cmusphinx', 'lda.py'),
+		 $ldafile,
                  @bwaccumdirs);
 
 if (! -s $ldafile || $rv != 0) {
