@@ -27,18 +27,19 @@ This sections contain installation guide for various platforms.
 All Platforms:
 --------------
 
-You will need Perl and Python to use the scripts provided. Linux
-usually comes with some version of Perl. If you do not have Perl
-installed, please check:
+You will unfortunately need both Perl and Python to use the scripts
+provided. Linux usually comes with some version of Perl and Python. If
+you do not have Perl installed, please check:
 
 http://www.perl.org
 
-where you can download it for free. For Windows, a popular version,
-ActivePerl, is available from ActiveState at:
+where you can download it for free. For Windows, if you insist on not
+using Windows Subsystem for Linux, a popular version, ActivePerl, is
+available from ActiveState at:
 
-http://www.activestate.com/Products/ActivePerl/
+https://www.activestate.com/products/perl/
 
-Python can be obtained from:
+Python for Windows can be obtained from:
 
 http://www.python.org/download/
 
@@ -48,13 +49,20 @@ obtained from:
 
 http://scipy.org/Download
 
+Or you can use Anaconda which makes all of this somewhat easier:
+
+https://www.anaconda.com/products/distribution
+
 If you wish to use the grapheme-to-phoneme support, you will need
-rather specific versions of OpenFST and OpenGRM.  It is known to work
-with OpenFST 1.6.3, and known *not* to work with 1.8.2. There is
-probably nothing you want in the latest version anyway, and compiling
-it will consume several hours of your life and several gigabytes of
-your disk for no good reason, so best to just use what Ubuntu 20.04
-LTS or 22.04 LTS will install for you with:
+rather specific versions of
+[OpenFST](https://www.openfst.org/twiki/bin/view/FST/WebHome) and
+[OpenGRM
+NGram](https://www.opengrm.org/twiki/bin/view/GRM/NGramLibrary).  It
+is known to work with OpenFST 1.6.3, and known *not* to work with
+1.8.2. There is probably nothing you want in the latest version
+anyway, and compiling it will consume several hours of your life and
+several gigabytes of your disk for no good reason, so best to just use
+what Ubuntu 20.04 LTS or 22.04 LTS will install for you with:
 
     apt install libfst-dev libngram-dev
 
