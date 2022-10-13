@@ -1,5 +1,5 @@
-SphinxTrain
-===========
+SphinxTrain 5.0.0
+=================
 
 This is SphinxTrain, Carnegie Mellon University's open source acoustic
 model trainer. This directory contains the scripts and instructions
