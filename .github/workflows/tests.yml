@@ -34,9 +34,35 @@ jobs:
           cmake -S pocketsphinx -B pocketsphinx/build -G Ninja
           cmake --build pocketsphinx/build
           cp pocketsphinx/build/pocketsphinx_batch build/
-      - name: Train AN4 (in-place)
+      - name: Train AN4 (basic)
         run: |
           cd an4
           python ../scripts/sphinxtrain -t an4 setup
-          python ../scripts/sphinxtrain -t an4 run
- 
+          python ../scripts/sphinxtrain run
+      - name: Train AN4 (all)
+        run: |
+          cd an4
+          git clean -df
+          git checkout etc
+          python ../scripts/sphinxtrain -t an4 setup
+          perl -i -pe 's/((?:G2P|FORCEDALIGN|LDA|FALIGN|VTLN).*)no/${1}yes/g' etc/sphinx_train.cfg
+          python ../scripts/sphinxtrain run
+      - name: Train AN4 (installed)
+        run: |
+          cmake --build build install
+          cmake --build pocketsphinx/build install
+          /sbin/ldconfig
+          cd an4
+          git clean -df
+          git checkout etc
+          sphinxtrain -t an4 setup
+          sphinxtrain run
+      - name: Train AN4 (parallel)
+        run: |
+          cd an4
+          git clean -df
+          git checkout etc
+          perl -i -pe 's/(NPART.*)1/${1}4/g' etc/sphinx_train.cfg
+          perl -i -pe 's/(QUEUE_TYPE.*Queue)/${1}::POSIX/g' etc/sphinx_train.cfg
+          sphinxtrain -t an4 setup
+          sphinxtrain run
