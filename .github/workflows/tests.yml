@@ -230,12 +230,14 @@ jobs:
         with:
           repository: cmusphinx/an4
           path: an4
-      - name: Train AN4 (installed)
+      - name: Train AN4 (semi)
         run: |
           cd an4
           sphinxtrain -t an4 setup
           perl -i -pe 's/^(\$CFG_HMM_TYPE.*cont)/#$1/' etc/sphinx_train.cfg
           perl -i -pe 's/^#(\$CFG_HMM_TYPE.*semi)/$1/' etc/sphinx_train.cfg
+          perl -i -pe 's/(DENSITIES.*= )\d+/${1}16/' etc/sphinx_train.cfg
+          perl -i -pe 's/(MAX_ITERATIONS.*= )\d+/${1}5/' etc/sphinx_train.cfg
           sphinxtrain run
       - name: Archive AN4 logs
         if: success() || failure()
@@ -265,12 +267,14 @@ jobs:
         with:
           repository: cmusphinx/an4
           path: an4
-      - name: Train AN4 (installed)
+      - name: Train AN4 (PTM)
         run: |
           cd an4
           sphinxtrain -t an4 setup
           perl -i -pe 's/^(\$CFG_HMM_TYPE.*cont)/#$1/' etc/sphinx_train.cfg
           perl -i -pe 's/^#(\$CFG_HMM_TYPE.*ptm)/$1/' etc/sphinx_train.cfg
+          perl -i -pe 's/(DENSITIES.*= )\d+/${1}16/' etc/sphinx_train.cfg
+          perl -i -pe 's/(MAX_ITERATIONS.*= )\d+/${1}5/' etc/sphinx_train.cfg
           sphinxtrain run
       - name: Archive AN4 logs
         if: success() || failure()
