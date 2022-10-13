@@ -30,7 +30,7 @@ jobs:
         run: |
           cmake -S pocketsphinx -B pocketsphinx/build -G Ninja
           cmake --build pocketsphinx/build
-          cp pocketsphinx/build/pocketsphinx_batch build/
+          cp pocketsphinx/build/pocketsphinx_batch sphinxbase/build/
       - name: Archive build
         uses: actions/upload-artifact@v3
         with:
