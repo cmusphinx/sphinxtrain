@@ -68,7 +68,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v3
         with:
-          name: an4-logdir
+          name: an4-logdir-${{ github.job }}
           path: an4/logdir
 
   train-installed:
@@ -101,7 +101,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v3
         with:
-          name: an4-logdir
+          name: an4-logdir-${{ github.job }}
           path: an4/logdir
 
   train-parallel:
@@ -136,7 +136,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v3
         with:
-          name: an4-logdir
+          name: an4-logdir-${{ github.job }}
           path: an4/logdir
 
   train-align:
@@ -170,10 +170,10 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v3
         with:
-          name: an4-logdir
+          name: an4-logdir-${{ github.job }}
           path: an4/logdir
 
-  train-all:
+  train-g2p-lda-vtln:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
@@ -206,5 +206,75 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v3
         with:
-          name: an4-logdir
+          name: an4-logdir-${{ github.job }}
+          path: an4/logdir
+
+  train-semi:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Download build
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: Install
+        run: |
+          tar xf build.tar
+          sudo apt-get install libfst-dev libngram-dev cmake \
+               ninja-build libopenblas-dev python3-numpy python3-scipy
+          sudo cmake --build sphinxbase/build --target install
+          sudo cmake --build pocketsphinx/build --target install
+      - name: Checkout AN4
+        uses: actions/checkout@v3
+        with:
+          repository: cmusphinx/an4
+          path: an4
+      - name: Train AN4 (installed)
+        run: |
+          cd an4
+          sphinxtrain -t an4 setup
+          perl -i -pe 's/(\$CFG_HMM_TYPE.*cont)/#$1/' etc/sphinx_train.cfg
+          perl -i -pe 's/#(\$CFG_HMM_TYPE.*semi)/$1/' etc/sphinx_train.cfg
+          sphinxtrain run
+      - name: Archive AN4 logs
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: an4-logdir-${{ github.job }}
+          path: an4/logdir
+
+  train-ptm:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Download build
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: Install
+        run: |
+          tar xf build.tar
+          sudo apt-get install libfst-dev libngram-dev cmake \
+               ninja-build libopenblas-dev python3-numpy python3-scipy
+          sudo cmake --build sphinxbase/build --target install
+          sudo cmake --build pocketsphinx/build --target install
+      - name: Checkout AN4
+        uses: actions/checkout@v3
+        with:
+          repository: cmusphinx/an4
+          path: an4
+      - name: Train AN4 (installed)
+        run: |
+          cd an4
+          sphinxtrain -t an4 setup
+          perl -i -pe 's/(\$CFG_HMM_TYPE.*cont)/#$1/' etc/sphinx_train.cfg
+          perl -i -pe 's/#(\$CFG_HMM_TYPE.*ptm)/$1/' etc/sphinx_train.cfg
+          sphinxtrain run
+      - name: Archive AN4 logs
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: an4-logdir-${{ github.job }}
           path: an4/logdir
