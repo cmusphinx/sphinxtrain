@@ -45,7 +45,7 @@ jobs:
           git clean -df
           git checkout etc
           python ../scripts/sphinxtrain -t an4 setup
-          perl -i -pe 's/((?:G2P|FORCEDALIGN|LDA|FALIGN|VTLN).*)no/${1}yes/g' etc/sphinx_train.cfg
+          perl -i -pe 's/((?:G2P|FORCEDALIGN|LDA|FALIGN).*)no/${1}yes/g' etc/sphinx_train.cfg
           python ../scripts/sphinxtrain run
       - name: Train AN4 (installed)
         run: |
