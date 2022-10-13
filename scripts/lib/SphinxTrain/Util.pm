@@ -289,9 +289,10 @@ sub RunTool {
 
       # Windows needs the .exe suffix, but all OSes need to verify if
       # the file exists. The right test here would be "-x", but this
-      # doesn't work in Windows. We use the next best thing, "-e"
+      # doesn't do anything useful in Windows. We use the next best
+      # thing, "-e" (but make sure it isn't a directory...)
       foreach ("", ".exe") {
-	  if (-e "$fcmd$_") {
+	  if (-e "$fcmd$_" and not -d "$fcmd$_") {
 	      $cmd = "$fcmd$_";
 	      last;
 	  }
