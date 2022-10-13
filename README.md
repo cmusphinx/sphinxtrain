@@ -48,6 +48,18 @@ obtained from:
 
 http://scipy.org/Download
 
+If you wish to use the grapheme-to-phoneme support, you will need
+rather specific versions of OpenFST and OpenGRM.  It is known to work
+with OpenFST 1.6.3, and known *not* to work with 1.8.2. There is
+probably nothing you want in the latest version anyway, and compiling
+it will consume several hours of your life and several gigabytes of
+your disk for no good reason, so best to just use what Ubuntu 20.04
+LTS or 22.04 LTS will install for you with:
+
+    apt install libfst-dev libngram-dev
+
+See the note about `-DBUILD_G2P=ON` below to enable G2P support.
+
 Linux/Unix Installation:
 ------------------------
 
@@ -69,7 +81,17 @@ To build, simply run:
     cmake -S . -B build
     cmake --build build
 
-This should configure everything automatically. The code has been tested with gcc.
+This should configure everything automatically. The code has been
+tested with gcc.
+
+To enable G2P, you need to add a magic incantation to the first
+command above, namely:
+
+    cmake -S . -B build -DBUILD_G2P=ON
+    
+You can also enable shared libraries with `-DBUILD_SHARED_LIBS=ON`,
+but I suggest that you *not* do that unless you have a very good
+reason.
 
 You do not need to install SphinxTrain to run it, simply run
 `scripts/sphinxtrain` from the source directory when initializing a
