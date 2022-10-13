@@ -625,15 +625,15 @@ sub GetLists {
     # aligned transcripts and the list of aligned files is obtained as a result
     # of (03.) forced alignment or (04.) VTLN
     my ($listoffiles, $transcriptfile);
-    if ($ST::CFG_FORCE_ALIGN_SPD eq "yes") {
+    if ($ST::CFG_VTLN eq "yes") {
+	$listoffiles   = "$ST::CFG_BASE_DIR/vtlnout/${ST::CFG_EXPTNAME}.alignedfiles";
+	$transcriptfile  = "$ST::CFG_BASE_DIR/vtlnout/${ST::CFG_EXPTNAME}.alignedtranscripts";
+    } elsif ($ST::CFG_FORCE_ALIGN_SPD eq "yes") {
 	$listoffiles     = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
 	$transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.sptranscripts";
     } elsif ($ST::CFG_FORCEDALIGN eq "yes") {
 	$listoffiles   = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
 	$transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedtranscripts";
-    } elsif ($ST::CFG_VTLN eq "yes") {
-	$listoffiles   = "$ST::CFG_BASE_DIR/vtlnout/${ST::CFG_EXPTNAME}.alignedfiles";
-	$transcriptfile  = "$ST::CFG_BASE_DIR/vtlnout/${ST::CFG_EXPTNAME}.alignedtranscripts";
     } else {
 	$listoffiles = $ST::CFG_LISTOFFILES;
 	$transcriptfile = $ST::CFG_TRANSCRIPTFILE;
