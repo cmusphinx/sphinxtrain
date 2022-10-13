@@ -62,8 +62,6 @@ jobs:
       - name: Train AN4 (inplace)
         run: |
           cd an4
-          ls ../sphinxbasescripts
-          ls ../sphinxbase/build
           python3 ../sphinxbase/scripts/sphinxtrain -t an4 setup
           python3 ../sphinxbase/scripts/sphinxtrain run
       - name: Archive AN4 logs
@@ -99,6 +97,111 @@ jobs:
           cd an4
           sphinxtrain -t an4 setup
           sphinxtrain run
+      - name: Archive AN4 logs
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: an4-logdir
+          path: an4/logdir
+
+  train-parallel:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Download build
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: Install
+        run: |
+          tar xf build.tar
+          sudo apt-get install libfst-dev libngram-dev cmake \
+               ninja-build libopenblas-dev python3-numpy python3-scipy
+          sudo cmake --build sphinxbase/build --target install
+          sudo cmake --build pocketsphinx/build --target install
+      - name: Checkout AN4
+        uses: actions/checkout@v3
+        with:
+          repository: cmusphinx/an4
+          path: an4
+      - name: Train AN4 (parallel)
+        run: |
+          cd an4
+          perl -i -pe 's/(NPART.*)1/${1}4/g' etc/sphinx_train.cfg
+          perl -i -pe 's/(QUEUE_TYPE.*Queue)/${1}::POSIX/g' etc/sphinx_train.cfg
+          sphinxtrain -t an4 setup
+          sphinxtrain run
+      - name: Archive AN4 logs
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: an4-logdir
+          path: an4/logdir
+
+  train-align:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Download build
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: Install
+        run: |
+          tar xf build.tar
+          sudo apt-get install libfst-dev libngram-dev cmake \
+               ninja-build libopenblas-dev python3-numpy python3-scipy
+          sudo cmake --build sphinxbase/build --target install
+          sudo cmake --build pocketsphinx/build --target install
+      - name: Checkout AN4
+        uses: actions/checkout@v3
+        with:
+          repository: cmusphinx/an4
+          path: an4
+      - name: Train AN4 (align)
+        run: |
+          cd an4
+          perl -i -pe 's/((?:FORCEDALIGN|FALIGN).*)no/${1}yes/g' etc/sphinx_train.cfg
+          python ../scripts/sphinxtrain run
+      - name: Archive AN4 logs
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: an4-logdir
+          path: an4/logdir
+
+  train-all:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Download build
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: Install
+        run: |
+          tar xf build.tar
+          sudo apt-get install libfst-dev libngram-dev cmake \
+               ninja-build libopenblas-dev python3-numpy python3-scipy
+          sudo cmake --build sphinxbase/build --target install
+          sudo cmake --build pocketsphinx/build --target install
+      - name: Checkout AN4
+        uses: actions/checkout@v3
+        with:
+          repository: cmusphinx/an4
+          path: an4
+      - name: Train AN4 (G2P+LDA+VTLN)
+        run: |
+          cd an4
+          git clean -df
+          git checkout etc
+          perl -i -pe 's/((?:G2P|LDA|VTLN).*)no/${1}yes/g' etc/sphinx_train.cfg
+          perl -i -pe 's/(VTLN_START.*)0\.80/${1}0.95/g' etc/sphinx_train.cfg
+          perl -i -pe 's/(VTLN_END.*)1\.40/${1}1.05/g' etc/sphinx_train.cfg
+          python ../scripts/sphinxtrain run
       - name: Archive AN4 logs
         if: success() || failure()
         uses: actions/upload-artifact@v3
