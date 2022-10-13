@@ -198,9 +198,11 @@ jobs:
         run: |
           cd an4
           sphinxtrain -t an4 setup
+          perl -i -pe 's/(NPART.*)1/${1}2/' etc/sphinx_train.cfg
+          perl -i -pe 's/(QUEUE_TYPE.*Queue)/${1}::POSIX/' etc/sphinx_train.cfg
           perl -i -pe 's/((?:G2P|LDA|VTLN).*)no/${1}yes/' etc/sphinx_train.cfg
-          perl -i -pe 's/(VTLN_START.*)0\.80/${1}0.95/' etc/sphinx_train.cfg
-          perl -i -pe 's/(VTLN_END.*)1\.40/${1}1.05/' etc/sphinx_train.cfg
+          perl -i -pe 's/(VTLN_START.*)0\.80/${1}0.90/' etc/sphinx_train.cfg
+          perl -i -pe 's/(VTLN_END.*)1\.40/${1}1.10/' etc/sphinx_train.cfg
           sphinxtrain run
       - name: Archive AN4 logs
         if: success() || failure()
@@ -236,7 +238,7 @@ jobs:
           sphinxtrain -t an4 setup
           perl -i -pe 's/^(\$CFG_HMM_TYPE.*cont)/#$1/' etc/sphinx_train.cfg
           perl -i -pe 's/^#(\$CFG_HMM_TYPE.*semi)/$1/' etc/sphinx_train.cfg
-          perl -i -pe 's/(DENSITIES.*= )\d+/${1}16/' etc/sphinx_train.cfg
+          perl -i -pe 's/(DENSITIES.*= )\d+/${1}64/' etc/sphinx_train.cfg
           perl -i -pe 's/(MAX_ITERATIONS.*= )\d+/${1}5/' etc/sphinx_train.cfg
           sphinxtrain run
       - name: Archive AN4 logs
