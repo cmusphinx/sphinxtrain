@@ -39,19 +39,10 @@ jobs:
           cd an4
           python ../scripts/sphinxtrain -t an4 setup
           python ../scripts/sphinxtrain run
-      - name: Train AN4 (all)
-        run: |
-          cd an4
-          git clean -df
-          git checkout etc
-          python ../scripts/sphinxtrain -t an4 setup
-          perl -i -pe 's/((?:G2P|FORCEDALIGN|LDA|FALIGN|VTLN).*)no/${1}yes/g' etc/sphinx_train.cfg
-          python ../scripts/sphinxtrain run
       - name: Train AN4 (installed)
         run: |
           cmake --build build --target install
-          cmake --build pocketsphinx/build --target install
-          /sbin/ldconfig
+          sudo cmake --build pocketsphinx/build --target install
           cd an4
           git clean -df
           git checkout etc
@@ -66,6 +57,22 @@ jobs:
           perl -i -pe 's/(QUEUE_TYPE.*Queue)/${1}::POSIX/g' etc/sphinx_train.cfg
           sphinxtrain -t an4 setup
           sphinxtrain run
+      - name: Train AN4 (align)
+        run: |
+          cd an4
+          git clean -df
+          git checkout etc
+          perl -i -pe 's/((?:FORCEDALIGN|FALIGN).*)no/${1}yes/g' etc/sphinx_train.cfg
+          python ../scripts/sphinxtrain run
+      - name: Train AN4 (G2P+LDA+VTLN)
+        run: |
+          cd an4
+          git clean -df
+          git checkout etc
+          perl -i -pe 's/((?:G2P|LDA|VTLN).*)no/${1}yes/g' etc/sphinx_train.cfg
+          perl -i -pe 's/(VTLN_START.*)0\.80/${1}0.95/g' etc/sphinx_train.cfg
+          perl -i -pe 's/(VTLN_END.*)1\.40/${1}1.05/g' etc/sphinx_train.cfg
+          python ../scripts/sphinxtrain run
       - name: Archive AN4 logs
         if: success() || failure()
         uses: actions/upload-artifact@v3
