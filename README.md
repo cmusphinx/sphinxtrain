@@ -1,5 +1,5 @@
-Sphinxtrain
----------------------------------
+SphinxTrain
+===========
 
 This is SphinxTrain, Carnegie Mellon University's open source acoustic
 model trainer. This directory contains the scripts and instructions
@@ -20,12 +20,12 @@ For introduction in training the acoustic model see the tutorial
 http://cmusphinx.sourceforge.net/wiki/tutorialam
 
 Installation Guide:
-==============================================================================
+-------------------
 
 This sections contain installation guide for various platforms. 
 
 All Platforms:
-==============================================================================
+--------------
 
 You will need Perl and Python to use the scripts provided. Linux
 usually comes with some version of Perl. If you do not have Perl
@@ -49,11 +49,22 @@ obtained from:
 http://scipy.org/Download
 
 Linux/Unix Installation:
-==============================================================================
+------------------------
 
-This distribution uses CMake to find out basic information
-about your system, and should compile on most Unix and Unix-like
-systems, and certainly on Linux.  To build, simply run:
+This distribution uses CMake to find out basic information about your
+system, and should compile on most Unix and Unix-like systems, and
+certainly on Linux.  On reasonable Linux distributions, a suitable
+version of CMake (at least 3.14) can be installed with your package
+manager, or may already be there if you have installed development
+tools.
+
+On certain unreasonable distributions that are far too often installed
+on "enterprise" or "cloud" or HPC systems, the version of CMake is
+incredibly ancient, and the package manager will not help you, so you
+will have to install it manually, following the instructions at
+https://cmake.org/download/
+
+To build, simply run:
 
     cmake -S . -B build
     cmake --build build
@@ -76,7 +87,7 @@ create `/usr/local/bin/sphinxbase`.
 Also, check the section title "All Platforms" above.
 
 Windows Installation:
-==============================================================================
+---------------------
 
 You can build with Visual Studio Code using the C++ and CMake
 extensions.  This will create all the binaries in `build\Debug` or
@@ -98,7 +109,7 @@ procedure is identical to the Unix installation.
 Also, check the section title "All Platforms" above.
 
 Acknowldegments
-==============================================================================
+---------------
 
 The development of this code has included support at different times
 by various United States Government agencies, under different programs,
@@ -111,13 +122,13 @@ recent work in tidying this up for release includes the following,
 listed alphabetically (at least these are the people who are most
 likely able to help you).
 
-Alan W Black (awb@cs.cmu.edu)
-Arthur Chan (archan@cs.cmu.edu)
-Evandro Gouvea (egouvea+@cs.cmu.edu)
-Ricky Houghton (ricky.houghton@cs.cmu.edu)
-David Huggins-Daines (dhdaines@gmail.com)
-Kevin Lenzo (kevinlenzo@gmail.com)
-Ravi Mosur
-Long Qin (lqin@cs.cmu.edu)
-Rita Singh (rsingh+@cs.cmu.edu)
-Eric Thayer
+- Alan W Black (awb@cs.cmu.edu)
+- Arthur Chan (archan@cs.cmu.edu)
+- Evandro Gouvea (egouvea+@cs.cmu.edu)
+- Ricky Houghton (ricky.houghton@cs.cmu.edu)
+- David Huggins-Daines (dhdaines@gmail.com)
+- Kevin Lenzo (kevinlenzo@gmail.com)
+- Ravi Mosur
+- Long Qin (lqin@cs.cmu.edu)
+- Rita Singh (rsingh+@cs.cmu.edu)
+- Eric Thayer
