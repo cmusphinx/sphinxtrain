@@ -32,14 +32,13 @@ jobs:
           cmake --build pocketsphinx/build
           cp pocketsphinx/build/pocketsphinx_batch sphinxbase/build/
       - name: Archive build
+        run: |
+          tar --exclude=.git -cf build.tar sphinxbase pocketsphinx
+      - name: Upload archive
         uses: actions/upload-artifact@v3
         with:
           name: build
-          path: |
-            sphinxbase
-            pocketsphinx
-            !sphinxbase/.git
-            !pocketsphinx/.git
+          path: build.tar
 
   train-inplace:
     runs-on: ubuntu-latest
@@ -52,6 +51,7 @@ jobs:
           name: build
       - name: Install
         run: |
+          tar xf build.tar
           sudo apt-get install libfst-dev libngram-dev cmake \
                ninja-build libopenblas-dev python3-numpy python3-scipy
       - name: Checkout AN4
@@ -84,6 +84,7 @@ jobs:
           name: build
       - name: Install
         run: |
+          tar xf build.tar
           sudo apt-get install libfst-dev libngram-dev cmake \
                ninja-build libopenblas-dev python3-numpy python3-scipy
           sudo cmake --build sphinxbase/build --target install
