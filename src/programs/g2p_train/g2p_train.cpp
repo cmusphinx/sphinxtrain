@@ -39,7 +39,7 @@
  * NGram language modeling toolkit instead of MITLM.
  *
  * for more details about phonetisaurus see
- * http://code.google.com/p/phonetisaurus/
+ * https://github.com/AdolfVonKleist/Phonetisaurus
  * http://www.openfst.org/twiki/bin/view/GRM/NGramLibrary
  */
 
@@ -64,8 +64,9 @@
 #include <ngram/ngram-witten-bell.h>
 #include <ngram/ngram-unsmoothed.h>
 #include <sphinxbase/err.h>
-#include "M2MFstAligner.hpp"
-#include "../g2p_eval/util.hpp"
+#include "include/PhonetisaurusRex.h"
+#include "include/M2MFstAligner.h"
+#include "include/LatticePruner.h"
 
 #define arc_type "standard"
 #define fst_type "vector"
@@ -113,9 +114,19 @@ template <class Arc> struct ToLog64Mapper {
         return props;
     }
 };
-} using namespace std;
+}
+
+using namespace std;
 using namespace ngram;
 using namespace fst;
+
+string
+convertInt(int number)
+{
+    stringstream ss;            //create a stringstream
+    ss << number;               //add number to the stream
+    return ss.str();            //return a string with the contents of the stream
+}
 
 void
 addarcs(StateId state_id, StateId newstate, const SymbolTable * oldsyms,
@@ -252,14 +263,16 @@ train_model(string eps, string s1s2_sep, string skip, int order,
     using fst::script::VectorFstClass;
     using fst::script::WeightClass;
 
-    // create symbols file
-    cout << "Generating symbols..." << endl;
-    NGramInput *ingram =
-        new NGramInput(prefix + ".corpus.aligned", prefix + ".corpus.syms",
-                       "", eps, unknown_symbol, "", "");
-    ingram->ReadInput(0, 1);
+    // create symbols file (ngramsymbols)
+    {
+        cout << "Generating symbols..." << endl;
+        NGramInput ingram(prefix + ".corpus.aligned", prefix + ".corpus.syms",
+                          "", eps, unknown_symbol, "", "");
+        // Magic!?
+        ingram.ReadInput(0, 1);
+    }
 
-    // compile strings into a far archive
+    // compile strings into a far archive (farcompilestrings)
     cout << "Compiling symbols into FAR archive..." << endl;
     fst::FarEntryType fet;
     fst::script::GetFarEntryType(entry_type, &fet);
@@ -268,11 +281,8 @@ train_model(string eps, string s1s2_sep, string skip, int order,
     // Lovely inconsistent API you got there, OpenFST...
     fst::FarType fartype = fst::script::GetFarType(far_type);
 
-    delete ingram;
-
     vector<string> in_fname;
     in_fname.push_back(prefix + ".corpus.aligned");
-
     fst::script::FarCompileStrings(in_fname,
                                    prefix + ".corpus.far", arc_type,
                                    fst_type, fartype,
@@ -282,13 +292,12 @@ train_model(string eps, string s1s2_sep, string skip, int order,
                                    initial_symbols, allow_negative_labels,
                                    key_prefix, key_suffix);
 
-    //count n-grams
+    // count n-grams (ngramcount)
     cout << "Counting n-grams..." << endl;
     NGramCounter<Log64Weight> ngram_counter(order, epsilon_as_backoff);
-
     FstReadOptions opts;
-    FarReader<StdArc> *far_reader;
-    far_reader = FarReader<StdArc>::Open(prefix + ".corpus.far");
+    // NO RAII FOR YOU! NO!
+    FarReader<StdArc> *far_reader = FarReader<StdArc>::Open(prefix + ".corpus.far");
     int fstnumber = 1;
     const Fst<StdArc> *ifst = 0, *lfst = 0;
     while (!far_reader->Done()) {
@@ -323,18 +332,16 @@ train_model(string eps, string s1s2_sep, string skip, int order,
         ++fstnumber;
     }
     delete far_reader;
-
-    if (!lfst) {
+    if (!lfst)
         E_FATAL("None of the input FSTs had a symbol table\n");
-        //exit(1);
-    }
-
     VectorFst<StdArc> vfst;
     ngram_counter.GetFst(&vfst);
     ArcSort(&vfst, StdILabelCompare());
     vfst.SetInputSymbols(lfst->InputSymbols());
     vfst.SetOutputSymbols(lfst->InputSymbols());
     vfst.Write(prefix + ".corpus.cnts");
+
+    // Make smoothed N-Grams (ngrammake)
     StdMutableFst *fst =
         StdMutableFst::Read(prefix + ".corpus.cnts", true);
     if (smooth != "no") {
@@ -386,7 +393,6 @@ train_model(string eps, string s1s2_sep, string skip, int order,
     }
     if (prune != "no") {
         cout << "Pruning model..." << endl;
-
         if (prune == "count_prune") {
             NGramCountPrune ngramsh(fst, count_pattern,
                                     shrink_opt, total_unigram_count,
@@ -416,12 +422,84 @@ train_model(string eps, string s1s2_sep, string skip, int order,
     Minimize(minimized, 0, fst::kDelta);
     fst = minimized->GetMutableFst<StdArc>();
 
+    // Split input/output labels (phonetisaurus-arpa2wfst)
     cout << "Correcting final model..." << endl;
     StdMutableFst *out = new StdVectorFst();
     relabel(fst, out, prefix, eps, skip, s1s2_sep, seq_sep);
 
     cout << "Writing binary model to disk..." << endl;
     out->Write(prefix + ".fst");
+}
+
+
+void write_alignments (M2MFstAligner* aligner, std::ofstream &ofile,
+               StdArc::Weight threshold, int nbest,
+               bool fb, bool penalize) {
+  /*
+     Write the raw alignments to a file in text-based corpus format.
+
+     NOTE: Although N-best and other pruning strategies are supported,
+           the final format is that of a standard text corpus.  All relative
+       token and pronunciation scores will be stripped.  In general
+       this means that, unless you are very lucky with your combined
+       pruning strategy the un-ranked N-best hypotheses will result in a
+       lower-quality joint N-gram model.
+
+       This approach is best used with simple 1-best.
+  */
+
+  //Build us a lattice pruner
+  LatticePruner pruner (aligner->penalties, threshold, nbest, fb, penalize);
+
+  VetoSet veto_set_;
+  veto_set_.insert (0);
+  for (unsigned int i = 0; i < aligner->fsas.size (); i++) {
+    //Map to Tropical semiring
+    VectorFst<StdArc>* tfst = new VectorFst<StdArc> ();
+    Map (aligner->fsas.at (i), tfst, LogToStdMapper ());
+    pruner.prune_fst (tfst);
+    RmEpsilon (tfst);
+    //Skip empty results.  This should only happen
+    // in the following situations:
+    //  1. seq1_del=false && len(seq1)<len(seq2)
+    //  2. seq2_del=false && len(seq1)>len(seq2)
+    //In both 1.and 2. the issue is that we need to
+    // insert a 'skip' in order to guarantee at least
+    // one valid alignment path through seq1*seq2, but
+    // user params didn't allow us to.
+    //Probably better to insert these where necessary
+    // during initialization, regardless of user prefs.
+    if (tfst->NumStates () > 0) {
+      StdArc::Weight weight_threshold = 99;
+      StdArc::StateId state_threshold = kNoStateId;
+      AnyArcFilter<StdArc> arc_filter;
+      vector<StdArc::Weight> distance;
+      VectorFst<StdArc> ofst;
+
+      AutoQueue<StdArc::StateId> state_queue (*tfst, &distance, arc_filter);
+      IdentityPathFilter<StdArc> path_filter;
+
+      ShortestPathOptions<StdArc, AutoQueue<StdArc::StateId>,
+              AnyArcFilter<StdArc> >
+    opts (&state_queue, arc_filter, nbest, false, false,
+          kDelta, false, weight_threshold,
+          state_threshold);
+      ShortestPathSpecialized (*tfst, &ofst, &distance,
+                   &path_filter, 10000, opts);
+      for (size_t i = 0; i < path_filter.ordered_paths.size (); i++) {
+    const vector<int>& path = path_filter.ordered_paths[i];
+    for (size_t j = 0; j < path.size (); j++) {
+      ofile << aligner->isyms->Find (path [j]);
+      if (j < path.size () - 1)
+        ofile << " ";
+    }
+    ofile << "\n";
+      }
+    }
+    delete tfst;
+  }
+
+  return;
 }
 
 
@@ -436,24 +514,37 @@ align(string input_file, string prefix, bool seq1_del, bool seq2_del,
     ofstream ofile(o.c_str(), ifstream::out);
     cout << "Loading..." << endl;
     M2MFstAligner fstaligner(seq1_del, seq2_del, seq1_max, seq2_max,
-                             seq_sep, seq_sep, s1s2_sep, eps, skip, true);
+                             seq_sep, seq_sep, s1s2_sep, eps, skip,
+                             // Fuck this stupid API
+                             true, false, true, false);
 
-    string sep1 = "";
-    string sep2 = " ";
+    string sepnone = "";
+    string septab = "\t";
+    string sepspace = " ";
     string line;
     if (dict.is_open()) {
         while (dict.good()) {
             getline(dict, line);
             if (line.empty())
                 continue;
-            vector<string> tokens = tokenize_utf8_string(&line, &sep2);
-            if (tokens.size() < 2) {
-                cout << "Cannot parse line:" << line << endl;
-                continue;
+            /* First try with tab */
+            vector<string> tokens = tokenize_utf8_string(&line, &septab);
+            if (tokens.size() != 2) {
+                vector<string> tokens = tokenize_utf8_string(&line, &sepspace);
+                if (tokens.size() < 2) {
+                    cout << "Cannot parse line (must use tab or single space "
+                         << "to separate word and phones):" << line << endl;
+                    continue;
+                }
+                vector<string> seq1 = tokenize_utf8_string(&tokens.at(0), &sepnone);
+                vector<string> seq2(tokens.begin() + 1, tokens.end());
+                fstaligner.entry2alignfst(seq1, seq2);
             }
-            vector <string> seq1 = tokenize_utf8_string(&tokens.at(0), &sep1);
-            vector <string> seq2(tokens.begin() + 1, tokens.end());
-            fstaligner.entry2alignfst(seq1, seq2);
+            else {
+                vector<string> seq1 = tokenize_utf8_string(&tokens.at(0), &sepnone);
+                vector<string> seq2 = tokenize_utf8_string(&tokens.at(1), &sepspace);
+                fstaligner.entry2alignfst(seq1, seq2);
+            }
         }
     }
     dict.close();
@@ -465,25 +556,14 @@ align(string input_file, string prefix, bool seq1_del, bool seq2_del,
     for (i = 1; i <= iter; i++) {
         fstaligner.expectation();
         change = fstaligner.maximization(false);
-        cout << "Iteration " << i << ": " << change << endl;
+        cout << "Iteration " << i << " Change: " << change << endl;
     }
     fstaligner.expectation();
     change = fstaligner.maximization(true);
-    cout << "Iteration " << i << ": " << change << endl;
+    cout << "Last iteration: " << change << endl;
 
     cout << "Generating best alignments..." << endl;
-    for (int i = 0; i < fstaligner.fsas.size(); i++) {
-        vector<PathData> paths =
-            fstaligner.write_alignment(fstaligner.fsas[i], 1);
-        for (int k = 0; k < paths.size(); k++) {
-            for (int j = 0; j < paths[k].path.size(); j++) {
-                ofile << paths[k].path[j];
-                //if (j < paths[k].path.size() - 1)
-                ofile << " ";
-            }
-            ofile << endl;
-        }
-    }
+    write_alignments(&fstaligner, ofile, -99.0, 1, false, true);
     ofile.flush();
     ofile.close();
 }
