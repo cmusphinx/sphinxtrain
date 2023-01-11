@@ -78,7 +78,10 @@ while (<INDICT>) {
     s/\(\d+\)//;
     s/^\s*//;
     s/\s*$//;
-    s/\s+/ /g;
+    # Use tab to separate word and pron to be consistent with MFA and Phonetisaurus
+    s/\s+/\t/;
+    # Collapse any multiple spaces that remain
+    s/ +/ /g;
     print OUTDICT "$_\n";
 }
 close INDICT or die $!;

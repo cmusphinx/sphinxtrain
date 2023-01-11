@@ -284,7 +284,7 @@ class ErrorRater( ):
         words = []; hyps = []; refs = []
         for i,line in enumerate(open(hypfile,"r")):
             #There should be three fields
-            word, score, pron = re.split(r' {2,}', line.strip())
+            word, score, pron = re.split(r'(?:\t|  +)', line.strip())
             phons = re.split(usep, pron)
             #This assumes that we will never have a test situation
             # where the input list intentionally contains 2 repetitions
