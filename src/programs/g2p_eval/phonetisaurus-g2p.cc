@@ -86,80 +86,14 @@ phoneticizeTestSet(const char *g2pmodel_file, const char *output,
                    const char *testset_file, int nbest, const char *sep,
                    int beam, int output_words, int output_cost)
 {
-    Phonetisaurus phonetisaurus(g2pmodel_file);
-
-    ifstream test_fp;
-    test_fp.open(testset_file.c_str());
-    string line;
-
-    if (test_fp.is_open()) {
-        ofstream hypfile;
-        hypfile.open(output);
-        while (test_fp.good()) {
-            getline(test_fp, line);
-            if (line.compare("") == 0)
-                continue;
-
-            char *tmpstring = (char *) line.c_str();
-            char *p = strtok(tmpstring, "\t");
-            string word;
-            string pron;
-
-            int i = 0;
-            while (p) {
-                if (i == 0)
-                    word = p;
-                else
-                    pron = p;
-                i++;
-                p = strtok(NULL, "\t");
-            }
-
-            vector <string> entry = tokenize_entry(&word, &sep,
-                                                   phonetisaurus.isyms);
-            vector<PathData> paths =
-                phonetisaurus.phoneticize(entry, nbest, beam);
-            int nbest_new = nbest;
-            if (output_words == 0) {
-                while (phonetisaurus.
-                        printPaths(paths, nbest_new, &hypfile, output,
-                                   pron) == true
-                        && nbest_new <= paths.size()) {
-                    nbest_new++;
-                    paths =
-                        phonetisaurus.phoneticize(entry, nbest_new, beam);
-                }
-            }
-            else {
-                while (phonetisaurus.
-                        printPaths(paths, nbest_new, &hypfile, pron, word,
-                                   output_cost) == true
-                        && nbest_new <= paths.size()) {
-                    nbest_new++;
-                    paths =
-                        phonetisaurus.phoneticize(entry, nbest_new, beam);
-                }
-            }
-        }
-        test_fp.close();
-        hypfile.flush();
-        hypfile.close();
-    }
-    else {
-        cout << "Problem opening test file..." << endl;
-    }
-
-    return;
-    vector<string> corpus;
-    LoadWordList (testset_file, &corpus);
+    PhonetisaurusScript phonetisaurus(g2pmodel_file);
     
-    PhonetisaurusScript decoder (g2pmodel_file);
-    EvaluateWordlist (
-        decoder, corpus, beam, nbest, false,
-        "_", 99.0, "", false,
-        true, false, 0.0,
-        true
-        );
+    vector<string> corpus;
+    LoadWordList(testset_file, &corpus);
+    EvaluateWordlist(phonetisaurus, corpus, beam, nbest, false,
+                     "_", 99.0, "", false,
+                     true, false, 0.0,
+                     true);
 }
 
 extern "C"
@@ -168,35 +102,13 @@ phoneticizeWord(const char *g2pmodel_file, const char *output,
                 const char *testword, int nbest, const char *sep, int beam,
                 int output_words)
 {
-    PhonetisaurusScript phonetisaurus(g2pmodel_file);
-    vector<PathData> paths = phonetisaurus.Phoneticize(
-        testword, nbest, beam, 99.0,
-        false, false, 0.0
-        );
-    ofstream hypfile;
-    hypfile.open(output);
+    PhonetisaurusScript decoder(g2pmodel_file, sep);
+    vector<PathData> results = decoder.Phoneticize(testword, nbest,
+                                                   beam, 99.0, false, false, 0.0);
+    //ofstream hypfile;
+    //hypfile.open(output);
+    PrintPathData(results, testword,
+                  decoder.osyms_,
+                  true, true);
 
-    if (output_words == 0) {
-        while (phonetisaurus.printPaths(paths, nbest, &hypfile) == true
-                && nbest <= paths.size()) {
-            nbest++;
-            paths = phonetisaurus.phoneticize(entry, nbest, beam);
-        }
-    }
-    else {
-        while (phonetisaurus.
-                printPaths(paths, nbest, &hypfile, "", testword)
-                == true && nbest <= paths.size()) {
-            nbest++;
-            paths = phonetisaurus.phoneticize(entry, nbest, beam);
-        }
-    }
-    hypfile.flush();
-    hypfile.close();
-
-    return;
-    PrintPathData (results, testword,
-                   decoder.osyms_,
-                   true,
-                   true);
 }
