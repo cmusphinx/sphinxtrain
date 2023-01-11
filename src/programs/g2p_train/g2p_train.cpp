@@ -64,6 +64,7 @@
 #include <ngram/ngram-witten-bell.h>
 #include <ngram/ngram-unsmoothed.h>
 #include <sphinxbase/err.h>
+#include <assert.h>
 #include "include/PhonetisaurusRex.h"
 #include "include/M2MFstAligner.h"
 #include "include/LatticePruner.h"
@@ -138,7 +139,11 @@ addarcs(StateId state_id, StateId newstate, const SymbolTable * oldsyms,
             aiter.Next()) {
         StdArc arc = aiter.Value();
         string oldlabel = oldsyms->Find(arc.ilabel);
+        // Make sure <eps> on its own maps to <eps>:<eps>
         if (oldlabel == eps) {
+            // Ensure we aren't losing any output symbol (it's an
+            // acceptor so this should not happen)
+            assert(oldsyms->Find(arc.olabel) == eps);
             oldlabel = oldlabel.append("}");
             oldlabel = oldlabel.append(eps);
         }
@@ -153,9 +158,8 @@ addarcs(StateId state_id, StateId newstate, const SymbolTable * oldsyms,
 
         int64 nextstate = ssyms->Find(convertInt(arc.nextstate));
         if (nextstate == -1) {
-            out->AddState();
-            ssyms->AddSymbol(convertInt(arc.nextstate));
-            nextstate = ssyms->Find(convertInt(arc.nextstate));
+            nextstate = out->AddState();
+            ssyms->AddSymbol(convertInt(arc.nextstate), nextstate);
         }
         out->AddArc(newstate,
                     StdArc(ilabel, olabel,
@@ -167,9 +171,64 @@ addarcs(StateId state_id, StateId newstate, const SymbolTable * oldsyms,
 }
 
 void
+patch_labels(StdMutableFst *arpafst, SymbolTable* syms, int64 skip_id, bool input) {
+    /*
+      Patch all labels.  In some edge cases it is possible
+      to end up grapheme subsequences: e.g. 'QU' where one or
+      both tokens is only mapped to the multi-subsequence.  In thise
+      case the independent 'Q' and/or 'U' token will never appear
+      in isolation.
+      This bit resolves this by:
+
+      a.) finding and adding these missing subsequence tokens
+      b.) adding backoff loops to the LM
+
+    */
+    string tie = "|";
+    for (unsigned int i = skip_id + 1; i < syms->NumSymbols(); i++) {
+        string sym = syms->Find(i);
+        vector<string> parts  = tokenize_utf8_string(&sym, &tie);
+        if (parts.size() > 1) {
+            for (unsigned int j = 0; j < parts.size(); j++) {
+                if (syms->Find(parts[j]) == -1) {
+                    // Add the missing symbol
+                    int k = syms->AddSymbol(parts[j]);
+                    // Add a backoff loop mapped to the 'skip'
+                    // FIXME: phonetisaurus hard-codes this as 1 but I
+                    // believe that is wrong, it should maybe actually be
+                    // ssyms->Find("<s>")?
+                    int64 start_state = 1;
+                    if (input == true)
+                        arpafst->AddArc(start_state, StdArc(k, skip_id, 99, start_state));
+                    else
+                        arpafst->AddArc(start_state, StdArc(skip_id, k, 99, start_state));
+                }
+            }
+        }
+    }
+}
+
+void
 relabel(StdMutableFst * fst, StdMutableFst * out, string prefix,
         string eps, string skip, string s1s2_sep, string seq_sep)
 {
+    /*
+      Transform a statistical language model in ARPA format
+      to an equivalent Weighted Finite-State Acceptor.
+      This implementation adopts the Google format for the output
+      WFSA.  This differs from previous implementations in several ways:
+
+      Start-state and <s> arcs:
+      * There are no explicit sentence-begin (<s>) arcs
+      * There is a single <s> start-state.
+
+      Final-state and </s> arcs:
+      * There are no explicit sentence-end (</s>) arcs
+      * There is no explicit </s> state
+      * NGrams ending in </s> are designated as final
+      states, and any probability is assigned
+      to the final weight of said state.
+    */
     namespace s = fst::script;
     using fst::ostream;
     using fst::SymbolTable;
@@ -183,59 +242,38 @@ relabel(StdMutableFst * fst, StdMutableFst * out, string prefix,
     SymbolTable *osyms = new SymbolTable("osyms");
 
     out->AddState();
-    ssyms->AddSymbol("s0");
+    ssyms->AddSymbol("<s>");
     out->SetStart(0);
-
-    out->AddState();
-    ssyms->AddSymbol("s1");
-    out->SetFinal(1, TropicalWeight::One());
 
     isyms->AddSymbol(eps);
     osyms->AddSymbol(eps);
-
-    //Add separator, phi, start and end symbols
-    isyms->AddSymbol(seq_sep);
-    osyms->AddSymbol(seq_sep);
-    isyms->AddSymbol("<phi>");
-    osyms->AddSymbol("<phi>");
-    int istart = isyms->AddSymbol("<s>");
-    int iend = isyms->AddSymbol("</s>");
-    int ostart = osyms->AddSymbol("<s>");
-    int oend = osyms->AddSymbol("</s>");
-
-    out->AddState();
-    ssyms->AddSymbol("s2");
-    out->AddArc(0, StdArc(istart, ostart, TropicalWeight::One(), 2));
+    isyms->AddSymbol(skip);
+    osyms->AddSymbol(skip);
 
     for (StateIterator<StdFst> siter(*fst); !siter.Done(); siter.Next()) {
         StateId state_id = siter.Value();
 
         int64 newstate;
         if (state_id == fst->Start()) {
-            newstate = 2;
+            newstate = 0;
         }
         else {
             newstate = ssyms->Find(convertInt(state_id));
             if (newstate == -1) {
-                out->AddState();
-                ssyms->AddSymbol(convertInt(state_id));
-                newstate = ssyms->Find(convertInt(state_id));
+                newstate = out->AddState();
+                ssyms->AddSymbol(convertInt(state_id), newstate);
             }
         }
 
         TropicalWeight weight = fst->Final(state_id);
-
-        if (weight != TropicalWeight::Zero()) {
-            // this is a final state
-            StdArc a = StdArc(iend, oend, weight, 1);
-            out->AddArc(newstate, a);
-            out->SetFinal(newstate, TropicalWeight::Zero());
-        }
+        if (weight != TropicalWeight::Zero())
+            out->SetFinal(newstate, weight);
         addarcs(state_id, newstate, oldsyms, isyms, osyms, ssyms, eps,
                 s1s2_sep, fst, out);
     }
 
-
+    patch_labels(out, isyms, isyms->Find(skip), true);
+    patch_labels(out, osyms, osyms->Find(skip), false);
     out->SetInputSymbols(isyms);
     out->SetOutputSymbols(osyms);
 
@@ -391,6 +429,7 @@ train_model(string eps, string s1s2_sep, string skip, int order,
             E_FATAL("Bad smoothing method: %s\n", smooth.c_str());
         }
     }
+    fst->Write(prefix + ".smooth.mod");
     if (prune != "no") {
         cout << "Pruning model..." << endl;
         if (prune == "count_prune") {
@@ -416,11 +455,15 @@ train_model(string eps, string s1s2_sep, string skip, int order,
             E_FATAL("Bad shrink method:  %s\n", prune.c_str());
         }
     }
+    fst->Write(prefix + ".shrink.mod");
 
+#if 0 // Don't do this, phonetisaurus doesn't do it
     cout << "Minimizing model..." << endl;
     MutableFstClass *minimized = new s::MutableFstClass(*fst);
     Minimize(minimized, 0, fst::kDelta);
     fst = minimized->GetMutableFst<StdArc>();
+    fst->Write(prefix + ".min.mod");
+#endif
 
     // Split input/output labels (phonetisaurus-arpa2wfst)
     cout << "Correcting final model..." << endl;
