@@ -432,7 +432,7 @@ train_model(string eps, string s1s2_sep, string skip, int order,
             E_FATAL("Bad smoothing method: %s\n", smooth.c_str());
         }
     }
-    fst->Write(prefix + ".smooth.mod");
+    // fst->Write(prefix + ".smooth.mod");
     if (prune != "no") {
         cout << "Pruning model..." << endl;
         if (prune == "count_prune") {
@@ -458,15 +458,13 @@ train_model(string eps, string s1s2_sep, string skip, int order,
             E_FATAL("Bad shrink method:  %s\n", prune.c_str());
         }
     }
-    fst->Write(prefix + ".shrink.mod");
+    // fst->Write(prefix + ".shrink.mod");
 
-#if 0 // Don't do this, phonetisaurus doesn't do it
     cout << "Minimizing model..." << endl;
     MutableFstClass *minimized = new s::MutableFstClass(*fst);
     Minimize(minimized, 0, fst::kDelta);
     fst = minimized->GetMutableFst<StdArc>();
-    fst->Write(prefix + ".min.mod");
-#endif
+    // fst->Write(prefix + ".min.mod");
 
     // Split input/output labels (phonetisaurus-arpa2wfst)
     cout << "Correcting final model..." << endl;
