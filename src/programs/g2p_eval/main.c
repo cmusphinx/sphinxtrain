@@ -67,7 +67,7 @@ main(int argc, char *argv[])
     }
     else {
         phoneticizeWord(model, output, input, nbest, sep,
-                        beam, words);
+                        beam, words, output_cost);
     }
 
     return 0;

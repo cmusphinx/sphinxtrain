@@ -40,45 +40,28 @@ using namespace fst;
 
 typedef unordered_map<int, vector<PathData> > RMAP;
 
-void PrintPathData (const vector<PathData>& results, string FLAGS_word,
-		    const SymbolTable* osyms, bool print_scores,
-		    bool nlog_probs) {
-  for (int i = 0; i < results.size (); i++) {
-    cout << FLAGS_word << "\t";
-    if (print_scores == true) {
-      if (nlog_probs == true) 
-	cout << results [i].PathWeight << "\t";
-      else
-	cout << std::setprecision (3) << exp (-results [i].PathWeight) << "\t";
-    }
+void PrintPathData(ofstream &output,
+                   const vector<PathData>& results, string FLAGS_word,
+                   const SymbolTable* osyms, bool print_scores,
+                   bool nlog_probs, bool output_words) {
+    for (int i = 0; i < results.size(); i++) {
+        if (output_words)
+            output << FLAGS_word << "\t";
+        if (print_scores == true) {
+            if (nlog_probs == true) 
+                output << results[i].PathWeight << "\t";
+            else
+                output << std::setprecision (3) << exp(-results[i].PathWeight) << "\t";
+        }
     
-    for (int j = 0; j < results [i].Uniques.size (); j++) {
-      cout << osyms->Find (results [i].Uniques [j]);
-      if (j < results [i].Uniques.size () - 1)
-	cout << " ";
-    }
-    cout << endl;
-  }    
+        for (int j = 0; j < results[i].Uniques.size(); j++) {
+            output << osyms->Find(results[i].Uniques[j]);
+            if (j < results[i].Uniques.size() - 1)
+                output << " ";
+        }
+        output << endl;
+    }    
 }
-
-void EvaluateWordlist (PhonetisaurusScript& decoder, vector<string> corpus,
-		       int FLAGS_beam, int FLAGS_nbest, bool FLAGS_reverse,
-		       string FLAGS_skip, double FLAGS_thresh, string FLAGS_gsep,
-		       bool FLAGS_write_fsts, bool FLAGS_print_scores,
-		       bool FLAGS_accumulate, double FLAGS_pmass,
-		       bool FLAGS_nlog_probs) {
-  for (int i = 0; i < corpus.size (); i++) {
-    vector<PathData> results = decoder.Phoneticize (corpus [i], FLAGS_nbest,
-						    FLAGS_beam, FLAGS_thresh,
-						    FLAGS_write_fsts,
-						    FLAGS_accumulate, FLAGS_pmass);
-    PrintPathData (results, corpus [i],
-		   decoder.osyms_,
-		   FLAGS_print_scores,
-		   FLAGS_nlog_probs);
-  }
-}
-        
 
 extern "C"
 void
@@ -86,29 +69,39 @@ phoneticizeTestSet(const char *g2pmodel_file, const char *output,
                    const char *testset_file, int nbest, const char *sep,
                    int beam, int output_words, int output_cost)
 {
-    PhonetisaurusScript phonetisaurus(g2pmodel_file);
+    PhonetisaurusScript decoder(g2pmodel_file, sep);
     
     vector<string> corpus;
+    bool write_fsts = false;
+    bool accumulate = false;
+    double pmass = 99.0;
     LoadWordList(testset_file, &corpus);
-    EvaluateWordlist(phonetisaurus, corpus, beam, nbest, false,
-                     "_", 99.0, "", false,
-                     true, false, 0.0,
-                     true);
+    ofstream hypfile;
+    hypfile.open(output);
+    for (int i = 0; i < corpus.size(); i++) {
+        vector<PathData> results = decoder.Phoneticize(corpus[i], nbest,
+                                                       beam, 99.0,
+                                                       write_fsts,
+                                                       accumulate, pmass);
+        PrintPathData(hypfile, results, corpus[i],
+                      decoder.osyms_, output_cost, true, output_words);
+    }
 }
 
 extern "C"
 void
 phoneticizeWord(const char *g2pmodel_file, const char *output,
                 const char *testword, int nbest, const char *sep, int beam,
-                int output_words)
+                int output_words, int output_cost)
 {
     PhonetisaurusScript decoder(g2pmodel_file, sep);
+    bool write_fsts = false;
+    bool accumulate = false;
     vector<PathData> results = decoder.Phoneticize(testword, nbest,
-                                                   beam, 99.0, false, false, 0.0);
-    //ofstream hypfile;
-    //hypfile.open(output);
-    PrintPathData(results, testword,
-                  decoder.osyms_,
-                  true, true);
+                                                   beam, 99.0, write_fsts, accumulate, 0.0);
+    ofstream hypfile;
+    hypfile.open(output);
 
+    PrintPathData(hypfile, results, testword,
+                  decoder.osyms_, output_cost, true, output_words);
 }

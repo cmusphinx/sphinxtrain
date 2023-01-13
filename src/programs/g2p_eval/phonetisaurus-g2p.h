@@ -41,7 +41,7 @@ extern "C" {
 
 void phoneticizeWord(const char *g2pmodel_file, const char *output,
                      const char *testword, int nbest, const char *sep, int beam,
-                     int output_words);
+                     int output_words, int output_cost);
 void phoneticizeTestSet(const char *g2pmodel_file, const char *output,
                         const char *testset_file, int nbest, const char *sep,
                         int beam, int output_words, int output_cost);
