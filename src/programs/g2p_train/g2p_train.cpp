@@ -245,8 +245,11 @@ relabel(StdMutableFst * fst, StdMutableFst * out, string prefix,
     ssyms->AddSymbol("<s>");
     out->SetStart(0);
 
+    string tie = "|";
     isyms->AddSymbol(eps);
     osyms->AddSymbol(eps);
+    isyms->AddSymbol(tie);
+    osyms->AddSymbol(tie);
     isyms->AddSymbol(skip);
     osyms->AddSymbol(skip);
 
