@@ -560,7 +560,7 @@ align(string input_file, string prefix, bool seq1_del, bool seq2_del,
     M2MFstAligner fstaligner(seq1_del, seq2_del, seq1_max, seq2_max,
                              seq_sep, seq_sep, s1s2_sep, eps, skip,
                              // Fuck this stupid API
-                             true, false, true, false);
+                             false, false, true, false);
 
     string sepnone = "";
     string septab = "\t";
