@@ -53,7 +53,7 @@ main(int argc, char *argv[])
         {   "-seq1_del", ARG_BOOLEAN, "no",
             "Allow deletions in sequence 1"
         },
-        {   "-seq2_del", ARG_BOOLEAN, "no",
+        {   "-seq2_del", ARG_BOOLEAN, "yes",
             "Allow deletions in sequence 2"
         },
         {   "-noalign", ARG_BOOLEAN, "no",
@@ -71,7 +71,9 @@ main(int argc, char *argv[])
         {   "-iter", ARG_INT32, "10",
             "Maximum number of iterations for EM"
         },
-        {"-order", ARG_INT32, "6", "N-gram order"},
+        {   "-order", ARG_INT32, "5",
+            "N-gram order"
+        },
         {   "-prune", ARG_STRING, "no",
             "Pruning method. Available options are: 'no', 'count_prune', 'relative_entropy', 'seymore'"
         },
@@ -149,6 +151,11 @@ main(int argc, char *argv[])
               eps, skip, iter);
     }
 
+    /* 
+       phonetisaurus-align --input=INPUT --ofile=model.corpus --seq1_del=false --seq2_del=true --seq1_max=2 --seq2_max=2 --grow=false
+       farcompilestrings model.corpus | ngramcount --order=5 | ngrammake
+       phonetisaurus-arpa2wfst # NOTE: this is unnecessary as ngrammake produces the same representation
+    */
     train_model(eps, s1s2_sep, skip, order, smooth, prefix, seq_sep, prune,
                 theta, count_pattern);
 
