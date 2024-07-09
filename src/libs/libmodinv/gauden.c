@@ -80,6 +80,8 @@ static float32 min_var = 1e38;	/* just a big num */
 
 #if defined (_WIN32)
 #define finite(x)    _finite(x)
+#else
+#define finite(x)    isfinite(x)
 #endif
 
 
