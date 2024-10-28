@@ -143,6 +143,7 @@ def usage():
     print("     -s <stage1,stage2,stage3> run - run selected stages")
     print("     -f <stage> run - run from selected stage")
     print("     run - run all training")
+    print("     list - list stages and exit")
 
 
 def main():
@@ -189,8 +190,10 @@ def main():
             run_from(from_stage)
         else:
             run()
+    elif command == "list":
+        print("\n".join(steps))
     else:
-        run()
+        usage()
 
 
 if __name__ == "__main__":
