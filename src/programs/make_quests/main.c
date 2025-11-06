@@ -1,6 +1,6 @@
 /* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
- * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -8,27 +8,27 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
+ * This work was supported in part by funding from the Defense Advanced
+ * Research Projects Agency and the National Science Foundation of the
  * United States of America, and the CMU Sphinx Speech Consortium.
  *
- * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
- * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ====================================================================
@@ -43,11 +43,11 @@
  *********************************************************************/
 
 /*
- * 
+ *
  * $Log$
  * Revision 1.11  2005/07/09  03:13:03  arthchan2003
  * Fix keyword expansion probelm
- * 
+ *
  * Revision 1.10  2005/07/09 03:09:47  arthchan2003
  * Fixed typos in error message, added initialization for the variable continuous such that gcc is happy.
  *
@@ -135,10 +135,10 @@ float32    likelhddec(float32 *meana, float32 *vara,
                 P += cnta[i][j]; Q += cntb[i][j];
                 lkdec += ((cnta[i][j]==0) ? 0 : cnta[i][j]*log(cnta[i][j]))
 		       + ((cntb[i][j]==0) ? 0 : cntb[i][j]*log(cntb[i][j]))
-		       - (((cnta[i][j]+cntb[i][j])==0) ? 0 : 
+		       - (((cnta[i][j]+cntb[i][j])==0) ? 0 :
 			  (cnta[i][j]+cntb[i][j])*log(cnta[i][j]+cntb[i][j]));
             }
-            lkdec -= 
+            lkdec -=
 		((P==0) ? 0 : (P*log(P))) +
 		((Q==0) ? 0 : (Q*log(Q))) -
 		(((P+Q)==0) ? 0 : ((P+Q)*log(P+Q)));
@@ -153,12 +153,12 @@ float32    likelhddec(float32 *meana, float32 *vara,
             }
             lkdec -= P*log(P) + Q*log(Q) - (P+Q)*log(P+Q);
         }
-#endif 
+#endif
     }
 
     return(lkdec);
 }
-
+
 
 /* Find the two closest distributions. We assume 1 gaussian/state */
 
@@ -195,22 +195,22 @@ int32  findclosestpair(float32 **pmeans, float32 **pvars,
     *a = la; *b = lb;
     return 0;
 }
-
+
 
 /* Permute a list of elements (here groups of phones) to obtain the best
    partitioning of the elements into two groups */
 
-float32  permute(float32 **means, float32 **vars, float32 ***mixw, 
+float32  permute(float32 **means, float32 **vars, float32 ***mixw,
                  int32 ndensity, int32 nfeat, int32 dim,
                  int32 **lists, int32 *llists,
-                 int32 npermute, int32 **lclass, int32 **rclass, 
+                 int32 npermute, int32 **lclass, int32 **rclass,
                  int32 *nlclass, int32 *nrclass, int32 continuous)
 {
     float32  **tmean=NULL, **tvar=NULL, ***tmixw=NULL;
     float32  bestdec,reduction,cnt;
     int32 i,j,k,l,m,n,ncombinations,bestclust=0;
     char  **identifier, *tmpid;
-    int32  *llclass,*lrclass,lnlclass,lnrclass,ntot; 
+    int32  *llclass,*lrclass,lnlclass,lnrclass,ntot;
 
     /* First gather and compute means and variances for the npermute groups */
     tmixw = (float32 ***)ckd_calloc_3d(npermute,nfeat,ndensity,sizeof(float32));
@@ -242,9 +242,9 @@ float32  permute(float32 **means, float32 **vars, float32 ***mixw,
             }
         }
     }
-            
+
     /* We have npermute clusters now; permute them to get two clusters */
-    /* There are 2^(npermute-1)-1 clusters possible. Test them all out */ 
+    /* There are 2^(npermute-1)-1 clusters possible. Test them all out */
 
     /* Create identifiers for 2^(npermute-1) clusters */
     for (i=1,ncombinations=1;i<npermute;i++,ncombinations*=2);
@@ -254,11 +254,11 @@ float32  permute(float32 **means, float32 **vars, float32 ***mixw,
         for(j=0,tmpid[0]=!tmpid[0];!tmpid[j];j++,tmpid[j]=!tmpid[j]);
         for(j=0;j<npermute;j++) identifier[i][j] = tmpid[j];
     }
-    ckd_free(tmpid); 
+    ckd_free(tmpid);
 
     /* Go through the list and find best pair */
     for (i=0,bestdec=-1.0e+30;i<ncombinations-1;i++){
-        float32 *meana=NULL, *vara=NULL, *meanb=NULL; 
+        float32 *meana=NULL, *vara=NULL, *meanb=NULL;
         float32 *varb=NULL, **counta=NULL, **countb=NULL;
 
         counta = (float32 **) ckd_calloc_2d(nfeat,ndensity,sizeof(float32));
@@ -345,10 +345,10 @@ float32  permute(float32 **means, float32 **vars, float32 ***mixw,
 
     return(bestdec);
 }
-
-    
+
+
 node *make_simple_tree (float32 **means, float32 **vars, float32 ***mixw,
-           int32 *nodephoneids, int32 nphones, int32 ndensity, 
+           int32 *nodephoneids, int32 nphones, int32 ndensity,
            int32 nfeat, int32 ndim, int32 npermute, int32 depth, int32 continuous)
 {
     float32  **oldmeans=NULL, **oldvars=NULL, **newmeans=NULL, **newvars=NULL;
@@ -487,7 +487,7 @@ node *make_simple_tree (float32 **means, float32 **vars, float32 ***mixw,
 
     return(root);
 }
-
+
 
 /* Associates a unique id with all the nodes in a tree */
 int32 id_nodes(node *root, node **idlist, int32 id)
@@ -498,7 +498,7 @@ int32 id_nodes(node *root, node **idlist, int32 id)
     return(id+1);
 }
 
-
+
 
 void free_tree(node *root)
 {
@@ -511,7 +511,7 @@ void free_tree(node *root)
     ckd_free((void *) root);
     return;
 }
-
+
 
 
 /* Pares a tree down to npermute leaves */
@@ -542,7 +542,7 @@ int32 pare_tree(node *sroot, int32 npermute, int32 **lists, int32 *llist)
     }
 
     while (nleaves > npermute) {
-        /* find twig for which likelihood decerase was maximum 
+        /* find twig for which likelihood decerase was maximum
          * this is the worst merge */
         maxdec = twiglkhddec[0]; maxid = twiglist[0];
         for (i=1; i<ntwigs;i++) {
@@ -576,7 +576,7 @@ int32 pare_tree(node *sroot, int32 npermute, int32 **lists, int32 *llist)
 
     return(nleaves);
 }
-
+
 
 /* Prunes a tree down to nnode question nodes */
 int32 prune_quests(node *sroot, int32 ndesirdnodes)
@@ -640,7 +640,7 @@ int32 prune_quests(node *sroot, int32 ndesirdnodes)
 
     return(nquests);
 }
-
+
 
 node  *make_tree (float32 **means, float32 **vars, float32 ***mixw,
            int32 *phnids, int32 nphones, int32 ndensity, int32 nfeat,
@@ -665,10 +665,10 @@ node  *make_tree (float32 **means, float32 **vars, float32 ***mixw,
                                    jpermute,&lclass,&rclass,&nlclass,&nrclass, continuous);
             free_tree(sroot->left); free_tree(sroot->right);
             sroot->lkhd_dec = lkhddec;
-            sroot->left = 
+            sroot->left =
                 make_tree(means,vars,mixw,lclass,nlclass,ndensity,nfeat,
                           dim,npermute,depth+1, continuous);
-            sroot->right = 
+            sroot->right =
                 make_tree(means,vars,mixw,rclass,nrclass,ndensity,nfeat,
                           dim,npermute,depth+1, continuous);
         }
@@ -677,7 +677,7 @@ node  *make_tree (float32 **means, float32 **vars, float32 ***mixw,
     }
     return(sroot);
 }
-
+
 
 int compare(const void *a, const void *b)
 {
@@ -703,15 +703,15 @@ int32 get_quests(node *root,int32 **qarr,int32 *nph,int32 nquests,int32 depth)
     }
 
     if (root->nphones < 2) return nquests;
-    if (root->left != NULL) 
+    if (root->left != NULL)
         nquests = get_quests(root->left,qarr,nph,nquests,depth+1);
-    if (root->right != NULL) 
+    if (root->right != NULL)
         nquests = get_quests(root->right,qarr,nph,nquests,depth+1);
 
     return nquests;
 }
 
-
+
 
 void   sort_quests(int32 **qarr, int32 *nqfone, uint32 nfone, int32 *nquests)
 {
@@ -744,10 +744,10 @@ void   sort_quests(int32 **qarr, int32 *nqfone, uint32 nfone, int32 *nquests)
         j++;
     }
     *nquests = j;
-       
+
     ckd_free((void *) marker);
 }
-            
+
 
 
 static int
@@ -784,7 +784,7 @@ init(float32 *****out_mixw,
     float32   varfloor;
     uint32    ll=0,n,nn,sumveclen;
     char      **phone;
-    
+
     moddeffn = cmd_ln_str("-moddeffn");
     if (moddeffn == NULL)
 	E_FATAL("Specify -moddeffn\n");
@@ -796,7 +796,7 @@ init(float32 *****out_mixw,
     n_ci = mdef->acmod_set->n_ci;
     p_s = 0; p_e = n_ci - 1;
     phone = (char **) ckd_calloc_2d(n_ci,100,sizeof(char));
-    for (id = 0;id < n_ci;id++) 
+    for (id = 0;id < n_ci;id++)
         strcpy(phone[id],acmod_set_id2name(mdef->acmod_set,id));
     *out_phone = phone;
 
@@ -843,12 +843,17 @@ init(float32 *****out_mixw,
     for (i = p_s, j = 0; i <= p_e; i++, j++) {
 	for (k = 0; k < n_state; k++) {
 	    s = mdef->defn[i].state[k] - mixw_s;
+	    /* Bounds check to prevent segfault */
+	    if (s < 0 || s >= n_in_mixw) {
+		E_FATAL("State index s=%d out of bounds [0,%d) for model %d state %d\n",
+			s, n_in_mixw, i, k);
+	    }
 	    mixw_occ[j][k] = in_mixw[s];
 	}
     }
 
     assert(j == n_model);
-    
+
     if (continuous) {      /* bother with means and variances only if not semi*/
 	int32 var_is_full = cmd_ln_int32("-fullvar");
         /* Read Means and Variances; perform consistency checks */
@@ -911,18 +916,46 @@ init(float32 *****out_mixw,
                 featvar = var[j][k];
                 dnom  = 0;
                 for (n = 0; n < n_density; n++) {
+                    /* Bounds check to prevent segfault */
+                    if (j >= n_model || k >= n_state) {
+                        E_ERROR("Bounds error: j=%d k=%d (max: %d,%d)\n", j, k, n_model, n_state);
+                        continue;
+                    }
                     float32 mw = mixw_occ[j][k][0][n];
+                    /* Check for valid weight */
+                    if (!isfinite(mw) || mw < 0) {
+                        E_WARN("Invalid mixture weight [%d][%d][0][%d] = %f, using 0\n", j, k, n, mw);
+                        mw = 0;
+                    }
                     dnom += mw;
                     for (nn = 0; nn < l_veclen[0]; nn++) {
-                        featmean[nn] += mw * fullmean[m][0][n][nn];
-			if (var_is_full)
-			    featvar[nn] += 
-				mw *(fullmean[m][0][n][nn]*fullmean[m][0][n][nn] +
-				     fullvar_full[m][0][n][nn][nn]);
-			else
-			    featvar[nn] += 
-				mw *(fullmean[m][0][n][nn]*fullmean[m][0][n][nn] +
-				     fullvar[m][0][n][nn]);
+                        /* Bounds check on fullmean access */
+                        if (m >= n_in_mixw) {
+                            E_ERROR("fullmean index m=%d >= n_in_mixw=%d\n", m, n_in_mixw);
+                            continue;
+                        }
+                        float32 mean_val = fullmean[m][0][n][nn];
+                        if (!isfinite(mean_val)) {
+                            E_WARN("Non-finite mean at [%d][0][%d][%d], skipping\n", m, n, nn);
+                            continue;
+                        }
+                        featmean[nn] += mw * mean_val;
+			if (var_is_full) {
+			    if (fullvar_full && fullvar_full[m] && fullvar_full[m][0] &&
+			        fullvar_full[m][0][n] && fullvar_full[m][0][n][nn]) {
+			        float32 var_val = fullvar_full[m][0][n][nn][nn];
+			        if (isfinite(var_val)) {
+			            featvar[nn] += mw * (mean_val * mean_val + var_val);
+			        }
+			    }
+			} else {
+			    if (fullvar && fullvar[m] && fullvar[m][0] && fullvar[m][0][n]) {
+			        float32 var_val = fullvar[m][0][n][nn];
+			        if (isfinite(var_val)) {
+			            featvar[nn] += mw * (mean_val * mean_val + var_val);
+			        }
+			    }
+			}
                     }
                 }
                 if (dnom != 0) {
@@ -991,7 +1024,7 @@ init(float32 *****out_mixw,
 
     return S3_SUCCESS;
 }
-
+
 int
 main(int argc, char *argv[])
 {
@@ -1016,20 +1049,20 @@ main(int argc, char *argv[])
     parse_cmd_ln(argc, argv);
 
     type = cmd_ln_str("-type");
-    
+
     if(type==NULL){
       E_FATAL("-type is empty. Please specify -type correctly, either \".cont.\" or \".semi.\"\n");
     }
 
     continuous = -1;
-    if (strcmp(type,".cont.") == 0) 
+    if (strcmp(type,".cont.") == 0)
         continuous = 1;
-    else if (strcmp(type,".semi.") == 0) 
+    else if (strcmp(type,".semi.") == 0)
         continuous = 0;
     else{
       E_FATAL("Unknown type %s, either \".cont.\" or \".semi.\"\n", type);
     }
-      
+
     if(continuous ==-1){
       E_FATAL("-type is not set correctly\n");
     }
@@ -1084,7 +1117,7 @@ main(int argc, char *argv[])
         }
         root = make_tree(lmeans,lvars,lmixw,phoneids,nphones,n_density,n_feat,veclen,npermute,0, continuous);
         if (continuous) {
-            ckd_free_2d((void **)lmeans); ckd_free_2d((void **)lvars); 
+            ckd_free_2d((void **)lmeans); ckd_free_2d((void **)lvars);
         }
         ckd_free_3d((void ***)lmixw); ckd_free((void *)phoneids);
 
@@ -1101,7 +1134,7 @@ main(int argc, char *argv[])
             if (state < n_state/2) fprintf(fp,"QUESTION%d_%d_R ",state,i);
             else if (state == n_state/2) fprintf(fp,"QUESTION%d ",i);
             else fprintf(fp,"QUESTION%d_%d_L ",state,i);
-            for (j=0;j<nquestphone[i];j++) 
+            for (j=0;j<nquestphone[i];j++)
                 fprintf(fp," %s",phone_list[questarr[i][j]]);
             fprintf(fp,"\n");
         }
