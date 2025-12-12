@@ -978,10 +978,6 @@ init(float32 *****out_mixw,
         }
         for (i=0,j=0;i<n_ci;i++){
             if (strstr(phone[i],"+") == NULL && strcmp(phone[i],"SIL") != 0){
-                if (j >= n_model) {
-                    E_ERROR("Compact index j=%d >= n_model=%d, skipping\n", j, n_model);
-                    break;
-                }
                 /* Fix: avoid strcpy with overlapping memory when i==j (undefined behavior) */
                 if (i != j) {
                     strcpy(phone[j],phone[i]);
@@ -1004,10 +1000,6 @@ init(float32 *****out_mixw,
         mixw = (float32 ****)ckd_calloc_4d(n_model,n_state,n_stream,n_density,sizeof(float32));
         for (i=0,j=0;i<n_ci;i++){
             if (strstr(phone[i],"+") == NULL && strcmp(phone[i],"SIL") != 0){
-                if (j >= n_model) {
-                    E_ERROR("Compact index j=%d >= n_model=%d, skipping\n", j, n_model);
-                    break;
-                }
                 /* Fix: avoid strcpy with overlapping memory when i==j (undefined behavior) */
                 if (i != j) {
                     strcpy(phone[j],phone[i]);
