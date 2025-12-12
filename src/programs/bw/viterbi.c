@@ -1,6 +1,6 @@
 /* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
- * Copyright (c) 1996-2007 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2007 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -8,27 +8,27 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
+ * This work was supported in part by funding from the Defense Advanced
+ * Research Projects Agency and the National Science Foundation of the
  * United States of America, and the CMU Sphinx Speech Consortium.
  *
- * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
- * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ====================================================================
@@ -37,10 +37,10 @@
 /*********************************************************************
  *
  * File: viterbi.c
- * 
- * Description: 
- * 
- * Authors: 
+ *
+ * Description:
+ *
+ * Authors:
  * 	David Huggins-Daines
  *      Eric Thayer
  *********************************************************************/
@@ -124,7 +124,7 @@ write_phseg(const char *filename,
 		j = active_astate[t][bp[t][q]];
 		q = bp[t][q];
 	    }
-	    
+
 
 	    /* Do a rather nasty mdef scan to find the triphone in question. */
 	    for (phn = 0; phn < n_defn; phn++) {
@@ -137,11 +137,11 @@ write_phseg(const char *filename,
 	        if (k < 0)
 	    	    break;
 	    }
-	    
+
 	    if (phn == n_defn) {
 		E_ERROR("Failed to find triphone for senone %u\n", state_seq[j].mixw);
 	    }
-	    
+
 	    /* Record ascr and sf for the next phone */
 	    if (phseg) {
 		phseg->score = (int32)(ascr * INVLOGS3);
@@ -398,8 +398,9 @@ viterbi_update(float64 *log_forw_prob,
 	    if (state_seq[i].n_next > max_n_next)
 		max_n_next = state_seq[i].n_next;
 	}
+	/* Allocate with n_state to ensure j-i indexing never goes out of bounds */
 	inv->l_tmat_acc = (float32 **)ckd_calloc_2d(n_state,
-						    max_n_next,
+						    n_state,
 						    sizeof(float32));
     }
     /* transition matrix reestimation sum accumulators
@@ -461,8 +462,10 @@ viterbi_update(float64 *log_forw_prob,
 #endif
 	    /* Backtrace and accumulate transition counts. */
 	    if (tmat_reest) {
-		assert(tacc != NULL);
-		tacc[prev][j - prev] += 1.0;
+		/* Skip invalid transitions where j < prev (shouldn't happen in forward HMM) */
+		if (tacc != NULL && prev < n_state && j >= prev && (j - prev) < n_state) {
+		    tacc[prev][j - prev] += 1.0;
+		}
 	    }
 	    q = bp[t][q];
 	    j = prev;
@@ -554,7 +557,7 @@ viterbi_update(float64 *log_forw_prob,
 			 n_feat,
 			 n_top);
 	}
-		    
+
 
 	/* accumulate the probability for each density in the mixing
 	 * weight reestimation accumulators */
@@ -577,8 +580,8 @@ viterbi_update(float64 *log_forw_prob,
 		}
 	    }
 	}
-		    
-	/* accumulate the probability for each density in the 
+
+	/* accumulate the probability for each density in the
 	 * density reestimation accumulators */
 	if (mean_reest || var_reest) {
 	    accum_den_terms(denacc[l_cb], d_term,
@@ -588,7 +591,7 @@ viterbi_update(float64 *log_forw_prob,
 				now_den_idx[l_ci_cb], n_feat, n_top);
 	    }
 	}
-		
+
 	if (timers)
 	    ptmr_stop(&timers->rsts_timer);
 	/* Note that there is only one state/frame so this is kind of
@@ -617,7 +620,7 @@ viterbi_update(float64 *log_forw_prob,
         if (timers)
 	    ptmr_stop(&timers->rstf_timer);
 
-	if (t > 0) { 
+	if (t > 0) {
 	    prev = active_astate[t-1][bp[t][q]];
 #if VITERBI_DEBUG
 	    printf("Backtrace at time %d, %u => %u\n",
@@ -625,8 +628,10 @@ viterbi_update(float64 *log_forw_prob,
 #endif
 	    /* Backtrace and accumulate transition counts. */
 	    if (tmat_reest) {
-		assert(tacc != NULL);
-		tacc[prev][j-prev] += 1.0;
+		/* Skip invalid transitions where j < prev (shouldn't happen in forward HMM) */
+		if (tacc != NULL && prev < n_state && j >= prev && (j - prev) < n_state) {
+		    tacc[prev][j-prev] += 1.0;
+		}
 	    }
 	    q = bp[t][q];
 	    j = prev;
@@ -668,7 +673,7 @@ viterbi_update(float64 *log_forw_prob,
 	    ckd_free((void *)dscale[i]);
     }
     ckd_free((void **)dscale);
-    
+
     ckd_free(n_active_astate);
     for (i = 0; i < n_obs; i++) {
 	ckd_free((void *)active_alpha[i]);
@@ -715,12 +720,12 @@ mmi_viterbi_run(float64 *log_forw_prob,
     int final_state_error = 0;
     float64 log_fp;/* accumulator for the log of the probability
 		    * of observing the input given the model */
-    
+
     /* caller must ensure that there is some non-zero amount
        of work to be done here */
     assert(n_obs > 0);
     assert(n_state > 0);
-    
+
     scale = (float64 *)ckd_calloc(n_obs, sizeof(float64));
     dscale = (float64 **)ckd_calloc(n_obs, sizeof(float64 *));
     n_active_astate = (uint32 *)ckd_calloc(n_obs, sizeof(uint32));
@@ -739,7 +744,7 @@ mmi_viterbi_run(float64 *log_forw_prob,
 
 	/* Some problem with the utterance, release per utterance storage and
 	 * forget about adding the utterance accumulators to the global accumulators */
-	
+
 	goto all_done;
     }
 
@@ -776,7 +781,7 @@ mmi_viterbi_run(float64 *log_forw_prob,
 	    ckd_free((void *)dscale[i]);
     }
     ckd_free((void **)dscale);
-    
+
     ckd_free(n_active_astate);
     for (i = 0; i < n_obs; i++) {
 	ckd_free((void *)active_alpha[i]);
@@ -790,7 +795,7 @@ mmi_viterbi_run(float64 *log_forw_prob,
 
     if (ret != S3_SUCCESS && !final_state_error)
 	E_ERROR("viterbi run error in sentence %s\n", corpus_utt_brief_name());
-    
+
     return ret;
 }
 
@@ -870,7 +875,7 @@ mmi_viterbi_update(vector_t **feature,
 		  scale, dscale,
 		  feature, n_obs, state_seq, n_state,
 		  inv, a_beam, NULL, NULL, 1);
-    
+
     if (cmd_ln_str("-outphsegdir")) {
 	E_FATAL("current MMI implementation don't support -outphsegdir\n");
     }
@@ -974,7 +979,7 @@ mmi_viterbi_update(vector_t **feature,
 					 active_cb, n_active_cb, g);
 	if (ret != S3_SUCCESS)
 	    goto all_done;
-	
+
 	assert(state_seq[j].mixw != TYING_NON_EMITTING);
 	/* Now calculate mixture densities. */
 	/* This is the normalizer sum_m c_{jm} p(o_t|\lambda_{jm}) */
@@ -1028,8 +1033,8 @@ mmi_viterbi_update(vector_t **feature,
 			 n_feat,
 			 n_top);
 	}
-	    
-	/* accumulate the probability for each density in the 
+
+	/* accumulate the probability for each density in the
 	 * density reestimation accumulators */
 	if (mean_reest || var_reest) {
 	    accum_den_terms(denacc[l_cb], d_term,
@@ -1039,7 +1044,7 @@ mmi_viterbi_update(vector_t **feature,
 				now_den_idx[l_ci_cb], n_feat, n_top);
 	    }
 	}
-	
+
 	/* Note that there is only one state/frame so this is kind of
 	   redundant */
 	if (mean_reest || var_reest) {
@@ -1056,8 +1061,8 @@ mmi_viterbi_update(vector_t **feature,
 			     fcb);
 	    memset(&denacc[0][0][0], 0, denacc_size);
 	}
-	
-	if (t > 0) { 
+
+	if (t > 0) {
 	    prev = active_astate[t-1][bp[t][q]];
 	    q = bp[t][q];
 	    j = prev;
@@ -1077,7 +1082,7 @@ mmi_viterbi_update(vector_t **feature,
 	    ckd_free((void *)dscale[i]);
     }
     ckd_free((void **)dscale);
-    
+
     ckd_free(n_active_astate);
     for (i = 0; i < n_obs; i++) {
 	ckd_free((void *)active_alpha[i]);

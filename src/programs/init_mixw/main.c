@@ -1,6 +1,6 @@
 /* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
- * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -8,27 +8,27 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
+ * This work was supported in part by funding from the Defense Advanced
+ * Research Projects Agency and the National Science Foundation of the
  * United States of America, and the CMU Sphinx Speech Consortium.
  *
- * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
- * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ====================================================================
@@ -37,15 +37,15 @@
 /*********************************************************************
  *
  * File: main.c
- * 
- * Description: 
+ *
+ * Description:
  *	This routine uses a source model definition file, source
  *	mixing weight file and destination model definition file
  *	to initialize a destination mixing weight file.
- * 
- * Author: 
+ *
+ * Author:
  *	Eric H. Thayer (eht@cs.cmu.edu)
- * 
+ *
  *********************************************************************/
 #include "parse_cmd_ln.h"
 
@@ -129,7 +129,7 @@ init_model(float32 ***dest_mixw,
 	   model_def_entry_t *src,
 	   uint32 *src_cb_map,
 	   acmod_set_t *src_acmod_set,
-	   
+
 	   uint32 n_feat,
 	   uint32 n_gau,
 	   uint32 n_state_pm,
@@ -183,7 +183,7 @@ init_model(float32 ***dest_mixw,
 	    d_mg = dest_cb_map[d_m];
 	    if (!was_added(&cb_dest_list[d_mg], s_mg)) {
 		printf("[mg %5u(%1u) <- %5u] ", d_mg, s, s_mg);
-		
+
 		for (j = 0; j < n_feat; j++) {
 		    for (k = 0; k < n_gau; k++) {
 			for (l = 0; l < veclen[j]; l++) {
@@ -266,7 +266,7 @@ init_mixw()
 	return S3_ERROR;
     }
 
-	   
+
     ts2cbfn = cmd_ln_str("-src_ts2cbfn");
     if (strcmp(SEMI_LABEL, ts2cbfn) == 0) {
 	E_INFO("Generating semi-continous ts2cb mapping\n");
@@ -301,13 +301,13 @@ init_mixw()
     /* read in the source mixing weight parameter file */
     if (s3mixw_read(cmd_ln_str("-src_mixwfn"),
 		    &src_mixw, &n_mixw_src, &n_feat, &n_gau) != S3_SUCCESS) {
-			
+
 	return S3_ERROR;
     }
 
     E_INFO("Reading src %s\n",
 	   cmd_ln_str("-src_tmatfn"));
-    
+
     if (s3tmat_read(cmd_ln_str("-src_tmatfn"),
 		    &src_tmat,
 		    &n_tmat_src,
@@ -432,7 +432,7 @@ init_mixw()
 
     n_tmat_dest = dest_mdef->n_tied_tmat;
     tmat_dest_list = init_was_added(n_tmat_dest);
-    
+
     E_INFO("Alloc %ux%ux%u dest tmat\n",
 	   n_tmat_dest,
 	   n_state_pm-1,
@@ -442,7 +442,7 @@ init_mixw()
 					   n_state_pm-1,
 					   n_state_pm,
 					   sizeof(float32));
-    
+
     n_mixw_dest = dest_mdef->n_tied_state;
     mixw_dest_list = init_was_added(n_mixw_dest);
 
@@ -466,7 +466,7 @@ init_mixw()
 	dest_var = gauden_alloc_param(n_cb_dest, n_feat, n_gau, veclen);
     else if (src_fullvar)
 	dest_fullvar = gauden_alloc_param_full(n_cb_dest, n_feat, n_gau, veclen);
-    
+
     for (dest_m = 0; dest_m < dest_mdef->n_defn; dest_m++) {
 	dest_m_name = acmod_set_id2name(dest_mdef->acmod_set, dest_m);
 	src_m = acmod_set_name2id(src_mdef->acmod_set, dest_m_name);
@@ -484,7 +484,7 @@ init_mixw()
 
 		E_INFO("No source base phone %s found.  Initializing %s using uniform distribution\n",
 		       dest_m_base_name, dest_m_name);
-		
+
 		if (src_tmat) {
 		    E_INFO("Uniform initialization of tmat not supported\n");
 		}
@@ -525,16 +525,40 @@ init_mixw()
 	}
     }
 
+    /* Check for uninitialized transition matrices and initialize them */
+    /* When duplicating from .semi. to .cont., ensure all destination tmat slots are initialized */
+    /* For .semi., mk_flat creates n_tied_tmat tmat (all identical), so use src_tmat[0] as template */
+    if (src_tmat) {
+	uint32 tmat_m, tmat_i, tmat_j;
+	uint32 src_tmat_idx = 0;  /* Use first source tmat as template (all are identical) */
+
+	for (tmat_m = 0; tmat_m < n_tmat_dest; tmat_m++) {
+	    if (tmat_dest_list[tmat_m] == NULL) {
+		/* Uninitialized destination tmat - copy from source */
+		E_INFO("Initializing uninitialized tmat %u from source tmat %u\n", tmat_m, src_tmat_idx);
+		for (tmat_i = 0; tmat_i < n_state_pm-1; tmat_i++) {
+		    for (tmat_j = 0; tmat_j < n_state_pm; tmat_j++) {
+			dest_tmat[tmat_m][tmat_i][tmat_j] = src_tmat[src_tmat_idx][tmat_i][tmat_j];
+		    }
+		}
+		/* Mark as initialized */
+		tmat_dest_list[tmat_m] = (pair_t *)ckd_calloc(1, sizeof(pair_t));
+		tmat_dest_list[tmat_m]->src_id = src_tmat_idx;
+		tmat_dest_list[tmat_m]->next = NULL;
+	    }
+	}
+    }
+
     E_INFO("Writing dest %s\n",
 	   cmd_ln_str("-dest_tmatfn"));
-    
+
     if (s3tmat_write(cmd_ln_str("-dest_tmatfn"),
 		     dest_tmat,
 		     n_tmat_dest,
 		     n_state_pm) != S3_SUCCESS) {
 	return S3_ERROR;
     }
-	   
+
 
     E_INFO("Writing dest %s\n",
 	   cmd_ln_str("-dest_mixwfn"));
@@ -610,7 +634,7 @@ main(int argc, char *argv[])
 	E_ERROR("errors initializing.\n");
 	return 1;
     }
-    
+
     if (init_mixw() != S3_SUCCESS) {
 	return 1;
     }
