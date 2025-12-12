@@ -83,9 +83,9 @@ validate_writeable_dir(char *switch_name, void *arg)
 	return FALSE;
     }	
 
-    if ((s.st_mode && S_IWOTH) ||
-	((s.st_uid == getuid()) && (s.st_mode && S_IWUSR)) ||
-	((s.st_gid == getgid()) && (s.st_mode && S_IWGRP))) {
+    if ((s.st_mode & S_IWOTH) ||
+	((s.st_uid == getuid()) && (s.st_mode & S_IWUSR)) ||
+	((s.st_gid == getgid()) && (s.st_mode & S_IWGRP))) {
 	return TRUE;
     }
     else {
@@ -124,9 +124,9 @@ validate_opt_writeable_dir(char *switch_name, void *arg)
 	return FALSE;
     }	
 
-    if ((s.st_mode && S_IWOTH) ||
-	((s.st_uid == getuid()) && (s.st_mode && S_IWUSR)) ||
-	((s.st_gid == getgid()) && (s.st_mode && S_IWGRP))) {
+    if ((s.st_mode & S_IWOTH) ||
+	((s.st_uid == getuid()) && (s.st_mode & S_IWUSR)) ||
+	((s.st_gid == getgid()) && (s.st_mode & S_IWGRP))) {
 	return TRUE;
     }
     else {
@@ -168,9 +168,9 @@ validate_readable_dir(char *switch_name, void *arg)
 	return FALSE;
     }	
 
-    if ((s.st_mode && S_IROTH) ||
-	((s.st_uid == getuid()) && (s.st_mode && S_IRUSR)) ||
-	((s.st_gid == getgid()) && (s.st_mode && S_IRGRP))) {
+    if ((s.st_mode & S_IROTH) ||
+	((s.st_uid == getuid()) && (s.st_mode & S_IRUSR)) ||
+	((s.st_gid == getgid()) && (s.st_mode & S_IRGRP))) {
 	return TRUE;
     }
     else {
