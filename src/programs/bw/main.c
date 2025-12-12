@@ -565,20 +565,20 @@ main_initialize(int argc,
 		E_FATAL("cb2mllr maps %u cb, but read %u cb from files\n",
 			n_map, inv->gauden->n_mgau);
 	    }
-	}
 
-	/* Transform the means using the speaker transform if available. */
-	mllr_transform_mean(inv->gauden->mean,
-			    inv->gauden->var,
-			    0, inv->gauden->n_mgau,
-			    inv->gauden->n_feat,
-			    inv->gauden->n_density,
-			    inv->gauden->veclen,
-			    sxfrm_a, sxfrm_b,
-			    mllr_idx, n_mllr);
-	ckd_free(mllr_idx);
-	free_mllr_A(sxfrm_a, n_mllr, tmp_n_stream);
-	free_mllr_B(sxfrm_b, n_mllr, tmp_n_stream);
+	    /* Transform the means using the speaker transform if available. */
+	    mllr_transform_mean(inv->gauden->mean,
+				inv->gauden->var,
+				0, inv->gauden->n_mgau,
+				inv->gauden->n_feat,
+				inv->gauden->n_density,
+				inv->gauden->veclen,
+				sxfrm_a, sxfrm_b,
+				mllr_idx, n_mllr);
+	    ckd_free(mllr_idx);
+	    free_mllr_A(sxfrm_a, n_mllr, tmp_n_stream);
+	    free_mllr_B(sxfrm_b, n_mllr, tmp_n_stream);
+	}
     }
 
     return S3_SUCCESS;
