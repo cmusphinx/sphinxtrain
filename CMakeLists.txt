@@ -44,6 +44,14 @@ if(MSVC)
   add_compile_options(/W3)
 else()
   add_compile_options(-Wall -Wextra)
+  # Suppress warnings for legacy code patterns that are acceptable
+  add_compile_options(
+    -Wno-sign-compare              # Many int32/uint32 comparisons in legacy code
+    -Wno-unused-parameter          # Function signatures must match for API consistency
+    -Wno-unused-but-set-variable   # Variables kept for debugging/documentation value
+    -Wno-pointer-sign              # Intentional int32*/uint32* pointer conversions
+    -Wno-missing-field-initializers # Auto-generated LTS rules
+  )
 endif()
 
 # Don't build shared libs by default, but distributions can do it

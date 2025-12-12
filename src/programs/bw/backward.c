@@ -1,6 +1,6 @@
 /* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
- * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1995-2000 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -8,27 +8,27 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
+ * This work was supported in part by funding from the Defense Advanced
+ * Research Projects Agency and the National Science Foundation of the
  * United States of America, and the CMU Sphinx Speech Consortium.
  *
- * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
- * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ====================================================================
@@ -37,14 +37,14 @@
 /*********************************************************************
  *
  * File: backward.c
- * 
- * Description: 
+ *
+ * Description:
  * 	The routine in this file compute the beta variable in the
  *	forward backward algorithm.  The routine also updates the
  * 	reestimation sums for mixing weights, transition matrices,
  *	means and variances.
  *
- * Author: 
+ * Author:
  * 	Eric H. Thayer (eht@cs.cmu.edu)
  *********************************************************************/
 
@@ -90,7 +90,7 @@ partial_op(float64 *p_op,
 	    k = den_idx[j][kk];
 	    f_op += mixw[j][k] * den[j][kk];
 	}
-	
+
 	/* Figure out partial output probability excluding
 	 * the given feature stream j. */
         /* That is technically correct but quite confusing, because
@@ -100,7 +100,7 @@ partial_op(float64 *p_op,
 	p_op[j] = op / f_op;
     }
 }
-
+
 void
 partial_ci_op(float64 *p_ci_op,
 
@@ -129,7 +129,7 @@ partial_ci_op(float64 *p_ci_op,
 	p_ci_op[j] = f_op;
     }
 }
-
+
 void
 den_terms_ci(float64 **d_term,
 
@@ -151,7 +151,7 @@ den_terms_ci(float64 **d_term,
 	    for (kk = 0; kk < n_top; kk++) {
 		/* density index k for one of the n_top density values */
 		k = den_idx[j][kk];
-		
+
 		d_term[j][kk] = mixw[j][k] * den[j][kk] * inv_ci_op * post_j;
 	    }
 	}
@@ -162,7 +162,7 @@ den_terms_ci(float64 **d_term,
 	}
     }
 }
-
+
 void
 den_terms(float64 **d_term,
 	  float64 p_reest_term,
@@ -209,26 +209,26 @@ den_terms(float64 **d_term,
 	}
     }
 }
-
+
 /*********************************************************************
  *
- * Function: 
+ * Function:
  * 	backward_update
  *
- * Description: 
+ * Description:
  * 	The routine in this file compute the beta variable in the
  * 	forward backward algorithm.  The routine also updates the
  * 	reestimation sums for mixing weights, transition matrices,
  * 	means and variances.
- * 
- * Function Inputs: 
+ *
+ * Function Inputs:
  *	float64 **alpha -
  *		A 2-d array containing the scaled alpha variable.
  *		alpha[t][s] is scaled alpha at time t for state s.
  *
  *	float64 *scale -
  *		The scale factor for each time frame.
- * 
+ *
  *	float64 ****den -
  *		The top N component mixture density values for
  *		all time.
@@ -236,7 +236,7 @@ den_terms(float64 **d_term,
  *		den[t][d][f][i] addresses the the Ith density of
  *		the top N densities for acoustic feature stream f,
  *		density d at time t.
- * 
+ *
  *	uint32 ****den_idx -
  *		The top N component mixture density indices for
  *		all time.
@@ -244,68 +244,68 @@ den_terms(float64 **d_term,
  *		den[t][d][f][i] addresses the the Ith density index
  *		of the top N densities for acoustic feature stream f,
  *		density d at time t.
- * 
+ *
  *	vector_t **feature -
  *		The feature streams for all time within the
  *		utterance.
  *
  *		feature[t][f][c] addresses component c of the feature
  *		vector for feature f at time t.
- * 
+ *
  *	uint32 n_obs -
  *		Number of observations (i.e. frames) in this observation
  *		sequence (i.e. utterance)
- * 
+ *
  *	state_t *state_seq -
  *		The sequence of sentence HMM states for the utterance.
- * 
+ *
  *	uint32 n_state -
  *		The number of states in the sentence HMM.
- * 
+ *
  *	model_inventory_t *inv -
  *		A pointer to a structure which contains references to
  *		all model parameters and reestimation sum accumulators.
- * 
+ *
  *	float64 beam -
  *		Pruning beam width.
- * 
+ *
  *	float32 spthresh -
  *		State posterior probability threshold for reestimation.
  *		State posterior prob must be greater than this value
  *		for the state to be included in the reestimation counts.
- * 
+ *
  *	int32 mixw_reest -
  *		A boolean indicating whether or not to do mixing weight
  *		reestimation.
- * 
+ *
  *	int32 tmat_reest -
  *		A boolean indicating whether or not to do transition probability matrix
  *		reestimation.
- * 
+ *
  *	int32 mean_reest -
  *		A boolean indicating whether or not to do mean
  *		reestimation.
- * 
+ *
  *	int32 var_reest
  *		A boolean indicating whether or not to do variance
  *		reestimation.
  *
- * Global Inputs: 
+ * Global Inputs:
  *	None
- * 
- * Return Values: 
+ *
+ * Return Values:
  *	S3_SUCCESS -
  *		No errors found; Local accumulators updated.
  *	S3_ERROR -
  *		Error found; Ignore local accumulator values.
- * 
- * Global Outputs: 
+ *
+ * Global Outputs:
  *	None
- * 
- * Errors: 
- * 
+ *
+ * Errors:
+ *
  *********************************************************************/
-
+
 int32
 backward_update(float64 **active_alpha,
 		uint32 **active_astate,
@@ -459,7 +459,7 @@ backward_update(float64 **active_alpha,
     for (s = 0; s < n_state; s++)
 	if (state_seq[s].mixw == TYING_NON_EMITTING)
 	    n_non_emit++;
-    
+
     /* Allocate space for the active non-emitting state lists */
     non_emit = ckd_calloc(n_non_emit, sizeof(uint32));
     tmp_non_emit = ckd_calloc(n_non_emit, sizeof(uint32));
@@ -470,7 +470,7 @@ backward_update(float64 **active_alpha,
 
     n_active = 0;
     n_next_active = 0;
-    
+
     /* Allocate space for the cur/next active state flags */
     asf_a = ckd_calloc(n_state, sizeof(unsigned char));
     asf_b = ckd_calloc(n_state, sizeof(unsigned char));
@@ -481,7 +481,7 @@ backward_update(float64 **active_alpha,
     /* Initialize cur/next active state lists */
     asf = asf_a;
     asf_next = asf_b;
-    
+
     mixw = inv->mixw;
 
     if (mixw_reest) {
@@ -515,8 +515,9 @@ backward_update(float64 **active_alpha,
 	    if (state_seq[i].n_next > max_n_next)
 		max_n_next = state_seq[i].n_next;
 	}
+	/* Allocate with n_state to ensure j-i indexing never goes out of bounds */
 	inv->l_tmat_acc = (float32 **)ckd_calloc_2d(n_state,
-						    max_n_next,
+						    n_state,
 						    sizeof(float32));
     }
     /* transition matrix reestimation sum accumulators
@@ -552,7 +553,7 @@ backward_update(float64 **active_alpha,
     }
 
     recip_final_alpha = 1.0/active_alpha[n_obs-1][q_f];
-    
+
     /* Set the initial beta value */
     prior_beta[n_state-1] = 1.0;
 
@@ -594,13 +595,17 @@ backward_update(float64 **active_alpha,
 		/* state i not active in forward pass; skip it */
 		continue;
 	    }
-	    
+
 	    /* accumulate before scaling so scale[t] doesn't appear
 	     * in the reestimation sums */
 
 	    if (tmat_reest) {
-		assert(tacc != NULL);
-		a_tacc = &tacc[i][j-i];
+		/* Skip invalid transitions where j < i (shouldn't happen in forward HMM) */
+		if (tacc != NULL && i < n_state && j >= i && (j - i) < n_state) {
+		    a_tacc = &tacc[i][j-i];
+		} else {
+		    a_tacc = NULL;
+		}
 	    }
 	    else {
 		a_tacc = NULL;
@@ -673,7 +678,7 @@ backward_update(float64 **active_alpha,
 #endif
 	    l_cb = state_seq[j].l_cb;
 	    l_ci_cb = state_seq[j].l_ci_cb;
-	    
+
 	    if (acbframe[l_cb] != t+1) {
 		/* The top N densities for the observation
 		   at time t+1 and their indices */
@@ -705,7 +710,7 @@ backward_update(float64 **active_alpha,
 					   state_seq[j].ci_cb,
                                            /* See above. */
                                            NULL);
-			
+
 			active_cb[n_active_cb++] = l_ci_cb;
 
 			acbframe[l_ci_cb] = t+1;
@@ -717,17 +722,17 @@ backward_update(float64 **active_alpha,
 	    }
 	}
 
-#if BACKWARD_DEBUG	
+#if BACKWARD_DEBUG
 	E_INFO("Before scaling\n");
 #endif
 	/* Scale densities by dividing all by max */
 	gauden_scale_densities_bwd(now_den, now_den_idx,
 				   &dscale[t+1],
 				   active_cb, n_active_cb, g);
-	
+
 	for (s = 0; s < n_active; s++) {
 
-#if BACKWARD_DEBUG	
+#if BACKWARD_DEBUG
 	  E_INFO("In beta update, state %d is active for active state # %d\n",j,s);
 #endif
 	    j = active[s];
@@ -749,7 +754,7 @@ backward_update(float64 **active_alpha,
 
 	    assert(asf[j] == TRUE);
 	    assert(state_seq[j].mixw != TYING_NON_EMITTING);
-	    
+
 	    asf[j] = FALSE;
 
 	    prior = state_seq[j].prior_state;
@@ -758,7 +763,7 @@ backward_update(float64 **active_alpha,
 	    /* for all states, i, prior to state j */
 	    for (u = 0; u < state_seq[j].n_prior; u++) {
 		i = prior[u];
-#if BACKWARD_DEBUG	
+#if BACKWARD_DEBUG
 		E_INFO("For active state %d , state %d is its prior\n",j,i);
 #endif
 		for (q = 0; q < n_active_astate[t] &&
@@ -771,7 +776,7 @@ backward_update(float64 **active_alpha,
 		/* since survived pruning, this will be true
 		   for reasonable pruning thresholds */
 		assert(prior_beta[j] > 0);
-		
+
 		if (timers)
 		    ptmr_start(&timers->rsts_timer);
 
@@ -788,7 +793,7 @@ backward_update(float64 **active_alpha,
 
 		post_j = p_reest_term * op;
 
-#if BACKWARD_DEBUG	
+#if BACKWARD_DEBUG
 		E_INFO("State %u, prior %u, post_j %e p_reest_term %e op %e\n",j,i,post_j,p_reest_term,op);
 #endif
 		if (post_j < 0) {
@@ -800,7 +805,7 @@ backward_update(float64 **active_alpha,
 		    goto free;
 		}
 
-#if BACKWARD_DEBUG	
+#if BACKWARD_DEBUG
 		E_INFO("post_j =%e, alpha == %e * tprob == %e * op == %e * beta == %e * 1 / falpha == %e q=%d state_of_q=%d at time %d\n", post_j, active_alpha[t][q], tprob[u], op, prior_beta[j], recip_final_alpha, q, i,t);
 #endif
 
@@ -808,7 +813,7 @@ backward_update(float64 **active_alpha,
 		if (post_j > 1.0 + 1e-2) {
 		    E_ERROR("posterior of state %u (== %.8e) @ time %u > 1 + 1e-2\n", j, post_j, t+1);
 		    E_ERROR("alpha == %e * tprob == %e * op == %e * beta == %e * 1 / falpha == %e\n", active_alpha[t][q], tprob[u], op, prior_beta[j], recip_final_alpha);
-		    
+
 		    retval = S3_ERROR;
 
 		    if (timers)
@@ -830,7 +835,10 @@ backward_update(float64 **active_alpha,
                         /* post_j is the posterior probability of
                          * state j followed by state i, a.k.a. the
                          * fractional count of transitions i->j. */
-			tacc[i][j-i] += post_j;
+			/* Skip invalid transitions where j < i (shouldn't happen in forward HMM) */
+			if (tacc != NULL && i < n_state && j >= i && (j - i) < n_state) {
+			    tacc[i][j-i] += post_j;
+			}
 		    }
 
 		    /* Compute the output probability excluding the contribution
@@ -880,7 +888,7 @@ backward_update(float64 **active_alpha,
 				     n_feat,
 				     n_top);
 		    }
-		    
+
 
 		    /* accumulate the probability for each density in the mixing
 		     * weight reestimation accumulators */
@@ -903,7 +911,7 @@ backward_update(float64 **active_alpha,
 			    }
 			}
 		    }
-		    
+
 		    /* accumulate the probability for each density in
 		     * the density reestimation accumulators (these
 		     * are the same values as the mixture weight
@@ -918,18 +926,18 @@ backward_update(float64 **active_alpha,
 			}
 		    }
 		}
-		
+
 	        if (timers)
 		    ptmr_stop(&timers->rsts_timer);
-		
+
 		/* Add another term for \beta_t(i) */
 		beta[i] += tprob[u] * op * prior_beta[j];
-		
+
 		if (asf_next[i] != TRUE) {
 		    /* not already on the active list for time t-1 */
-		    
+
 		    asf_next[i] = TRUE;
-		    
+
 		    if (state_seq[i].mixw == TYING_NON_EMITTING) {
 			non_emit[n_non_emit] = i;
 			n_non_emit++;
@@ -961,7 +969,7 @@ backward_update(float64 **active_alpha,
 		/* state i not active in forward pass; skip it */
 		continue;
 	    }
-		
+
 	    ttt = active_alpha[t][q] * beta[i];
 
 	    if (ttt > pthresh) {
@@ -999,7 +1007,7 @@ backward_update(float64 **active_alpha,
 
 	pprob *= recip_final_alpha;
 	t_pprob += pprob;
-	
+
 	/* check an invariant.  Theoretically,
 	 * sum_alpha_beta - alpha[n_obs-1][n_state-1] must be zero, but
 	 * we're dealing with finite machine word length, pruning, etc. */
@@ -1009,7 +1017,7 @@ backward_update(float64 **active_alpha,
 
 	    E_ERROR("alpha(%e) <> sum of alphas * betas (%e) in frame %d\n",
 		    active_alpha[n_obs-1][q_f], sum_alpha_beta, t);
-		
+
 	    retval = S3_ERROR;
 
 	    goto free;
@@ -1022,7 +1030,7 @@ backward_update(float64 **active_alpha,
 #endif
 	for (s = 0; s < n_tmp_non_emit; s++) {
 	    j = tmp_non_emit[s];
-	    
+
 	    /*assert(asf_next[j] == TRUE);*/
 	    asf_next[j] = FALSE;
 
@@ -1038,15 +1046,18 @@ backward_update(float64 **active_alpha,
 		    /* state i not active in forward pass; skip it */
 		    continue;
 		}
-		
+
 		/* accumulate before scaling so scale[t] doesn't appear
 		 * in the reestimation sums */
 
 		if (timers)
 		    ptmr_start(&timers->rsts_timer);
 		if (tmat_reest) {
-		    tacc[i][j-i] += 
-			active_alpha[t][q] * tprob[u] * beta[j] * recip_final_alpha;
+		    /* Skip invalid transitions where j < i (shouldn't happen in forward HMM) */
+		    if (tacc != NULL && i < n_state && j >= i && (j - i) < n_state) {
+			tacc[i][j-i] +=
+			    active_alpha[t][q] * tprob[u] * beta[j] * recip_final_alpha;
+		    }
 		}
 		if (timers)
 		    ptmr_stop(&timers->rsts_timer);
@@ -1075,11 +1086,11 @@ backward_update(float64 **active_alpha,
 
 	n_next_active = 0;
 	n_tmp_non_emit = 0;
-	
+
 	/* scale the resulting betas at time t now */
 	for (s = 0; s < n_active; s++) {
 	    i = active[s];
-	    
+
 	    beta[i] *= scale[t];
 	}
 
@@ -1115,7 +1126,7 @@ backward_update(float64 **active_alpha,
 
         if (timers)
     	    ptmr_stop(&timers->rstf_timer);
- 	
+
 	/* swap beta and prior beta */
 	tt = beta;
 	beta = prior_beta;
@@ -1146,10 +1157,10 @@ backward_update(float64 **active_alpha,
 			now_den_idx[state_seq[0].l_cb],
 			mixw[state_seq[0].mixw],
 			g);
-    
+
     if (timers)
 	ptmr_stop(&timers->gau_timer);
-    
+
     if (retval == S3_SUCCESS) {
 
 	/* do a final alpha != beta consistency check */
@@ -1160,7 +1171,7 @@ backward_update(float64 **active_alpha,
 	    > (S2_ALPHA_BETA_EPSILON * active_alpha[n_obs-1][q_f])) {
 	    E_ERROR("alpha(%e) <> beta(%e)\n",
 		    active_alpha[n_obs-1][q_f], beta[0]);
-	    
+
 	    retval = S3_ERROR;
 	}
 
@@ -1210,7 +1221,7 @@ backward_update(float64 **active_alpha,
 			 n_top);
 	}
 
-	
+
 	if (mixw_reest) {
 	    accum_den_terms(wacc[state_seq[0].l_mixw], d_term,
 			    now_den_idx[l_cb], n_feat, n_top);
@@ -1223,17 +1234,17 @@ backward_update(float64 **active_alpha,
                 if (n_cb < inv->n_mixw) {
                     /* semi-continuous, tied mixture, and discrete case */
 		    /* do the update of the CI accumulators as well */
-		    accum_den_terms(wacc[state_seq[j].l_ci_mixw], d_term,
+		    accum_den_terms(wacc[state_seq[0].l_ci_mixw], d_term,
 				    now_den_idx[l_cb], n_feat, n_top);
 		}
 		else {
-		    accum_den_terms(wacc[state_seq[j].l_ci_mixw], d_term_ci,
+		    accum_den_terms(wacc[state_seq[0].l_ci_mixw], d_term_ci,
 				    now_den_idx[l_ci_cb], n_feat, n_top);
 		}
 	    }
 	}
-	
-	
+
+
 	if (mean_reest || var_reest) {
 	    accum_den_terms(denacc[l_cb], d_term,
 			    now_den_idx[l_cb], n_feat, n_top);
@@ -1242,7 +1253,7 @@ backward_update(float64 **active_alpha,
 				now_den_idx[l_ci_cb], n_feat, n_top);
 	    }
 	}
-	
+
 	if (timers)
 	    ptmr_start(&timers->rstf_timer);
 	if (mean_reest || var_reest) {
