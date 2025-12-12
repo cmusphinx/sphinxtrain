@@ -978,12 +978,19 @@ init(float32 *****out_mixw,
         }
         for (i=0,j=0;i<n_ci;i++){
             if (strstr(phone[i],"+") == NULL && strcmp(phone[i],"SIL") != 0){
-                strcpy(phone[j],phone[i]);
-                for (k=0;k<n_state;k++){
-                    mixw[j][k][0][0] = mixw[i][k][0][0];
-                    for (n=0;n<l_veclen[0];n++){
-                        mean[j][k][n] = mean[i][k][n];
-                        var[j][k][n] = var[i][k][n];
+                if (j >= n_model) {
+                    E_ERROR("Compact index j=%d >= n_model=%d, skipping\n", j, n_model);
+                    break;
+                }
+                /* Fix: avoid strcpy with overlapping memory when i==j (undefined behavior) */
+                if (i != j) {
+                    strcpy(phone[j],phone[i]);
+                    for (k=0;k<n_state;k++){
+                        mixw[j][k][0][0] = mixw[i][k][0][0];
+                        for (n=0;n<l_veclen[0];n++){
+                            mean[j][k][n] = mean[i][k][n];
+                            var[j][k][n] = var[i][k][n];
+                        }
                     }
                 }
                 j++;
@@ -997,11 +1004,18 @@ init(float32 *****out_mixw,
         mixw = (float32 ****)ckd_calloc_4d(n_model,n_state,n_stream,n_density,sizeof(float32));
         for (i=0,j=0;i<n_ci;i++){
             if (strstr(phone[i],"+") == NULL && strcmp(phone[i],"SIL") != 0){
-                strcpy(phone[j],phone[i]);
-                for (k=0;k<n_state;k++){
-                    for (l=0;l<n_stream;l++){
-                        for (m=0;m<n_density;m++)
-                            mixw[j][k][l][m] = mixw_occ[i][k][l][m];
+                if (j >= n_model) {
+                    E_ERROR("Compact index j=%d >= n_model=%d, skipping\n", j, n_model);
+                    break;
+                }
+                /* Fix: avoid strcpy with overlapping memory when i==j (undefined behavior) */
+                if (i != j) {
+                    strcpy(phone[j],phone[i]);
+                    for (k=0;k<n_state;k++){
+                        for (l=0;l<n_stream;l++){
+                            for (m=0;m<n_density;m++)
+                                mixw[j][k][l][m] = mixw_occ[i][k][l][m];
+                        }
                     }
                 }
                 j++;
