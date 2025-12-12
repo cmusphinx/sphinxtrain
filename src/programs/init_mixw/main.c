@@ -528,7 +528,7 @@ init_mixw()
     /* Check for uninitialized transition matrices and initialize them */
     /* When duplicating from .semi. to .cont., ensure all destination tmat slots are initialized */
     /* For .semi., mk_flat creates n_tied_tmat tmat (all identical), so use src_tmat[0] as template */
-    if (src_tmat) {
+    if (src_tmat && n_tmat_src > 0) {
 	uint32 tmat_m, tmat_i, tmat_j;
 	uint32 src_tmat_idx = 0;  /* Use first source tmat as template (all are identical) */
 
