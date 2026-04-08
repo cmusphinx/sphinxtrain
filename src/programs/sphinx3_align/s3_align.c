@@ -1078,7 +1078,12 @@ align_frame(int32 * senscr)
                 }
             }
         }
-        assert(tmpbest > (int32) 0x80000000);
+        if (tmpbest <= (int32) 0x80000000) {
+            E_ERROR
+                ("No active predecessor for aligner state (frame %d); try a wider -beam (e.g. 1e-308)\n",
+                 curfrm);
+            return -1;
+        }
 
         s->newscore = tmpbest + senscr[s->sen];
         s->newhist = tmphist;

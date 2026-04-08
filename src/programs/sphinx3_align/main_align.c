@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <assert.h>
 
 #include <sphinxbase/bio.h>
@@ -173,6 +174,8 @@ static FILE *outctlfp = NULL;
 
 static const char *sentfile;
 static FILE *sentfp = NULL;
+
+static int32 n_align_outsent_fallback;
 
 static char *s2stsegdir = NULL;
 static char *stsegdir = NULL;
@@ -659,6 +662,37 @@ write_outctl(FILE * fp, char *uttctl)
     fflush(fp);
 }
 
+static void
+trim_spaces(char *s)
+{
+    char *p;
+    char *end;
+
+    if (!s || !*s)
+        return;
+    for (p = s; *p && isspace((unsigned char) *p); p++);
+    if (p != s)
+        memmove(s, p, strlen(p) + 1);
+    end = s + strlen(s);
+    while (end > s && isspace((unsigned char) end[-1]))
+        *--end = '\0';
+}
+
+/**
+ * Emit one -outsent line from the reference (-insent) text when Viterbi alignment fails,
+ * so downstream jobs stay line-aligned with -ctl (one line per utterance).
+ */
+static void
+write_outsent_insent_fallback(FILE * fp, char *sent, const char *uttid)
+{
+    if (!fp)
+        return;
+    trim_spaces(sent);
+    fprintf(fp, "%s (%s)\n", sent, uttid);
+    fflush(fp);
+    ++n_align_outsent_fallback;
+    E_INFO("Wrote -outsent fallback (reference text) for %s\n", uttid);
+}
 
 
 /*
@@ -681,6 +715,7 @@ align_utt(char *sent,           /* In: Reference transcript */
     if (nfr <= (w << 1)) {
         E_ERROR("Utterance %s < %d frames (%d); ignored\n", uttid,
                 (w << 1) + 1, nfr);
+        write_outsent_insent_fallback(outsentfp, sent, uttid);
         return;
     }
 
@@ -698,7 +733,7 @@ align_utt(char *sent,           /* In: Reference transcript */
         ptmr_stop(timers + tmr_utt);
 
         E_ERROR("No sentence HMM; no alignment for %s\n", uttid);
-
+        write_outsent_insent_fallback(outsentfp, sent, uttid);
         return;
     }
 
@@ -751,7 +786,16 @@ align_utt(char *sent,           /* In: Reference transcript */
 
         /* Step alignment one frame forward */
         ptmr_start(timers + tmr_align);
-        align_frame(ascr->senscr);
+        if (align_frame(ascr->senscr) < 0) {
+            ptmr_stop(timers + tmr_align);
+            ptmr_stop(timers + tmr_utt);
+            ptmr_stop(&tm_utt);
+            ptmr_stop(&tm_ovrhd);
+            E_ERROR("Alignment failed mid-utterance for %s\n", uttid);
+            write_outsent_insent_fallback(outsentfp, sent, uttid);
+            align_destroy_sent_hmm();
+            return;
+        }
         ptmr_stop(timers + tmr_align);
         ptmr_stop(timers + tmr_utt);
     }
@@ -761,8 +805,10 @@ align_utt(char *sent,           /* In: Reference transcript */
     printf("\n");
 
     /* Wind up alignment for this utterance */
-    if (align_end_utt(&stseg, &phseg, &wdseg) < 0)
+    if (align_end_utt(&stseg, &phseg, &wdseg) < 0) {
         E_ERROR("Final state not reached; no alignment for %s\n\n", uttid);
+        write_outsent_insent_fallback(outsentfp, sent, uttid);
+    }
     else {
         if (s2stsegdir)
             write_s2stseg(s2stsegdir, stseg, uttid, ctlspec, cmd_ln_boolean_r(kbc->config, "-s2cdsen"));
@@ -914,6 +960,7 @@ utt_align(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
                 ("Utt %s: Input file read (%s) with extension (%s) failed \n",
                  uttid, ur->uttfile, cepext);
         }
+        write_outsent_insent_fallback(outsentfp, sent, uttid);
     }
     else {
         E_INFO("%s: %d input frames\n", uttid, nfr);
@@ -1038,6 +1085,10 @@ main(int32 argc, char *argv[])
                tm_utt.t_tot_elapsed,
                tm_utt.t_tot_elapsed / (tot_nfr * 0.01));
     }
+
+    if (n_align_outsent_fallback > 0)
+        E_INFO("Utterances with -outsent reference fallback (alignment skipped): %d\n",
+               n_align_outsent_fallback);
 
     if (outsentfp)
         fclose(outsentfp);
