@@ -27,3 +27,6 @@ autom4te.cache
 include/stamp-h2
 ylwrap
 build
+
+# Local design notes (not part of the distributed tree)
+docs/plan-multi-pronunciation-iterative-training.md
