@@ -93,6 +93,7 @@ steps = [
     "12.vtln_align/slave_align.pl",
     "20.ci_hmm/slave_convg.pl",
     "21.multipron_align/slave_align.pl",
+    "22.ci_hmm_multipron/slave_convg.pl",
     "30.cd_hmm_untied/slave_convg.pl",
     "40.buildtrees/slave.treebuilder.pl",
     "45.prunetree/slave.state-tying.pl",

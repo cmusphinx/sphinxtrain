@@ -116,6 +116,19 @@ program built with the rest of the tree (`cmake --build build`).
 
 Set `$CFG_MULTIPRON` to `no` in `etc/sphinx_train.cfg` if you want to
 skip stage 21 and use only the original transcripts for later stages.
+For **semi** (`.semi.`) and **PTM** (`.ptm.`) models, the template turns
+multipron and stage 22 off automatically; they are intended for the
+**continuous** (`.cont.`) path.
+
+Optional second CI pass (stage 22)
+
+After multipron (stage 21), you can set `$CFG_CI_REESTIMATE_AFTER_MULTIPRON`
+to `yes` to run **stage 22**, which repeats the same CI training driver as
+stage 20. Once the multipron transcript exists, `GetLists()` uses it for
+Baum–Welch, so this pass trains CI models on pronunciation-disambiguated
+text. It performs a **full** CI cycle again (including flat initialization)
+and **replaces** the CI model directory, roughly doubling CI time. Default
+is `no`.
 
 You can also install SphinxTrain system-wide if you so desire:
 

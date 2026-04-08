@@ -11,6 +11,7 @@ set(SCRIPTDIRS
 12.vtln_align
 20.ci_hmm
 21.multipron_align
+22.ci_hmm_multipron
 30.cd_hmm_untied
 40.buildtrees
 45.prunetree
