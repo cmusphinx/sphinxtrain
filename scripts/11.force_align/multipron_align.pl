@@ -4,7 +4,7 @@
 ## Usage (from training project directory, same as sphinxtrain run):
 ##   perl path/to/scripts/11.force_align/multipron_align.pl [--dry-run] [--first-n N] [--binary PATH]
 ##
-## See $CFG_MULTIPRON in etc/sphinx_train.cfg (set to yes after alignment for training).
+## See $CFG_MULTIPRON in etc/sphinx_train.cfg (no disables multipron; stage 21 runs this after CI by default).
 
 use strict;
 use warnings;

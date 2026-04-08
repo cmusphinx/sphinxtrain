@@ -8,11 +8,11 @@ and scripts/11.force_align/force_align.pl (sphinx3_align invocation), without ru
 full SphinxTrain ``sphinxtrain run`` pipeline.
 
 Training layout comes from ``etc/sphinx_train.cfg`` (``CFG_BASE_DIR``, ``CFG_EXPTNAME``,
-and the usual align inputs). Outputs go under ``$CFG_BASE_DIR/multipron_align/``. Set
-``CFG_MULTIPRON`` to ``yes`` in that file after alignment so Baum-Welch uses the generated
-transcript. Optional: ``CFG_SPHINX3_ALIGN_BINARY`` if ``sphinx3_align`` is not under
-``CFG_BIN_DIR``. Beam width follows ``CFG_FORCE_ALIGN_BEAM``, or ``--beam``, defaulting to
-``1e-308`` if unset.
+and the usual align inputs). Outputs go under ``$CFG_BASE_DIR/multipron_align/``.
+Normally stage 21 runs this after CI when ``CFG_MULTIPRON`` is not ``no``. Set
+``CFG_MULTIPRON`` to ``no`` to disable multipron entirely. Optional:
+``CFG_SPHINX3_ALIGN_BINARY`` if ``sphinx3_align`` is not under ``CFG_BIN_DIR``. Beam width
+follows ``CFG_FORCE_ALIGN_BEAM``, or ``--beam``, defaulting to ``1e-308`` if unset.
 
 Usage (from project base, after ``sphinxtrain -t TASK setup``)::
 
