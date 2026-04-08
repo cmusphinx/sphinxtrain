@@ -90,12 +90,18 @@ if (defined($warp)) {
 }
 
 open CTL, "<$ctlfile" or die "Failed to open control file $ctlfile: $!";
+my @ctl_lines;
 while (<CTL>) {
     chomp;
+    push @ctl_lines, $_;
     my $dir = dirname($_);
     mkpath(catdir($ST::CFG_FEATFILES_DIR, $dir));
 }
 close CTL;
+
+my $nlines = scalar @ctl_lines;
+my $ctloffset = int( ( $nlines * ( $part - 1 ) ) / $npart );
+my $ctlcount = int( ( $nlines * $part ) / $npart ) - $ctloffset;
 
 if (defined($warp)) {
     Log("Extracting features from $ctlcount segments starting at $ctloffset with warp factor $warp (part $part of $npart)\n", 'audio files');
