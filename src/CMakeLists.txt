@@ -89,7 +89,6 @@ libs/libsphinxbase/util/f2c_lite.c
 )
 find_package(BLAS)
 find_package(LAPACK)
-find_library(MATH_LIBRARY m)
 if(NOT LAPACK_FOUND)
   message("System-wide LAPACK not found, will use internal version")
   add_library(sphinxtrain ${SRCS} ${LAPACK_SRCS})
