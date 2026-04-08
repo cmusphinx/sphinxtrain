@@ -71,6 +71,10 @@ my ($listoffiles, $transcriptfile);
 if ($ST::CFG_FORCEDALIGN eq "yes") {
     $listoffiles   = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
     $transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedtranscripts";
+} elsif (defined($ST::CFG_MULTIPRON)
+	 && $ST::CFG_MULTIPRON eq "yes") {
+    $listoffiles = $ST::CFG_LISTOFFILES;
+    $transcriptfile = "$ST::CFG_BASE_DIR/multipron_align/${ST::CFG_EXPTNAME}.multipron.transcription";
 } elsif ($ST::CFG_VTLN eq "yes") {
     $listoffiles   = "$ST::CFG_BASE_DIR/vtlnout/${ST::CFG_EXPTNAME}.alignedfiles";
     $transcriptfile  = "$ST::CFG_BASE_DIR/vtlnout/${ST::CFG_EXPTNAME}.alignedtranscripts";
