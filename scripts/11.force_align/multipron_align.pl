@@ -27,7 +27,12 @@ if (!-f $py) {
     die "Missing $py\n";
 }
 
-my @py = ('python', $py);
+# Prefer $PYTHON; else python3 on Unix (many images have no `python` symlink); else python.
+my $pyexe = $ENV{PYTHON};
+if (!defined($pyexe) || $pyexe eq '') {
+    $pyexe = ($^O eq 'MSWin32') ? 'python' : 'python3';
+}
+my @py = ($pyexe, $py);
 push @py, '--dry-run' if $dry;
 push @py, $etc, @args;
 exec @py;

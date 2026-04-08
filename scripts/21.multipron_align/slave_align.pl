@@ -38,4 +38,16 @@ Log("Running multipron_align.pl (requires CI models under \$CFG_MODEL_DIR)\n");
 # Do not pass $etc on the command line: multipron_align.pl resolves etc/ from
 # sphinx_train.cfg; an extra path is forwarded to multipron_align.py as a bogus arg.
 my $rv = RunTool($^X, $logfile, 0, $pl);
+if ($rv != 0) {
+    my $sphinx_log = catfile(
+        $ST::CFG_BASE_DIR, "multipron_align",
+        "$ST::CFG_EXPTNAME.multipron_align.log"
+    );
+    LogError(
+        "multipron_align exit $rv. Stderr from Python is in $logfile; "
+        . "if sphinx3_align started, full command/output is in $sphinx_log. "
+        . "Typical causes: sphinx3_align missing under \$CFG_BIN_DIR, "
+        . "missing CI HMM dir under \$CFG_MODEL_DIR, or sphinx3_align nonzero.\n"
+    );
+}
 exit($rv);
