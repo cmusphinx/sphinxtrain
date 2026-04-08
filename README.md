@@ -106,6 +106,17 @@ You do not need to install SphinxTrain to run it, simply run
 training directory.  Note that you do need to build and install
 PocketSphinx for evaluation to work properly, however.
 
+Multipron alignment (optional stage 21)
+----------------------------------------
+
+After CI HMM training, the default configuration runs multipron force
+alignment so pronunciation-disambiguated transcripts can be written
+under `multipron_align/` in your project. This uses the `sphinx3_align`
+program built with the rest of the tree (`cmake --build build`).
+
+Set `$CFG_MULTIPRON` to `no` in `etc/sphinx_train.cfg` if you want to
+skip stage 21 and use only the original transcripts for later stages.
+
 You can also install SphinxTrain system-wide if you so desire:
 
     sudo cmake --build build --target install
@@ -138,7 +149,7 @@ procedure is identical to the Unix installation.
 
 Also, check the section title "All Platforms" above.
 
-Acknowldegments
+Acknowledgments
 ---------------
 
 The development of this code has included support at different times
