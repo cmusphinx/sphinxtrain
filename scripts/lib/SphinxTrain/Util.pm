@@ -45,7 +45,8 @@ use vars qw(@ISA @EXPORT);
            ImgSrc LogWarning LogError LogProgress
            LogStatus Converged RunTool SubstParams
            RunScript LaunchScript WaitForScript GetLists GetDict
-	   WaitForConvergence TiedWaitForConvergence WaitForMMIEConverge Trim);
+	   WaitForConvergence TiedWaitForConvergence WaitForMMIEConverge Trim
+	   MultipronTranscriptFile ShouldUseMultipronTranscript);
 
 use Sys::Hostname;
 use File::Basename;
@@ -354,8 +355,10 @@ sub RunTool {
         $returnvalue = 1;
         last;
       }
-      $error_count++ if m/(ERROR).*/;
-      $warning_count++ if m/(WARNING).*/;
+      # Match Sphinx-style log lines only. A bare /ERROR/ false-positives on words like
+      # "TERROR" in transcripts; real messages are "ERROR: ..." (see sphinxbase err_msg).
+      $error_count++ if m/^\s*ERROR:/;
+      $warning_count++ if m/^\s*WARN(?:ING)?:/;
       if ($ctl_counter) {
 	# Keep track of progress being made.
 	$processed_counter++  if (/.*(utt\>).*/);
@@ -621,6 +624,18 @@ sub GetDict {
     }
 }
 
+sub MultipronTranscriptFile {
+    return "$ST::CFG_BASE_DIR/multipron_align/${ST::CFG_EXPTNAME}.multipron.transcription";
+}
+
+# Multipron is on unless CFG_MULTIPRON is explicitly no. Use the multipron transcript
+# only after stage 21 has produced the file (after CI when multipron is enabled).
+sub ShouldUseMultipronTranscript {
+    return 0 unless defined($ST::CFG_MULTIPRON);
+    return 0 if $ST::CFG_MULTIPRON eq "no";
+    return -f MultipronTranscriptFile();
+}
+
 sub GetLists {
     # aligned transcripts and the list of aligned files is obtained as a result
     # of (03.) forced alignment or (04.) VTLN
@@ -634,6 +649,9 @@ sub GetLists {
     } elsif ($ST::CFG_FORCEDALIGN eq "yes") {
 	$listoffiles   = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
 	$transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedtranscripts";
+    } elsif (ShouldUseMultipronTranscript()) {
+	$listoffiles = $ST::CFG_LISTOFFILES;
+	$transcriptfile = MultipronTranscriptFile();
     } else {
 	$listoffiles = $ST::CFG_LISTOFFILES;
 	$transcriptfile = $ST::CFG_TRANSCRIPTFILE;
