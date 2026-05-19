@@ -113,9 +113,76 @@ lexicon_t *lexicon_new()
 
     new->entry_cnt = 0;
 
-    new->ht = hash_table_new(64000, HASH_CASE_YES);
+    new->ht      = hash_table_new(64000, HASH_CASE_YES);
+    new->base_ht = hash_table_new(64000, HASH_CASE_YES);
 
     return new;
+}
+
+/*
+ * Compute the base word from a full ortho by stripping a trailing
+ * "(N)" suffix where N is one or more digits. Returns a newly
+ * malloc'd string; caller takes ownership.
+ *
+ * Examples:
+ *   "reading"     -> "reading"
+ *   "reading(2)"  -> "reading"
+ *   "f(x)"        -> "f(x)"          (parens but no trailing digits)
+ *   "wo(1rd)"     -> "wo(1rd)"       (not at end)
+ */
+static char *
+lex_base_word(const char *ortho)
+{
+    size_t n = strlen(ortho);
+    /* Need at least "x(N)" => 4 chars */
+    if (n >= 4 && ortho[n - 1] == ')') {
+	size_t i = n - 2;
+	size_t digits = 0;
+	while (i > 0 && ortho[i] >= '0' && ortho[i] <= '9') {
+	    ++digits;
+	    --i;
+	}
+	if (digits > 0 && ortho[i] == '(') {
+	    char *base = ckd_calloc(i + 1, sizeof(char));
+	    memcpy(base, ortho, i);
+	    base[i] = '\0';
+	    return base;
+	}
+    }
+    return ckd_salloc(ortho);
+}
+
+/* Add `entry` to the base-word index. If a chain already exists for
+ * the base word, walk to its tail and append. Otherwise, register a
+ * new chain head.
+ *
+ * The base_ht stores the chain head as its value; once registered, the
+ * head never changes. New variants are appended to the tail. This
+ * avoids the need for hash_table_replace (which would orphan the
+ * strdup'd key string and break ownership invariants).
+ */
+static void
+lex_index_by_base(lexicon_t *lex, lex_entry_t *entry)
+{
+    char *base = lex_base_word(entry->ortho);
+    lex_entry_t *head = NULL;
+
+    entry->next_variant = NULL;
+
+    if (hash_table_lookup(lex->base_ht, base, (void **)&head) == 0) {
+	while (head->next_variant != NULL) {
+	    head = head->next_variant;
+	}
+	head->next_variant = entry;
+	/* We didn't take ownership of `base`; it would have been
+	 * a duplicate of the existing key. Free it. */
+	ckd_free(base);
+    } else {
+	/* First variant for this base word. The hash table now owns
+	 * `base` as its key; do not free it here. lexicon_free()
+	 * releases it when iterating base_ht. */
+	hash_table_enter(lex->base_ht, base, (void *)entry);
+    }
 }
 
 lex_entry_t *lexicon_append_entry(lexicon_t *lex)
@@ -214,6 +281,7 @@ lexicon_t *lexicon_read(lexicon_t *prior_lex,
 	}
 	
 	hash_table_enter(lex->ht, next_entry->ortho, (void *)next_entry);
+	lex_index_by_base(lex, next_entry);
 	++wid;	/* only happens should everything be successful */
     }
 
@@ -236,11 +304,49 @@ lex_entry_t *lexicon_lookup(lexicon_t *lex, char *ortho)
     return NULL;
 }
 
+lex_entry_t *
+lexicon_lookup_variants(lexicon_t *lex, const char *base_word)
+{
+    lex_entry_t *head = NULL;
+
+    if (lex == NULL || lex->base_ht == NULL || base_word == NULL) {
+	return NULL;
+    }
+    if (hash_table_lookup(lex->base_ht, base_word, (void **)&head) == 0) {
+	return head;
+    }
+    return NULL;
+}
+
+const char *
+lex_entry_ortho(const lex_entry_t *e)
+{
+    return e ? e->ortho : NULL;
+}
+
+lex_entry_t *
+lex_entry_next_variant(const lex_entry_t *e)
+{
+    return e ? e->next_variant : NULL;
+}
 
 void lexicon_free(lexicon_t *lexicon)
 {
     hash_iter_t *itor;
-    
+
+    if (lexicon == NULL) return;
+
+    /* Free the strdup'd base keys stored in base_ht. The values point
+     * to entries already owned by the main ht; do not free them here. */
+    if (lexicon->base_ht) {
+	for (itor = hash_table_iter(lexicon->base_ht);
+		 itor; itor = hash_table_iter_next(itor)) {
+	    ckd_free((void *)hash_entry_key(itor->ent));
+	}
+	hash_table_free(lexicon->base_ht);
+	lexicon->base_ht = NULL;
+    }
+
     for (itor = hash_table_iter(lexicon->ht);
              itor; itor = hash_table_iter_next(itor)) {
         lex_entry_t *entry = hash_entry_val(itor->ent);
