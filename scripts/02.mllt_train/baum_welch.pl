@@ -113,6 +113,10 @@ $ctl_counter = 1 unless ($ctl_counter);
 
 Log("Baum welch starting for MLLT, iteration: $iter ($part of $npart)", 'result');
 
+push(@extra_args, -multipron => 'yes')
+    if (defined($ST::CFG_MULTIPRON_TRAINING)
+        and $ST::CFG_MULTIPRON_TRAINING eq 'yes');
+
 my $return_value = RunTool
     ('bw', $logfile, $ctl_counter,
      -moddeffn => $moddeffn,

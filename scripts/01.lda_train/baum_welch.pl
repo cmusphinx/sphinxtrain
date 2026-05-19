@@ -108,6 +108,11 @@ $ctl_counter = 1 unless ($ctl_counter);
 
 Log("Baum welch starting for LDA, iteration: $iter ($part of $npart)", 'result');
 
+my @extra_args;
+push(@extra_args, -multipron => 'yes')
+    if (defined($ST::CFG_MULTIPRON_TRAINING)
+        and $ST::CFG_MULTIPRON_TRAINING eq 'yes');
+
 my $return_value = RunTool
     ('bw', $logfile, $ctl_counter,
      -moddeffn => $moddeffn,
@@ -141,6 +146,7 @@ my $return_value = RunTool
      -diagfull => $fullvar,
      -feat => $ST::CFG_FEATURE,
      -ceplen => $ST::CFG_VECTOR_LENGTH,
+     @extra_args,
      -timing => "no");
 
 
