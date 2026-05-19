@@ -549,6 +549,13 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  ARG_FLOAT32,
 	  "11.5",
 	  "Language model weight" },
+
+	{ "-multipron",
+	  ARG_BOOLEAN,
+	  "no",
+	  "Build per-utterance training HMMs with parallel paths per "
+	  "pronunciation variant; forward-backward sums posteriors "
+	  "across variants. Default no for SphinxTrain parity." },
 	/* end */
 	
 	cepstral_to_feature_command_line_macro(),

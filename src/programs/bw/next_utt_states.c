@@ -48,10 +48,13 @@
 #include <s3/lexicon.h>
 #include <s3/model_inventory.h>
 #include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/err.h>
 #include <s3/mk_phone_list.h>
 #include <s3/cvt2triphone.h>
 
 #include <s3/state_seq.h>
+#include <s3/phone_graph.h>
+#include <s3/state_seq_graph.h>
 
 #include "next_utt_states.h"
 
@@ -108,6 +111,49 @@ state_t *next_utt_states(uint32 *n_state,
     ckd_free(word);
     ckd_free(utterance);
 
+    return state_seq;
+}
+
+state_t *
+next_utt_states_graph(uint32 *n_state,
+		      lexicon_t *lex,
+		      model_inventory_t *inv,
+		      model_def_t *mdef,
+		      char *trans)
+{
+    state_t *state_seq = NULL;
+    phone_graph_t *graph = NULL;
+    phone_graph_t *split = NULL;
+    char **words;
+    char *utterance;
+    uint32 n_word;
+
+    utterance = ckd_salloc(trans);
+    n_word = str2words(utterance, NULL, 0);
+    if (n_word == 0) {
+	E_WARN("Empty utterance: '%s'\n", trans);
+	ckd_free(utterance);
+	return NULL;
+    }
+    words = ckd_calloc(n_word, sizeof(char *));
+    str2words(utterance, words, n_word);
+
+    graph = mk_phone_graph(words, n_word, lex, /*multipron=*/ 1);
+    ckd_free(words);
+    ckd_free(utterance);
+    if (!graph) return NULL;
+
+    split = phone_graph_split_contexts(graph);
+    phone_graph_free(graph);
+    if (!split) return NULL;
+
+    if (cvt2triphone_graph(split, inv->acmod_set) != S3_SUCCESS) {
+	phone_graph_free(split);
+	return NULL;
+    }
+
+    state_seq = state_seq_make_graph(n_state, split, inv, mdef);
+    phone_graph_free(split);
     return state_seq;
 }
 
