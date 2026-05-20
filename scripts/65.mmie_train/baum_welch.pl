@@ -136,6 +136,10 @@ if (-r $MLLT_FILE) {
 	 -ldadim => $ST::CFG_LDA_DIMENSION);
 }
 
+push(@extra_args, -multipron => 'yes')
+    if (defined($ST::CFG_MULTIPRON_TRAINING)
+        and $ST::CFG_MULTIPRON_TRAINING eq 'yes');
+
 my $return_value = RunTool
     ('bw', $logfile, $ctl_counter,
      -moddeffn => $moddeffn,

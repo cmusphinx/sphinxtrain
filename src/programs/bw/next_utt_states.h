@@ -58,6 +58,17 @@ state_t *next_utt_states(uint32 *n_state,
 			 model_def_t *mdef,
 			 char *transcript);
 
+/* Multi-pron variant of next_utt_states. Builds the per-utterance
+ * HMM as a graph with parallel paths for every pronunciation variant
+ * of each word in the transcript. Caller MUST free the returned
+ * state_t* with state_seq_free(); unlike next_utt_states which uses
+ * static buffers, this allocates fresh per call. */
+state_t *next_utt_states_graph(uint32 *n_state,
+			       lexicon_t *lex,
+			       model_inventory_t *inv,
+			       model_def_t *mdef,
+			       char *transcript);
+
 state_t *next_utt_states_mmie(uint32 *n_state,
 			      lexicon_t *lex,
 			      model_inventory_t *inv,

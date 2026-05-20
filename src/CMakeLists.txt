@@ -80,6 +80,9 @@ libs/libcommon/dtree.c
 libs/libcommon/ts2cb.c
 libs/libcommon/mk_sseq.c
 libs/libcommon/lexicon.c
+libs/libcommon/phone_graph.c
+libs/libcommon/phone_graph_triphone.c
+libs/libcommon/state_seq_graph.c
   )
 set(LAPACK_SRCS
 libs/libsphinxbase/util/slamch.c

@@ -148,6 +148,10 @@ until (-f $mixwfn) {
     sleep 1;
 }
 
+push(@feat_args, -multipron => 'yes')
+    if (defined($ST::CFG_MULTIPRON_TRAINING)
+        and $ST::CFG_MULTIPRON_TRAINING eq 'yes');
+
 my $return_value = RunTool
     ('bw', $logfile, $ctl_counter,
      -moddeffn => $moddeffn,

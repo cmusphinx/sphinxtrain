@@ -48,7 +48,7 @@
 
 
 #include <s3/state_seq.h>
-
+
 #include <s3/remap.h>
 #include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/ckd_alloc.h>
@@ -56,6 +56,8 @@
 #include <s3/model_def_io.h>
 #include <string.h>
 #include <assert.h>
+
+#include "state_seq_internal.h"
 
 /*********************************************************************
  *
@@ -196,13 +198,13 @@ state_seq_print(state_t *state,
     }
 }
 
-static void
-set_next_state(state_t *state,
-	       uint32 s,
-	       uint32 *n_next,
-	       uint32 *next_state,
-	       float32 *next_tprob,
-	       uint32 *n)
+void
+state_seq_set_next(state_t *state,
+		   uint32 s,
+		   const uint32 *n_next,
+		   uint32 *next_state,
+		   float32 *next_tprob,
+		   uint32 *n)
 {
     uint32 i = *n;
 
@@ -212,19 +214,21 @@ set_next_state(state_t *state,
 	state[s].next_tprob = &next_tprob[i];
 	state[s].next_state = &next_state[i];
     }
-    else
+    else {
 	state[s].next_tprob = NULL;
+	state[s].next_state = NULL;
+    }
 
     *n = i + n_next[s];
 }
 
-static uint32
-set_prior_state(state_t *state,
-		uint32 s,
-		uint32 *n_prior,
-		uint32 *prior_state,
-		float32 *prior_tprob,
-		uint32 *p)
+void
+state_seq_set_prior(state_t *state,
+		    uint32 s,
+		    const uint32 *n_prior,
+		    uint32 *prior_state,
+		    float32 *prior_tprob,
+		    uint32 *p)
 {
     uint32 i = *p;
 
@@ -234,12 +238,12 @@ set_prior_state(state_t *state,
 	state[s].prior_state = &prior_state[i];
 	state[s].prior_tprob = &prior_tprob[i];
     }
-    else
+    else {
 	state[s].prior_tprob = NULL;
+	state[s].prior_state = NULL;
+    }
 
     *p = i + n_prior[s];
-
-    return S3_SUCCESS;
 }
 
 static void
@@ -569,10 +573,10 @@ state_seq_make(uint32 *n_state,
 	    state[k].ci_cb = mdef->cb[t_ci_state];
 	    
 	    /* Set next state list and transition prob list (for forward eval) */
-	    set_next_state(state, k, n_next, next_state, next_tprob, &n);
+	    state_seq_set_next(state, k, n_next, next_state, next_tprob, &n);
 
 	    /* Set prior state list and transition prob list (for backward eval) */
-	    set_prior_state(state, k, n_prior, prior_state, prior_tprob, &p);
+	    state_seq_set_prior(state, k, n_prior, prior_state, prior_tprob, &p);
 
 	    /* Update the out-degree so far */
 	    if (state[k].n_next > max_n_next)
@@ -607,8 +611,8 @@ state_seq_make(uint32 *n_state,
 	state[k].m_state = j;
 	state[k].phn = phn;
 
-	set_prior_state(state, k, n_prior, prior_state, prior_tprob, &p);
-	set_next_state(state, k, n_next, next_state, next_tprob, &n);
+	state_seq_set_prior(state, k, n_prior, prior_state, prior_tprob, &p);
+	state_seq_set_next(state, k, n_next, next_state, next_tprob, &n);
 
 	++k;
     }

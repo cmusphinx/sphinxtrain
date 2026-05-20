@@ -61,6 +61,7 @@
 #include <s3/model_inventory.h>
 #include <s3/model_def_io.h>
 #include <s3/s3ts2cb_io.h>
+#include <s3/state_seq.h>
 #include <s3/mllr.h>
 #include <s3/mllr_io.h>
 #include <s3/ts2cb.h>
@@ -627,6 +628,7 @@ main_reestimate(model_inventory_t *inv,
 
     uint32 maxuttlen;
     uint32 n_frame_skipped = 0;
+    int multipron_on;
 
     uint32 ckpt_intv = 0;
     uint32 no_retries = 0;
@@ -685,6 +687,11 @@ main_reestimate(model_inventory_t *inv,
     b_beam = cmd_ln_float64("-bbeam");
     spthresh = cmd_ln_float32("-spthresh");
     maxuttlen = cmd_ln_int32("-maxuttlen");
+    /* Hoisted out of the per-utterance loop: the graph builder allocates
+     * the state_t array fresh per call while the linear builder reuses
+     * a static buffer, so we MUST NOT state_seq_free() the linear-path
+     * result. Same flag is queried at the build site and at cleanup. */
+    multipron_on = cmd_ln_int32("-multipron");
 
     /* Begin by skipping over some (possibly zero) # of utterances.
      * Continue to process utterances until there are no more (either EOF
@@ -791,7 +798,11 @@ main_reestimate(model_inventory_t *inv,
         if (timers)
 	    ptmr_start(&timers->upd_timer);
 	/* create a sentence HMM */
-	state_seq = next_utt_states(&n_state, lex, inv, mdef, trans);
+	if (multipron_on) {
+	    state_seq = next_utt_states_graph(&n_state, lex, inv, mdef, trans);
+	} else {
+	    state_seq = next_utt_states(&n_state, lex, inv, mdef, trans);
+	}
 	printf(" %5u", n_state);
 	
 	if (state_seq == NULL) {
@@ -851,6 +862,13 @@ main_reestimate(model_inventory_t *inv,
 
 	if (timers)
 	    ptmr_stop(&timers->upd_timer);
+
+	/* Free only in the multipron case so we don't double-free the
+	 * linear path's static buffer. */
+	if (multipron_on && state_seq != NULL) {
+	    state_seq_free(state_seq, n_state);
+	    state_seq = NULL;
+	}
 
 	if (pdumpfh)
 		fclose(pdumpfh);
