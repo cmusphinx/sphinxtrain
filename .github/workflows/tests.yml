@@ -50,7 +50,7 @@ jobs:
     steps:
       - name: Download build
         id: download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build
       - name: Install
@@ -81,7 +81,7 @@ jobs:
     steps:
       - name: Download build
         id: download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build
       - name: Install
@@ -114,7 +114,7 @@ jobs:
     steps:
       - name: Download build
         id: download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build
       - name: Install
@@ -149,7 +149,7 @@ jobs:
     steps:
       - name: Download build
         id: download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build
       - name: Install
@@ -183,7 +183,7 @@ jobs:
     steps:
       - name: Download build
         id: download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build
       - name: Install with G2P support
@@ -224,7 +224,7 @@ jobs:
     steps:
       - name: Download build
         id: download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build
       - name: Install
@@ -261,7 +261,7 @@ jobs:
     steps:
       - name: Download build
         id: download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build
       - name: Install
