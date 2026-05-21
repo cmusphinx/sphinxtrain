@@ -555,7 +555,9 @@ If yo want to do parallel training for N machines. Run N trainers with \n\
 	  "no",
 	  "Build per-utterance training HMMs with parallel paths per "
 	  "pronunciation variant; forward-backward sums posteriors "
-	  "across variants. Default no for SphinxTrain parity." },
+	  "across variants. Default no for SphinxTrain parity. "
+	  "Set $CFG_MULTIPRON_TRAINING = 'yes' in sphinx_train.cfg "
+	  "to enable this for every bw stage." },
 	/* end */
 	
 	cepstral_to_feature_command_line_macro(),

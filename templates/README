@@ -9,5 +9,19 @@ catalog numbers and required files.
 Some of the contents are inspired by Keith Vertanen's WSJ recipe
 (http://www.inference.phy.cam.ac.uk/kv227/sphinx/)
 
--- dhuggins@cs.cmu.edu, 2007-06-25
+Where to start
+--------------
 
+For a new project, the recommended reference is `librispeech/` (under
+`librispeech/etc/sphinx_train.cfg`).  It is the only template that is
+kept current with recent SphinxTrain options, and it documents the
+continuous (`.cont.`) and phonetically-tied (`.ptm.`) paths together
+with the multipron alignment (stage 21) and multipron Baum-Welch
+training knobs.
+
+The `rm/`, `tidigits/` and `wsj/` directories are older recipes kept
+for reference; they predate several current options (multipron, LDA,
+G2P, etc.) and are best treated as starting points rather than
+canonical configurations.
+
+-- dhuggins@cs.cmu.edu, 2007-06-25

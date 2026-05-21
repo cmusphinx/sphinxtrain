@@ -117,6 +117,12 @@ $CFG_CROSS_PHONE_TREES = 'no';
 # Use force-aligned transcripts (if available) as input to training
 $CFG_FORCEDALIGN = 'no';
 
+# Set to 'yes' to enable multi-pronunciation Baum-Welch (bw -multipron yes).
+# See the top-level README section "Multipron training" or
+# templates/librispeech/etc/sphinx_train.cfg for details. Default 'no'
+# matches historical SphinxTrain behaviour.
+# $CFG_MULTIPRON_TRAINING = 'no';
+
 # Use a specific set of models for force alignment.  If not defined,
 # context-independent models for the current experiment will be used.
 $CFG_FORCE_ALIGN_MODELDIR = "$CFG_MODEL_DIR/$CFG_EXPTNAME.falign_ci_$CFG_DIRLABEL";

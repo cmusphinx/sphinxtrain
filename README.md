@@ -106,6 +106,12 @@ You do not need to install SphinxTrain to run it, simply run
 training directory.  Note that you do need to build and install
 PocketSphinx for evaluation to work properly, however.
 
+When packaging SphinxTrain inside another project, prefer a full
+`git clone` over `git clone --depth 1` if you expect to track
+`master` later.  A shallow working tree will sometimes refuse a plain
+`git pull --ff-only` and require an explicit `git fetch --unshallow`
+first.
+
 Multipron alignment (optional stage 21)
 ----------------------------------------
 
@@ -129,6 +135,25 @@ Baum–Welch, so this pass trains CI models on pronunciation-disambiguated
 text. It performs a **full** CI cycle again (including flat initialization)
 and **replaces** the CI model directory, roughly doubling CI time. Default
 is `no`.
+
+Multipron training (CFG_MULTIPRON_TRAINING)
+-------------------------------------------
+
+Independent of the stage-21 alignment, the Baum-Welch estimator (`bw`)
+can build per-utterance training HMMs with parallel paths per
+pronunciation variant and sum posteriors across variants. This is on by
+default (`$CFG_MULTIPRON_TRAINING = 'yes'` in `etc/sphinx_train.cfg`);
+set it to `no` for SphinxTrain-parity behaviour, in which `bw` silently
+picks pronunciation variant `[1]` for every multi-pron word.
+
+It composes with `$CFG_MULTIPRON` (stage 21): the alignment chooses the
+best single variant per utterance for `sphinx3_align` supervision while
+`bw` still distributes EM mass across variants during training. The
+default templates leave both on.
+
+`bw` memory and CPU per utterance scale with the average number of
+pronunciation variants per word; for single-variant lexicons the
+overhead is negligible.
 
 You can also install SphinxTrain system-wide if you so desire:
 
