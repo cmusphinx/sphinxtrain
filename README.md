@@ -130,6 +130,25 @@ text. It performs a **full** CI cycle again (including flat initialization)
 and **replaces** the CI model directory, roughly doubling CI time. Default
 is `no`.
 
+Multipron training (CFG_MULTIPRON_TRAINING)
+-------------------------------------------
+
+Independent of the stage-21 alignment, the Baum-Welch estimator (`bw`)
+can build per-utterance training HMMs with parallel paths per
+pronunciation variant and sum posteriors across variants. This is on by
+default (`$CFG_MULTIPRON_TRAINING = 'yes'` in `etc/sphinx_train.cfg`);
+set it to `no` for SphinxTrain-parity behaviour, in which `bw` silently
+picks pronunciation variant `[1]` for every multi-pron word.
+
+It composes with `$CFG_MULTIPRON` (stage 21): the alignment chooses the
+best single variant per utterance for `sphinx3_align` supervision while
+`bw` still distributes EM mass across variants during training. The
+default templates leave both on.
+
+`bw` memory and CPU per utterance scale with the average number of
+pronunciation variants per word; for single-variant lexicons the
+overhead is negligible.
+
 You can also install SphinxTrain system-wide if you so desire:
 
     sudo cmake --build build --target install
