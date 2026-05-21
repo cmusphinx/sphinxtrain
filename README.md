@@ -106,6 +106,12 @@ You do not need to install SphinxTrain to run it, simply run
 training directory.  Note that you do need to build and install
 PocketSphinx for evaluation to work properly, however.
 
+When packaging SphinxTrain inside another project, prefer a full
+`git clone` over `git clone --depth 1` if you expect to track
+`master` later.  A shallow working tree will sometimes refuse a plain
+`git pull --ff-only` and require an explicit `git fetch --unshallow`
+first.
+
 Multipron alignment (optional stage 21)
 ----------------------------------------
 
