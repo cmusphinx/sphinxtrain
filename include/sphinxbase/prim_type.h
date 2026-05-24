@@ -85,6 +85,10 @@ extern "C" {
 } /* Fool Emacs into not indenting things. */
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 /* Define some things for VisualDSP++ */
 #if defined(__ADSPBLACKFIN__) && !defined(__GNUC__)
 # ifndef HAVE_LONG_LONG

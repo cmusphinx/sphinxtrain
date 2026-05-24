@@ -1,0 +1,3 @@
+[submodule "src/upstream/Phonetisaurus"]
+	path = src/upstream/Phonetisaurus
+	url = git@github.com:cmusphinx/Phonetisaurus.git

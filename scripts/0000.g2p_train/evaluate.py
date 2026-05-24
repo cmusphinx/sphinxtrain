@@ -83,12 +83,12 @@ def evaluate_testset(
     references = {}
     for entry in open(referencefile,"r"):
 #        parts = entry.strip().split("  ")
-        parts = re.split(r' {2,}', entry.strip())
+        parts = re.split(r'(?:\t| {2,})', entry.strip())
         word  = parts.pop(0)
         references[word] = parts
     for entry in open(hypothesisfile,"r"):
         #word, score, hypothesis = entry.strip().split("  ")
-        word, score, hypothesis = re.split(r' {2,}', entry.strip())
+        word, score, hypothesis = re.split(r'(?:\t| {2,})', entry.strip())
 
     PERcalculator = ErrorRater( ignore=ignore, ignore_both=ignore_both, regex_ignore=regex_ignore )
     PERcalculator.compute_PER_phonetisaurus( hypothesisfile, referencefile, verbose=verbose )
