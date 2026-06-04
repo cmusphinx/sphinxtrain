@@ -133,6 +133,10 @@ Training writes PocketSphinx sendumps via `mk_s2sendump -pocketsphinx`
 into each HMM directory; decode expects that layout under
 `derived.decode_hmm_dir`.
 
+Regression check (fixtures under `test/res/hmm`, optional `pocketsphinx_batch`):
+
+    test/scripts/test_sendump_pocketsphinx.sh
+
 PocketSphinx two-pass alignment ([PR #468](https://github.com/cmusphinx/pocketsphinx/pull/468))
 fixes `state_align_search.c` so forced alignment with `-state_align yes`
 (or the two-pass path behind `pocketsphinx align`) can reach the final

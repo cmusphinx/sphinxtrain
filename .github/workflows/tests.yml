@@ -43,6 +43,7 @@ jobs:
           cmake --build pocketsphinx/build
           cp pocketsphinx/build/pocketsphinx_batch sphinxtrain/build/
           echo "${POCKETSPHINX_REF}" > sphinxtrain/build/pocketsphinx_version.txt
+          bash sphinxtrain/test/scripts/test_sendump_pocketsphinx.sh
       - name: Archive build
         run: |
           tar --exclude=.git -cf build.tar sphinxtrain pocketsphinx
