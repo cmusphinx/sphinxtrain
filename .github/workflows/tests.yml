@@ -31,6 +31,7 @@ jobs:
         run: |
           cmake --build sphinxtrain/build --target test
           perl sphinxtrain/test/scripts/test_resolved_cfg.pl
+          bash sphinxtrain/test/scripts/test_feat_regression.sh
       - name: Checkout PocketSphinx
         uses: actions/checkout@v4
         with:

@@ -1,0 +1,9 @@
+# Feature extraction regression fixture
+
+Deterministic 0.2 s 16 kHz mono raw audio (`utt0.raw`) and SHA-256 of the
+`.mfc` produced by `sphinx_fe` with the default wideband parameters from
+`etc/sphinx_train.cfg` (13 cepstra, 25 filters, 130–6800 Hz).
+
+Refresh the golden hash after an intentional FE change:
+
+    UPDATE_GOLDEN=1 test/scripts/test_feat_regression.sh
