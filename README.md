@@ -103,8 +103,63 @@ reason.
 
 You do not need to install SphinxTrain to run it, simply run
 `scripts/sphinxtrain` from the source directory when initializing a
-training directory.  Note that you do need to build and install
-PocketSphinx for evaluation to work properly, however.
+training directory.
+
+PocketSphinx (decode and model export)
+--------------------------------------
+
+The final **decode** stage and PocketSphinx-format **sendump** export
+(stages 50 and 90) use binaries from
+[PocketSphinx](https://github.com/cmusphinx/pocketsphinx), not from the
+SphinxTrain build alone. CI pins **v5.1.0** and copies
+`pocketsphinx_batch` into `build/` after building PocketSphinx.
+
+Local setup (sibling checkout, same layout as CI):
+
+    git clone https://github.com/cmusphinx/pocketsphinx.git
+    cmake -S pocketsphinx -B pocketsphinx/build
+    cmake --build pocketsphinx/build
+    cp pocketsphinx/build/pocketsphinx_batch build/
+
+Or install PocketSphinx and ensure `pocketsphinx_batch` is on your
+`PATH` when running `sphinxtrain run`.
+
+After `sphinxtrain setup`, `etc/sphinx_train.resolved.json` lists decode
+paths under `derived` (`decode_hmm_dir`, `decode_sendump`,
+`pocketsphinx_batch`, `decode_language_model`, and related keys). Refresh
+with `sphinxtrain resolve-config -v` when you change `etc/sphinx_train.cfg`.
+
+Training writes PocketSphinx sendumps via `mk_s2sendump -pocketsphinx`
+into each HMM directory; decode expects that layout under
+`derived.decode_hmm_dir`.
+
+Regression check (fixtures under `test/res/hmm`, optional `pocketsphinx_batch`):
+
+    test/scripts/test_sendump_pocketsphinx.sh
+
+Feature extraction regression (`sphinx_fe` vs golden MFC checksum; run before
+changing `libs/libsphinxbase/fe` or `feat`):
+
+    test/scripts/test_feat_regression.sh
+
+PocketSphinx two-pass alignment ([PR #468](https://github.com/cmusphinx/pocketsphinx/pull/468))
+fixes `state_align_search.c` for `pocketsphinx align` / `-state_align yes`.
+Until that PR is merged upstream, SphinxTrain vendors the diff under
+`test/patches/` and CI applies it on top of the pinned PocketSphinx ref.
+Default training stage **21** still uses in-tree `sphinx3_align` (decode
+via `pocketsphinx_batch` does not use this path).
+
+Apply the workaround on a local PocketSphinx checkout:
+
+    test/scripts/apply_pocketsphinx_align_patch.sh /path/to/pocketsphinx
+    POCKETSPHINX_SRC=/path/to/pocketsphinx test/scripts/check_pocketsphinx_align_fix.sh
+
+After #468 is in a release tag: remove the patch, apply script, and CI apply
+step; bump `POCKETSPHINX_REF` in `.github/workflows/tests.yml` if needed.
+
+Tier 3.1 align spike (manual, one utterance on a trained export such as AN4):
+
+    SPIKE_EXPORT_ROOT=/path/to/an4 test/scripts/spike_pocketsphinx_align.sh
 
 When packaging SphinxTrain inside another project, prefer a full
 `git clone` over `git clone --depth 1` if you expect to track

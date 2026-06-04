@@ -115,6 +115,28 @@ sub check_stale_refresh {
     print "ok stale cfg triggers resolve-config\n";
 }
 
+sub check_decode_derived {
+    write_project_cfg();
+    my $out = run_dump();
+    my $py = <<"PY";
+import json, sys
+from pathlib import Path
+doc = json.load(open(sys.argv[1]))
+v = doc["variables"]
+model_dir = Path(v["CFG_MODEL_DIR"])
+model_name = v["DEC_CFG_MODEL_NAME"]
+d = doc["derived"]
+assert d["decode_hmm_dir"] == str(model_dir / model_name)
+assert d["decode_sendump"] == str(model_dir / model_name / "sendump")
+assert d["pocketsphinx_batch"].endswith("pocketsphinx_batch")
+assert d["decode_dictionary"].endswith(".dic")
+assert d["decode_language_model"].endswith(".lm.DMP")
+PY
+    system("python3", "-c", $py, $out) == 0
+        or die "decode derived check failed\n";
+    print "ok decode paths in resolved json\n";
+}
+
 sub check_project_cfg_load {
     write_project_cfg();
     run_dump();
@@ -134,6 +156,7 @@ PY
 
 write_project_cfg();
 check_hmm_modes();
+check_decode_derived();
 check_stale_refresh();
 check_project_cfg_load();
 
