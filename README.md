@@ -157,6 +157,10 @@ Apply the workaround on a local PocketSphinx checkout:
 After #468 is in a release tag: remove the patch, apply script, and CI apply
 step; bump `POCKETSPHINX_REF` in `.github/workflows/tests.yml` if needed.
 
+Tier 3.1 align spike (manual, one utterance on a trained export such as AN4):
+
+    SPIKE_EXPORT_ROOT=/path/to/an4 test/scripts/spike_pocketsphinx_align.sh
+
 When packaging SphinxTrain inside another project, prefer a full
 `git clone` over `git clone --depth 1` if you expect to track
 `master` later.  A shallow working tree will sometimes refuse a plain

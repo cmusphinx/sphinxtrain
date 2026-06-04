@@ -76,8 +76,6 @@ if ($ST::CFG_VTLN eq "yes") {
     my $logdir = "$ST::CFG_LOG_DIR/000_comp_feat";
 
     mkdir($outdir,0777);
-    my @vtln_jobs;
-		
     $ST::CFG_VTLN_START = 0.80 unless defined($ST::CFG_VTLN_START);
     $ST::CFG_VTLN_END = 1.45 unless defined($ST::CFG_VTLN_END);
     $ST::CFG_VTLN_STEP = 0.05 unless defined($ST::CFG_VTLN_STEP);
@@ -88,12 +86,13 @@ if ($ST::CFG_VTLN eq "yes") {
          $warp <= $ST::CFG_VTLN_END; $warp += $ST::CFG_VTLN_STEP) {
 	 $warp = sprintf("%.2f", $warp);
 
+	my @warp_jobs;
 	for (my $i = 1; $i <= $n_parts; $i++) {
-	    push @vtln_jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.train", $ST::CFG_LISTOFFILES, $warp]);
+	    push @warp_jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.train", $ST::CFG_LISTOFFILES, $warp]);
 	}
 
-	foreach my $vtln_job (@vtln_jobs) {
-	    WaitForScript($vtln_job);
+	foreach my $warp_job (@warp_jobs) {
+	    WaitForScript($warp_job);
 	}
     }
 }
