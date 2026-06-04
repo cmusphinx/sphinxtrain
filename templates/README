@@ -12,7 +12,12 @@ Some of the contents are inspired by Keith Vertanen's WSJ recipe
 Where to start
 --------------
 
-For a new project, the recommended reference is `librispeech/` (under
+For a new project, `sphinxtrain setup` copies the repository root
+`etc/sphinx_train.cfg` into your project (not a template path).  That
+file is the canonical default for all HMM types (`.cont.`, `.semi.`,
+`.ptm.`); multipron stages are on unless you turn them off there.
+
+The recommended template reference is `librispeech/` (under
 `librispeech/etc/sphinx_train.cfg`).  It is the only template that is
 kept current with recent SphinxTrain options, and it documents the
 continuous (`.cont.`) and phonetically-tied (`.ptm.`) paths together

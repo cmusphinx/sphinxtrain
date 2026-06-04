@@ -122,9 +122,6 @@ program built with the rest of the tree (`cmake --build build`).
 
 Set `$CFG_MULTIPRON` to `no` in `etc/sphinx_train.cfg` if you want to
 skip stage 21 and use only the original transcripts for later stages.
-For **semi** (`.semi.`) and **PTM** (`.ptm.`) models, the template turns
-multipron and stage 22 off automatically; they are intended for the
-**continuous** (`.cont.`) path.
 
 Optional second CI pass (stage 22)
 
@@ -135,6 +132,16 @@ Baum–Welch, so this pass trains CI models on pronunciation-disambiguated
 text. It performs a **full** CI cycle again (including flat initialization)
 and **replaces** the CI model directory, roughly doubling CI time. Default
 is `no`.
+
+**Why second CI is off by default:** A normal `sphinxtrain run` is already
+**one CI pass + multipron (stage 21) + CD/BW on the multipron transcript**
+via `GetLists()` (with `$CFG_MULTIPRON_TRAINING` for graph-level variants in
+`bw`). That is the usual “multipron” path—not two CI passes. Stage 22 is
+opt-in when you want CI models re-estimated on disambiguated labels; gains are
+often modest while cost is ~another full CI, and bad alignments in stage 21
+can propagate. Enable with `$CFG_CI_REESTIMATE_AFTER_MULTIPRON = 'yes'` when
+you want to experiment.  Smoke test (Festvox SLT, stages 000/00/20/21/22):
+`SLT_QUICK=1 ./test/run_slt_two_ci_multipron.sh` after `cmake --build build`.
 
 Multipron training (CFG_MULTIPRON_TRAINING)
 -------------------------------------------
