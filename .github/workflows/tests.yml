@@ -147,6 +147,14 @@ jobs:
           perl -i -pe 's/(NPART.*)1/${1}4/' etc/sphinx_train.cfg
           perl -i -pe 's/(QUEUE_TYPE.*Queue)/${1}::POSIX/' etc/sphinx_train.cfg
           sphinxtrain run
+      - name: Diagnose comp_feat shards
+        if: failure()
+        run: |
+          chmod +x sphinxtrain/test/scripts/diagnose_comp_feat.sh
+          CHECK_VTLN=no NPART_OVERRIDE=4 \
+            SPIKE_EXPORT_ROOT="${GITHUB_WORKSPACE}/an4" \
+            LOGDIR="${GITHUB_WORKSPACE}/an4/logdir" \
+            sphinxtrain/test/scripts/diagnose_comp_feat.sh || true
       - name: Archive AN4 logs
         if: success() || failure()
         uses: actions/upload-artifact@v4
@@ -222,6 +230,14 @@ jobs:
           perl -i -pe 's/(VTLN_START.*)0\.80/${1}0.90/' etc/sphinx_train.cfg
           perl -i -pe 's/(VTLN_END.*)1\.40/${1}1.10/' etc/sphinx_train.cfg
           sphinxtrain run
+      - name: Diagnose comp_feat shards (VTLN)
+        if: failure()
+        run: |
+          chmod +x sphinxtrain/test/scripts/diagnose_comp_feat.sh
+          CHECK_VTLN=yes NPART_OVERRIDE=2 VTLN_START_OVERRIDE=0.90 VTLN_END_OVERRIDE=1.10 \
+            SPIKE_EXPORT_ROOT="${GITHUB_WORKSPACE}/an4" \
+            LOGDIR="${GITHUB_WORKSPACE}/an4/logdir" \
+            sphinxtrain/test/scripts/diagnose_comp_feat.sh || true
       - name: Archive AN4 logs
         if: success() || failure()
         uses: actions/upload-artifact@v4

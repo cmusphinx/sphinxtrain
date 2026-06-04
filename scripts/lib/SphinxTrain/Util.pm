@@ -457,7 +457,19 @@ sub LaunchScript {
 
 sub WaitForScript {
     foreach my $id (@_) {
-        $ST::Q->waitfor_job($id);
+        my $exit = 0;
+        if (defined($ST::CFG_QUEUE_TYPE) && $ST::CFG_QUEUE_TYPE eq 'Queue') {
+            # Synchronous Queue: $id is wait status from system(), not a pid.
+            $exit = $id >> 8;
+        }
+        else {
+            $ST::Q->waitfor_job($id);
+            $exit = $? >> 8;
+        }
+        if ($exit != 0) {
+            LogError("Parallel job failed with exit code $exit\n");
+            exit $exit;
+        }
     }
 }
 

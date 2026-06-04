@@ -62,10 +62,12 @@ $| = 1; # Turn on autoflushing
 Log ("MODULE: 000 Computing feature from audio files\n");
 my @jobs;
 for (my $i = 1; $i <= $n_parts; $i++) {
-    push @jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.train", $ST::CFG_LISTOFFILES]);
+    push @jobs, LaunchScript("000.comp_feat.train.$i",
+			     ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.train", $ST::CFG_LISTOFFILES]);
 }
 for (my $i = 1; $i <= $n_parts; $i++) {
-    push @jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.test", $ST::DEC_CFG_LISTOFFILES]);
+    push @jobs, LaunchScript("000.comp_feat.test.$i",
+			     ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.test", $ST::DEC_CFG_LISTOFFILES]);
 }
 foreach my $job (@jobs) {
      WaitForScript($job);
@@ -88,7 +90,8 @@ if ($ST::CFG_VTLN eq "yes") {
 
 	my @warp_jobs;
 	for (my $i = 1; $i <= $n_parts; $i++) {
-	    push @warp_jobs, LaunchScript('000.comp_feat', ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.train", $ST::CFG_LISTOFFILES, $warp]);
+	    push @warp_jobs, LaunchScript("000.comp_feat.train.$i.$warp",
+					 ['make_feats.pl', $i, $n_parts, "$ST::CFG_EXPTNAME.train", $ST::CFG_LISTOFFILES, $warp]);
 	}
 
 	foreach my $warp_job (@warp_jobs) {

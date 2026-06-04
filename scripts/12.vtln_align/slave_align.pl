@@ -202,7 +202,7 @@ for (my $warp = $ST::CFG_VTLN_START;
 	    }
 	}
 	unless ($success) {
-	    Log("Failed in part $i (see $logfile; missing feat/$warp MFCs is a common cause — run test/scripts/diagnose_vtln_feats.sh)\n");
+	    Log("Failed in part $i (see $logfile; missing feat/$warp MFCs — run test/scripts/diagnose_comp_feat.sh)\n");
 	    $return_value = 1;
 	    next;
 	}
