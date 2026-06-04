@@ -3,12 +3,16 @@
 from __future__ import print_function
 
 import getopt
+import json
 import sys
 import os
 
 training_basedir = ""
 sphinxbinpath = ""
 sphinxpath = ""
+
+CFG_REL = os.path.join("etc", "sphinx_train.cfg")
+RESOLVED_REL = os.path.join("etc", "sphinx_train.resolved.json")
 
 
 def _perl_script_exit_code(status):
@@ -81,6 +85,42 @@ def setup(task):
     out_cfg.close()
 
 
+def _project_cfg_path(rel):
+    return os.path.join(training_basedir, rel)
+
+
+def _config_is_stale():
+    cfg_path = _project_cfg_path(CFG_REL)
+    resolved_path = _project_cfg_path(RESOLVED_REL)
+    if not os.path.isfile(resolved_path):
+        return True
+    return os.path.getmtime(cfg_path) >= os.path.getmtime(resolved_path)
+
+
+def ensure_resolved_config(force=False, verbose=False):
+    cfg_path = _project_cfg_path(CFG_REL)
+    resolved_path = _project_cfg_path(RESOLVED_REL)
+    if not os.path.isfile(cfg_path):
+        print("Missing " + cfg_path + " (run sphinxtrain setup first)")
+        sys.exit(1)
+    if not force and not _config_is_stale():
+        return
+    print("Resolving config from etc/sphinx_train.cfg ...")
+    dump_pl = os.path.join(sphinxpath, "scripts/util/dump_resolved_cfg.pl")
+    cmd = (
+        "perl '" + dump_pl + "' -cfg '" + cfg_path + "' -out '" + resolved_path + "'"
+    )
+    ret = os.system(cmd)
+    ec = _perl_script_exit_code(ret)
+    if ec != 0:
+        sys.exit(ec)
+    if verbose:
+        with open(resolved_path) as fh:
+            doc = json.load(fh)
+        for key in sorted(doc.get("derived", {})):
+            print("  " + key + ": " + str(doc["derived"][key]))
+
+
 steps = [
     "000.comp_feat/slave_feat.pl",
     "00.verify/verify_all.pl",
@@ -108,6 +148,7 @@ steps = [
 
 
 def run_stages(stages):
+    ensure_resolved_config()
     for stage in stages.split(","):
         for step in steps:
             name = step.split("/")[0].split(".")[-1]
@@ -120,6 +161,7 @@ def run_stages(stages):
 
 
 def run_from(stage):
+    ensure_resolved_config()
     found = False
     for step in steps:
         name = step.split("/")[0].split(".")[-1]
@@ -133,6 +175,7 @@ def run_from(stage):
 
 
 def run():
+    ensure_resolved_config()
     print("Running the training")
     for step in steps:
         ret = os.system("perl '" + sphinxpath + "/scripts/" + step + "'")
@@ -157,6 +200,7 @@ def usage():
     print("     -s <stage1,stage2,stage3> run - run selected stages")
     print("     -f <stage> run - run from selected stage")
     print("     run - run all training")
+    print("     resolve-config - refresh etc/sphinx_train.resolved.json")
     print("     list - list stages and exit")
 
 
@@ -204,6 +248,9 @@ def main():
             run_from(from_stage)
         else:
             run()
+    elif command == "resolve-config":
+        verbose = "-v" in sys.argv or "--verbose" in sys.argv
+        ensure_resolved_config(force=True, verbose=verbose)
     elif command == "list":
         print("\n".join(steps))
     else:

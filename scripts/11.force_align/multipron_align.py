@@ -7,8 +7,8 @@ This mirrors scripts/11.force_align/slave_align.pl phases 3–4 (dictionary merg
 and scripts/11.force_align/force_align.pl (sphinx3_align invocation), without running the
 full SphinxTrain ``sphinxtrain run`` pipeline.
 
-Training layout comes from ``etc/sphinx_train.cfg`` (``CFG_BASE_DIR``, ``CFG_EXPTNAME``,
-and the usual align inputs). Outputs go under ``$CFG_BASE_DIR/multipron_align/``.
+Reads ``etc/sphinx_train.resolved.json`` (from ``sphinxtrain run`` or
+``resolve-config``). Outputs go under ``multipron_align/`` in the project base.
 Normally stage 21 runs this after CI when ``CFG_MULTIPRON`` is not ``no``. Set
 ``CFG_MULTIPRON`` to ``no`` to disable multipron entirely. Optional:
 ``CFG_SPHINX3_ALIGN_BINARY`` if ``sphinx3_align`` is not under ``CFG_BIN_DIR``. Beam width
@@ -35,54 +35,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-# One-line Perl assignments: $CFG_NAME = value;
-_ASSIGN = re.compile(
-    r"^\s*\$((?:CFG|ST)[A-Z0-9_]*)\s*=\s*(.*?)\s*;\s*(?:#.*)?$",
-    re.MULTILINE,
-)
+_python = Path(__file__).resolve().parents[2] / "python"
+if str(_python) not in sys.path:
+    sys.path.insert(0, str(_python))
 
-
-def _parse_sphinx_train_cfg(text: str) -> dict[str, str]:
-    raw: dict[str, str] = {}
-    for m in _ASSIGN.finditer(text):
-        name, val = m.group(1), m.group(2).strip()
-        if val.startswith(("'", '"')) and len(val) >= 2 and val[-1] == val[0]:
-            raw[name] = val[1:-1]
-        else:
-            raw[name] = val.rstrip(";").strip()
-    out = dict(raw)
-    for _ in range(24):
-        changed = False
-        for k, v in list(out.items()):
-            if "$" not in v:
-                continue
-            nv = v
-            for name, repl in out.items():
-                nv = nv.replace(f"${{{name}}}", repl)
-                nv = nv.replace(f"${name}", repl)
-            if nv != v:
-                out[k] = nv
-                changed = True
-        if not changed:
-            break
-    return out
-
-
-def _load_cfg(etc: Path) -> dict[str, str]:
-    cfg = etc / "sphinx_train.cfg"
-    if not cfg.is_file():
-        print(f"Missing {cfg}", file=sys.stderr)
-        sys.exit(1)
-    return _parse_sphinx_train_cfg(cfg.read_text(encoding="utf-8", errors="replace"))
-
-
-def _ci_dirlabel(hmm_type: str) -> str:
-    """Match sphinx_train.cfg: DIRLABEL follows HMM_TYPE, not a static parse."""
-    if hmm_type == ".semi.":
-        return "semi"
-    if hmm_type == ".ptm.":
-        return "ptm"
-    return "cont"
+from cmusphinx.project_cfg import ConfigError, load_resolved
 
 
 def _build_falign_dicts(
@@ -213,10 +170,16 @@ def main() -> int:
             continue
         print(f"Unexpected argument: {rest[i]}", file=sys.stderr)
         return 2
-    cfg = _load_cfg(etc)
+    try:
+        doc = load_resolved(etc)
+    except ConfigError as err:
+        print(err, file=sys.stderr)
+        return 1
+    cfg = doc["variables"]
+    derived = doc["derived"]
     base_dir = Path(cfg["CFG_BASE_DIR"])
     expt = cfg["CFG_EXPTNAME"]
-    out_root = out_dir if out_dir is not None else base_dir / "multipron_align"
+    out_root = out_dir if out_dir is not None else Path(derived["multipron_align_dir"])
 
     align_bin = (
         bin_override
@@ -234,15 +197,14 @@ def main() -> int:
         )
         return 1
 
-    dictionary = Path(cfg["CFG_DICTIONARY"])
+    dictionary = Path(derived["dictionary"])
     filler = Path(cfg["CFG_FILLERDICT"])
-    listoffiles = Path(cfg["CFG_LISTOFFILES"])
-    transcript = Path(cfg["CFG_TRANSCRIPTFILE"])
+    listoffiles = Path(derived["train_listoffiles"])
+    transcript = Path(derived["train_transcript"])
     ctlcount = "1000000"
     feat_dir = Path(cfg["CFG_FEATFILES_DIR"])
     feat_ext = "." + cfg["CFG_FEATFILE_EXTENSION"].lstrip(".")
-    hmm_type = cfg.get("CFG_HMM_TYPE", ".cont.")
-    hmm_dir = Path(cfg["CFG_MODEL_DIR"]) / f"{expt}.ci_{_ci_dirlabel(hmm_type)}"
+    hmm_dir = Path(derived["ci_hmm_dir"])
 
     if not hmm_dir.is_dir():
         print(f"Missing HMM directory {hmm_dir} (train CI models first).", file=sys.stderr)
@@ -269,7 +231,7 @@ def main() -> int:
     # sphinx3_align: -beam is a linear probability passed to logs3(); smaller p =>
     # wider Viterbi pruning (see s3_align.c). Default 1e-308 is effectively full width.
     beam = beam_override or cfg.get("CFG_FORCE_ALIGN_BEAM") or "1e-308"
-    statepdeffn = hmm_type
+    statepdeffn = cfg.get("CFG_HMM_TYPE", ".cont.")
     mwfloor = "1e-8"
     minvar = "1e-4"
 
@@ -316,6 +278,7 @@ def main() -> int:
         "-insert_sil",
         "1",
     ]
+    args = [str(a) for a in args]
 
     print("Doing multipron force alignment (sphinx3_align)...")
     if dry_run:

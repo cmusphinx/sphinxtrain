@@ -25,6 +25,7 @@ set(SCRIPTDIRS
 decode
 lib
 prepare
+util
 )
 install(DIRECTORY ${SCRIPTDIRS} DESTINATION ${CMAKE_INSTALL_DATADIR}/sphinxtrain/scripts)
 install(PROGRAMS sphinxtrain TYPE BIN)

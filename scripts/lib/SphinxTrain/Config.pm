@@ -40,6 +40,13 @@ use strict;
 package SphinxTrain::Config;
 use File::Spec;
 
+use constant CONFIG_PKG => "SphinxTrain::ProjectCfg";
+
+sub _do_cfg_in_package {
+    my ($cfg_file, $pkg) = @_;
+    eval "package $pkg; do \$cfg_file; die \$@ if \$@";
+}
+
 sub import {
     my ($self, %args) = @_;
 
@@ -61,8 +68,9 @@ sub import {
 	    die $@ if $@;
 	}
 	else {
-	    package ST;
-	    do $ST::CFG_FILE;
+	    _do_cfg_in_package($ST::CFG_FILE, CONFIG_PKG);
+	    require SphinxTrain::Resolved;
+	    SphinxTrain::Resolved::sync_runtime();
 	}
     }
 }
@@ -85,8 +93,8 @@ SphinxTrain::Config - Configuration management for Sphinx Training
 
 =head1 DESCRIPTION
 
-This module locates the configuration file and loads it into the ST::
-namespace.
+This module evaluates sphinx_train.cfg in a dedicated package, writes
+sphinx_train.resolved.json, and loads all variables into ST:: from that file.
 
 =head1 AUTHOR
 
