@@ -140,8 +140,8 @@ via `GetLists()` (with `$CFG_MULTIPRON_TRAINING` for graph-level variants in
 opt-in when you want CI models re-estimated on disambiguated labels; gains are
 often modest while cost is ~another full CI, and bad alignments in stage 21
 can propagate. Enable with `$CFG_CI_REESTIMATE_AFTER_MULTIPRON = 'yes'` when
-you want to experiment (see `test/run_slt_two_ci_multipron.sh` for a smoke
-path that turns it on).
+you want to experiment.  Smoke test (Festvox SLT, stages 000/00/20/21/22):
+`SLT_QUICK=1 ./test/run_slt_two_ci_multipron.sh` after `cmake --build build`.
 
 Multipron training (CFG_MULTIPRON_TRAINING)
 -------------------------------------------
