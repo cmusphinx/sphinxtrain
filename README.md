@@ -143,19 +143,19 @@ changing `libs/libsphinxbase/fe` or `feat`):
     test/scripts/test_feat_regression.sh
 
 PocketSphinx two-pass alignment ([PR #468](https://github.com/cmusphinx/pocketsphinx/pull/468))
-fixes `state_align_search.c` so forced alignment with `-state_align yes`
-(or the two-pass path behind `pocketsphinx align`) can reach the final
-phone state on trained models. That code path is **not** used by
-`pocketsphinx_batch` or the default SphinxTrain **decode** stage
-(`psdecode.pl`). Stage **21** still uses in-tree `sphinx3_align`; adopting
-PocketSphinx align on exported models (tier-9 work) should require PocketSphinx
-**after #468 is merged** (then bump `POCKETSPHINX_REF` in CI past `v5.1.0`).
+fixes `state_align_search.c` for `pocketsphinx align` / `-state_align yes`.
+Until that PR is merged upstream, SphinxTrain vendors the diff under
+`test/patches/` and CI applies it on top of the pinned PocketSphinx ref.
+Default training stage **21** still uses in-tree `sphinx3_align` (decode
+via `pocketsphinx_batch` does not use this path).
 
-Check a local PocketSphinx tree:
+Apply the workaround on a local PocketSphinx checkout:
 
-    test/scripts/check_pocketsphinx_align_fix.sh
+    test/scripts/apply_pocketsphinx_align_patch.sh /path/to/pocketsphinx
+    POCKETSPHINX_SRC=/path/to/pocketsphinx test/scripts/check_pocketsphinx_align_fix.sh
 
-Set `POCKETSPHINX_SRC` if the checkout is not a sibling `../pocketsphinx`.
+After #468 is in a release tag: remove the patch, apply script, and CI apply
+step; bump `POCKETSPHINX_REF` in `.github/workflows/tests.yml` if needed.
 
 When packaging SphinxTrain inside another project, prefer a full
 `git clone` over `git clone --depth 1` if you expect to track

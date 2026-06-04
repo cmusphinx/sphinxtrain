@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Verify a PocketSphinx tree includes the two-pass alignment fix (cmusphinx/pocketsphinx#468).
+# Until upstream merges #468, apply test/scripts/apply_pocketsphinx_align_patch.sh first.
 # Exit 0 if the fix is present; exit 1 if the tree is too old; exit 2 on usage errors.
 set -euo pipefail
 

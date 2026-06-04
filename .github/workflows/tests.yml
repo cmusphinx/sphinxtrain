@@ -6,9 +6,8 @@ on:
   pull_request:
     branches:
       - master
-# v5.1.0 is enough for pocketsphinx_batch (decode). After pocketsphinx#468
-# merges, bump POCKETSPHINX_REF to a tag or commit that includes the
-# state_align_search.c fix before relying on pocketsphinx align in tests.
+# v5.1.0 for decode; apply test/patches/pocketsphinx-468-state_align_search.patch
+# until pocketsphinx#468 is merged, then drop the patch step and bump the ref.
 env:
   POCKETSPHINX_REF: v5.1.0
 jobs:
@@ -40,6 +39,8 @@ jobs:
           path: pocketsphinx
       - name: Build PocketSphinx
         run: |
+          bash sphinxtrain/test/scripts/apply_pocketsphinx_align_patch.sh pocketsphinx
+          POCKETSPHINX_SRC=pocketsphinx bash sphinxtrain/test/scripts/check_pocketsphinx_align_fix.sh
           cmake -S pocketsphinx -B pocketsphinx/build -G Ninja
           cmake --build pocketsphinx/build
           cp pocketsphinx/build/pocketsphinx_batch sphinxtrain/build/
