@@ -608,29 +608,31 @@ Select and return the appropriate dictionary depending on predefined variables.
 =cut
 
 sub GetDict {
+    my $path = SphinxTrain::Resolved::derived("dictionary");
+    return $path if defined $path && $path ne "";
+
     if ($ST::CFG_FORCE_ALIGN_SPD eq "yes") {
 	return File::Spec->catfile($ST::CFG_BASE_DIR, "falignout",
 				   "${ST::CFG_EXPTNAME}.spdict");
     }
-    else {
-        my $dictfn;
-        if (defined $ST::CFG_G2P_MODEL && $ST::CFG_G2P_MODEL eq "yes") {
-            $dictfn = "$ST::CFG_DICTIONARY.full"
-        }
-        else {
-            $dictfn = "$ST::CFG_DICTIONARY"
-        }
-        return $dictfn;
+    if (defined $ST::CFG_G2P_MODEL && $ST::CFG_G2P_MODEL eq "yes") {
+        return "$ST::CFG_DICTIONARY.full";
     }
+    return $ST::CFG_DICTIONARY;
 }
 
 sub MultipronTranscriptFile {
+    my $path = SphinxTrain::Resolved::derived("multipron_transcript");
+    return $path if defined $path && $path ne "";
     return "$ST::CFG_BASE_DIR/multipron_align/${ST::CFG_EXPTNAME}.multipron.transcription";
 }
 
 # Multipron is on unless CFG_MULTIPRON is explicitly no. Use the multipron transcript
 # only after stage 21 has produced the file (after CI when multipron is enabled).
 sub ShouldUseMultipronTranscript {
+    if (defined $SphinxTrain::Resolved::DOC) {
+        return SphinxTrain::Resolved::derived("should_use_multipron_transcript");
+    }
     return 0 unless defined($ST::CFG_MULTIPRON);
     return 0 if $ST::CFG_MULTIPRON eq "no";
     return -f MultipronTranscriptFile();
@@ -650,11 +652,14 @@ sub GetLists {
 	$listoffiles   = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedfiles";
 	$transcriptfile  = "$ST::CFG_BASE_DIR/falignout/${ST::CFG_EXPTNAME}.alignedtranscripts";
     } elsif (ShouldUseMultipronTranscript()) {
-	$listoffiles = $ST::CFG_LISTOFFILES;
+	$listoffiles = SphinxTrain::Resolved::derived("train_listoffiles")
+	    || $ST::CFG_LISTOFFILES;
 	$transcriptfile = MultipronTranscriptFile();
     } else {
-	$listoffiles = $ST::CFG_LISTOFFILES;
-	$transcriptfile = $ST::CFG_TRANSCRIPTFILE;
+	$listoffiles = SphinxTrain::Resolved::derived("train_listoffiles")
+	    || $ST::CFG_LISTOFFILES;
+	$transcriptfile = SphinxTrain::Resolved::derived("train_transcript")
+	    || $ST::CFG_TRANSCRIPTFILE;
     }
     return ($listoffiles, $transcriptfile);
 }

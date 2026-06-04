@@ -27,6 +27,10 @@ if (!-f $py) {
     die "Missing $py\n";
 }
 
+my $pypath = catfile($ST::CFG_SPHINXTRAIN_DIR, 'python');
+$ENV{PYTHONPATH} = (defined($ENV{PYTHONPATH}) && $ENV{PYTHONPATH} ne '')
+    ? "$pypath:$ENV{PYTHONPATH}" : $pypath;
+
 # Prefer $PYTHON; else python3 on Unix (many images have no `python` symlink); else python.
 my $pyexe = $ENV{PYTHON};
 if (!defined($pyexe) || $pyexe eq '') {

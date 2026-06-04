@@ -25,6 +25,7 @@ jobs:
       - name: Run tests
         run: |
           cmake --build sphinxtrain/build --target test
+          perl sphinxtrain/test/scripts/test_resolved_cfg.pl
       - name: Checkout PocketSphinx
         uses: actions/checkout@v4
         with:
