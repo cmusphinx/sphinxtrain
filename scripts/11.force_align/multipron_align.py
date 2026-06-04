@@ -76,6 +76,15 @@ def _load_cfg(etc: Path) -> dict[str, str]:
     return _parse_sphinx_train_cfg(cfg.read_text(encoding="utf-8", errors="replace"))
 
 
+def _ci_dirlabel(hmm_type: str) -> str:
+    """Match sphinx_train.cfg: DIRLABEL follows HMM_TYPE, not a static parse."""
+    if hmm_type == ".semi.":
+        return "semi"
+    if hmm_type == ".ptm.":
+        return "ptm"
+    return "cont"
+
+
 def _build_falign_dicts(
     dictionary: Path,
     filler: Path,
@@ -232,7 +241,8 @@ def main() -> int:
     ctlcount = "1000000"
     feat_dir = Path(cfg["CFG_FEATFILES_DIR"])
     feat_ext = "." + cfg["CFG_FEATFILE_EXTENSION"].lstrip(".")
-    hmm_dir = Path(cfg["CFG_MODEL_DIR"]) / f"{expt}.ci_{cfg['CFG_DIRLABEL']}"
+    hmm_type = cfg.get("CFG_HMM_TYPE", ".cont.")
+    hmm_dir = Path(cfg["CFG_MODEL_DIR"]) / f"{expt}.ci_{_ci_dirlabel(hmm_type)}"
 
     if not hmm_dir.is_dir():
         print(f"Missing HMM directory {hmm_dir} (train CI models first).", file=sys.stderr)
@@ -259,7 +269,7 @@ def main() -> int:
     # sphinx3_align: -beam is a linear probability passed to logs3(); smaller p =>
     # wider Viterbi pruning (see s3_align.c). Default 1e-308 is effectively full width.
     beam = beam_override or cfg.get("CFG_FORCE_ALIGN_BEAM") or "1e-308"
-    statepdeffn = cfg["CFG_HMM_TYPE"]
+    statepdeffn = hmm_type
     mwfloor = "1e-8"
     minvar = "1e-4"
 
