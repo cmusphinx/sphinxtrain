@@ -30,3 +30,9 @@ build
 
 # Local design notes (not part of the distributed tree)
 docs/plan-multi-pronunciation-iterative-training.md
+
+# Local experiments, IDE, and test run artifacts
+local/
+arctic_align/
+test/work/
+.vscode/
