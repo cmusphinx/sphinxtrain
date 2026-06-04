@@ -5,6 +5,8 @@ use File::Basename;
 use File::Spec::Functions qw(catdir updir);
 use Getopt::Long;
 
+use lib catdir(dirname($0), updir(), "lib");
+
 my $cfg_file = "./etc/sphinx_train.cfg";
 my $out_file = "";
 GetOptions(
@@ -12,11 +14,9 @@ GetOptions(
     "out=s" => \$out_file,
 ) or exit 2;
 
-@ARGV = ("-cfg", $cfg_file);
-
-use lib catdir(dirname($0), updir(), "lib");
-use SphinxTrain::Config;
-use SphinxTrain::Resolved;
+require SphinxTrain::Config;
+SphinxTrain::Config->import(-cfg => $cfg_file);
+require SphinxTrain::Resolved;
 
 if ($out_file ne "") {
     $SphinxTrain::Resolved::DOC =
