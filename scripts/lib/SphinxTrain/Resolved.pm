@@ -92,6 +92,33 @@ sub compute_derived {
         $derived{test_listoffiles} = $ST::DEC_CFG_LISTOFFILES;
     }
 
+    $derived{pocketsphinx_batch} = File::Spec->catfile(
+        $ST::CFG_BIN_DIR, "pocketsphinx_batch"
+    );
+    if (defined($ST::DEC_CFG_MODEL_NAME) && $ST::DEC_CFG_MODEL_NAME ne "") {
+        my $dec_model_dir = $ST::DEC_CFG_MODEL_DIR;
+        $dec_model_dir = $ST::CFG_MODEL_DIR
+            unless defined $dec_model_dir && $dec_model_dir ne "";
+        $derived{decode_hmm_dir} = File::Spec->catfile(
+            $dec_model_dir, $ST::DEC_CFG_MODEL_NAME
+        );
+        $derived{decode_sendump} = File::Spec->catfile(
+            $derived{decode_hmm_dir}, "sendump"
+        );
+    }
+    if (defined($ST::DEC_CFG_DICTIONARY) && $ST::DEC_CFG_DICTIONARY ne "") {
+        $derived{decode_dictionary} = $ST::DEC_CFG_DICTIONARY;
+    }
+    if (defined($ST::DEC_CFG_LANGUAGEMODEL) && $ST::DEC_CFG_LANGUAGEMODEL ne "") {
+        $derived{decode_language_model} = $ST::DEC_CFG_LANGUAGEMODEL;
+    }
+    if (defined($ST::DEC_CFG_TRANSCRIPTFILE) && $ST::DEC_CFG_TRANSCRIPTFILE ne "") {
+        $derived{decode_transcript} = $ST::DEC_CFG_TRANSCRIPTFILE;
+    }
+    if (defined($ST::DEC_CFG_RESULT_DIR) && $ST::DEC_CFG_RESULT_DIR ne "") {
+        $derived{decode_result_dir} = $ST::DEC_CFG_RESULT_DIR;
+    }
+
     $derived{dictionary} = _dictionary_path();
     $derived{should_use_multipron_transcript} = _should_use_multipron_transcript();
 

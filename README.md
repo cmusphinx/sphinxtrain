@@ -103,8 +103,50 @@ reason.
 
 You do not need to install SphinxTrain to run it, simply run
 `scripts/sphinxtrain` from the source directory when initializing a
-training directory.  Note that you do need to build and install
-PocketSphinx for evaluation to work properly, however.
+training directory.
+
+PocketSphinx (decode and model export)
+--------------------------------------
+
+The final **decode** stage and PocketSphinx-format **sendump** export
+(stages 50 and 90) use binaries from
+[PocketSphinx](https://github.com/cmusphinx/pocketsphinx), not from the
+SphinxTrain build alone. CI pins **v5.1.0** and copies
+`pocketsphinx_batch` into `build/` after building PocketSphinx.
+
+Local setup (sibling checkout, same layout as CI):
+
+    git clone https://github.com/cmusphinx/pocketsphinx.git
+    cmake -S pocketsphinx -B pocketsphinx/build
+    cmake --build pocketsphinx/build
+    cp pocketsphinx/build/pocketsphinx_batch build/
+
+Or install PocketSphinx and ensure `pocketsphinx_batch` is on your
+`PATH` when running `sphinxtrain run`.
+
+After `sphinxtrain setup`, `etc/sphinx_train.resolved.json` lists decode
+paths under `derived` (`decode_hmm_dir`, `decode_sendump`,
+`pocketsphinx_batch`, `decode_language_model`, and related keys). Refresh
+with `sphinxtrain resolve-config -v` when you change `etc/sphinx_train.cfg`.
+
+Training writes PocketSphinx sendumps via `mk_s2sendump -pocketsphinx`
+into each HMM directory; decode expects that layout under
+`derived.decode_hmm_dir`.
+
+PocketSphinx two-pass alignment ([PR #468](https://github.com/cmusphinx/pocketsphinx/pull/468))
+fixes `state_align_search.c` so forced alignment with `-state_align yes`
+(or the two-pass path behind `pocketsphinx align`) can reach the final
+phone state on trained models. That code path is **not** used by
+`pocketsphinx_batch` or the default SphinxTrain **decode** stage
+(`psdecode.pl`). Stage **21** still uses in-tree `sphinx3_align`; adopting
+PocketSphinx align on exported models (tier-9 work) should require PocketSphinx
+**after #468 is merged** (then bump `POCKETSPHINX_REF` in CI past `v5.1.0`).
+
+Check a local PocketSphinx tree:
+
+    test/scripts/check_pocketsphinx_align_fix.sh
+
+Set `POCKETSPHINX_SRC` if the checkout is not a sibling `../pocketsphinx`.
 
 When packaging SphinxTrain inside another project, prefer a full
 `git clone` over `git clone --depth 1` if you expect to track

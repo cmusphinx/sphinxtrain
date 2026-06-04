@@ -82,7 +82,7 @@ $logfile = "$log_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.log";
 $matchfile = "$result_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.match";
 $matchsegfile = "$result_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.matchseg";
 
-$hmm_dir = "$ST::CFG_BASE_DIR/model_parameters/$modelname";
+$hmm_dir = catfile($ST::DEC_CFG_MODEL_DIR, $modelname);
 
 $nlines = 0;
 open INPUT, "${ST::DEC_CFG_LISTOFFILES}";
