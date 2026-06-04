@@ -133,6 +133,16 @@ text. It performs a **full** CI cycle again (including flat initialization)
 and **replaces** the CI model directory, roughly doubling CI time. Default
 is `no`.
 
+**Why second CI is off by default:** A normal `sphinxtrain run` is already
+**one CI pass + multipron (stage 21) + CD/BW on the multipron transcript**
+via `GetLists()` (with `$CFG_MULTIPRON_TRAINING` for graph-level variants in
+`bw`). That is the usual “multipron” path—not two CI passes. Stage 22 is
+opt-in when you want CI models re-estimated on disambiguated labels; gains are
+often modest while cost is ~another full CI, and bad alignments in stage 21
+can propagate. Enable with `$CFG_CI_REESTIMATE_AFTER_MULTIPRON = 'yes'` when
+you want to experiment (see `test/run_slt_two_ci_multipron.sh` for a smoke
+path that turns it on).
+
 Multipron training (CFG_MULTIPRON_TRAINING)
 -------------------------------------------
 
