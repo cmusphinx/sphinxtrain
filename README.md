@@ -122,9 +122,6 @@ program built with the rest of the tree (`cmake --build build`).
 
 Set `$CFG_MULTIPRON` to `no` in `etc/sphinx_train.cfg` if you want to
 skip stage 21 and use only the original transcripts for later stages.
-For **semi** (`.semi.`) and **PTM** (`.ptm.`) models, the template turns
-multipron and stage 22 off automatically; they are intended for the
-**continuous** (`.cont.`) path.
 
 Optional second CI pass (stage 22)
 
