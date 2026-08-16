@@ -55,6 +55,7 @@ int
 enum_corpus(lexicon_t *lex,
 	    model_def_t *mdef,
 	    uint32 *cnt,
-	    cnt_fn_t cnt_fn);
+	    cnt_fn_t cnt_fn,
+	    uint32 *out_n_utt);
 
 #endif /* ENUM_CORPUS_H */ 

@@ -72,13 +72,24 @@ initialize(lexicon_t **out_lex,
     model_def_t *mdef;
     const char *fdictfn;
     const char *dictfn;
+    const char *ctlfn;
+    const char *segdir;
     const char *ts2cbfn;
     uint32 n_ts;
 
     /* define, parse and (partially) validate the command line */
     parse_cmd_ln(argc, argv);
 
-    corpus_set_seg_dir(cmd_ln_str("-segdir"));
+    /* State and codebook counting need segmentations; phone counting does
+       not.  Requiring -segdir only where it is used turns a null dereference
+       into a named initialization error. */
+    segdir = cmd_ln_str("-segdir");
+    if (segdir)
+	corpus_set_seg_dir(segdir);
+    else if (strcmp(cmd_ln_str("-paramtype"), "phone") != 0) {
+	E_ERROR("You must specify a segmentation directory using -segdir\n");
+	return S3_ERROR;
+    }
     corpus_set_seg_ext(cmd_ln_str("-segext"));
 
     if (cmd_ln_str("-lsnfn"))
@@ -88,7 +99,11 @@ initialize(lexicon_t **out_lex,
 	corpus_set_sent_ext(cmd_ln_str("-sentext"));
     }
 
-    corpus_set_ctl_filename(cmd_ln_str("-ctlfn"));
+    ctlfn = cmd_ln_str("-ctlfn");
+    if (corpus_set_ctl_filename(ctlfn) != S3_SUCCESS) {
+	E_ERROR("Failed to initialize corpus from -ctlfn %s\n", ctlfn);
+	return S3_ERROR;
+    }
 
     if (cmd_ln_int32("-nskip") && cmd_ln_int32("-runlen")) {
         corpus_set_interval(cmd_ln_int32("-nskip"),
@@ -112,6 +127,10 @@ initialize(lexicon_t **out_lex,
     }
 
     ts2cbfn = cmd_ln_str("-ts2cbfn");
+    if (strcmp(cmd_ln_str("-paramtype"), "cb") == 0 && ts2cbfn == NULL) {
+	E_ERROR("CB parameter counting requires -ts2cbfn\n");
+	return S3_ERROR;
+    }
     if (ts2cbfn) {
 	E_INFO("Reading %s\n", cmd_ln_str("-ts2cbfn"));
 
@@ -182,7 +201,6 @@ main(int argc, char *argv[])
     model_def_t *mdef;
     const char *type;
     const char *outfn;
-    FILE *out_fp = stdout;
 
     if (initialize(&lex, &mdef, argc, argv) != S3_SUCCESS) {
 	E_ERROR("errors initializing.\n");
@@ -191,14 +209,8 @@ main(int argc, char *argv[])
 
     type = cmd_ln_str("-paramtype");
     outfn = cmd_ln_str("-outputfn");
-    if (outfn != NULL) {
-	out_fp = fopen(outfn, "w");
-	if (out_fp == NULL) {
-	    E_ERROR_SYSTEM("Couldn't open %s for writing\n", outfn);
-	}
-    }
 
-    if (param_cnt(out_fp, lex, mdef, type) != S3_SUCCESS) {
+    if (param_cnt(outfn, lex, mdef, type) != S3_SUCCESS) {
 	return 1;
     }
 
