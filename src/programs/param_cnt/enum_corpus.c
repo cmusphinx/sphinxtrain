@@ -63,7 +63,8 @@ int
 enum_corpus(lexicon_t *lex,
 	    model_def_t *mdef,
 	    uint32 *cnt,
-	    cnt_fn_t cnt_fn)
+	    cnt_fn_t cnt_fn,
+	    uint32 *out_n_utt)
 {
     uint32 tick_cnt = 0;
     char *trans = NULL;
@@ -76,6 +77,12 @@ enum_corpus(lexicon_t *lex,
     char *btw_mark = NULL;
 
     while (corpus_next_utt()) {
+	/* lineiter_start_clean() can expose an indented first-line comment as
+	 * a control entry.  It is not an utterance and must not contribute to
+	 * the post-enumeration count. */
+	if (corpus_utt()[0] == '#')
+	    continue;
+
 	if (trans) {
 	    free(trans);
 	    trans = NULL;
@@ -95,11 +102,6 @@ enum_corpus(lexicon_t *lex,
 	if (btw_mark) {
 	    ckd_free(btw_mark);
 	    btw_mark = NULL;
-	}
-	
-	if ((++tick_cnt % 1000) == 0) {
-	    fprintf(stderr, "[%u] ", tick_cnt);
-	    fflush(stderr);
 	}
 
 	if (corpus_get_sent(&trans) != S3_SUCCESS) {
@@ -131,10 +133,16 @@ enum_corpus(lexicon_t *lex,
             }
 	}
 
-	(*cnt_fn)(cnt,				/* observation counts */
-		  mdef,				/* model definitions */
-		  seg, n_frame,			/* Viterbi state segmentation */
-		  phone, btw_mark, n_phone);	/* list of phones */
+	if ((*cnt_fn)(cnt,			/* observation counts */
+		      mdef,			/* model definitions */
+		      seg, n_frame,		/* Viterbi state segmentation */
+		      phone, btw_mark, n_phone) != S3_SUCCESS)
+	    continue;
+
+	if ((++tick_cnt % 1000) == 0) {
+	    fprintf(stderr, "[%u] ", tick_cnt);
+	    fflush(stderr);
+	}
     }
 
     /* free the per utterance data structures from the last utt */
@@ -158,6 +166,9 @@ enum_corpus(lexicon_t *lex,
 	ckd_free(btw_mark);
 	btw_mark = NULL;
     }
-    
+
+    if (out_n_utt)
+	*out_n_utt = tick_cnt;
+
     return S3_SUCCESS;
 }

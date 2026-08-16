@@ -52,7 +52,7 @@
 #include <stdio.h>
 
 int
-param_cnt(FILE *out_fp,
+param_cnt(const char *outfn,
 	  lexicon_t *lex,
 	  model_def_t *mdef,
 	  const char *param_type);

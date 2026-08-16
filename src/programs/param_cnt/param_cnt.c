@@ -56,13 +56,14 @@
 
 #include <s3/acmod_set.h>
 #include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/cmd_ln.h>
 
 #include <string.h>
 
 #include <stdio.h>
 
 int
-param_cnt(FILE *out_fp,
+param_cnt(const char *outfn,
 	  lexicon_t *lex,
 	  model_def_t *mdef,
 	  const char *param_type)
@@ -71,7 +72,9 @@ param_cnt(FILE *out_fp,
     cnt_fn_t cnt_fn=0;
     uint32 *cnt;
     uint32 n_cnt=0;
+    uint32 n_utt=0;
     uint32 i;
+    FILE *out_fp = stdout;
 
     acmod_set = mdef->acmod_set;
 
@@ -88,11 +91,35 @@ param_cnt(FILE *out_fp,
 	n_cnt = mdef->acmod_set->next_id;
 	cnt_fn = phone_cnt;
     }
+    else {
+	E_ERROR("Unknown parameter type '%s'; expected state, cb, or phone\n",
+		param_type);
+	return S3_ERROR;
+    }
     cnt = ckd_calloc(n_cnt, sizeof(uint32));
 
     E_INFO("Scanning corpus\n");
 
-    enum_corpus(lex, mdef, cnt, cnt_fn);
+    if (enum_corpus(lex, mdef, cnt, cnt_fn, &n_utt) != S3_SUCCESS) {
+	ckd_free(cnt);
+	return S3_ERROR;
+    }
+
+    if (n_utt == 0) {
+	E_ERROR("No utterances were counted from -ctlfn %s\n",
+		cmd_ln_str("-ctlfn"));
+	ckd_free(cnt);
+	return S3_ERROR;
+    }
+
+    if (outfn != NULL) {
+	out_fp = fopen(outfn, "w");
+	if (out_fp == NULL) {
+	    E_ERROR_SYSTEM("Couldn't open %s for writing\n", outfn);
+	    ckd_free(cnt);
+	    return S3_ERROR;
+	}
+    }
 
     if (strcmp(param_type, "phone") != 0) {
 	for (i = 0; i < n_cnt; i++)
@@ -103,7 +130,11 @@ param_cnt(FILE *out_fp,
 	    fprintf(out_fp, "%s %u\n", acmod_set_id2fullname(acmod_set, (acmod_id_t)i), cnt[i]);
     }
 
-    return 0;
+    if (out_fp != stdout)
+	fclose(out_fp);
+    ckd_free(cnt);
+
+    return S3_SUCCESS;
 }
 
 #endif /* PARAM_CNT_H */ 
