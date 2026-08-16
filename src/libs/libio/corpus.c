@@ -681,6 +681,11 @@ corpus_set_seg_dir(const char *dir)
 {
     char *tt;
 
+    if (dir == NULL) {
+	E_ERROR("corpus_set_seg_dir called with a null directory\n");
+	return S3_ERROR;
+    }
+
     requires_seg = TRUE;
 
     tt = strrchr(dir, ',');
@@ -846,6 +851,11 @@ int
 corpus_set_sent_dir(const char *dir)
 {
     char *tt;
+
+    if (dir == NULL) {
+	E_ERROR("corpus_set_sent_dir called with a null directory\n");
+	return S3_ERROR;
+    }
 
     assert(transcription_filename == NULL);
 
