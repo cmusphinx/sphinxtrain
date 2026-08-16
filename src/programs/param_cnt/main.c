@@ -81,11 +81,20 @@ initialize(lexicon_t **out_lex,
     corpus_set_seg_dir(cmd_ln_str("-segdir"));
     corpus_set_seg_ext(cmd_ln_str("-segext"));
 
+    /* Word transcripts come either from a single LSN file (-lsnfn) or from
+       per-utterance sent files under -sentdir.  Require one of them: with
+       neither, corpus_set_sent_dir() would previously receive a null -sentdir
+       and dereference it. */
     if (cmd_ln_str("-lsnfn"))
 	corpus_set_lsn_filename(cmd_ln_str("-lsnfn"));
-    else {
+    else if (cmd_ln_str("-sentdir")) {
 	corpus_set_sent_dir(cmd_ln_str("-sentdir"));
 	corpus_set_sent_ext(cmd_ln_str("-sentext"));
+    }
+    else {
+	E_ERROR("You must specify a word transcript source: -lsnfn, "
+		"or -sentdir with -sentext\n");
+	return S3_ERROR;
     }
 
     corpus_set_ctl_filename(cmd_ln_str("-ctlfn"));

@@ -124,6 +124,16 @@ transcripts -dictfn dict -fdictfn fillerdict -paramtype phone";
 	  NULL,
 	  "All word transcripts for the training corpus (consistent order w/ -ctlfn!)"},
 
+	{ "-sentdir",
+	  ARG_STRING,
+	  NULL,
+	  "Root directory of per-utterance word transcript (sent) files (used when -lsnfn is not given)"},
+
+	{ "-sentext",
+	  ARG_STRING,
+	  "sent",
+	  "Extension of per-utterance word transcript (sent) files"},
+
 	{ "-dictfn",
 	  ARG_STRING,
 	  NULL,
