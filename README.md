@@ -97,6 +97,10 @@ command above, namely:
 
     cmake -S . -B build -DBUILD_G2P=ON
     
+You must also enable git submodules, e.g.:
+
+    git submodule init
+    
 You can also enable shared libraries with `-DBUILD_SHARED_LIBS=ON`,
 but I suggest that you *not* do that unless you have a very good
 reason.

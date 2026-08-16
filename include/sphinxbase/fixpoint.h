@@ -55,6 +55,10 @@ extern "C" {
 }
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifndef DEFAULT_RADIX
 #define DEFAULT_RADIX 12
 #endif

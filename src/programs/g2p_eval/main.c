@@ -1,8 +1,6 @@
+#include "phonetisaurus-g2p.h"
 #include <sphinxbase/cmd_ln.h>
-#include "phonetisaurus-g2p.hpp"
 
-
-using namespace std;
 
 const char helpstr[] =
     "Usage: g2p_eval -model MODEL -input INPUT [-output OUTPUT] [-isfile] [-output_cost] \n\
@@ -53,25 +51,23 @@ main(int argc, char *argv[])
         printf("%s\n\n", helpstr);
     }
 
-    string model = cmd_ln_str("-model");
-    string input = cmd_ln_str("-input");
-    string output = cmd_ln_str("-output");
-    bool output_cost = cmd_ln_boolean("-output_cost");
-    bool isfile = cmd_ln_boolean("-isfile");
+    const char * model = cmd_ln_str("-model");
+    const char * input = cmd_ln_str("-input");
+    const char * output = cmd_ln_str("-output");
+    int output_cost = cmd_ln_boolean("-output_cost");
+    int isfile = cmd_ln_boolean("-isfile");
     int nbest = cmd_ln_int32("-nbest");
     int beam = cmd_ln_int32("-beam");
-    string sep = cmd_ln_str("-sep");
-    bool words = cmd_ln_boolean("-words");
+    const char * sep = cmd_ln_str("-sep");
+    int words = cmd_ln_boolean("-words");
 
     if (isfile) {
-        //If its a file, go for it
-        phoneticizeTestSet(model.c_str(), output.c_str(), input, nbest,
+        phoneticizeTestSet(model, output, input, nbest,
                            sep, beam, words, output_cost);
     }
     else {
-        //Otherwise we just have a word
-        phoneticizeWord(model.c_str(), output.c_str(), input, nbest, sep,
-                        beam, words);
+        phoneticizeWord(model, output, input, nbest, sep,
+                        beam, words, output_cost);
     }
 
     return 0;

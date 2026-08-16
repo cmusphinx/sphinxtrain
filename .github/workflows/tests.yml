@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: sphinxtrain
+          submodules: recursive
       - name: Install
         run: |
           sudo apt-get install cmake \

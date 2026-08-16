@@ -253,12 +253,12 @@ class ErrorRater( ):
         if usep=="":
             sequences = [
                   [ unit for unit in list(seq) ] 
-                    for seq in re.split( r' {2,}', sequence )
+                    for seq in re.split( r'(?:\t| {2,})', sequence )
                 ]
         else:
             sequences = [ 
                   [ unit for unit in re.split( usep, seq ) ] 
-                    for seq in re.split( r' {2,}', sequence ) 
+                    for seq in re.split( r'(?:\t| {2,})', sequence ) 
                 ]
         if len(sequences)==1: 
             return sequences[0]
@@ -284,7 +284,7 @@ class ErrorRater( ):
         words = []; hyps = []; refs = []
         for i,line in enumerate(open(hypfile,"r")):
             #There should be three fields
-            word, score, pron = re.split(r' {2,}', line.strip())
+            word, score, pron = re.split(r'(?:\t|  +)', line.strip())
             phons = re.split(usep, pron)
             #This assumes that we will never have a test situation
             # where the input list intentionally contains 2 repetitions
@@ -350,7 +350,7 @@ if __name__=="__main__":
     parser.add_argument('--hyp', "-y", help="The file/string containing G2P/ASR hypotheses.", required=True )
     parser.add_argument('--ref', "-r", help="The file/string containing G2P/ASR reference transcriptions.", required=True )
     parser.add_argument('--usep',     "-u", help="Character or regex separating units in a sequence. Defaults to ' '.", required=False, default=" " )
-    parser.add_argument('--fsep',     "-s", help="Character or regex separating fields in a sequence. Defaults to '  '.", required=False, default="r' {2,}'" )
+    parser.add_argument('--fsep',     "-s", help="Character or regex separating fields in a sequence. Defaults to '  '.", required=False, default="r'(?:\t| {2,})'" )
     parser.add_argument('--format',   "-f", help="Input format.  One of 'cmu', 'htk', 'g2p'. Defaults to 'g2p'.", required=False, default="g2p" )
     parser.add_argument('--ignore',   "-i", help="Ignore specified characters when encountered in a HYPOTHESIS.  A ' ' separated list.", required=False, default="" )
     parser.add_argument('--regex_ignore',   "-x", help="Ignore specified characters when encountered in a HYPOTHESIS.  A regular expression.", required=False, default="" )
