@@ -95,7 +95,16 @@ while (<CTL>) {
     chomp;
     push @ctl_lines, $_;
     my $dir = dirname($_);
-    mkpath(catdir($ST::CFG_FEATFILES_DIR, $dir));
+    # Create the output subdirectory for this utterance under $outfolder, so a
+    # warp pass lands in feat/<warp>/ rather than the base feature directory.
+    # Sibling parts run in parallel and may create the same directory at the
+    # same time; mkpath() is not atomic, so tolerate an "already exists" race
+    # instead of dying (which previously killed the whole comp_feat stage).
+    my $target = catdir($outfolder, $dir);
+    unless (-d $target) {
+        eval { mkpath($target) };
+        die "Failed to create $target: $@" if $@ and not -d $target;
+    }
 }
 close CTL;
 
