@@ -110,6 +110,9 @@ main(int argc, char *argv[])
 	return 1;
     }
 
+    ckd_free(veclen);
+    veclen = NULL;
+
     var_is_full = cmd_ln_int32("-fullvar");
     if (var_is_full) {
 	if (s3gau_read_full(cmd_ln_str("-invarfn"),
@@ -225,4 +228,3 @@ main(int argc, char *argv[])
 
     return 0;
 }
-
