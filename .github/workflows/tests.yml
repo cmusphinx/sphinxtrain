@@ -85,7 +85,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: an4-logdir-${{ github.job }}
-          path: an4/logdir
+          path: |
+            an4/logdir
+            an4/qmanager
 
   train-installed:
     runs-on: ubuntu-latest
@@ -118,7 +120,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: an4-logdir-${{ github.job }}
-          path: an4/logdir
+          path: |
+            an4/logdir
+            an4/qmanager
 
   train-parallel:
     runs-on: ubuntu-latest
@@ -161,7 +165,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: an4-logdir-${{ github.job }}
-          path: an4/logdir
+          path: |
+            an4/logdir
+            an4/qmanager
 
   train-align:
     runs-on: ubuntu-latest
@@ -195,7 +201,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: an4-logdir-${{ github.job }}
-          path: an4/logdir
+          path: |
+            an4/logdir
+            an4/qmanager
 
   train-g2p-lda-vtln:
     runs-on: ubuntu-22.04  # Requires libngram-dev for G2P support
@@ -244,7 +252,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: an4-logdir-${{ github.job }}
-          path: an4/logdir
+          path: |
+            an4/logdir
+            an4/qmanager
 
   train-semi:
     runs-on: ubuntu-latest
@@ -281,7 +291,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: an4-logdir-${{ github.job }}
-          path: an4/logdir
+          path: |
+            an4/logdir
+            an4/qmanager
 
   train-ptm:
     runs-on: ubuntu-latest
@@ -318,4 +330,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: an4-logdir-${{ github.job }}
-          path: an4/logdir
+          path: |
+            an4/logdir
+            an4/qmanager
