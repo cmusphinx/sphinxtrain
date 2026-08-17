@@ -255,6 +255,7 @@ init_mixw()
     uint32 i;
     uint32 n_ts;
     uint32 n_cb;
+    int incomplete = FALSE;
 
     const char *ts2cbfn;
 
@@ -512,18 +513,23 @@ init_mixw()
 
     for (m = 0; m < n_mixw_dest; m++) {
 	if (mixw_dest_list[m] == NULL) {
-	    E_WARN("Destination state %u has not been initialized!\n", m);
+	    E_ERROR("Destination state %u has not been initialized\n", m);
+	    incomplete = TRUE;
 	}
     }
 
     for (m = 0; m < n_cb_dest; m++) {
 	if (cb_dest_list[m] == NULL) {
-	    E_WARN("Destination cb %u has not been initialized!\n", m);
+	    E_ERROR("Destination codebook %u has not been initialized\n", m);
+	    incomplete = TRUE;
 	}
 	else if (cb_dest_list[m]->next != NULL) {
 	    E_WARN("dest cb %u has > 1 corresponding source cb\n", m);
 	}
     }
+
+    if (incomplete)
+	return S3_ERROR;
 
     /* Check for uninitialized transition matrices and initialize them */
     /* When duplicating from .semi. to .cont., ensure all destination tmat slots are initialized */
