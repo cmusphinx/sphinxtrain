@@ -1,0 +1,4 @@
+add_executable(test_variance_floor test_variance_floor.c)
+target_include_directories(test_variance_floor PRIVATE ${CMAKE_BINARY_DIR})
+target_link_libraries(test_variance_floor sphinxtrain)
+add_test(NAME variance_floor COMMAND test_variance_floor)

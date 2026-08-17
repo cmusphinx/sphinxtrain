@@ -166,6 +166,18 @@ gauden_s2_set_var(gauden_t *g,
 int
 gauden_floor_variance(gauden_t *g);
 
+#define GAUDEN_EVAL_VAR_FLOOR 1e-4f
+
+int
+gauden_floor_variance_array(vector_t ***var, uint32 n_mgau,
+                            uint32 n_feat, uint32 n_density,
+                            const uint32 *veclen, float32 floor);
+
+int
+gauden_floor_variance_array_full(vector_t ****fullvar, uint32 n_mgau,
+                                 uint32 n_feat, uint32 n_density,
+                                 const uint32 *veclen, float32 floor);
+
 int
 gauden_compute(float64 **den,
 	       uint32 **den_idx,

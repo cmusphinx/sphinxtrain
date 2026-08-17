@@ -32,6 +32,7 @@
 #include <s3/s3mixw_io.h>
 #include <s3/s3tmat_io.h>
 #include <s3/s3acc_io.h>
+#include <s3/gauden.h>
 #include <s3/s3.h>
 #include <s3/ts2cb.h>
 #include <s3/s3ts2cb_io.h>
@@ -373,6 +374,7 @@ map_update(void)
     map_var_fn = cmd_ln_str("-mapvarfn");
     map_tmat_fn = cmd_ln_str("-maptmatfn");
     map_mixw_fn = cmd_ln_str("-mapmixwfn");
+    varfloor = cmd_ln_float32("-varfloor");
 
     /* Must be at least one accum dir. */
     if (accum_dir == NULL)
@@ -395,6 +397,8 @@ map_update(void)
 	E_FATAL("Couldn't read %s\n", si_var_fn);
     check_consistency(si_var_fn, n_cb, n_cb_rd, n_stream, n_stream_rd,
 		      n_density, n_density_rd, veclen, veclen_rd);
+    gauden_floor_variance_array(si_var, n_cb_rd, n_stream_rd, n_density_rd,
+				veclen_rd, varfloor);
     /* Don't free veclen_rd, as rdacc_den needs it. */
 
     /* Read and normalize SI mixture weights. */

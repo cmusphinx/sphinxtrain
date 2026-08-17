@@ -54,6 +54,7 @@
 #include <s3/s3mixw_io.h>
 #include <s3/s3tmat_io.h>
 #include <s3/s3acc_io.h>
+#include <s3/gauden.h>
 #include <s3/mllr.h>
 #include <s3/mllr_io.h>
 
@@ -650,6 +651,8 @@ mmi_normalize()
 		   &veclen) != S3_SUCCESS) {
       E_FATAL_SYSTEM("Couldn't read %s", in_var_fn);
     }
+    gauden_floor_variance_array(in_var, n_mgau, n_stream, n_density,
+				veclen, GAUDEN_EVAL_VAR_FLOOR);
     ckd_free((void *)veclen);
     veclen = NULL;
   }

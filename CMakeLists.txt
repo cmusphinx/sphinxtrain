@@ -156,6 +156,9 @@ endif()
 
 # Compile all the things
 add_subdirectory(src)
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()
 
 # SphinxTrain headers are not meant for public consumption, do not
 # install them.

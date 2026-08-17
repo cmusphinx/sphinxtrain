@@ -405,34 +405,49 @@ diag_and_floor(vector_t *fullvar, uint32 veclen, float32 floor)
 }
 
 int
-gauden_floor_variance(gauden_t *g)
+gauden_floor_variance_array_full(vector_t ****fullvar, uint32 n_mgau,
+                                 uint32 n_feat, uint32 n_density,
+                                 const uint32 *veclen, float32 floor)
 {
     uint32 i, j, k;
 
-    if (g->fullvar != NULL) {
-	/* Don't try to "floor" full covariances since there's no easy
-	   way to do this.  If they are singular, discard the
-	   off-diagonals and floor the diagonals. */
-	for (i = 0; i < g->n_mgau; i++) {
-	    for (j = 0; j < g->n_feat; j++) {
-		for (k = 0; k < g->n_density; k++) {
-		    if (determinant(g->fullvar[i][j][k], g->veclen[j]) <= 0.0) {
-			diag_and_floor(g->fullvar[i][j][k], g->veclen[j], min_var);
-		    }
-		}
+    /* Singular full covariances use the native diagonal fallback. */
+    for (i = 0; i < n_mgau; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    for (k = 0; k < n_density; k++) {
+		if (determinant(fullvar[i][j][k], veclen[j]) <= 0.0)
+		    diag_and_floor(fullvar[i][j][k], veclen[j], floor);
 	    }
 	}
     }
-    if (g->var != NULL) {
-	for (i = 0; i < g->n_mgau; i++) {
-	    for (j = 0; j < g->n_feat; j++) {
-		for (k = 0; k < g->n_density; k++) {
-		    vector_floor(g->var[i][j][k], g->veclen[j], min_var);
-		}
-	    }
-	}
-    }
+    return S3_SUCCESS;
+}
 
+int
+gauden_floor_variance_array(vector_t ***var, uint32 n_mgau,
+                            uint32 n_feat, uint32 n_density,
+                            const uint32 *veclen, float32 floor)
+{
+    uint32 i, j, k;
+
+    for (i = 0; i < n_mgau; i++) {
+	for (j = 0; j < n_feat; j++) {
+	    for (k = 0; k < n_density; k++)
+		vector_floor(var[i][j][k], veclen[j], floor);
+	}
+    }
+    return S3_SUCCESS;
+}
+
+int
+gauden_floor_variance(gauden_t *g)
+{
+    if (g->fullvar != NULL)
+	gauden_floor_variance_array_full(g->fullvar, g->n_mgau, g->n_feat,
+					 g->n_density, g->veclen, min_var);
+    if (g->var != NULL)
+	gauden_floor_variance_array(g->var, g->n_mgau, g->n_feat,
+				    g->n_density, g->veclen, min_var);
     return S3_SUCCESS;
 }
 
