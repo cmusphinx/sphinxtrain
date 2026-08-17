@@ -204,9 +204,20 @@ sub read_document {
 sub write_file {
     my ($path, $cfg_path) = @_;
     my $doc = build_document($cfg_path);
-    open my $fh, ">", $path or die "Cannot write $path: $!\n";
+    # Write atomically.  sync_runtime() regenerates this file from every script
+    # that loads the config, so parallel shards (e.g. 000.comp_feat) can enter
+    # write_file() at the same time.  A plain open(">", $path) truncates in
+    # place *and* bumps the file's mtime, so a sibling that then judges the file
+    # fresh reads it while it is still empty and dies "malformed JSON ... (end
+    # of string)", failing the whole stage.  Write a per-process temp file in
+    # the same directory and rename() it over the target (atomic on POSIX): a
+    # reader always sees either the old or the new complete file, never a
+    # truncated one.
+    my $tmp = "$path.tmp.$$";
+    open my $fh, ">", $tmp or die "Cannot write $tmp: $!\n";
     print {$fh} to_json($doc);
-    close $fh or die "Cannot close $path: $!\n";
+    close $fh or die "Cannot close $tmp: $!\n";
+    rename($tmp, $path) or die "Cannot rename $tmp to $path: $!\n";
     return $doc;
 }
 

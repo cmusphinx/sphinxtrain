@@ -463,8 +463,22 @@ sub WaitForScript {
             $exit = $id >> 8;
         }
         else {
-            $ST::Q->waitfor_job($id);
-            $exit = $? >> 8;
+            my $reaped = $ST::Q->waitfor_job($id);
+            # $? only describes our child when waitpid() actually reaped it.
+            # waitpid() returns -1 when the child was already reaped (or is not
+            # ours); there is no status to read, so do not manufacture a
+            # failure out of a stale $? -- that is how an already-finished job
+            # became a spurious "exit code 255" (-1 >> 8 == -1).  A signal
+            # death is reported as 128+signo instead of being masked to 0.
+            if (defined($reaped) && $reaped == -1) {
+                $exit = 0;
+            }
+            elsif ($? & 127) {
+                $exit = 128 + ($? & 127);
+            }
+            else {
+                $exit = $? >> 8;
+            }
         }
         if ($exit != 0) {
             LogError("Parallel job failed with exit code $exit\n");
